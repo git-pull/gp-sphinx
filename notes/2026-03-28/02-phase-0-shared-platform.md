@@ -89,6 +89,37 @@ DEFAULT_FONT_FAMILIES = {
 
 The `tabs.js` removal + `spa-nav.js` injection hack, currently duplicated in every `conf.py` `setup()` function.
 
+## Configuration Architecture
+
+### Why `globals().update()` is the only option
+
+Sphinx reads `conf.py` by `exec()`-ing it and treating the resulting namespace
+as a flat `dict[str, Any]` (see `sphinx/config.py:596`, `eval_config_file()`).
+There is no object protocol, no dataclass interface, no TOML/YAML alternative
+for the main config. The `Config.__getattr__` lookup chain is:
+CLI overrides (`-D`) → `_raw_config` (the namespace dict) → registered defaults.
+
+Confirmed via:
+- Direct source audit of `sphinx/config.py` (`exec(code, namespace)` → `Config(namespace, overrides)`)
+- `sphinx-pyproject` (third-party, ~2.6k weekly downloads) uses the same `globals()` injection
+- Sphinx issues [#9040](https://github.com/sphinx-doc/sphinx/issues/9040) (Sphinx.toml, 2021) and [#9473](https://github.com/sphinx-doc/sphinx/issues/9473) (pyproject.toml) are open but unimplemented
+- `theme.toml` (Sphinx 7.3) added TypedDict-validated TOML, but only for theme config
+
+### Approach: typed dataclass internals, flat dict output
+
+Use **dataclasses** internally in `merge_sphinx_config()` for:
+- Type safety and IDE autocomplete on the construction side
+- Validation of required fields and option types
+- Clean separation of config groups (theme, fonts, MyST, autodoc, etc.)
+
+Flatten to `dict[str, Any]` on return — the only format Sphinx accepts.
+Downstream usage stays minimal:
+
+```python
+conf = merge_sphinx_config(project="foo", version="1.0", copyright="2026")
+globals().update(conf)
+```
+
 ## The `merge_sphinx_config()` API
 
 Projects are not 100% identical. Some use `argparse_exemplar`, some use `sphinx_click`, some have custom extensions. The shared package must support per-project overrides without abandoning the shared base.
