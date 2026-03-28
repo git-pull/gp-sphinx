@@ -10,21 +10,11 @@ import typing as t
 
 from docutils import nodes
 
+from gp_sphinx.ext.argparse.lexer import ArgparseUsageLexer
+from gp_sphinx.ext.argparse.neo.utils import strip_ansi
+
 if t.TYPE_CHECKING:
     from sphinx.writers.html5 import HTML5Translator
-
-# Import the lexer - use absolute import from parent package
-import pathlib
-import sys
-
-# Add parent directory to path for lexer import
-_ext_dir = pathlib.Path(__file__).parent.parent
-if str(_ext_dir) not in sys.path:
-    sys.path.insert(0, str(_ext_dir))
-
-from argparse_lexer import ArgparseUsageLexer  # noqa: E402
-
-from gp_sphinx.ext.argparse.neo.utils import strip_ansi  # noqa: E402
 
 
 def _generate_argument_id(names: list[str], id_prefix: str = "") -> str:

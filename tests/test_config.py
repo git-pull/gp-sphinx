@@ -283,3 +283,59 @@ def test_merge_sphinx_config_no_linkcode_without_resolver() -> None:
         copyright="2026",
     )
     assert "sphinx.ext.linkcode" not in result["extensions"]
+
+
+def test_merge_sphinx_config_auto_issue_url_tpl() -> None:
+    """issue_url_tpl auto-computed from source_repository."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        source_repository="https://github.com/org/test/",
+    )
+    assert result["issue_url_tpl"] == "https://github.com/org/test/issues/{issue_id}"
+
+
+def test_merge_sphinx_config_no_issue_url_without_repo() -> None:
+    """issue_url_tpl not set when source_repository is not provided."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert "issue_url_tpl" not in result
+
+
+def test_merge_sphinx_config_auto_ogp() -> None:
+    """ogp_* auto-computed from docs_url and project."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        docs_url="https://test.git-pull.com",
+    )
+    assert result["ogp_site_url"] == "https://test.git-pull.com"
+    assert result["ogp_site_name"] == "test"
+    assert result["ogp_image"] == "_static/img/icons/icon-192x192.png"
+
+
+def test_merge_sphinx_config_no_ogp_without_docs_url() -> None:
+    """ogp_* not set when docs_url is not provided."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert "ogp_site_url" not in result
+
+
+def test_merge_sphinx_config_override_auto_computed() -> None:
+    """Manual overrides take precedence over auto-computed values."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        source_repository="https://github.com/org/test/",
+        issue_url_tpl="https://custom.example.com/{issue_id}",
+    )
+    assert result["issue_url_tpl"] == "https://custom.example.com/{issue_id}"

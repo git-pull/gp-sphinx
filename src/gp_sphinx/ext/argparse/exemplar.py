@@ -1283,12 +1283,12 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_directive("argparse", CleanArgParseDirective, override=True)
 
     # Register CLI usage lexer for usage block highlighting
-    from cli_usage_lexer import CLIUsageLexer
+    from gp_sphinx.ext.argparse.cli_usage_lexer import CLIUsageLexer
 
     app.add_lexer("cli-usage", CLIUsageLexer)
 
     # Register argparse lexers for help output highlighting
-    from argparse_lexer import (
+    from gp_sphinx.ext.argparse.lexer import (
         ArgparseHelpLexer,
         ArgparseLexer,
         ArgparseUsageLexer,

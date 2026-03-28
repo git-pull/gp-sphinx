@@ -210,6 +210,7 @@ def merge_sphinx_config(
     source_branch: str = "master",
     light_logo: str | None = None,
     dark_logo: str | None = None,
+    docs_url: str | None = None,
     intersphinx_mapping: t.Mapping[str, tuple[str, str | None]] | None = None,
     **overrides: t.Any,
 ) -> dict[str, t.Any]:
@@ -221,6 +222,12 @@ def merge_sphinx_config(
     The default theme is ``gp-sphinx`` (a Furo child theme bundled in this
     package). Sidebars, templates, CSS, and JS are provided by the theme
     automatically.
+
+    When ``source_repository`` is provided, ``issue_url_tpl`` is auto-computed
+    for the ``linkify_issues`` extension. When ``docs_url`` is provided,
+    ``ogp_site_url``, ``ogp_image``, and ``ogp_site_name`` are auto-computed
+    for ``sphinxext.opengraph``. All auto-computed values can be overridden
+    via ``**overrides``.
 
     Parameters
     ----------
@@ -246,6 +253,9 @@ def merge_sphinx_config(
         Path to light-mode logo.
     dark_logo : str | None
         Path to dark-mode logo.
+    docs_url : str | None
+        Documentation site URL (e.g., ``"https://libtmux.git-pull.com"``).
+        Used to auto-compute ``ogp_site_url`` and ``ogp_site_name``.
     intersphinx_mapping : dict | None
         Intersphinx targets.
     **overrides
@@ -300,6 +310,21 @@ def merge_sphinx_config(
     ... )
     >>> "sphinx_design" in conf["extensions"]
     False
+
+    Auto-computed values from source_repository and docs_url:
+
+    >>> conf = merge_sphinx_config(
+    ...     project="test",
+    ...     version="1.0",
+    ...     copyright="2026",
+    ...     source_repository="https://github.com/org/test/",
+    ...     docs_url="https://test.org",
+    ... )
+    >>> conf["issue_url_tpl"]
+    'https://github.com/org/test/issues/{issue_id}'
+
+    >>> conf["ogp_site_url"]
+    'https://test.org'
     """
     # Extensions
     ext_list = list(extensions) if extensions is not None else list(DEFAULT_EXTENSIONS)
@@ -379,7 +404,18 @@ def merge_sphinx_config(
     if intersphinx_mapping is not None:
         conf["intersphinx_mapping"] = dict(intersphinx_mapping)
 
-    # Apply overrides last
+    # Auto-compute linkify_issues config
+    if source_repository:
+        repo = source_repository.rstrip("/")
+        conf["issue_url_tpl"] = f"{repo}/issues/{{issue_id}}"
+
+    # Auto-compute sphinxext.opengraph config
+    if docs_url:
+        conf["ogp_site_url"] = docs_url
+        conf["ogp_site_name"] = project
+        conf["ogp_image"] = "_static/img/icons/icon-192x192.png"
+
+    # Apply overrides last (can override auto-computed values)
     conf.update(overrides)
 
     # Auto-add sphinx.ext.linkcode when linkcode_resolve is provided
