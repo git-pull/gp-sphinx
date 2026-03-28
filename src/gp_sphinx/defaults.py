@@ -62,8 +62,8 @@ Examples
 'sphinx.ext.autodoc'
 """
 
-DEFAULT_THEME: str = "furo"
-"""Default Sphinx HTML theme."""
+DEFAULT_THEME: str = "gp-sphinx"
+"""Default Sphinx HTML theme (Furo child theme bundled in this package)."""
 
 DEFAULT_THEME_OPTIONS: dict[str, t.Any] = {
     "footer_icons": [

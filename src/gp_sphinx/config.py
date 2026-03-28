@@ -1,7 +1,8 @@
 """Configuration builder for shared Sphinx documentation platform.
 
 Provides :func:`merge_sphinx_config` to build a complete Sphinx configuration
-namespace from shared defaults with per-project overrides.
+namespace from shared defaults with per-project overrides, and
+:func:`make_linkcode_resolve` to generate per-project source link resolvers.
 
 Examples
 --------
@@ -16,7 +17,7 @@ Examples
 'my-project'
 
 >>> conf["html_theme"]
-'furo'
+'gp-sphinx'
 
 >>> "myst_parser" in conf["extensions"]
 True
@@ -26,9 +27,12 @@ from __future__ import annotations
 
 import contextlib
 import copy
+import inspect
 import logging
 import pathlib
+import types
 import typing as t
+from os.path import relpath
 
 from gp_sphinx.defaults import (
     DEFAULT_AUTOCLASS_CONTENT,
@@ -42,7 +46,6 @@ from gp_sphinx.defaults import (
     DEFAULT_MYST_HEADING_ANCHORS,
     DEFAULT_PYGMENTS_DARK_STYLE,
     DEFAULT_PYGMENTS_STYLE,
-    DEFAULT_SIDEBARS,
     DEFAULT_SOURCE_SUFFIX,
     DEFAULT_SPHINX_FONT_CSS_VARIABLES,
     DEFAULT_SPHINX_FONT_FALLBACKS,
@@ -53,6 +56,8 @@ from gp_sphinx.defaults import (
 )
 
 if t.TYPE_CHECKING:
+    from collections.abc import Callable
+
     from sphinx.application import Sphinx
 
 logger = logging.getLogger(__name__)
@@ -96,6 +101,100 @@ def deep_merge(base: dict[str, t.Any], override: dict[str, t.Any]) -> dict[str, 
     return result
 
 
+def make_linkcode_resolve(
+    package_module: types.ModuleType,
+    github_url: str,
+    src_dir: str = "src",
+) -> Callable[[str, dict[str, str]], str | None]:
+    """Create a ``linkcode_resolve`` function for ``sphinx.ext.linkcode``.
+
+    Generates a resolver that maps Python objects to their source location
+    on GitHub. The returned function follows the interface expected by
+    ``sphinx.ext.linkcode``.
+
+    Parameters
+    ----------
+    package_module : types.ModuleType
+        The top-level package module (e.g., ``import libtmux; libtmux``).
+        Used to compute relative file paths.
+    github_url : str
+        Base GitHub repository URL (e.g.,
+        ``"https://github.com/tmux-python/libtmux"``).
+    src_dir : str
+        Directory containing the source package (default ``"src"``).
+
+    Returns
+    -------
+    Callable[[str, dict[str, str]], str | None]
+        A function suitable for ``linkcode_resolve`` in Sphinx config.
+
+    Examples
+    --------
+    >>> import gp_sphinx
+
+    >>> resolver = make_linkcode_resolve(
+    ...     gp_sphinx,
+    ...     "https://github.com/git-pull/gp-sphinx",
+    ... )
+    >>> callable(resolver)
+    True
+    """
+
+    def linkcode_resolve(domain: str, info: dict[str, str]) -> str | None:
+        if domain != "py":
+            return None
+
+        modname = info["module"]
+        fullname = info["fullname"]
+
+        import sys
+
+        submod = sys.modules.get(modname)
+        if submod is None:
+            return None
+
+        obj: object = submod
+        for part in fullname.split("."):
+            try:
+                obj = getattr(obj, part)
+            except Exception:  # noqa: PERF203
+                return None
+
+        try:
+            unwrap = inspect.unwrap
+        except AttributeError:
+            pass
+        else:
+            if callable(obj):
+                obj = unwrap(obj)
+
+        try:
+            fn = inspect.getsourcefile(obj)  # type: ignore[arg-type]
+        except Exception:
+            fn = None
+        if not fn:
+            return None
+
+        try:
+            source, lineno = inspect.getsourcelines(obj)  # type: ignore[arg-type]
+        except Exception:
+            lineno = None
+
+        linespec = f"#L{lineno}-L{lineno + len(source) - 1}" if lineno else ""
+
+        pkg_file = package_module.__file__
+        if pkg_file is None:
+            return None
+        fn = relpath(fn, start=pathlib.Path(pkg_file).parent)
+
+        version = getattr(package_module, "__version__", "")
+        if "dev" in version:
+            return f"{github_url}/blob/master/{src_dir}/{fn}{linespec}"
+        return f"{github_url}/blob/v{version}/{src_dir}/{fn}{linespec}"
+
+    return linkcode_resolve
+
+
 def merge_sphinx_config(
     *,
     project: str,
@@ -116,6 +215,10 @@ def merge_sphinx_config(
 
     Returns a flat dictionary suitable for injection into a ``docs/conf.py``
     module namespace via ``globals().update(conf)``.
+
+    The default theme is ``gp-sphinx`` (a Furo child theme bundled in this
+    package). Sidebars, templates, CSS, and JS are provided by the theme
+    automatically.
 
     Parameters
     ----------
@@ -164,6 +267,9 @@ def merge_sphinx_config(
 
     >>> conf["version"]
     '1.0'
+
+    >>> conf["html_theme"]
+    'gp-sphinx'
 
     >>> len(conf["extensions"]) >= 13
     True
@@ -231,11 +337,10 @@ def merge_sphinx_config(
         "master_doc": "index",
         # Source
         "source_suffix": dict(DEFAULT_SOURCE_SUFFIX),
-        # Theme
+        # Theme (gp-sphinx child theme provides sidebars, templates, CSS, JS)
         "html_theme": DEFAULT_THEME,
         "html_theme_path": [],
         "html_theme_options": merged_theme_options,
-        "html_sidebars": copy.deepcopy(DEFAULT_SIDEBARS),
         # Pygments
         "pygments_style": DEFAULT_PYGMENTS_STYLE,
         "pygments_dark_style": DEFAULT_PYGMENTS_DARK_STYLE,
@@ -298,13 +403,11 @@ def remove_tabs_js(app: Sphinx, exc: Exception | None) -> None:
 def setup(app: Sphinx) -> None:
     """Configure Sphinx app hooks for gp-sphinx workarounds.
 
-    Registers the bundled ``spa-nav.js`` script and connects the
-    ``remove_tabs_js`` post-build hook.
+    Connects the ``remove_tabs_js`` post-build hook.
 
     Parameters
     ----------
     app : Sphinx
         The Sphinx application object.
     """
-    app.add_js_file("js/spa-nav.js", loading_method="defer")
     app.connect("build-finished", remove_tabs_js)

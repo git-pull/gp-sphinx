@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from gp_sphinx.config import deep_merge, merge_sphinx_config
+import gp_sphinx
+from gp_sphinx.config import deep_merge, make_linkcode_resolve, merge_sphinx_config
 from gp_sphinx.defaults import DEFAULT_EXTENSIONS, DEFAULT_MYST_EXTENSIONS
 
 
@@ -199,3 +200,41 @@ def test_deep_merge_override_wins() -> None:
     override = {"a": [3, 4], "c": "new"}
     result = deep_merge(base, override)
     assert result == {"a": [3, 4], "b": "hello", "c": "new"}
+
+
+def test_merge_sphinx_config_uses_gp_sphinx_theme() -> None:
+    """Default theme is gp-sphinx (Furo child theme)."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["html_theme"] == "gp-sphinx"
+
+
+def test_merge_sphinx_config_no_sidebars() -> None:
+    """Theme provides sidebars — config should not include html_sidebars."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert "html_sidebars" not in result
+
+
+def test_make_linkcode_resolve_returns_callable() -> None:
+    """make_linkcode_resolve returns a callable."""
+    resolver = make_linkcode_resolve(
+        gp_sphinx,
+        "https://github.com/git-pull/gp-sphinx",
+    )
+    assert callable(resolver)
+
+
+def test_make_linkcode_resolve_non_py_domain() -> None:
+    """Resolver returns None for non-Python domains."""
+    resolver = make_linkcode_resolve(
+        gp_sphinx,
+        "https://github.com/git-pull/gp-sphinx",
+    )
+    assert resolver("c", {"module": "gp_sphinx", "fullname": "foo"}) is None

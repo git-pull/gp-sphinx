@@ -32,10 +32,7 @@ conf = merge_sphinx_config(
         "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
     },
     # Per-project overrides
-    templates_path=["_templates"],
-    html_static_path=["_static"],
     html_extra_path=["manifest.json"],
-    html_css_files=["css/custom.css"],
     exclude_patterns=["_build"],
     # linkify_issues
     issue_url_tpl=f"{about['__github__']}/issues/{{issue_id}}",

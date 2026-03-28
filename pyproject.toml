@@ -120,6 +120,9 @@ lint = [
   "types-docutils",
 ]
 
+[project.entry-points."sphinx.html_themes"]
+"gp-sphinx" = "gp_sphinx.theme"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
