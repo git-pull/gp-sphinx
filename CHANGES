@@ -1,0 +1,26 @@
+# Changelog
+
+To install the unreleased gp-sphinx version, see [developmental releases](https://gp-sphinx.git-pull.com/quickstart.html#developmental-releases).
+
+[pip](https://pip.pypa.io/en/stable/):
+
+```console
+$ pip install --user --upgrade --pre gp-sphinx
+```
+
+[uv](https://docs.astral.sh/uv/):
+
+```console
+$ uv add gp-sphinx --prerelease allow
+```
+
+## gp-sphinx 0.0.1 (unreleased)
+
+<!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
+
+### Features
+
+- Initial release of `gp_sphinx` shared documentation platform
+- `merge_sphinx_config()` API for building complete Sphinx config from shared defaults
+- Shared extension list, theme options, MyST config, font config
+- Bundled workarounds (tabs.js removal, spa-nav.js injection)
