@@ -267,3 +267,23 @@ DEFAULT_AUTOCLASS_CONTENT: str = "both"
 
 DEFAULT_AUTODOC_MEMBER_ORDER: str = "bysource"
 """Default autodoc member ordering."""
+
+DEFAULT_AUTODOC_CLASS_SIGNATURE: str = "separated"
+"""Display class signature separately from docstring.
+
+Examples
+--------
+>>> DEFAULT_AUTODOC_CLASS_SIGNATURE
+'separated'
+"""
+
+DEFAULT_SUPPRESS_WARNINGS: list[str] = [
+    "sphinx_autodoc_typehints.forward_reference",
+]
+"""Warnings to suppress by default.
+
+Examples
+--------
+>>> len(DEFAULT_SUPPRESS_WARNINGS)
+1
+"""

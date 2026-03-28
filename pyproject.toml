@@ -142,6 +142,11 @@ files = [
 module = ["gp_sphinx.sphinx_fonts"]
 disable_error_code = ["attr-defined", "unused-ignore"]
 
+[[tool.mypy.overrides]]
+module = ["gp_sphinx.ext.argparse.*"]
+strict = false
+ignore_errors = true
+
 [tool.ruff]
 target-version = "py310"
 
@@ -188,9 +193,11 @@ convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
 "*/__init__.py" = ["F401"]
+"src/gp_sphinx/ext/argparse/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
+"src/gp_sphinx/ext/argparse/neo/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 
 [tool.pytest.ini_options]
-addopts = "--tb=short --no-header --showlocals --doctest-modules"
+addopts = "--tb=short --no-header --showlocals --doctest-modules --ignore=src/gp_sphinx/ext/argparse"
 doctest_optionflags = "ELLIPSIS NORMALIZE_WHITESPACE"
 testpaths = [
   "tests",

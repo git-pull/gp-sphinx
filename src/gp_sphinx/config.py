@@ -36,6 +36,7 @@ from os.path import relpath
 
 from gp_sphinx.defaults import (
     DEFAULT_AUTOCLASS_CONTENT,
+    DEFAULT_AUTODOC_CLASS_SIGNATURE,
     DEFAULT_AUTODOC_MEMBER_ORDER,
     DEFAULT_AUTODOC_OPTIONS,
     DEFAULT_COPYBUTTON_PROMPT_IS_REGEXP,
@@ -51,6 +52,7 @@ from gp_sphinx.defaults import (
     DEFAULT_SPHINX_FONT_FALLBACKS,
     DEFAULT_SPHINX_FONT_PRELOAD,
     DEFAULT_SPHINX_FONTS,
+    DEFAULT_SUPPRESS_WARNINGS,
     DEFAULT_THEME,
     DEFAULT_THEME_OPTIONS,
 )
@@ -355,6 +357,7 @@ def merge_sphinx_config(
         # Autodoc
         "autoclass_content": DEFAULT_AUTOCLASS_CONTENT,
         "autodoc_member_order": DEFAULT_AUTODOC_MEMBER_ORDER,
+        "autodoc_class_signature": DEFAULT_AUTODOC_CLASS_SIGNATURE,
         "toc_object_entries_show_parents": "hide",
         "autodoc_default_options": dict(DEFAULT_AUTODOC_OPTIONS),
         # Copybutton
@@ -364,6 +367,8 @@ def merge_sphinx_config(
         # Rediraffe
         "rediraffe_redirects": "redirects.txt",
         "rediraffe_branch": "master~1",
+        # Warnings
+        "suppress_warnings": list(DEFAULT_SUPPRESS_WARNINGS),
         # Exclude patterns
         "exclude_patterns": ["_build"],
         # Workaround hooks
@@ -376,6 +381,10 @@ def merge_sphinx_config(
 
     # Apply overrides last
     conf.update(overrides)
+
+    # Auto-add sphinx.ext.linkcode when linkcode_resolve is provided
+    if "linkcode_resolve" in conf and "sphinx.ext.linkcode" not in conf["extensions"]:
+        conf["extensions"].append("sphinx.ext.linkcode")
 
     logger.debug("sphinx config merged for %s", project)
     return conf

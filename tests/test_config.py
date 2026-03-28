@@ -238,3 +238,48 @@ def test_make_linkcode_resolve_non_py_domain() -> None:
         "https://github.com/git-pull/gp-sphinx",
     )
     assert resolver("c", {"module": "gp_sphinx", "fullname": "foo"}) is None
+
+
+def test_merge_sphinx_config_autodoc_class_signature() -> None:
+    """Default autodoc_class_signature is 'separated'."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["autodoc_class_signature"] == "separated"
+
+
+def test_merge_sphinx_config_suppress_warnings() -> None:
+    """Default suppress_warnings includes autodoc_typehints forward_reference."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert "sphinx_autodoc_typehints.forward_reference" in result["suppress_warnings"]
+
+
+def test_merge_sphinx_config_linkcode_auto_added() -> None:
+    """sphinx.ext.linkcode auto-added when linkcode_resolve is provided."""
+    resolver = make_linkcode_resolve(
+        gp_sphinx,
+        "https://github.com/git-pull/gp-sphinx",
+    )
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        linkcode_resolve=resolver,
+    )
+    assert "sphinx.ext.linkcode" in result["extensions"]
+
+
+def test_merge_sphinx_config_no_linkcode_without_resolver() -> None:
+    """sphinx.ext.linkcode not in extensions when no resolver provided."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert "sphinx.ext.linkcode" not in result["extensions"]
