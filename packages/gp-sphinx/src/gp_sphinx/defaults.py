@@ -122,6 +122,28 @@ Examples
 'markdown'
 """
 
+DEFAULT_HTML_STATIC_PATH: list[str] = ["_static"]
+"""Default path(s) to project-specific static files (CSS, images, JS).
+
+Resolved relative to the docs source directory (``docs/_static/``).
+
+Examples
+--------
+>>> DEFAULT_HTML_STATIC_PATH
+['_static']
+"""
+
+DEFAULT_TEMPLATES_PATH: list[str] = ["_templates"]
+"""Default path(s) to Jinja2 template overrides.
+
+Resolved relative to the docs source directory (``docs/_templates/``).
+
+Examples
+--------
+>>> DEFAULT_TEMPLATES_PATH
+['_templates']
+"""
+
 DEFAULT_PYGMENTS_STYLE: str = "monokai"
 """Default Pygments syntax highlighting style."""
 

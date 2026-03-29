@@ -373,14 +373,14 @@ def test_merge_sphinx_config_copybutton_continuation() -> None:
 
 
 def test_merge_sphinx_config_html_paths() -> None:
-    """Theme asset paths stay opt-in for minimal consumers."""
+    """Static and template paths default to standard locations; extras are opt-in."""
     result = merge_sphinx_config(
         project="test",
         version="1.0",
         copyright="2026",
     )
-    assert "templates_path" not in result
-    assert "html_static_path" not in result
+    assert result["html_static_path"] == ["_static"]
+    assert result["templates_path"] == ["_templates"]
     assert "html_favicon" not in result
     assert "html_extra_path" not in result
 

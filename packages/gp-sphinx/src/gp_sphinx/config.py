@@ -45,6 +45,7 @@ from gp_sphinx.defaults import (
     DEFAULT_COPYBUTTON_PROMPT_TEXT,
     DEFAULT_COPYBUTTON_REMOVE_PROMPTS,
     DEFAULT_EXTENSIONS,
+    DEFAULT_HTML_STATIC_PATH,
     DEFAULT_MYST_EXTENSIONS,
     DEFAULT_MYST_HEADING_ANCHORS,
     DEFAULT_NAPOLEON_GOOGLE_DOCSTRING,
@@ -57,6 +58,7 @@ from gp_sphinx.defaults import (
     DEFAULT_SPHINX_FONT_PRELOAD,
     DEFAULT_SPHINX_FONTS,
     DEFAULT_SUPPRESS_WARNINGS,
+    DEFAULT_TEMPLATES_PATH,
     DEFAULT_THEME,
     DEFAULT_THEME_OPTIONS,
     DEFAULT_TOC_OBJECT_ENTRIES_SHOW_PARENTS,
@@ -368,6 +370,9 @@ def merge_sphinx_config(
         "master_doc": "index",
         # Source
         "source_suffix": dict(DEFAULT_SOURCE_SUFFIX),
+        # Static files and templates
+        "html_static_path": list(DEFAULT_HTML_STATIC_PATH),
+        "templates_path": list(DEFAULT_TEMPLATES_PATH),
         # Theme (gp-sphinx child theme provides sidebars, templates, CSS, JS)
         "html_theme": DEFAULT_THEME,
         "html_theme_path": [],
