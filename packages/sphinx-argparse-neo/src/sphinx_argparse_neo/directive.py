@@ -18,6 +18,7 @@ from sphinx_argparse_neo.renderer import ArgparseRenderer, RenderConfig
 
 if t.TYPE_CHECKING:
     import argparse
+    from collections.abc import Callable
 
 
 class ArgparseDirective(SphinxDirective):
@@ -66,7 +67,7 @@ class ArgparseDirective(SphinxDirective):
     required_arguments = 0
     optional_arguments = 0
 
-    option_spec: t.ClassVar[dict[str, t.Any]] = {
+    option_spec: t.ClassVar[dict[str, Callable[[str], t.Any]]] = {
         "module": directives.unchanged_required,
         "func": directives.unchanged_required,
         "prog": directives.unchanged,

@@ -117,6 +117,14 @@ if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
 
+class SetupDict(t.TypedDict):
+    """Return type for Sphinx extension setup()."""
+
+    version: str
+    parallel_read_safe: bool
+    parallel_write_safe: bool
+
+
 @dataclasses.dataclass
 class ExemplarConfig:
     """Configuration for argparse_exemplar transformation.
@@ -1219,7 +1227,7 @@ class CleanArgParseDirective(ArgparseDirective):
         return _reorder_nodes(flattened, config=config)
 
 
-def setup(app: Sphinx) -> dict[str, t.Any]:
+def setup(app: Sphinx) -> SetupDict:
     """Register the clean argparse directive, lexers, and CLI roles.
 
     Configuration Options
@@ -1303,4 +1311,4 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
 
     register_roles()
 
-    return {"version": "4.0", "parallel_read_safe": True}
+    return {"version": "4.0", "parallel_read_safe": True, "parallel_write_safe": True}

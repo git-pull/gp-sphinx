@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import typing as t
 
 from docutils import nodes
 
@@ -482,18 +481,20 @@ def test_post_process_custom() -> None:
     """Test custom post_process implementation."""
 
     class CustomRenderer(ArgparseRenderer):
-        def post_process(self, result_nodes: list[t.Any]) -> list[t.Any]:
-            # Add a marker to each node
+        def post_process(self, result_nodes: list[nodes.Node]) -> list[nodes.Node]:
+            # Add a marker to each node; Element subclass supports item assignment
             for node in result_nodes:
-                node["custom_marker"] = True
+                if isinstance(node, nodes.Element):
+                    node["custom_marker"] = True
             return result_nodes
 
     renderer = CustomRenderer()
 
     from docutils import nodes as dn
 
-    input_nodes = [dn.paragraph(text="test")]
+    input_nodes: list[nodes.Node] = [dn.paragraph(text="test")]
 
     result = renderer.post_process(input_nodes)
 
+    assert isinstance(result[0], nodes.Element)
     assert result[0].get("custom_marker") is True

@@ -489,7 +489,7 @@ def test_on_html_page_context_without_attrs() -> None:
 
 def test_setup_return_value() -> None:
     """Verify setup() returns correct metadata dict."""
-    config_values: list[tuple[str, t.Any, str]] = []
+    config_values: list[tuple[str, object, str]] = []
     connections: list[tuple[str, t.Any]] = []
 
     app = t.cast(
@@ -513,7 +513,7 @@ def test_setup_return_value() -> None:
 
 def test_setup_config_values() -> None:
     """Verify setup() registers all expected config values."""
-    config_values: list[tuple[str, t.Any, str]] = []
+    config_values: list[tuple[str, object, str]] = []
     connections: list[tuple[str, t.Any]] = []
 
     app = t.cast(
@@ -538,7 +538,7 @@ def test_setup_config_values() -> None:
 
 def test_setup_event_connections() -> None:
     """Verify setup() connects to builder-inited and html-page-context events."""
-    config_values: list[tuple[str, t.Any, str]] = []
+    config_values: list[tuple[str, object, str]] = []
     connections: list[tuple[str, t.Any]] = []
 
     app = t.cast(

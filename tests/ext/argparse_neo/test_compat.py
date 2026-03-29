@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+import argparse
 import sys
-import typing as t
 
 import pytest
 
@@ -177,7 +177,7 @@ def test_get_parser_from_module_argparse() -> None:
 
     test_module = types.ModuleType("test_parser_module")
 
-    def create_parser() -> t.Any:
+    def create_parser() -> argparse.ArgumentParser:
         import argparse
 
         return argparse.ArgumentParser(prog="test")
@@ -198,7 +198,7 @@ def test_get_parser_from_module_with_mock() -> None:
 
     test_module = types.ModuleType("test_mock_parser")
 
-    def create_parser() -> t.Any:
+    def create_parser() -> argparse.ArgumentParser:
         import argparse
 
         return argparse.ArgumentParser(prog="mocked")
@@ -225,7 +225,7 @@ def test_get_parser_from_module_dotted_path() -> None:
 
     class CLI:
         @staticmethod
-        def create_parser() -> t.Any:
+        def create_parser() -> argparse.ArgumentParser:
             import argparse
 
             return argparse.ArgumentParser(prog="from_class")
@@ -261,7 +261,7 @@ def test_get_parser_from_entry_point_valid() -> None:
 
     test_module = types.ModuleType("test_entry_point")
 
-    def get_parser() -> t.Any:
+    def get_parser() -> argparse.ArgumentParser:
         import argparse
 
         return argparse.ArgumentParser(prog="entry")
@@ -292,7 +292,7 @@ def test_get_parser_from_entry_point_with_class() -> None:
 
     class Factory:
         @staticmethod
-        def parser() -> t.Any:
+        def parser() -> argparse.ArgumentParser:
             import argparse
 
             return argparse.ArgumentParser(prog="factory")
@@ -313,7 +313,7 @@ def test_get_parser_from_entry_point_with_mock() -> None:
 
     test_module = types.ModuleType("test_entry_mock")
 
-    def make_parser() -> t.Any:
+    def make_parser() -> argparse.ArgumentParser:
         import argparse
 
         return argparse.ArgumentParser(prog="with_mock")
