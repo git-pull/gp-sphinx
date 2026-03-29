@@ -25,7 +25,7 @@ class FormatDefaultFixture(t.NamedTuple):
     """Test fixture for _format_default function."""
 
     test_id: str
-    default: t.Any
+    default: object
     expected: str | None
 
 
@@ -83,7 +83,7 @@ FORMAT_DEFAULT_FIXTURES: list[FormatDefaultFixture] = [
     FORMAT_DEFAULT_FIXTURES,
     ids=[f.test_id for f in FORMAT_DEFAULT_FIXTURES],
 )
-def test_format_default(test_id: str, default: t.Any, expected: str | None) -> None:
+def test_format_default(test_id: str, default: object, expected: str | None) -> None:
     """Test default value formatting."""
     assert _format_default(default) == expected
 

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
-import typing as t
 
 from sphinx_argparse_neo.utils import strip_ansi
 
@@ -45,15 +44,15 @@ class ArgumentInfo:
 
     names: list[str]
     help: str | None
-    default: t.Any
+    default: object
     default_string: str | None
-    choices: list[t.Any] | None
+    choices: list[object] | None
     required: bool
     metavar: str | None
     nargs: str | int | None
     action: str
     type_name: str | None
-    const: t.Any
+    const: object
     dest: str
 
     @property
@@ -185,12 +184,12 @@ class ParserInfo:
     subcommand_dest: str | None
 
 
-def _format_default(default: t.Any) -> str | None:
+def _format_default(default: object) -> str | None:
     """Format a default value for display.
 
     Parameters
     ----------
-    default : t.Any
+    default : object
         The default value to format.
 
     Returns

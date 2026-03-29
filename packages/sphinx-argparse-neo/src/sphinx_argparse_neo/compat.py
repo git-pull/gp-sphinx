@@ -13,6 +13,7 @@ from __future__ import annotations
 import contextlib
 import importlib
 import sys
+import types
 import typing as t
 
 if t.TYPE_CHECKING:
@@ -131,7 +132,7 @@ def mock_imports(modules: list[str]) -> Iterator[None]:
             del sys.modules[name]
 
 
-def import_module(module_name: str) -> t.Any:
+def import_module(module_name: str) -> types.ModuleType:
     """Import a module by name.
 
     Parameters
@@ -141,7 +142,7 @@ def import_module(module_name: str) -> t.Any:
 
     Returns
     -------
-    t.Any
+    types.ModuleType
         The imported module.
 
     Raises

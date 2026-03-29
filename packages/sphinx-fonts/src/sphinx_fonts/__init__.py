@@ -40,6 +40,24 @@ class SetupDict(t.TypedDict):
     parallel_write_safe: bool
 
 
+class _FontConfigRequired(t.TypedDict):
+    family: str
+    package: str
+    version: str
+    weights: list[int]
+    styles: list[str]
+
+
+class FontConfig(_FontConfigRequired, total=False):
+    """A single font family configuration entry.
+
+    Required keys: ``family``, ``package``, ``version``, ``weights``, ``styles``.
+    Optional key: ``subset`` (defaults to ``"latin"`` when omitted).
+    """
+
+    subset: str
+
+
 def _cache_dir() -> pathlib.Path:
     """Return the local font cache directory.
 
@@ -140,7 +158,7 @@ def _on_builder_inited(app: Sphinx) -> None:
     if app.builder.format != "html":
         return
 
-    fonts: list[dict[str, t.Any]] = app.config.sphinx_fonts
+    fonts: list[FontConfig] = app.config.sphinx_fonts
     variables: dict[str, str] = app.config.sphinx_font_css_variables
     if not fonts:
         return

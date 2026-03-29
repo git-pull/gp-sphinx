@@ -341,8 +341,10 @@ def merge_sphinx_config(
         remove_set = set(remove_extensions)
         ext_list = [e for e in ext_list if e not in remove_set]
 
-    # Theme options
-    merged_theme_options = copy.deepcopy(DEFAULT_THEME_OPTIONS)
+    # Theme options — start from typed defaults, then widen for arbitrary overrides.
+    # dict() conversion before deepcopy keeps the type as dict[str, Any] since
+    # FuroThemeOptions (TypedDict) is not directly assignable to dict[str, Any].
+    merged_theme_options: dict[str, t.Any] = copy.deepcopy(dict(DEFAULT_THEME_OPTIONS))
     if source_repository:
         merged_theme_options["source_repository"] = source_repository
         # Update footer icon URL

@@ -46,7 +46,15 @@ if t.TYPE_CHECKING:
 __version__ = "0.0.1a0"
 
 
-def setup(app: Sphinx) -> dict[str, t.Any]:
+class SetupDict(t.TypedDict):
+    """Return type for Sphinx extension setup()."""
+
+    version: str
+    parallel_read_safe: bool
+    parallel_write_safe: bool
+
+
+def setup(app: Sphinx) -> SetupDict:
     """Register the argparse directive and configuration options.
 
     Parameters
@@ -56,7 +64,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
 
     Returns
     -------
-    dict[str, t.Any]
+    SetupDict
         Extension metadata.
     """
     # Configuration options

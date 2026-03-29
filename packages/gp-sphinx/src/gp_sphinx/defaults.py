@@ -19,6 +19,46 @@ from __future__ import annotations
 
 import typing as t
 
+FooterIconDict = t.TypedDict(
+    "FooterIconDict",
+    {"name": str, "url": str, "html": str, "class": str},
+)
+"""A footer icon entry for Furo's ``footer_icons`` theme option."""
+
+
+class FuroThemeOptions(t.TypedDict, total=False):
+    """Typed subset of Furo theme options used by gp-sphinx.
+
+    All keys are optional — pass only what you want to override.
+    """
+
+    footer_icons: list[FooterIconDict]
+    source_repository: str
+    source_branch: str
+    source_directory: str
+    light_logo: str
+    dark_logo: str
+    mask_icon: str
+
+
+class _FontConfigRequired(t.TypedDict):
+    family: str
+    package: str
+    version: str
+    weights: list[int]
+    styles: list[str]
+
+
+class FontConfig(_FontConfigRequired, total=False):
+    """A single font family configuration entry for sphinx-fonts.
+
+    Required keys: ``family``, ``package``, ``version``, ``weights``, ``styles``.
+    Optional key: ``subset`` (defaults to ``"latin"`` when omitted).
+    """
+
+    subset: str
+
+
 GITHUB_SVG_ICON: str = (
     '<svg stroke="currentColor" fill="currentColor" stroke-width="0"'
     ' viewBox="0 0 16 16">'
@@ -65,7 +105,7 @@ Examples
 DEFAULT_THEME: str = "sphinx-gptheme"
 """Default Sphinx HTML theme (Furo child theme bundled in this package)."""
 
-DEFAULT_THEME_OPTIONS: dict[str, t.Any] = {
+DEFAULT_THEME_OPTIONS: FuroThemeOptions = {
     "footer_icons": [
         {
             "name": "GitHub",
@@ -168,7 +208,7 @@ Examples
 6
 """
 
-DEFAULT_SPHINX_FONTS: list[dict[str, t.Any]] = [
+DEFAULT_SPHINX_FONTS: list[FontConfig] = [
     {
         "family": "IBM Plex Sans",
         "package": "@fontsource/ibm-plex-sans",
@@ -269,7 +309,7 @@ DEFAULT_COPYBUTTON_PROMPT_IS_REGEXP: bool = True
 DEFAULT_COPYBUTTON_REMOVE_PROMPTS: bool = True
 """Whether sphinx-copybutton should strip prompts when copying."""
 
-DEFAULT_AUTODOC_OPTIONS: dict[str, t.Any] = {
+DEFAULT_AUTODOC_OPTIONS: dict[str, bool | str] = {
     "undoc-members": True,
     "members": True,
     "private-members": True,
