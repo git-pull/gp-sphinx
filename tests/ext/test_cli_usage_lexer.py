@@ -6,7 +6,7 @@ import typing as t
 
 import pytest
 
-from gp_sphinx.ext.argparse.cli_usage_lexer import (
+from sphinx_argparse_neo.cli_usage_lexer import (
     CLIUsageLexer,
     tokenize_usage,
 )

@@ -7,7 +7,7 @@ import typing as t
 
 import pytest
 
-from gp_sphinx.ext.argparse.neo.parser import (
+from sphinx_argparse_neo.parser import (
     ArgumentInfo,
     ParserInfo,
     SubcommandInfo,

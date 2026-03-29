@@ -7,7 +7,7 @@ import typing as t
 
 from docutils import nodes
 
-from gp_sphinx.ext.argparse.neo.nodes import (
+from sphinx_argparse_neo.nodes import (
     argparse_argument,
     argparse_group,
     argparse_program,
@@ -15,7 +15,7 @@ from gp_sphinx.ext.argparse.neo.nodes import (
     argparse_subcommands,
     argparse_usage,
 )
-from gp_sphinx.ext.argparse.neo.parser import (
+from sphinx_argparse_neo.parser import (
     ArgumentGroup,
     ArgumentInfo,
     MutuallyExclusiveGroup,
@@ -23,7 +23,7 @@ from gp_sphinx.ext.argparse.neo.parser import (
     SubcommandInfo,
     extract_parser,
 )
-from gp_sphinx.ext.argparse.neo.renderer import (
+from sphinx_argparse_neo.renderer import (
     ArgparseRenderer,
     RenderConfig,
     create_renderer,

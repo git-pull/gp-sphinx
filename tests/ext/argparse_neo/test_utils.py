@@ -6,7 +6,7 @@ import typing as t
 
 import pytest
 
-from gp_sphinx.ext.argparse.neo.utils import escape_rst_emphasis, strip_ansi
+from sphinx_argparse_neo.utils import escape_rst_emphasis, strip_ansi
 
 # --- strip_ansi tests ---
 

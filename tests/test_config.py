@@ -209,7 +209,7 @@ def test_merge_sphinx_config_uses_gp_sphinx_theme() -> None:
         version="1.0",
         copyright="2026",
     )
-    assert result["html_theme"] == "gp-sphinx"
+    assert result["html_theme"] == "sphinx-gptheme"
 
 
 def test_merge_sphinx_config_no_sidebars() -> None:
@@ -373,16 +373,40 @@ def test_merge_sphinx_config_copybutton_continuation() -> None:
 
 
 def test_merge_sphinx_config_html_paths() -> None:
-    """Default HTML paths are set."""
+    """Theme asset paths stay opt-in for minimal consumers."""
     result = merge_sphinx_config(
         project="test",
         version="1.0",
         copyright="2026",
     )
-    assert result["templates_path"] == ["_templates"]
-    assert result["html_static_path"] == ["_static"]
-    assert result["html_favicon"] == "_static/favicon.ico"
-    assert result["html_extra_path"] == ["manifest.json"]
+    assert "templates_path" not in result
+    assert "html_static_path" not in result
+    assert "html_favicon" not in result
+    assert "html_extra_path" not in result
+
+
+def test_merge_sphinx_config_redirects_are_opt_in() -> None:
+    """Redirect generation defaults stay quiet for minimal consumers."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["rediraffe_redirects"] == {}
+
+
+def test_make_linkcode_resolve_preserves_package_dir() -> None:
+    """Generated linkcode URLs keep the top-level package directory."""
+    resolver = make_linkcode_resolve(
+        gp_sphinx,
+        "https://github.com/git-pull/gp-sphinx",
+    )
+    url = resolver(
+        "py",
+        {"module": "gp_sphinx.config", "fullname": "merge_sphinx_config"},
+    )
+    assert url is not None
+    assert "/src/gp_sphinx/config.py" in url
 
 
 def test_merge_sphinx_config_release_matches_version() -> None:

@@ -1,8 +1,10 @@
-"""Tests for gp_sphinx.theme module."""
+"""Tests for sphinx_gptheme package."""
 
 from __future__ import annotations
 
-from gp_sphinx.theme import get_theme_path
+import pathlib
+
+from sphinx_gptheme import get_theme_path, setup
 
 
 def test_theme_path_exists() -> None:
@@ -44,3 +46,27 @@ def test_theme_static_custom_css_exists() -> None:
 def test_theme_static_spa_nav_js_exists() -> None:
     """SPA navigation JS is bundled in theme static."""
     assert (get_theme_path() / "static" / "js" / "spa-nav.js").is_file()
+
+
+def test_theme_setup_registers_theme() -> None:
+    """setup() registers the theme with Sphinx."""
+
+    class FakeApp:
+        def __init__(self) -> None:
+            self.calls: list[tuple[str, pathlib.Path]] = []
+
+        def add_html_theme(self, name: str, theme_path: pathlib.Path) -> None:
+            self.calls.append((name, theme_path))
+
+    app = FakeApp()
+    metadata = setup(app)  # type: ignore[arg-type]
+    assert app.calls == [("sphinx-gptheme", get_theme_path())]
+    assert metadata["parallel_read_safe"] is True
+    assert metadata["parallel_write_safe"] is True
+
+
+def test_theme_conf_loads_bundled_css_files() -> None:
+    """Theme configuration includes the bundled CSS files."""
+    conf = (get_theme_path() / "theme.conf").read_text()
+    assert "css/custom.css" in conf
+    assert "css/argparse-highlight.css" in conf

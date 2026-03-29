@@ -15,7 +15,7 @@ import typing as t
 import pytest
 from docutils import nodes
 
-from gp_sphinx.ext.argparse.exemplar import (  # type: ignore[import-not-found]
+from sphinx_argparse_neo.exemplar import (  # type: ignore[import-not-found]
     ExemplarConfig,
     _is_examples_section,
     _is_usage_block,

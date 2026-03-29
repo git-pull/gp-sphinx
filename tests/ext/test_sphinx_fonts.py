@@ -10,7 +10,7 @@ import urllib.error
 
 import pytest
 
-from gp_sphinx import sphinx_fonts
+import sphinx_fonts
 
 # --- _cache_dir tests ---
 
@@ -108,7 +108,7 @@ def test_download_font_cached(
     dest = tmp_path / "font.woff2"
     dest.write_bytes(b"cached-data")
 
-    with caplog.at_level(logging.DEBUG, logger="gp_sphinx.sphinx_fonts"):
+    with caplog.at_level(logging.DEBUG, logger="sphinx_fonts"):
         result = sphinx_fonts._download_font("https://example.com/font.woff2", dest)
 
     assert result is True
@@ -128,11 +128,9 @@ def test_download_font_success(
         pathlib.Path(filename).write_bytes(b"font-data")
         return (str(filename), None)
 
-    monkeypatch.setattr(
-        "gp_sphinx.sphinx_fonts.urllib.request.urlretrieve", fake_urlretrieve
-    )
+    monkeypatch.setattr("sphinx_fonts.urllib.request.urlretrieve", fake_urlretrieve)
 
-    with caplog.at_level(logging.INFO, logger="gp_sphinx.sphinx_fonts"):
+    with caplog.at_level(logging.INFO, logger="sphinx_fonts"):
         result = sphinx_fonts._download_font("https://example.com/font.woff2", dest)
 
     assert result is True
@@ -153,11 +151,9 @@ def test_download_font_url_error(
     def fake_urlretrieve(url: str, filename: t.Any) -> t.NoReturn:
         raise urllib.error.URLError(msg)
 
-    monkeypatch.setattr(
-        "gp_sphinx.sphinx_fonts.urllib.request.urlretrieve", fake_urlretrieve
-    )
+    monkeypatch.setattr("sphinx_fonts.urllib.request.urlretrieve", fake_urlretrieve)
 
-    with caplog.at_level(logging.WARNING, logger="gp_sphinx.sphinx_fonts"):
+    with caplog.at_level(logging.WARNING, logger="sphinx_fonts"):
         result = sphinx_fonts._download_font("https://example.com/font.woff2", dest)
 
     assert result is False
@@ -178,11 +174,9 @@ def test_download_font_os_error(
     def fake_urlretrieve(url: str, filename: t.Any) -> t.NoReturn:
         raise OSError(msg)
 
-    monkeypatch.setattr(
-        "gp_sphinx.sphinx_fonts.urllib.request.urlretrieve", fake_urlretrieve
-    )
+    monkeypatch.setattr("sphinx_fonts.urllib.request.urlretrieve", fake_urlretrieve)
 
-    with caplog.at_level(logging.WARNING, logger="gp_sphinx.sphinx_fonts"):
+    with caplog.at_level(logging.WARNING, logger="sphinx_fonts"):
         result = sphinx_fonts._download_font("https://example.com/font.woff2", dest)
 
     assert result is False
@@ -203,9 +197,7 @@ def test_download_font_partial_file_cleanup(
         pathlib.Path(filename).write_bytes(b"partial")
         raise OSError(msg)
 
-    monkeypatch.setattr(
-        "gp_sphinx.sphinx_fonts.urllib.request.urlretrieve", fake_urlretrieve
-    )
+    monkeypatch.setattr("sphinx_fonts.urllib.request.urlretrieve", fake_urlretrieve)
 
     result = sphinx_fonts._download_font("https://example.com/font.woff2", dest)
 
@@ -259,7 +251,7 @@ def test_on_builder_inited_with_fonts(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """_on_builder_inited processes fonts and stores results on app."""
-    monkeypatch.setattr("gp_sphinx.sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
+    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
 
     fonts = [
         {
@@ -293,16 +285,14 @@ def test_on_builder_inited_download_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """_on_builder_inited skips font_faces entry on download failure."""
-    monkeypatch.setattr("gp_sphinx.sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
+    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
 
     msg = "offline"
 
     def fake_urlretrieve(url: str, filename: t.Any) -> t.NoReturn:
         raise urllib.error.URLError(msg)
 
-    monkeypatch.setattr(
-        "gp_sphinx.sphinx_fonts.urllib.request.urlretrieve", fake_urlretrieve
-    )
+    monkeypatch.setattr("sphinx_fonts.urllib.request.urlretrieve", fake_urlretrieve)
 
     fonts = [
         {
@@ -325,7 +315,7 @@ def test_on_builder_inited_explicit_subset(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """_on_builder_inited respects explicit subset in font config."""
-    monkeypatch.setattr("gp_sphinx.sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
+    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
 
     fonts = [
         {
@@ -353,7 +343,7 @@ def test_on_builder_inited_preload_match(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """_on_builder_inited builds preload_hrefs for matching preload specs."""
-    monkeypatch.setattr("gp_sphinx.sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
+    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
 
     fonts = [
         {
@@ -381,7 +371,7 @@ def test_on_builder_inited_preload_no_match(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """_on_builder_inited produces empty preload when family doesn't match."""
-    monkeypatch.setattr("gp_sphinx.sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
+    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
 
     fonts = [
         {
@@ -409,7 +399,7 @@ def test_on_builder_inited_fallbacks_and_variables(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """_on_builder_inited stores fallbacks and CSS variables on app."""
-    monkeypatch.setattr("gp_sphinx.sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
+    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
 
     fonts = [
         {
@@ -505,7 +495,7 @@ def test_setup_return_value() -> None:
     result = sphinx_fonts.setup(app)
 
     assert result == {
-        "version": "1.0",
+        "version": sphinx_fonts.__version__,
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }

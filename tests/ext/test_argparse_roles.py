@@ -7,7 +7,7 @@ import typing as t
 import pytest
 from docutils import nodes
 
-from gp_sphinx.ext.argparse.roles import (
+from sphinx_argparse_neo.roles import (
     cli_choice_role,
     cli_command_role,
     cli_default_role,

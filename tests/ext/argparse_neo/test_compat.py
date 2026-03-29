@@ -7,7 +7,7 @@ import typing as t
 
 import pytest
 
-from gp_sphinx.ext.argparse.neo.compat import (
+from sphinx_argparse_neo.compat import (
     MockModule,
     get_parser_from_entry_point,
     get_parser_from_module,

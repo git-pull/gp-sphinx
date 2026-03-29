@@ -14,9 +14,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: docs
-    strategy:
-      matrix:
-        python-version: ['3.14']
     steps:
       - uses: actions/checkout@v6
 
@@ -25,47 +22,45 @@ jobs:
         id: changes
         with:
           filters: |
-            root_docs:
-              - CHANGES
-              - README.*
-            docs:
+            publishable:
+              - 'README.*'
+              - 'CHANGES'
               - 'docs/**'
-              - 'examples/**'
-            python_files:
-              - 'src/gp_sphinx/**/*.py'
-              - pyproject.toml
-              - uv.lock
+              - 'packages/**'
+              - 'scripts/ci/**'
+              - '.github/workflows/docs.yml'
+              - '.github/workflows/tests.yml'
+              - 'pyproject.toml'
+              - 'uv.lock'
 
-      - name: Should publish
-        # if: steps.changes.outputs.docs == 'true' || steps.changes.outputs.root_docs == 'true' || steps.changes.outputs.python_files == 'true'
-        run: echo "PUBLISH=$(echo true)" >> $GITHUB_ENV
+      - name: Set up Python 3.14
+        if: steps.changes.outputs.publishable == 'true'
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
 
       - name: Install uv
+        if: steps.changes.outputs.publishable == 'true'
         uses: astral-sh/setup-uv@v7
-        if: env.PUBLISH == 'true'
         with:
           enable-cache: true
 
-      - name: Set up Python ${{ matrix.python-version }}
-        if: env.PUBLISH == 'true'
-        run: uv python install ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        if: env.PUBLISH == 'true'
-        run: uv sync --all-extras --dev
+      - name: Install workspace dependencies
+        if: steps.changes.outputs.publishable == 'true'
+        run: uv sync --all-packages --all-extras --group dev
 
       - name: Install just
-        if: env.PUBLISH == 'true'
+        if: steps.changes.outputs.publishable == 'true'
         uses: extractions/setup-just@v3
 
-      - name: Print python versions
-        if: env.PUBLISH == 'true'
+      - name: Print Python versions
+        if: steps.changes.outputs.publishable == 'true'
         run: |
           python -V
           uv run python -V
 
       - name: Cache sphinx fonts
-        if: env.PUBLISH == 'true'
+        if: steps.changes.outputs.publishable == 'true'
         uses: actions/cache@v5
         with:
           path: ~/.cache/sphinx-fonts
@@ -74,32 +69,31 @@ jobs:
             sphinx-fonts-
 
       - name: Build documentation
-        if: env.PUBLISH == 'true'
-        run: |
-          cd docs && just html
+        if: steps.changes.outputs.publishable == 'true'
+        run: uv run sphinx-build -W -b html docs docs/_build/html
 
       - name: Configure AWS Credentials
-        if: env.PUBLISH == 'true'
+        if: steps.changes.outputs.publishable == 'true'
         uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.GP_SPHINX_DOCS_ROLE_ARN }}
           aws-region: us-east-1
 
       - name: Push documentation to S3
-        if: env.PUBLISH == 'true'
+        if: steps.changes.outputs.publishable == 'true'
         run: |
           aws s3 sync docs/_build/html "s3://${{ secrets.GP_SPHINX_DOCS_BUCKET }}" \
             --delete --follow-symlinks
 
       - name: Invalidate CloudFront
-        if: env.PUBLISH == 'true'
+        if: steps.changes.outputs.publishable == 'true'
         run: |
           aws cloudfront create-invalidation \
             --distribution-id "${{ secrets.GP_SPHINX_DOCS_DISTRIBUTION }}" \
             --paths "/index.html" "/objects.inv" "/searchindex.js"
 
       - name: Purge cache on Cloudflare
-        if: env.PUBLISH == 'true'
+        if: steps.changes.outputs.publishable == 'true'
         uses: jakejarvis/cloudflare-purge-action@v0.3.0
         env:
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}

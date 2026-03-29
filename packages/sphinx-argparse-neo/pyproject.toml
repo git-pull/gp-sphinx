@@ -1,0 +1,42 @@
+[project]
+name = "sphinx-argparse-neo"
+version = "0.0.1a0"
+description = "Modern Sphinx extension for documenting argparse-based CLI tools"
+requires-python = ">=3.10,<4.0"
+authors = [
+  {name = "Tony Narlock", email = "tony@git-pull.com"}
+]
+license = { text = "MIT" }
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: MIT License",
+  "Framework :: Sphinx",
+  "Framework :: Sphinx :: Extension",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Documentation",
+  "Topic :: Documentation :: Sphinx",
+  "Topic :: Software Development :: Documentation",
+]
+readme = "README.md"
+keywords = ["sphinx", "argparse", "cli", "documentation"]
+dependencies = [
+  "sphinx",
+  "pygments",
+  "docutils",
+]
+
+[project.urls]
+Repository = "https://github.com/git-pull/gp-sphinx"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sphinx_argparse_neo"]
