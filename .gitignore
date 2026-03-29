@@ -215,6 +215,9 @@ docs/_static/css/fonts.css
 **/CLAUDE.*.md
 **/.claude/settings.local.json
 
+# Playwright MCP
+.playwright-mcp/
+
 # Misc
 .vim/
 *.lprof
