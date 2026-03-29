@@ -197,14 +197,21 @@ def _run(
     cmd_env = os.environ.copy()
     if env:
         cmd_env.update(env)
-    return subprocess.run(
-        args,
-        check=True,
-        cwd=str(cwd) if cwd else None,
-        env=cmd_env,
-        text=True,
-        capture_output=True,
-    )
+    try:
+        return subprocess.run(
+            args,
+            check=True,
+            cwd=str(cwd) if cwd else None,
+            env=cmd_env,
+            text=True,
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        if exc.stdout:
+            sys.stdout.write(exc.stdout)
+        if exc.stderr:
+            sys.stderr.write(exc.stderr)
+        raise
 
 
 def _create_venv(tmpdir: pathlib.Path) -> pathlib.Path:
@@ -379,6 +386,9 @@ def smoke_gp_sphinx(dist_dir: pathlib.Path, version: str) -> None:
         tmpdir = pathlib.Path(tmp)
         docs_dir = tmpdir / "docs"
         docs_dir.mkdir()
+        # Create the standard project directories that merge_sphinx_config() expects
+        (docs_dir / "_static").mkdir()
+        (docs_dir / "_templates").mkdir()
         (docs_dir / "conf.py").write_text(
             textwrap.dedent(
                 """
