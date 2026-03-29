@@ -363,6 +363,7 @@ def merge_sphinx_config(
         # Core
         "project": project,
         "version": version,
+        "release": version,
         "copyright": copyright,
         "extensions": ext_list,
         "master_doc": "index",
@@ -464,11 +465,13 @@ def remove_tabs_js(app: Sphinx, exc: Exception | None) -> None:
 def setup(app: Sphinx) -> None:
     """Configure Sphinx app hooks for gp-sphinx workarounds.
 
-    Connects the ``remove_tabs_js`` post-build hook.
+    Registers the bundled ``spa-nav.js`` script and connects the
+    ``remove_tabs_js`` post-build hook.
 
     Parameters
     ----------
     app : Sphinx
         The Sphinx application object.
     """
+    app.add_js_file("js/spa-nav.js", loading_method="defer")
     app.connect("build-finished", remove_tabs_js)

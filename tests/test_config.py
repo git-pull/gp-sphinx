@@ -359,7 +359,7 @@ def test_merge_sphinx_config_napoleon_defaults() -> None:
         copyright="2026",
     )
     assert result["napoleon_google_docstring"] is True
-    assert result["napoleon_include_init_with_doc"] is True
+    assert result["napoleon_include_init_with_doc"] is False
 
 
 def test_merge_sphinx_config_copybutton_continuation() -> None:
@@ -383,3 +383,13 @@ def test_merge_sphinx_config_html_paths() -> None:
     assert result["html_static_path"] == ["_static"]
     assert result["html_favicon"] == "_static/favicon.ico"
     assert result["html_extra_path"] == ["manifest.json"]
+
+
+def test_merge_sphinx_config_release_matches_version() -> None:
+    """Release defaults to version string."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.2.3",
+        copyright="2026",
+    )
+    assert result["release"] == "1.2.3"

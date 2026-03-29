@@ -289,8 +289,12 @@ Examples
 DEFAULT_NAPOLEON_GOOGLE_DOCSTRING: bool = True
 """Enable Google-style docstring parsing in napoleon."""
 
-DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC: bool = True
-"""Include __init__ docstring in class documentation."""
+DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC: bool = False
+"""Include __init__ docstring in class documentation.
+
+Default is ``False`` to match napoleon's built-in default. Most downstream
+projects never set this explicitly, so ``True`` would change rendered output.
+"""
 
 DEFAULT_COPYBUTTON_LINE_CONTINUATION_CHARACTER: str = "\\"
 """Line continuation character for sphinx-copybutton."""
