@@ -299,6 +299,18 @@ projects never set this explicitly, so ``True`` would change rendered output.
 DEFAULT_COPYBUTTON_LINE_CONTINUATION_CHARACTER: str = "\\"
 """Line continuation character for sphinx-copybutton."""
 
+DEFAULT_TOC_OBJECT_ENTRIES_SHOW_PARENTS: str = "hide"
+"""Hide parent module path in TOC object entries.
+
+Keeps the API reference sidebar clean by showing only the object name
+(e.g. ``merge_sphinx_config``) instead of the full dotted path.
+
+Examples
+--------
+>>> DEFAULT_TOC_OBJECT_ENTRIES_SHOW_PARENTS
+'hide'
+"""
+
 DEFAULT_SUPPRESS_WARNINGS: list[str] = [
     "sphinx_autodoc_typehints.forward_reference",
 ]

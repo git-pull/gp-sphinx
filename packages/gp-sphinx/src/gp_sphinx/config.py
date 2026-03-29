@@ -59,6 +59,7 @@ from gp_sphinx.defaults import (
     DEFAULT_SUPPRESS_WARNINGS,
     DEFAULT_THEME,
     DEFAULT_THEME_OPTIONS,
+    DEFAULT_TOC_OBJECT_ENTRIES_SHOW_PARENTS,
 )
 
 if t.TYPE_CHECKING:
@@ -67,9 +68,6 @@ if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
 logger = logging.getLogger(__name__)
-
-ASSETS_DIR = pathlib.Path(__file__).parent / "assets"
-"""Path to bundled static assets (spa-nav.js, etc.)."""
 
 
 def deep_merge(base: dict[str, t.Any], override: dict[str, t.Any]) -> dict[str, t.Any]:
@@ -390,7 +388,7 @@ def merge_sphinx_config(
         "autodoc_member_order": DEFAULT_AUTODOC_MEMBER_ORDER,
         "autodoc_class_signature": DEFAULT_AUTODOC_CLASS_SIGNATURE,
         "autodoc_typehints": DEFAULT_AUTODOC_TYPEHINTS,
-        "toc_object_entries_show_parents": "hide",
+        "toc_object_entries_show_parents": DEFAULT_TOC_OBJECT_ENTRIES_SHOW_PARENTS,
         "autodoc_default_options": dict(DEFAULT_AUTODOC_OPTIONS),
         # Napoleon
         "napoleon_google_docstring": DEFAULT_NAPOLEON_GOOGLE_DOCSTRING,

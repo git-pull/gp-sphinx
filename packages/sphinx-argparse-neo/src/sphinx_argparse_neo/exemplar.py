@@ -1299,7 +1299,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_lexer("argparse-help", ArgparseHelpLexer)
 
     # Register CLI inline roles for documentation
-    from argparse_roles import register_roles
+    from sphinx_argparse_neo.roles import register_roles
 
     register_roles()
 
