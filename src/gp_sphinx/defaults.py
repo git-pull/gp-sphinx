@@ -277,6 +277,24 @@ Examples
 'separated'
 """
 
+DEFAULT_AUTODOC_TYPEHINTS: str = "description"
+"""Show type hints in doc body instead of signature.
+
+Examples
+--------
+>>> DEFAULT_AUTODOC_TYPEHINTS
+'description'
+"""
+
+DEFAULT_NAPOLEON_GOOGLE_DOCSTRING: bool = True
+"""Enable Google-style docstring parsing in napoleon."""
+
+DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC: bool = True
+"""Include __init__ docstring in class documentation."""
+
+DEFAULT_COPYBUTTON_LINE_CONTINUATION_CHARACTER: str = "\\"
+"""Line continuation character for sphinx-copybutton."""
+
 DEFAULT_SUPPRESS_WARNINGS: list[str] = [
     "sphinx_autodoc_typehints.forward_reference",
 ]

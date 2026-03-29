@@ -39,12 +39,16 @@ from gp_sphinx.defaults import (
     DEFAULT_AUTODOC_CLASS_SIGNATURE,
     DEFAULT_AUTODOC_MEMBER_ORDER,
     DEFAULT_AUTODOC_OPTIONS,
+    DEFAULT_AUTODOC_TYPEHINTS,
+    DEFAULT_COPYBUTTON_LINE_CONTINUATION_CHARACTER,
     DEFAULT_COPYBUTTON_PROMPT_IS_REGEXP,
     DEFAULT_COPYBUTTON_PROMPT_TEXT,
     DEFAULT_COPYBUTTON_REMOVE_PROMPTS,
     DEFAULT_EXTENSIONS,
     DEFAULT_MYST_EXTENSIONS,
     DEFAULT_MYST_HEADING_ANCHORS,
+    DEFAULT_NAPOLEON_GOOGLE_DOCSTRING,
+    DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC,
     DEFAULT_PYGMENTS_DARK_STYLE,
     DEFAULT_PYGMENTS_STYLE,
     DEFAULT_SOURCE_SUFFIX,
@@ -368,6 +372,11 @@ def merge_sphinx_config(
         "html_theme": DEFAULT_THEME,
         "html_theme_path": [],
         "html_theme_options": merged_theme_options,
+        # HTML paths
+        "templates_path": ["_templates"],
+        "html_static_path": ["_static"],
+        "html_favicon": "_static/favicon.ico",
+        "html_extra_path": ["manifest.json"],
         # Pygments
         "pygments_style": DEFAULT_PYGMENTS_STYLE,
         "pygments_dark_style": DEFAULT_PYGMENTS_DARK_STYLE,
@@ -383,12 +392,19 @@ def merge_sphinx_config(
         "autoclass_content": DEFAULT_AUTOCLASS_CONTENT,
         "autodoc_member_order": DEFAULT_AUTODOC_MEMBER_ORDER,
         "autodoc_class_signature": DEFAULT_AUTODOC_CLASS_SIGNATURE,
+        "autodoc_typehints": DEFAULT_AUTODOC_TYPEHINTS,
         "toc_object_entries_show_parents": "hide",
         "autodoc_default_options": dict(DEFAULT_AUTODOC_OPTIONS),
+        # Napoleon
+        "napoleon_google_docstring": DEFAULT_NAPOLEON_GOOGLE_DOCSTRING,
+        "napoleon_include_init_with_doc": DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC,
         # Copybutton
         "copybutton_prompt_text": DEFAULT_COPYBUTTON_PROMPT_TEXT,
         "copybutton_prompt_is_regexp": DEFAULT_COPYBUTTON_PROMPT_IS_REGEXP,
         "copybutton_remove_prompts": DEFAULT_COPYBUTTON_REMOVE_PROMPTS,
+        "copybutton_line_continuation_character": (
+            DEFAULT_COPYBUTTON_LINE_CONTINUATION_CHARACTER
+        ),
         # Rediraffe
         "rediraffe_redirects": "redirects.txt",
         "rediraffe_branch": "master~1",

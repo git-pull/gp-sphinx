@@ -24,6 +24,5 @@ conf = merge_sphinx_config(
         "py": ("https://docs.python.org/", None),
         "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
     },
-    html_extra_path=["manifest.json"],
 )
 globals().update(conf)

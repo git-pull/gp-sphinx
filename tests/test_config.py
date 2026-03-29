@@ -339,3 +339,47 @@ def test_merge_sphinx_config_override_auto_computed() -> None:
         issue_url_tpl="https://custom.example.com/{issue_id}",
     )
     assert result["issue_url_tpl"] == "https://custom.example.com/{issue_id}"
+
+
+def test_merge_sphinx_config_autodoc_typehints() -> None:
+    """Default autodoc_typehints is 'description'."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["autodoc_typehints"] == "description"
+
+
+def test_merge_sphinx_config_napoleon_defaults() -> None:
+    """Default napoleon settings are present."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["napoleon_google_docstring"] is True
+    assert result["napoleon_include_init_with_doc"] is True
+
+
+def test_merge_sphinx_config_copybutton_continuation() -> None:
+    """Default copybutton line continuation character is backslash."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["copybutton_line_continuation_character"] == "\\"
+
+
+def test_merge_sphinx_config_html_paths() -> None:
+    """Default HTML paths are set."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["templates_path"] == ["_templates"]
+    assert result["html_static_path"] == ["_static"]
+    assert result["html_favicon"] == "_static/favicon.ico"
+    assert result["html_extra_path"] == ["manifest.json"]
