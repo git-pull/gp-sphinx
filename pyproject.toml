@@ -42,6 +42,7 @@ dev = [
   "tomli; python_version < '3.11'",
   "typing-extensions",
   "types-docutils",
+  "types-Pygments",
 ]
 
 [build-system]
@@ -60,18 +61,11 @@ files = [
 ]
 
 [[tool.mypy.overrides]]
-module = ["sphinx_fonts"]
+# sphinx_fonts sets private attributes on Sphinx's app object (app._font_preload_hrefs,
+# _font_faces, etc.) which aren't declared in sphinx's type stubs.
+# The test file also accesses these dynamically-added attrs, so it needs the same suppression.
+module = ["sphinx_fonts", "tests.ext.test_sphinx_fonts"]
 disable_error_code = ["attr-defined", "unused-ignore"]
-
-[[tool.mypy.overrides]]
-module = ["sphinx_argparse_neo.*"]
-strict = false
-ignore_errors = true
-
-[[tool.mypy.overrides]]
-module = ["tests.ext.*"]
-strict = false
-ignore_errors = true
 
 [tool.ruff]
 target-version = "py310"

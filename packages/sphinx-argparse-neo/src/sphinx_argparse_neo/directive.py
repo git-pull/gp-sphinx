@@ -124,13 +124,14 @@ class ArgparseDirective(SphinxDirective):
 
         # Navigate to subparser if path specified
         if "path" in self.options:
-            parser = self._navigate_to_subparser(parser, self.options["path"])
-            if parser is None:
+            maybe_parser = self._navigate_to_subparser(parser, self.options["path"])
+            if maybe_parser is None:
                 error = self.state_machine.reporter.error(
                     f"Subparser path not found: {self.options['path']}",
                     line=self.lineno,
                 )
                 return [error]
+            parser = maybe_parser
 
         # Build render config from directive options and Sphinx config
         config = self._build_render_config()
@@ -176,7 +177,7 @@ class ArgparseDirective(SphinxDirective):
 
         # Render to nodes
         renderer = ArgparseRenderer(config=config, state=self.state)
-        return t.cast(list[nodes.Node], renderer.render(parser_info))
+        return renderer.render(parser_info)
 
     def _build_render_config(self) -> RenderConfig:
         """Build RenderConfig from directive and Sphinx config options.

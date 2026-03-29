@@ -9,6 +9,7 @@ import typing as t
 import urllib.error
 
 import pytest
+from sphinx.application import Sphinx
 
 import sphinx_fonts
 
@@ -216,7 +217,7 @@ def _make_app(
     preload: list[tuple[str, int, str]] | None = None,
     fallbacks: list[dict[str, str]] | None = None,
     variables: dict[str, str] | None = None,
-) -> types.SimpleNamespace:
+) -> Sphinx:
     """Create a fake Sphinx app namespace for testing."""
     config = types.SimpleNamespace(
         sphinx_fonts=fonts if fonts is not None else [],
@@ -225,10 +226,13 @@ def _make_app(
         sphinx_font_css_variables=variables if variables is not None else {},
     )
     builder = types.SimpleNamespace(format=builder_format)
-    return types.SimpleNamespace(
-        builder=builder,
-        config=config,
-        outdir=str(tmp_path / "output"),
+    return t.cast(
+        Sphinx,
+        types.SimpleNamespace(
+            builder=builder,
+            config=config,
+            outdir=str(tmp_path / "output"),
+        ),
     )
 
 
@@ -429,18 +433,21 @@ def test_on_builder_inited_fallbacks_and_variables(
 
 def test_on_html_page_context_with_attrs() -> None:
     """_on_html_page_context injects font data from app attributes."""
-    app = types.SimpleNamespace(
-        _font_preload_hrefs=["font-400.woff2"],
-        _font_faces=[
-            {
-                "family": "Inter",
-                "weight": "400",
-                "style": "normal",
-                "filename": "font-400.woff2",
-            },
-        ],
-        _font_fallbacks=[{"family": "system-ui"}],
-        _font_css_variables={"--font-body": "Inter"},
+    app = t.cast(
+        Sphinx,
+        types.SimpleNamespace(
+            _font_preload_hrefs=["font-400.woff2"],
+            _font_faces=[
+                {
+                    "family": "Inter",
+                    "weight": "400",
+                    "style": "normal",
+                    "filename": "font-400.woff2",
+                },
+            ],
+            _font_fallbacks=[{"family": "system-ui"}],
+            _font_css_variables={"--font-body": "Inter"},
+        ),
     )
     context: dict[str, t.Any] = {}
 
@@ -460,7 +467,7 @@ def test_on_html_page_context_with_attrs() -> None:
 
 def test_on_html_page_context_without_attrs() -> None:
     """_on_html_page_context uses defaults when app attrs are missing."""
-    app = types.SimpleNamespace()
+    app = t.cast(Sphinx, types.SimpleNamespace())
     context: dict[str, t.Any] = {}
 
     sphinx_fonts._on_html_page_context(
@@ -485,11 +492,14 @@ def test_setup_return_value() -> None:
     config_values: list[tuple[str, t.Any, str]] = []
     connections: list[tuple[str, t.Any]] = []
 
-    app = types.SimpleNamespace(
-        add_config_value=lambda name, default, rebuild: config_values.append(
-            (name, default, rebuild)
+    app = t.cast(
+        Sphinx,
+        types.SimpleNamespace(
+            add_config_value=lambda name, default, rebuild: config_values.append(
+                (name, default, rebuild)
+            ),
+            connect=lambda event, handler: connections.append((event, handler)),
         ),
-        connect=lambda event, handler: connections.append((event, handler)),
     )
 
     result = sphinx_fonts.setup(app)
@@ -506,11 +516,14 @@ def test_setup_config_values() -> None:
     config_values: list[tuple[str, t.Any, str]] = []
     connections: list[tuple[str, t.Any]] = []
 
-    app = types.SimpleNamespace(
-        add_config_value=lambda name, default, rebuild: config_values.append(
-            (name, default, rebuild)
+    app = t.cast(
+        Sphinx,
+        types.SimpleNamespace(
+            add_config_value=lambda name, default, rebuild: config_values.append(
+                (name, default, rebuild)
+            ),
+            connect=lambda event, handler: connections.append((event, handler)),
         ),
-        connect=lambda event, handler: connections.append((event, handler)),
     )
 
     sphinx_fonts.setup(app)
@@ -528,11 +541,14 @@ def test_setup_event_connections() -> None:
     config_values: list[tuple[str, t.Any, str]] = []
     connections: list[tuple[str, t.Any]] = []
 
-    app = types.SimpleNamespace(
-        add_config_value=lambda name, default, rebuild: config_values.append(
-            (name, default, rebuild)
+    app = t.cast(
+        Sphinx,
+        types.SimpleNamespace(
+            add_config_value=lambda name, default, rebuild: config_values.append(
+                (name, default, rebuild)
+            ),
+            connect=lambda event, handler: connections.append((event, handler)),
         ),
-        connect=lambda event, handler: connections.append((event, handler)),
     )
 
     sphinx_fonts.setup(app)

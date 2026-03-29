@@ -22,6 +22,7 @@ classifiers = [
   "Topic :: Documentation",
   "Topic :: Documentation :: Sphinx",
   "Topic :: Software Development :: Documentation",
+  "Typing :: Typed",
 ]
 readme = "README.md"
 keywords = ["sphinx", "argparse", "cli", "documentation"]

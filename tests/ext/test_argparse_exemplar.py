@@ -15,7 +15,7 @@ import typing as t
 import pytest
 from docutils import nodes
 
-from sphinx_argparse_neo.exemplar import (  # type: ignore[import-not-found]
+from sphinx_argparse_neo.exemplar import (
     ExemplarConfig,
     _is_examples_section,
     _is_usage_block,
@@ -798,8 +798,11 @@ def test_reorder_nodes_multiple_examples_sections() -> None:
     assert len(result) == 5
     assert isinstance(result[0], nodes.paragraph)
     assert isinstance(result[1], nodes.literal_block)
+    assert isinstance(result[2], nodes.Element)
     assert result[2]["ids"] == ["examples"]
+    assert isinstance(result[3], nodes.Element)
     assert result[3]["ids"] == ["machine-readable-output-examples"]
+    assert isinstance(result[4], nodes.Element)
     assert result[4]["ids"] == ["arguments"]
 
 

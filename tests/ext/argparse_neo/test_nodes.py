@@ -433,8 +433,8 @@ def render_argument_to_html(
     node["id_prefix"] = id_prefix
 
     translator = MockTranslator()
-    visit_argparse_argument_html(translator, node)
-    depart_argparse_argument_html(translator, node)
+    visit_argparse_argument_html(translator, node)  # type: ignore[arg-type]
+    depart_argparse_argument_html(translator, node)  # type: ignore[arg-type]
 
     return "".join(translator.body)
 

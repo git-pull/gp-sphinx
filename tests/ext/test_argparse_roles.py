@@ -117,6 +117,7 @@ def test_cli_option_role_with_options() -> None:
 
     assert len(node_list) == 1
     # Options are normalized but classes come from role logic
+    assert isinstance(node_list[0], nodes.Element)
     assert "cli-option" in node_list[0]["classes"]
 
 
@@ -422,6 +423,7 @@ def test_cli_option_role_empty_text() -> None:
     assert len(node_list) == 1
     assert node_list[0].astext() == ""
     # No dash prefix, so only base class
+    assert isinstance(node_list[0], nodes.Element)
     assert node_list[0]["classes"] == ["cli-option"]
 
 
@@ -437,4 +439,5 @@ def test_cli_option_role_special_characters() -> None:
 
     assert len(node_list) == 1
     assert node_list[0].astext() == "--foo-bar_baz"
+    assert isinstance(node_list[0], nodes.Element)
     assert "cli-option-long" in node_list[0]["classes"]
