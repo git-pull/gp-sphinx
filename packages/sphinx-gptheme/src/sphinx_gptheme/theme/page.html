@@ -67,12 +67,12 @@
   <meta name="apple-mobile-web-app-title" content="{{ theme_project_name }}">
 
   <link rel="apple-touch-icon" sizes="192x192" href="/_static/img/icons/icon-192x192.png">
-  {%- if theme_mask_icon %}
-  <link rel="mask-icon" href="{{ theme_mask_icon }}" color="grey">
-  {%- endif %}
 
   <!-- Microsoft -->
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/_static/img/icons/ms-icon-144x144.png">
   {% endif -%}
+  {%- if theme_mask_icon %}
+  <link rel="mask-icon" href="{{ theme_mask_icon }}" color="grey">
+  {%- endif %}
 {% endblock %}
