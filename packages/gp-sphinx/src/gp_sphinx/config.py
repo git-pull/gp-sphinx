@@ -29,10 +29,10 @@ import contextlib
 import copy
 import inspect
 import logging
+import os.path
 import pathlib
 import types
 import typing as t
-from os.path import relpath
 
 from gp_sphinx.defaults import (
     DEFAULT_AUTOCLASS_CONTENT,
@@ -192,7 +192,7 @@ def make_linkcode_resolve(
         if pkg_file is None:
             return None
         package_root = pathlib.Path(pkg_file).resolve().parent
-        fn = relpath(fn, start=package_root.parent)
+        fn = os.path.relpath(fn, start=package_root.parent)
 
         version = getattr(package_module, "__version__", "")
         if "dev" in version:
