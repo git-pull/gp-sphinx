@@ -217,10 +217,15 @@ class ExemplarConfig:
 
         Examples
         --------
-        This is typically called from a directive's run() method:
+        Uses getattr with defaults, so any object with optional attributes works:
 
-        >>> # In CleanArgParseDirective.run():
-        >>> # config = ExemplarConfig.from_sphinx_config(self.env.config)
+        >>> import types
+        >>> mock_config = types.SimpleNamespace()
+        >>> cfg = ExemplarConfig.from_sphinx_config(mock_config)
+        >>> cfg.examples_term_suffix
+        'examples'
+        >>> cfg.command_prefix
+        '$ '
         """
         # Get code_classes as tuple (Sphinx stores lists)
         code_classes_raw = getattr(
