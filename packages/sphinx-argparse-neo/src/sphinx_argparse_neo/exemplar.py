@@ -109,6 +109,7 @@ import typing as t
 
 from docutils import nodes
 
+from sphinx_argparse_neo import __version__
 from sphinx_argparse_neo.directive import ArgparseDirective
 from sphinx_argparse_neo.utils import strip_ansi
 
@@ -1311,4 +1312,8 @@ def setup(app: Sphinx) -> SetupDict:
 
     register_roles()
 
-    return {"version": "4.0", "parallel_read_safe": True, "parallel_write_safe": True}
+    return {
+        "version": __version__,
+        "parallel_read_safe": True,
+        "parallel_write_safe": True,
+    }
