@@ -24,6 +24,7 @@ if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 __version__ = "0.0.1a0"
 
 CDN_TEMPLATE = (
