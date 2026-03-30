@@ -116,7 +116,7 @@ convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
 "*/__init__.py" = ["F401"]
-"packages/sphinx-argparse-neo/**/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
+"packages/sphinx-argparse-neo/**/*.py" = ["E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/argparse_neo/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 
