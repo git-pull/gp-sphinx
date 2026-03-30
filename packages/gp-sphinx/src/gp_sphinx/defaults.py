@@ -190,24 +190,6 @@ DEFAULT_PYGMENTS_STYLE: str = "monokai"
 DEFAULT_PYGMENTS_DARK_STYLE: str = "monokai"
 """Default Pygments syntax highlighting style for dark mode."""
 
-DEFAULT_SIDEBARS: dict[str, list[str]] = {
-    "**": [
-        "sidebar/scroll-start.html",
-        "sidebar/brand.html",
-        "sidebar/search.html",
-        "sidebar/navigation.html",
-        "sidebar/projects.html",
-        "sidebar/scroll-end.html",
-    ],
-}
-"""Default sidebar configuration for Furo theme.
-
-Examples
---------
->>> len(DEFAULT_SIDEBARS["**"])
-6
-"""
-
 DEFAULT_SPHINX_FONTS: list[FontConfig] = [
     {
         "family": "IBM Plex Sans",
