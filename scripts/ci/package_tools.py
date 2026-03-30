@@ -91,7 +91,13 @@ def workspace_packages(root: pathlib.Path | None = None) -> dict[str, WorkspaceP
         data = _load_toml(pyproject_path)
         project = data["project"]
         src_dir = pyproject_path.parent / "src"
-        module_dir = next(path for path in src_dir.iterdir() if path.is_dir())
+        module_dir = next(
+            (path for path in src_dir.iterdir() if path.is_dir()),
+            None,
+        )
+        if module_dir is None:
+            msg = f"No module directory found in {src_dir}"
+            raise ValueError(msg)
         package = WorkspacePackage(
             name=project["name"],
             version=project["version"],
