@@ -12,6 +12,7 @@ members = [
     "gp-sphinx",
     "gp-sphinx-workspace",
     "sphinx-argparse-neo",
+    "sphinx-autodoc-pytest-fixtures",
     "sphinx-fonts",
     "sphinx-gptheme",
 ]
@@ -462,6 +463,7 @@ dev = [
     { name = "sphinx-argparse-neo" },
     { name = "sphinx-autobuild", version = "2024.10.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx-autobuild", version = "2025.8.25", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "sphinx-autodoc-pytest-fixtures" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
     { name = "types-docutils" },
     { name = "types-pygments" },
@@ -485,6 +487,7 @@ dev = [
     { name = "ruff" },
     { name = "sphinx-argparse-neo", editable = "packages/sphinx-argparse-neo" },
     { name = "sphinx-autobuild" },
+    { name = "sphinx-autodoc-pytest-fixtures", editable = "packages/sphinx-autodoc-pytest-fixtures" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
     { name = "types-docutils" },
     { name = "types-pygments" },
@@ -1239,6 +1242,22 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/e0/3c/a59a3a453d4133777f7ed2e83c80b7dc817d43c74b74298ca0af869662ad/sphinx_autobuild-2025.8.25.tar.gz", hash = "sha256:9cf5aab32853c8c31af572e4fecdc09c997e2b8be5a07daf2a389e270e85b213", size = 15200, upload-time = "2025-08-25T18:44:55.436Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d7/20/56411b52f917696995f5ad27d2ea7e9492c84a043c5b49a3a3173573cd93/sphinx_autobuild-2025.8.25-py3-none-any.whl", hash = "sha256:b750ac7d5a18603e4665294323fd20f6dcc0a984117026d1986704fa68f0379a", size = 12535, upload-time = "2025-08-25T18:44:54.164Z" },
+]
+
+[[package]]
+name = "sphinx-autodoc-pytest-fixtures"
+version = "0.0.1a0"
+source = { editable = "packages/sphinx-autodoc-pytest-fixtures" }
+dependencies = [
+    { name = "pytest" },
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "pytest" },
+    { name = "sphinx" },
 ]
 
 [[package]]

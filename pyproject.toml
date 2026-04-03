@@ -19,12 +19,14 @@ members = ["packages/*"]
 sphinx-fonts = { workspace = true }
 sphinx-gptheme = { workspace = true }
 sphinx-argparse-neo = { workspace = true }
+sphinx-autodoc-pytest-fixtures = { workspace = true }
 gp-sphinx = { workspace = true }
 
 [dependency-groups]
 dev = [
   "gp-sphinx",
   "sphinx-argparse-neo",
+  "sphinx-autodoc-pytest-fixtures",
   # Docs
   "sphinx-autobuild",
   # Testing
@@ -67,6 +69,12 @@ files = [
 module = ["sphinx_fonts", "tests.ext.test_sphinx_fonts"]
 disable_error_code = ["attr-defined", "unused-ignore"]
 
+[[tool.mypy.overrides]]
+# sphinx_autodoc_pytest_fixtures: not yet typed strictly; ignore_errors is temporary
+# until targeted disable_error_code can replace it.
+module = ["sphinx_autodoc_pytest_fixtures", "sphinx_autodoc_pytest_fixtures.*", "tests.ext.pytest_fixtures.*"]
+ignore_errors = true
+
 [tool.ruff]
 target-version = "py310"
 
@@ -105,6 +113,7 @@ known-first-party = [
   "sphinx_fonts",
   "sphinx_gptheme",
   "sphinx_argparse_neo",
+  "sphinx_autodoc_pytest_fixtures",
 ]
 combine-as-imports = true
 required-imports = [
@@ -117,12 +126,17 @@ convention = "numpy"
 [tool.ruff.lint.per-file-ignores]
 "*/__init__.py" = ["F401"]
 "packages/sphinx-argparse-neo/**/*.py" = ["E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
+"packages/sphinx-autodoc-pytest-fixtures/**/*.py" = ["D417", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/argparse_neo/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
+"tests/ext/pytest_fixtures/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 
 [tool.pytest.ini_options]
-addopts = "--tb=short --no-header --showlocals --doctest-modules --ignore=packages/sphinx-argparse-neo"
+addopts = "--tb=short --no-header --showlocals --doctest-modules --ignore=packages/sphinx-argparse-neo --ignore=packages/sphinx-autodoc-pytest-fixtures"
 doctest_optionflags = "ELLIPSIS NORMALIZE_WHITESPACE"
+markers = [
+  "integration: sphinx integration tests (require full sphinx build)",
+]
 testpaths = [
   "tests",
   "docs",
