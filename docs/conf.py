@@ -11,6 +11,10 @@ project_root = cwd.parent
 sys.path.insert(0, str(project_root / "packages" / "gp-sphinx" / "src"))
 sys.path.insert(0, str(project_root / "packages" / "sphinx-fonts" / "src"))
 sys.path.insert(0, str(project_root / "packages" / "sphinx-gptheme" / "src"))
+sys.path.insert(
+    0, str(project_root / "packages" / "sphinx-autodoc-pytest-fixtures" / "src")
+)
+sys.path.insert(0, str(cwd / "_ext"))  # spf_demo_fixtures for badge demo
 
 import gp_sphinx  # noqa: E402
 from gp_sphinx.config import merge_sphinx_config  # noqa: E402
@@ -22,6 +26,8 @@ conf = merge_sphinx_config(
     source_repository=f"{gp_sphinx.__github__}/",
     docs_url=gp_sphinx.__docs__,
     source_branch="master",
+    extra_extensions=["sphinx_autodoc_pytest_fixtures"],
+    pytest_fixture_lint_level="none",
     rediraffe_redirects="redirects.txt",
     intersphinx_mapping={
         "py": ("https://docs.python.org/", None),

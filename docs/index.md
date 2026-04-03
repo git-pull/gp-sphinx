@@ -51,6 +51,7 @@ globals().update(conf)
 :hidden:
 
 quickstart
+extensions/index
 project/index
 history
 ```
