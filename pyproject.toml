@@ -57,9 +57,11 @@ packages = ["src/gp_sphinx_workspace"]
 [tool.mypy]
 strict = true
 python_version = "3.10"
+mypy_path = "scripts/ci"
 files = [
   "packages/",
   "tests/",
+  "scripts/",
 ]
 
 [[tool.mypy.overrides]]
