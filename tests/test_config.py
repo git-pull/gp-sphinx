@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from gp_sphinx.config import deep_merge, merge_sphinx_config
+import gp_sphinx
+from gp_sphinx.config import deep_merge, make_linkcode_resolve, merge_sphinx_config
 from gp_sphinx.defaults import DEFAULT_EXTENSIONS, DEFAULT_MYST_EXTENSIONS
 
 
@@ -199,3 +200,220 @@ def test_deep_merge_override_wins() -> None:
     override = {"a": [3, 4], "c": "new"}
     result = deep_merge(base, override)
     assert result == {"a": [3, 4], "b": "hello", "c": "new"}
+
+
+def test_merge_sphinx_config_uses_gp_sphinx_theme() -> None:
+    """Default theme is gp-sphinx (Furo child theme)."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["html_theme"] == "sphinx-gptheme"
+
+
+def test_merge_sphinx_config_no_sidebars() -> None:
+    """Theme provides sidebars — config should not include html_sidebars."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert "html_sidebars" not in result
+
+
+def test_make_linkcode_resolve_returns_callable() -> None:
+    """make_linkcode_resolve returns a callable."""
+    resolver = make_linkcode_resolve(
+        gp_sphinx,
+        "https://github.com/git-pull/gp-sphinx",
+    )
+    assert callable(resolver)
+
+
+def test_make_linkcode_resolve_non_py_domain() -> None:
+    """Resolver returns None for non-Python domains."""
+    resolver = make_linkcode_resolve(
+        gp_sphinx,
+        "https://github.com/git-pull/gp-sphinx",
+    )
+    assert resolver("c", {"module": "gp_sphinx", "fullname": "foo"}) is None
+
+
+def test_merge_sphinx_config_autodoc_class_signature() -> None:
+    """Default autodoc_class_signature is 'separated'."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["autodoc_class_signature"] == "separated"
+
+
+def test_merge_sphinx_config_suppress_warnings() -> None:
+    """Default suppress_warnings includes autodoc_typehints forward_reference."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert "sphinx_autodoc_typehints.forward_reference" in result["suppress_warnings"]
+
+
+def test_merge_sphinx_config_linkcode_auto_added() -> None:
+    """sphinx.ext.linkcode auto-added when linkcode_resolve is provided."""
+    resolver = make_linkcode_resolve(
+        gp_sphinx,
+        "https://github.com/git-pull/gp-sphinx",
+    )
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        linkcode_resolve=resolver,
+    )
+    assert "sphinx.ext.linkcode" in result["extensions"]
+
+
+def test_merge_sphinx_config_no_linkcode_without_resolver() -> None:
+    """sphinx.ext.linkcode not in extensions when no resolver provided."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert "sphinx.ext.linkcode" not in result["extensions"]
+
+
+def test_merge_sphinx_config_auto_issue_url_tpl() -> None:
+    """issue_url_tpl auto-computed from source_repository."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        source_repository="https://github.com/org/test/",
+    )
+    assert result["issue_url_tpl"] == "https://github.com/org/test/issues/{issue_id}"
+
+
+def test_merge_sphinx_config_no_issue_url_without_repo() -> None:
+    """issue_url_tpl not set when source_repository is not provided."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert "issue_url_tpl" not in result
+
+
+def test_merge_sphinx_config_auto_ogp() -> None:
+    """ogp_* auto-computed from docs_url and project."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        docs_url="https://test.git-pull.com",
+    )
+    assert result["ogp_site_url"] == "https://test.git-pull.com"
+    assert result["ogp_site_name"] == "test"
+    assert result["ogp_image"] == "_static/img/icons/icon-192x192.png"
+
+
+def test_merge_sphinx_config_no_ogp_without_docs_url() -> None:
+    """ogp_* not set when docs_url is not provided."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert "ogp_site_url" not in result
+
+
+def test_merge_sphinx_config_override_auto_computed() -> None:
+    """Manual overrides take precedence over auto-computed values."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        source_repository="https://github.com/org/test/",
+        issue_url_tpl="https://custom.example.com/{issue_id}",
+    )
+    assert result["issue_url_tpl"] == "https://custom.example.com/{issue_id}"
+
+
+def test_merge_sphinx_config_autodoc_typehints() -> None:
+    """Default autodoc_typehints is 'description'."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["autodoc_typehints"] == "description"
+
+
+def test_merge_sphinx_config_napoleon_defaults() -> None:
+    """Default napoleon settings are present."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["napoleon_google_docstring"] is True
+    assert result["napoleon_include_init_with_doc"] is False
+
+
+def test_merge_sphinx_config_copybutton_continuation() -> None:
+    """Default copybutton line continuation character is backslash."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["copybutton_line_continuation_character"] == "\\"
+
+
+def test_merge_sphinx_config_html_paths() -> None:
+    """Static and template paths default to standard locations; extras are opt-in."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["html_static_path"] == ["_static"]
+    assert result["templates_path"] == ["_templates"]
+    assert "html_favicon" not in result
+    assert "html_extra_path" not in result
+
+
+def test_merge_sphinx_config_redirects_are_opt_in() -> None:
+    """Redirect generation defaults stay quiet for minimal consumers."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert result["rediraffe_redirects"] == {}
+
+
+def test_make_linkcode_resolve_preserves_package_dir() -> None:
+    """Generated linkcode URLs keep the top-level package directory."""
+    resolver = make_linkcode_resolve(
+        gp_sphinx,
+        "https://github.com/git-pull/gp-sphinx",
+    )
+    url = resolver(
+        "py",
+        {"module": "gp_sphinx.config", "fullname": "merge_sphinx_config"},
+    )
+    assert url is not None
+    assert "/src/gp_sphinx/config.py" in url
+
+
+def test_merge_sphinx_config_release_matches_version() -> None:
+    """Release defaults to version string."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.2.3",
+        copyright="2026",
+    )
+    assert result["release"] == "1.2.3"

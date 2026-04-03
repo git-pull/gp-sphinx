@@ -5,7 +5,7 @@ structured font data to the template context for inline @font-face CSS.
 
 Examples
 --------
->>> from gp_sphinx.sphinx_fonts import _cache_dir
+>>> from sphinx_fonts import _cache_dir
 
 >>> _cache_dir().name
 'sphinx-fonts'
@@ -24,6 +24,8 @@ if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
+__version__ = "0.0.1a0"
 
 CDN_TEMPLATE = (
     "https://cdn.jsdelivr.net/npm/{package}@{version}"
@@ -37,6 +39,24 @@ class SetupDict(t.TypedDict):
     version: str
     parallel_read_safe: bool
     parallel_write_safe: bool
+
+
+class _FontConfigRequired(t.TypedDict):
+    family: str
+    package: str
+    version: str
+    weights: list[int]
+    styles: list[str]
+
+
+class FontConfig(_FontConfigRequired, total=False):
+    """A single font family configuration entry.
+
+    Required keys: ``family``, ``package``, ``version``, ``weights``, ``styles``.
+    Optional key: ``subset`` (defaults to ``"latin"`` when omitted).
+    """
+
+    subset: str
 
 
 def _cache_dir() -> pathlib.Path:
@@ -139,7 +159,7 @@ def _on_builder_inited(app: Sphinx) -> None:
     if app.builder.format != "html":
         return
 
-    fonts: list[dict[str, t.Any]] = app.config.sphinx_fonts
+    fonts: list[FontConfig] = app.config.sphinx_fonts
     variables: dict[str, str] = app.config.sphinx_font_css_variables
     if not fonts:
         return
@@ -224,7 +244,7 @@ def setup(app: Sphinx) -> SetupDict:
     app.connect("builder-inited", _on_builder_inited)
     app.connect("html-page-context", _on_html_page_context)
     return {
-        "version": "1.0",
+        "version": __version__,
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }

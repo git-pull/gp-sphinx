@@ -1,30 +1,33 @@
-name: tests
+name: ci
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
-  build:
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-
+  qa:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v6
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
-      - name: Set up Python ${{ matrix.python-version }}
-        run: uv python install ${{ matrix.python-version }}
+      - name: Install workspace dependencies
+        run: uv sync --all-packages --all-extras --group dev
 
-      - name: Install dependencies
-        run: uv sync --all-extras --dev
-
-      - name: Print python and pytest versions
+      - name: Print Python versions
         run: |
           python -V
           uv run python -V
@@ -36,49 +39,118 @@ jobs:
       - name: Format with ruff format
         run: uv run ruff format . --check
 
-      - name: Lint with mypy
+      - name: Type check with mypy
         run: uv run mypy .
 
+      - name: Validate package runtime versions
+        if: matrix.python-version == '3.14'
+        run: uv run python scripts/ci/package_tools.py check-versions
+
       - name: Test with pytest
-        run: uv run py.test --cov=./ --cov-report=xml
+        if: matrix.python-version != '3.14'
+        run: uv run pytest
+
+      - name: Test with pytest and coverage
+        if: matrix.python-version == '3.14'
+        run: uv run pytest --cov=./ --cov-report=xml
 
       - uses: codecov/codecov-action@v6
+        if: matrix.python-version == '3.14'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  release:
+  docs:
     runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    permissions:
-      id-token: write
-      attestations: write
-
-    strategy:
-      matrix:
-        python-version: ['3.14']
-
+    needs: qa
     steps:
       - uses: actions/checkout@v6
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
-      - name: Set up Python ${{ matrix.python-version }}
-        run: uv python install ${{ matrix.python-version }}
+      - name: Install workspace dependencies
+        run: uv sync --all-packages --all-extras --group dev
 
-      - name: Install dependencies
-        run: uv sync --all-extras --dev
+      - name: Build documentation with warnings as errors
+        run: uv run sphinx-build -W -b html docs docs/_build/html
 
-      - name: Build package
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-        run: uv build
+  packages:
+    runs-on: ubuntu-latest
+    needs: qa
+    steps:
+      - uses: actions/checkout@v6
 
-      - name: Publish package
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v6
         with:
-          attestations: true
-          skip-existing: true
+          python-version: "3.14"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install workspace dependencies
+        run: uv sync --all-packages --all-extras --group dev
+
+      - name: Validate package runtime versions
+        run: uv run python scripts/ci/package_tools.py check-versions
+
+      - name: Build all workspace packages
+        run: uv build --all-packages --out-dir dist --clear
+
+      - name: Validate distributions with twine
+        run: uvx twine check dist/*
+
+      - name: Upload package distributions
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  smoke:
+    runs-on: ubuntu-latest
+    needs: packages
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - root-install
+          - gp-sphinx
+          - sphinx-gptheme
+          - sphinx-fonts
+          - sphinx-argparse-neo
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Download package distributions
+        if: matrix.target != 'root-install'
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - name: Smoke test root bootstrap install
+        if: matrix.target == 'root-install'
+        run: python scripts/ci/package_tools.py smoke root-install
+
+      - name: Smoke test built package artifact
+        if: matrix.target != 'root-install'
+        run: python scripts/ci/package_tools.py smoke "${{ matrix.target }}" --dist-dir dist

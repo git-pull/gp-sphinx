@@ -7,7 +7,7 @@ import logging
 __title__ = "gp-sphinx"
 __package_name__ = "gp_sphinx"
 __description__ = "Shared Sphinx documentation platform for git-pull projects"
-__version__ = "0.0.1"
+__version__ = "0.0.1a0"
 __author__ = "Tony Narlock"
 __github__ = "https://github.com/git-pull/gp-sphinx"
 __docs__ = "https://gp-sphinx.git-pull.com"

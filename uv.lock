@@ -7,6 +7,15 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 
+[manifest]
+members = [
+    "gp-sphinx",
+    "gp-sphinx-workspace",
+    "sphinx-argparse-neo",
+    "sphinx-fonts",
+    "sphinx-gptheme",
+]
+
 [[package]]
 name = "accessible-pygments"
 version = "0.0.5"
@@ -384,11 +393,10 @@ wheels = [
 
 [[package]]
 name = "gp-sphinx"
-version = "0.0.1"
-source = { editable = "." }
+version = "0.0.1a0"
+source = { editable = "packages/gp-sphinx" }
 dependencies = [
     { name = "docutils" },
-    { name = "furo" },
     { name = "gp-libs" },
     { name = "linkify-it-py" },
     { name = "myst-parser", version = "4.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -400,151 +408,87 @@ dependencies = [
     { name = "sphinx-copybutton" },
     { name = "sphinx-design", version = "0.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx-design", version = "0.7.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "sphinx-fonts" },
+    { name = "sphinx-gptheme" },
     { name = "sphinx-inline-tabs" },
     { name = "sphinxext-opengraph" },
     { name = "sphinxext-rediraffe" },
 ]
 
-[package.dev-dependencies]
-coverage = [
-    { name = "codecov" },
-    { name = "coverage" },
-    { name = "pytest-cov" },
-]
-dev = [
-    { name = "codecov" },
-    { name = "coverage" },
-    { name = "furo" },
-    { name = "gp-sphinx" },
-    { name = "linkify-it-py" },
-    { name = "mypy" },
-    { name = "myst-parser", version = "4.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "myst-parser", version = "5.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-mock" },
-    { name = "pytest-rerunfailures" },
-    { name = "pytest-watcher" },
-    { name = "ruff" },
-    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx-autobuild", version = "2024.10.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx-autobuild", version = "2025.8.25", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx-autodoc-typehints", version = "3.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx-autodoc-typehints", version = "3.5.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx-copybutton" },
-    { name = "sphinx-design", version = "0.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx-design", version = "0.7.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx-inline-tabs" },
-    { name = "sphinxext-opengraph" },
-    { name = "sphinxext-rediraffe" },
-    { name = "types-docutils" },
-    { name = "typing-extensions" },
-]
-docs = [
-    { name = "furo" },
-    { name = "gp-sphinx" },
-    { name = "linkify-it-py" },
-    { name = "myst-parser", version = "4.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "myst-parser", version = "5.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx-autobuild", version = "2024.10.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx-autobuild", version = "2025.8.25", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx-autodoc-typehints", version = "3.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx-autodoc-typehints", version = "3.5.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx-copybutton" },
-    { name = "sphinx-design", version = "0.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx-design", version = "0.7.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx-inline-tabs" },
-    { name = "sphinxext-opengraph" },
-    { name = "sphinxext-rediraffe" },
-]
-lint = [
-    { name = "mypy" },
-    { name = "ruff" },
-    { name = "types-docutils" },
-    { name = "typing-extensions" },
-]
-testing = [
-    { name = "pytest" },
-    { name = "pytest-mock" },
-    { name = "pytest-rerunfailures" },
-    { name = "pytest-watcher" },
+[package.optional-dependencies]
+argparse = [
+    { name = "sphinx-argparse-neo" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "docutils" },
-    { name = "furo" },
     { name = "gp-libs" },
     { name = "linkify-it-py" },
     { name = "myst-parser" },
     { name = "sphinx", specifier = "<9" },
+    { name = "sphinx-argparse-neo", marker = "extra == 'argparse'", editable = "packages/sphinx-argparse-neo" },
     { name = "sphinx-autodoc-typehints" },
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
+    { name = "sphinx-fonts", editable = "packages/sphinx-fonts" },
+    { name = "sphinx-gptheme", editable = "packages/sphinx-gptheme" },
     { name = "sphinx-inline-tabs" },
     { name = "sphinxext-opengraph" },
     { name = "sphinxext-rediraffe" },
 ]
+provides-extras = ["argparse"]
 
-[package.metadata.requires-dev]
-coverage = [
-    { name = "codecov" },
-    { name = "coverage" },
-    { name = "pytest-cov" },
+[[package]]
+name = "gp-sphinx-workspace"
+version = "0.0.1a0"
+source = { editable = "." }
+dependencies = [
+    { name = "gp-sphinx" },
 ]
+
+[package.dev-dependencies]
 dev = [
     { name = "codecov" },
     { name = "coverage" },
-    { name = "furo" },
     { name = "gp-sphinx" },
-    { name = "linkify-it-py" },
     { name = "mypy" },
-    { name = "myst-parser" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
     { name = "pytest-rerunfailures" },
     { name = "pytest-watcher" },
     { name = "ruff" },
-    { name = "sphinx", specifier = "<9" },
-    { name = "sphinx-autobuild" },
-    { name = "sphinx-autodoc-typehints" },
-    { name = "sphinx-copybutton" },
-    { name = "sphinx-design" },
-    { name = "sphinx-inline-tabs" },
-    { name = "sphinxext-opengraph" },
-    { name = "sphinxext-rediraffe" },
+    { name = "sphinx-argparse-neo" },
+    { name = "sphinx-autobuild", version = "2024.10.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx-autobuild", version = "2025.8.25", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
     { name = "types-docutils" },
+    { name = "types-pygments" },
     { name = "typing-extensions" },
 ]
-docs = [
-    { name = "furo" },
-    { name = "gp-sphinx" },
-    { name = "linkify-it-py" },
-    { name = "myst-parser" },
-    { name = "sphinx", specifier = "<9" },
-    { name = "sphinx-autobuild" },
-    { name = "sphinx-autodoc-typehints" },
-    { name = "sphinx-copybutton" },
-    { name = "sphinx-design" },
-    { name = "sphinx-inline-tabs" },
-    { name = "sphinxext-opengraph" },
-    { name = "sphinxext-rediraffe" },
-]
-lint = [
+
+[package.metadata]
+requires-dist = [{ name = "gp-sphinx", editable = "packages/gp-sphinx" }]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "codecov" },
+    { name = "coverage" },
+    { name = "gp-sphinx", editable = "packages/gp-sphinx" },
     { name = "mypy" },
-    { name = "ruff" },
-    { name = "types-docutils" },
-    { name = "typing-extensions" },
-]
-testing = [
     { name = "pytest" },
+    { name = "pytest-cov" },
     { name = "pytest-mock" },
     { name = "pytest-rerunfailures" },
     { name = "pytest-watcher" },
+    { name = "ruff" },
+    { name = "sphinx-argparse-neo", editable = "packages/sphinx-argparse-neo" },
+    { name = "sphinx-autobuild" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "types-docutils" },
+    { name = "types-pygments" },
+    { name = "typing-extensions" },
 ]
 
 [[package]]
@@ -1239,6 +1183,24 @@ wheels = [
 ]
 
 [[package]]
+name = "sphinx-argparse-neo"
+version = "0.0.1a0"
+source = { editable = "packages/sphinx-argparse-neo" }
+dependencies = [
+    { name = "docutils" },
+    { name = "pygments" },
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "docutils" },
+    { name = "pygments" },
+    { name = "sphinx" },
+]
+
+[[package]]
 name = "sphinx-autobuild"
 version = "2024.10.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1366,6 +1328,29 @@ sdist = { url = "https://files.pythonhosted.org/packages/13/7b/804f311da4663a4ae
 wheels = [
     { url = "https://files.pythonhosted.org/packages/30/cf/45dd359f6ca0c3762ce0490f681da242f0530c49c81050c035c016bfdd3a/sphinx_design-0.7.0-py3-none-any.whl", hash = "sha256:f82bf179951d58f55dca78ab3706aeafa496b741a91b1911d371441127d64282", size = 2220350, upload-time = "2026-01-19T13:12:51.077Z" },
 ]
+
+[[package]]
+name = "sphinx-fonts"
+version = "0.0.1a0"
+source = { editable = "packages/sphinx-fonts" }
+dependencies = [
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "sphinx" }]
+
+[[package]]
+name = "sphinx-gptheme"
+version = "0.0.1a0"
+source = { editable = "packages/sphinx-gptheme" }
+dependencies = [
+    { name = "furo" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "furo" }]
 
 [[package]]
 name = "sphinx-inline-tabs"
@@ -1534,6 +1519,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/44/bb/243a87fc1605a4a94c2c343d6dbddbf0d7ef7c0b9550f360b8cda8e82c39/types_docutils-0.22.3.20260322.tar.gz", hash = "sha256:e2450bb997283c3141ec5db3e436b91f0aa26efe35eb9165178ca976ccb4930b", size = 57311, upload-time = "2026-03-22T04:08:44.064Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c6/4a/22c090cd4615a16917dff817cbe7c5956da376c961e024c241cd962d2c3d/types_docutils-0.22.3.20260322-py3-none-any.whl", hash = "sha256:681d4510ce9b80a0c6a593f0f9843d81f8caa786db7b39ba04d9fd5480ac4442", size = 91978, upload-time = "2026-03-22T04:08:43.117Z" },
+]
+
+[[package]]
+name = "types-pygments"
+version = "2.19.0.20251121"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "types-docutils" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/90/3b/cd650700ce9e26b56bd1a6aa4af397bbbc1784e22a03971cb633cdb0b601/types_pygments-2.19.0.20251121.tar.gz", hash = "sha256:eef114fde2ef6265365522045eac0f8354978a566852f69e75c531f0553822b1", size = 18590, upload-time = "2025-11-21T03:03:46.623Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/99/8a/9244b21f1d60dcc62e261435d76b02f1853b4771663d7ec7d287e47a9ba9/types_pygments-2.19.0.20251121-py3-none-any.whl", hash = "sha256:cb3bfde34eb75b984c98fb733ce4f795213bd3378f855c32e75b49318371bb25", size = 25674, upload-time = "2025-11-21T03:03:45.72Z" },
 ]
 
 [[package]]

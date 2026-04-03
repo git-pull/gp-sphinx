@@ -19,6 +19,46 @@ from __future__ import annotations
 
 import typing as t
 
+FooterIconDict = t.TypedDict(
+    "FooterIconDict",
+    {"name": str, "url": str, "html": str, "class": str},
+)
+"""A footer icon entry for Furo's ``footer_icons`` theme option."""
+
+
+class FuroThemeOptions(t.TypedDict, total=False):
+    """Typed subset of Furo theme options used by gp-sphinx.
+
+    All keys are optional — pass only what you want to override.
+    """
+
+    footer_icons: list[FooterIconDict]
+    source_repository: str
+    source_branch: str
+    source_directory: str
+    light_logo: str
+    dark_logo: str
+    mask_icon: str
+
+
+class _FontConfigRequired(t.TypedDict):
+    family: str
+    package: str
+    version: str
+    weights: list[int]
+    styles: list[str]
+
+
+class FontConfig(_FontConfigRequired, total=False):
+    """A single font family configuration entry for sphinx-fonts.
+
+    Required keys: ``family``, ``package``, ``version``, ``weights``, ``styles``.
+    Optional key: ``subset`` (defaults to ``"latin"`` when omitted).
+    """
+
+    subset: str
+
+
 GITHUB_SVG_ICON: str = (
     '<svg stroke="currentColor" fill="currentColor" stroke-width="0"'
     ' viewBox="0 0 16 16">'
@@ -38,7 +78,7 @@ GITHUB_SVG_ICON: str = (
 
 DEFAULT_EXTENSIONS: list[str] = [
     "sphinx.ext.autodoc",
-    "gp_sphinx.sphinx_fonts",
+    "sphinx_fonts",
     "sphinx.ext.intersphinx",
     "sphinx_autodoc_typehints",
     "sphinx.ext.todo",
@@ -62,10 +102,10 @@ Examples
 'sphinx.ext.autodoc'
 """
 
-DEFAULT_THEME: str = "furo"
-"""Default Sphinx HTML theme."""
+DEFAULT_THEME: str = "sphinx-gptheme"
+"""Default Sphinx HTML theme (Furo child theme bundled in this package)."""
 
-DEFAULT_THEME_OPTIONS: dict[str, t.Any] = {
+DEFAULT_THEME_OPTIONS: FuroThemeOptions = {
     "footer_icons": [
         {
             "name": "GitHub",
@@ -122,31 +162,35 @@ Examples
 'markdown'
 """
 
+DEFAULT_HTML_STATIC_PATH: list[str] = ["_static"]
+"""Default path(s) to project-specific static files (CSS, images, JS).
+
+Resolved relative to the docs source directory (``docs/_static/``).
+
+Examples
+--------
+>>> DEFAULT_HTML_STATIC_PATH
+['_static']
+"""
+
+DEFAULT_TEMPLATES_PATH: list[str] = ["_templates"]
+"""Default path(s) to Jinja2 template overrides.
+
+Resolved relative to the docs source directory (``docs/_templates/``).
+
+Examples
+--------
+>>> DEFAULT_TEMPLATES_PATH
+['_templates']
+"""
+
 DEFAULT_PYGMENTS_STYLE: str = "monokai"
 """Default Pygments syntax highlighting style."""
 
 DEFAULT_PYGMENTS_DARK_STYLE: str = "monokai"
 """Default Pygments syntax highlighting style for dark mode."""
 
-DEFAULT_SIDEBARS: dict[str, list[str]] = {
-    "**": [
-        "sidebar/scroll-start.html",
-        "sidebar/brand.html",
-        "sidebar/search.html",
-        "sidebar/navigation.html",
-        "sidebar/projects.html",
-        "sidebar/scroll-end.html",
-    ],
-}
-"""Default sidebar configuration for Furo theme.
-
-Examples
---------
->>> len(DEFAULT_SIDEBARS["**"])
-6
-"""
-
-DEFAULT_SPHINX_FONTS: list[dict[str, t.Any]] = [
+DEFAULT_SPHINX_FONTS: list[FontConfig] = [
     {
         "family": "IBM Plex Sans",
         "package": "@fontsource/ibm-plex-sans",
@@ -247,7 +291,7 @@ DEFAULT_COPYBUTTON_PROMPT_IS_REGEXP: bool = True
 DEFAULT_COPYBUTTON_REMOVE_PROMPTS: bool = True
 """Whether sphinx-copybutton should strip prompts when copying."""
 
-DEFAULT_AUTODOC_OPTIONS: dict[str, t.Any] = {
+DEFAULT_AUTODOC_OPTIONS: dict[str, bool | str] = {
     "undoc-members": True,
     "members": True,
     "private-members": True,
@@ -267,3 +311,57 @@ DEFAULT_AUTOCLASS_CONTENT: str = "both"
 
 DEFAULT_AUTODOC_MEMBER_ORDER: str = "bysource"
 """Default autodoc member ordering."""
+
+DEFAULT_AUTODOC_CLASS_SIGNATURE: str = "separated"
+"""Display class signature separately from docstring.
+
+Examples
+--------
+>>> DEFAULT_AUTODOC_CLASS_SIGNATURE
+'separated'
+"""
+
+DEFAULT_AUTODOC_TYPEHINTS: str = "description"
+"""Show type hints in doc body instead of signature.
+
+Examples
+--------
+>>> DEFAULT_AUTODOC_TYPEHINTS
+'description'
+"""
+
+DEFAULT_NAPOLEON_GOOGLE_DOCSTRING: bool = True
+"""Enable Google-style docstring parsing in napoleon."""
+
+DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC: bool = False
+"""Include __init__ docstring in class documentation.
+
+Default is ``False`` to match napoleon's built-in default. Most downstream
+projects never set this explicitly, so ``True`` would change rendered output.
+"""
+
+DEFAULT_COPYBUTTON_LINE_CONTINUATION_CHARACTER: str = "\\"
+"""Line continuation character for sphinx-copybutton."""
+
+DEFAULT_TOC_OBJECT_ENTRIES_SHOW_PARENTS: str = "hide"
+"""Hide parent module path in TOC object entries.
+
+Keeps the API reference sidebar clean by showing only the object name
+(e.g. ``merge_sphinx_config``) instead of the full dotted path.
+
+Examples
+--------
+>>> DEFAULT_TOC_OBJECT_ENTRIES_SHOW_PARENTS
+'hide'
+"""
+
+DEFAULT_SUPPRESS_WARNINGS: list[str] = [
+    "sphinx_autodoc_typehints.forward_reference",
+]
+"""Warnings to suppress by default.
+
+Examples
+--------
+>>> len(DEFAULT_SUPPRESS_WARNINGS)
+1
+"""

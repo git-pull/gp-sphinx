@@ -38,11 +38,10 @@ This project uses:
 
 ```bash
 # Install dependencies
-uv pip install --editable .
-uv pip sync
+uv sync --all-packages
 
 # Install with development dependencies
-uv pip install --editable . -G dev
+uv sync --all-packages --all-extras --group dev
 ```
 
 ### Running Tests

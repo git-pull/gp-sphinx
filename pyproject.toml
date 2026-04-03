@@ -1,77 +1,32 @@
 [project]
-name = "gp-sphinx"
-version = "0.0.1"
-description = "Shared Sphinx documentation platform for git-pull projects"
+name = "gp-sphinx-workspace"
+version = "0.0.1a0"
+description = "Workspace root for gp-sphinx packages"
 requires-python = ">=3.10,<4.0"
 authors = [
   {name = "Tony Narlock", email = "tony@git-pull.com"}
 ]
 license = { text = "MIT" }
-classifiers = [
-  "Development Status :: 3 - Alpha",
-  "License :: OSI Approved :: MIT License",
-  "Environment :: Web Environment",
-  "Framework :: Sphinx",
-  "Framework :: Sphinx :: Theme",
-  "Intended Audience :: Developers",
-  "Operating System :: POSIX",
-  "Operating System :: MacOS :: MacOS X",
-  "Programming Language :: Python",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: 3.14",
-  "Topic :: Documentation",
-  "Topic :: Documentation :: Sphinx",
-  "Topic :: Utilities",
-]
-packages = [
-  { include = "gp_sphinx", from = "src" },
-]
-include = [
-  { path = "tests", format = "sdist" },
-]
 readme = "README.md"
-keywords = ["sphinx", "documentation", "theme", "furo"]
-homepage = "https://gp-sphinx.git-pull.com"
 dependencies = [
-  "sphinx<9",
-  "furo",
-  "myst-parser",
-  "docutils",
-  "sphinx-autodoc-typehints",
-  "sphinx-inline-tabs",
-  "sphinx-copybutton",
-  "sphinxext-opengraph",
-  "sphinxext-rediraffe",
-  "sphinx-design",
-  "linkify-it-py",
-  "gp-libs",
+  "gp-sphinx==0.0.1a0",
 ]
 
-[project.urls]
-"Bug Tracker" = "https://github.com/git-pull/gp-sphinx/issues"
-Documentation = "https://gp-sphinx.git-pull.com"
-Repository = "https://github.com/git-pull/gp-sphinx"
-Changes = "https://github.com/git-pull/gp-sphinx/blob/master/CHANGES"
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+sphinx-fonts = { workspace = true }
+sphinx-gptheme = { workspace = true }
+sphinx-argparse-neo = { workspace = true }
+gp-sphinx = { workspace = true }
 
 [dependency-groups]
 dev = [
-  # Docs
-  "sphinx<9",
-  "furo",
   "gp-sphinx",
+  "sphinx-argparse-neo",
+  # Docs
   "sphinx-autobuild",
-  "sphinx-autodoc-typehints",
-  "sphinx-inline-tabs",
-  "sphinxext-opengraph",
-  "sphinx-copybutton",
-  "sphinxext-rediraffe",
-  "sphinx-design",
-  "myst-parser",
-  "linkify-it-py",
   # Testing
   "pytest",
   "pytest-rerunfailures",
@@ -84,40 +39,10 @@ dev = [
   # Lint
   "ruff",
   "mypy",
+  "tomli; python_version < '3.11'",
   "typing-extensions",
   "types-docutils",
-]
-
-docs = [
-  "sphinx<9",
-  "furo",
-  "gp-sphinx",
-  "sphinx-autobuild",
-  "sphinx-autodoc-typehints",
-  "sphinx-inline-tabs",
-  "sphinxext-opengraph",
-  "sphinx-copybutton",
-  "sphinxext-rediraffe",
-  "sphinx-design",
-  "myst-parser",
-  "linkify-it-py",
-]
-testing = [
-  "pytest",
-  "pytest-rerunfailures",
-  "pytest-mock",
-  "pytest-watcher",
-]
-coverage = [
-  "codecov",
-  "coverage",
-  "pytest-cov",
-]
-lint = [
-  "ruff",
-  "mypy",
-  "typing-extensions",
-  "types-docutils",
+  "types-Pygments",
 ]
 
 [build-system]
@@ -125,18 +50,21 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/gp_sphinx"]
+packages = ["src/gp_sphinx_workspace"]
 
 [tool.mypy]
 strict = true
 python_version = "3.10"
 files = [
-  "src/",
+  "packages/",
   "tests/",
 ]
 
 [[tool.mypy.overrides]]
-module = ["gp_sphinx.sphinx_fonts"]
+# sphinx_fonts sets private attributes on Sphinx's app object (app._font_preload_hrefs,
+# _font_faces, etc.) which aren't declared in sphinx's type stubs.
+# The test file also accesses these dynamically-added attrs, so it needs the same suppression.
+module = ["sphinx_fonts", "tests.ext.test_sphinx_fonts"]
 disable_error_code = ["attr-defined", "unused-ignore"]
 
 [tool.ruff]
@@ -174,6 +102,9 @@ pyupgrade.keep-runtime-typing = false
 [tool.ruff.lint.isort]
 known-first-party = [
   "gp_sphinx",
+  "sphinx_fonts",
+  "sphinx_gptheme",
+  "sphinx_argparse_neo",
 ]
 combine-as-imports = true
 required-imports = [
@@ -185,14 +116,19 @@ convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
 "*/__init__.py" = ["F401"]
+"packages/sphinx-argparse-neo/**/*.py" = ["E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
+"tests/ext/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
+"tests/ext/argparse_neo/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 
 [tool.pytest.ini_options]
-addopts = "--tb=short --no-header --showlocals --doctest-modules"
+addopts = "--tb=short --no-header --showlocals --doctest-modules --ignore=packages/sphinx-argparse-neo"
 doctest_optionflags = "ELLIPSIS NORMALIZE_WHITESPACE"
 testpaths = [
   "tests",
   "docs",
-  "src",
+  "packages/gp-sphinx/src",
+  "packages/sphinx-fonts/src",
+  "packages/sphinx-gptheme/src",
 ]
 filterwarnings = [
   "ignore:distutils Version classes are deprecated. Use packaging.version instead.",
