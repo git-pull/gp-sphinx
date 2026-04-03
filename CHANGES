@@ -24,3 +24,21 @@ $ uv add gp-sphinx --prerelease allow
 - `merge_sphinx_config()` API for building complete Sphinx config from shared defaults
 - Shared extension list, theme options, MyST config, font config
 - Bundled workarounds (tabs.js removal, spa-nav.js injection)
+
+### Workspace packages
+
+- `sphinx-autodoc-pytest-fixtures` — Sphinx autodocumenter for pytest fixtures.
+  Registers `py:fixture` as a domain object type with `autofixture::` for
+  single-fixture docs, `autofixtures::` for bulk module discovery, and
+  `autofixture-index::` for summary tables. Fixtures render with scope/kind/autouse
+  badges, classified dependency lists, reverse-dep tracking, and auto-generated
+  usage snippets. Frozen dataclasses for pickle-safe incremental builds, parallel-safe,
+  WCAG AA badge contrast, and pytest 9+ compatible.
+- `sphinx-fonts` — Self-hosted web fonts via Fontsource CDN. Downloads at build time,
+  caches locally, and injects `@font-face` CSS with preload hints and fallback
+  font-metric overrides for zero-CLS loading.
+- `sphinx-gptheme` — Furo child theme for git-pull projects. Custom sidebar, footer
+  icons, SPA navigation, and CSS variable-driven IBM Plex typography.
+- `sphinx-argparse-neo` — Argparse CLI documentation extension with `.. argparse::`
+  directive, epilog-to-section transformation, and Pygments lexers for argparse
+  help/usage output.
