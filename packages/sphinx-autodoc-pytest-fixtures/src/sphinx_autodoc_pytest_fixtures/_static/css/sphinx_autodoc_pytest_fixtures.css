@@ -288,7 +288,7 @@ dl.py.fixture > dt .spf-badge-group {
 abbr.spf-badge {
   border-bottom-style: solid;
   border-bottom-width: var(--spf-badge-border-w, 1px);
-  text-decoration: none;
+  text-decoration: underline dotted;
 }
 abbr.spf-badge--fixture { border-color: var(--spf-fixture-border); }
 abbr.spf-scope-session  { border-color: var(--spf-scope-session-border); }
