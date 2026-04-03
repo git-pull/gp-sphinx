@@ -298,7 +298,8 @@ class PyFixtureDirective(PyFunction):
             for parent in self.state.document.findall(addnodes.desc):
                 for sig in parent.findall(addnodes.desc_signature):
                     if sig.get("spf_deprecated"):
-                        parent["classes"].append(_CSS.DEPRECATED)
+                        if _CSS.DEPRECATED not in parent["classes"]:
+                            parent["classes"].append(_CSS.DEPRECATED)
                         break
 
         # --- Lifecycle callouts (session note + override hook tip) ---
