@@ -377,7 +377,7 @@ class AutoconfigvalueDirective(SphinxDirective):
 
     required_arguments = 1
     has_content = False
-    option_spec: t.ClassVar[dict[str, object]] = {"no-index": directives.flag}
+    option_spec: t.ClassVar[dict[str, t.Any]] = {"no-index": directives.flag}
 
     def run(self) -> list[nodes.Node]:
         value = discover_config_value(self.arguments[0])
@@ -392,7 +392,7 @@ class AutoconfigvaluesDirective(SphinxDirective):
 
     required_arguments = 1
     has_content = False
-    option_spec: t.ClassVar[dict[str, object]] = {"no-index": directives.flag}
+    option_spec: t.ClassVar[dict[str, t.Any]] = {"no-index": directives.flag}
 
     def run(self) -> list[nodes.Node]:
         markup = render_config_values_markup(
