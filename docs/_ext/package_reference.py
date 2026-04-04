@@ -175,7 +175,11 @@ def extension_modules(module_name: str) -> list[str]:
     True
     """
     ensure_workspace_imports()
-    module = importlib.import_module(module_name)
+    try:
+        module = importlib.import_module(module_name)
+    except ImportError:
+        logger.warning("package-reference: could not import %r", module_name)
+        return []
     modules = []
     if callable(getattr(module, "setup", None)):
         modules.append(module_name)
@@ -185,7 +189,13 @@ def extension_modules(module_name: str) -> list[str]:
         return modules
 
     for module_info in pkgutil.walk_packages(package_paths, prefix=f"{module_name}."):
-        submodule = importlib.import_module(module_info.name)
+        try:
+            submodule = importlib.import_module(module_info.name)
+        except ImportError:
+            logger.warning(
+                "package-reference: could not import submodule %r", module_info.name
+            )
+            continue
         if callable(getattr(submodule, "setup", None)):
             modules.append(module_info.name)
     return modules
@@ -287,8 +297,19 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
     True
     """
     ensure_workspace_imports()
+    try:
+        module = importlib.import_module(module_name)
+    except ImportError:
+        logger.warning("package-reference: could not import %r", module_name)
+        return SurfaceDict(
+            module=module_name,
+            config_values=[],
+            directives=[],
+            roles=[],
+            lexers=[],
+            themes=[],
+        )
     app = RecorderApp()
-    module = importlib.import_module(module_name)
     registered_roles: list[tuple[str, object]] = []
     original_local = roles.register_local_role
     original_canonical = roles.register_canonical_role
