@@ -219,7 +219,7 @@ def merge_sphinx_config(
     intersphinx_mapping: t.Mapping[str, tuple[str, str | None]] | None = None,
     **overrides: t.Any,
 ) -> dict[str, t.Any]:
-    """Build a complete Sphinx conf namespace from shared defaults.
+    r"""Build a complete Sphinx conf namespace from shared defaults.
 
     Returns a flat dictionary suitable for injection into a ``docs/conf.py``
     module namespace via ``globals().update(conf)``.
@@ -232,7 +232,7 @@ def merge_sphinx_config(
     for the ``linkify_issues`` extension. When ``docs_url`` is provided,
     ``ogp_site_url``, ``ogp_image``, and ``ogp_site_name`` are auto-computed
     for ``sphinxext.opengraph``. All auto-computed values can be overridden
-    via ``**overrides``.
+    via ``\**overrides``.
 
     Parameters
     ----------
@@ -263,7 +263,7 @@ def merge_sphinx_config(
         Used to auto-compute ``ogp_site_url`` and ``ogp_site_name``.
     intersphinx_mapping : dict | None
         Intersphinx targets.
-    **overrides
+    \**overrides
         Any additional Sphinx config values.
 
     Returns
