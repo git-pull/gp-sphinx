@@ -61,13 +61,6 @@ template context that downstream themes receive.
 .. autoconfigvalues:: sphinx_fonts
 ```
 
-## Directives and Roles
-
-```{eval-rst}
-.. autodirective-index:: sphinx_fonts
-.. autorole-index:: sphinx_fonts
-```
-
 ## Template context
 
 The extension injects these values during `html-page-context`:
