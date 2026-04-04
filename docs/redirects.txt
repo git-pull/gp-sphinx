@@ -1,2 +1,8 @@
+extensions/gp-sphinx packages/gp-sphinx
 extensions/index packages/index
+extensions/sphinx-argparse-neo packages/sphinx-argparse-neo
 extensions/sphinx-autodoc-pytest-fixtures packages/sphinx-autodoc-pytest-fixtures
+extensions/sphinx-autodoc-docutils packages/sphinx-autodoc-docutils
+extensions/sphinx-autodoc-sphinx packages/sphinx-autodoc-sphinx
+extensions/sphinx-fonts packages/sphinx-fonts
+extensions/sphinx-gptheme packages/sphinx-gptheme

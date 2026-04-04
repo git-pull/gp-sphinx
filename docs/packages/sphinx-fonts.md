@@ -2,17 +2,16 @@
 
 {bdg-success-line}`Beta` {bdg-primary}`extension`
 
-Self-hosted web fonts via [Fontsource](https://fontsource.org/) CDN. Downloads
-font files at build time, caches them locally, and injects structured font data
-into the template context for inline `@font-face` CSS generation.
+Sphinx extension for self-hosted web fonts via Fontsource. It downloads font
+assets during the HTML build, caches them locally, copies them into
+`_static/fonts/`, and exposes template context values that themes can render as
+inline `@font-face` and preload tags.
 
 ```console
 $ pip install sphinx-fonts
 ```
 
-## Usage
-
-In `conf.py`:
+## Downstream `conf.py`
 
 ```python
 extensions = ["sphinx_fonts"]
@@ -24,54 +23,69 @@ sphinx_fonts = [
         "version": "5.2.8",
         "weights": [400, 500, 600, 700],
         "styles": ["normal", "italic"],
+        "subset": "latin",
     },
 ]
-```
 
-When used with gp-sphinx, font configuration is provided by default — IBM Plex
-Sans and IBM Plex Mono are pre-configured with preload hints and fallback
-font-metric overrides for zero-CLS loading.
+sphinx_font_preload = [
+    ("IBM Plex Sans", 400, "normal"),
+]
 
-## Configuration
-
-| Config value | Type | Default (via gp-sphinx) | Description |
-|-------------|------|------------------------|-------------|
-| `sphinx_fonts` | `list[dict]` | IBM Plex Sans (400/500/600/700, normal+italic), IBM Plex Mono (400, normal+italic) | Font family definitions |
-| `sphinx_font_preload` | `list[tuple]` | Sans 400 normal, Sans 700 normal, Mono 400 normal | Critical variants to preload |
-| `sphinx_font_fallbacks` | `list[dict]` | Metric-matched Arial/Courier New with size_adjust | Fallback font faces for CLS reduction |
-| `sphinx_font_css_variables` | `dict` | `--font-stack`, `--font-stack--monospace`, `--font-stack--headings` | CSS custom properties for Furo font stacks |
-
-Each font dict in `sphinx_fonts` has the shape:
-
-```python
-{
-    "family": "IBM Plex Sans",
-    "package": "@fontsource/ibm-plex-sans",
-    "version": "5.2.8",
-    "weights": [400, 500, 600, 700],
-    "styles": ["normal", "italic"],
+sphinx_font_css_variables = {
+    "--font-stack": '"IBM Plex Sans", system-ui, sans-serif',
 }
 ```
 
-## How it works
+## Live specimen
 
-1. **`builder-inited`**: Downloads font files from Fontsource CDN, caches in `~/.cache/sphinx-fonts`, copies to `_static/fonts/`
-2. **`html-page-context`**: Injects structured data into the Jinja2 template context
+This site uses `sphinx-fonts`, so the samples below are rendered with the same
+template context that downstream themes receive.
 
-### Template context variables
+```{raw} html
+<div class="package-demo-grid">
+  <div class="package-demo-card">
+    <h3>Sans stack</h3>
+    <p class="font-specimen-sans">Sphinx DX should feel intentional, readable, and fast.</p>
+  </div>
+  <div class="package-demo-card">
+    <h3>Monospace stack</h3>
+    <p class="font-specimen-mono">merge_sphinx_config(project="demo", version="1.0.0")</p>
+  </div>
+</div>
+```
 
-The extension makes these variables available to theme templates:
+## Configuration values
+
+```{eval-rst}
+.. autoconfigvalue-index:: sphinx_fonts
+.. autoconfigvalues:: sphinx_fonts
+```
+
+## Directives and Roles
+
+```{eval-rst}
+.. autodirective-index:: sphinx_fonts
+.. autorole-index:: sphinx_fonts
+```
+
+## Template context
+
+The extension injects these values during `html-page-context`:
 
 | Variable | Type | Description |
-|----------|------|-------------|
-| `font_faces` | `list[dict]` | `@font-face` declaration data (family, src, weight, style, unicode-range) |
-| `font_preload_hrefs` | `list[str]` | `<link rel="preload">` href values for critical fonts |
-| `font_fallbacks` | `list[dict]` | Fallback `@font-face` declarations with metric overrides |
-| `font_css_variables` | `dict[str, str]` | CSS custom properties for font stacks |
+| --- | --- | --- |
+| `font_faces` | `list[dict[str, str]]` | File metadata for generated `@font-face` declarations |
+| `font_preload_hrefs` | `list[str]` | Font filenames to preload |
+| `font_fallbacks` | `list[dict[str, str]]` | Metric-adjusted fallback declarations |
+| `font_css_variables` | `dict[str, str]` | CSS custom properties for theme font stacks |
 
-Theme templates consume these to generate inline CSS. When using
-sphinx-gptheme, this is handled automatically.
+## Notes
 
-This site uses IBM Plex Sans and Mono via sphinx-fonts.
+- Fonts are cached under `~/.cache/sphinx-fonts`.
+- Non-HTML builders return early and do not download assets.
+- `sphinx-gptheme` consumes this template context automatically; `gp-sphinx` preconfigures IBM Plex defaults for it.
+
+```{package-reference} sphinx-fonts
+```
 
 [Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/master/packages/sphinx-fonts)

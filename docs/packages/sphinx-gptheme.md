@@ -2,84 +2,83 @@
 
 {bdg-success-line}`Beta` {bdg-info}`theme`
 
-Furo child theme for [git-pull](https://github.com/git-pull) project
-documentation. Inherits Furo's responsive layout and dark mode, adding a
-custom sidebar with project links, footer icons, SPA-style page navigation,
-and CSS variable-driven IBM Plex typography.
+Furo child theme for git-pull documentation sites. It keeps Furo’s responsive
+layout and dark mode, then layers in shared sidebars, typography, source-link
+controls, metadata toggles, and SPA-style navigation.
 
 ```console
 $ pip install sphinx-gptheme
 ```
 
-## Usage
+## Downstream `conf.py`
 
 ```python
+extensions = ["sphinx_gptheme"]
 html_theme = "sphinx-gptheme"
-```
 
-When used with gp-sphinx, the theme is set automatically by
-`merge_sphinx_config()`.
-
-## Theme options
-
-Options declared in `theme.conf` (passed via `html_theme_options`):
-
-| Option | Description |
-|--------|-------------|
-| `announcement` | Banner text displayed above the header |
-| `light_logo` | Logo path for light mode |
-| `dark_logo` | Logo path for dark mode |
-| `sidebar_hide_name` | Hide project name in sidebar brand |
-| `footer_icons` | List of footer icon dicts (`name`, `url`, `html`, `class`) |
-| `light_css_variables` | CSS custom property overrides for light mode |
-| `dark_css_variables` | CSS custom property overrides for dark mode |
-
-### Example
-
-```python
 html_theme_options = {
-    "light_logo": "img/my-logo.svg",
-    "dark_logo": "img/my-logo-dark.svg",
-    "announcement": "<em>Note:</em> This project is in alpha.",
-    "footer_icons": [
-        {
-            "name": "GitHub",
-            "url": "https://github.com/my-org/my-project",
-            "html": "<svg>...</svg>",
-            "class": "",
-        },
-    ],
+    "project_name": "my-project",
+    "project_description": "Shared docs for my project.",
+    "light_logo": "img/logo-light.svg",
+    "dark_logo": "img/logo-dark.svg",
+    "source_repository": "https://github.com/your-org/my-project/",
+    "source_branch": "main",
+    "source_directory": "docs/",
 }
 ```
 
+## Live theme notes
+
+- This site is rendered with `sphinx-gptheme`.
+- The package badges, cards, sidebar project list, and deferred page transitions on this page are live theme output.
+- Dark mode is inherited from Furo; the theme options below control the extra git-pull behavior layered on top.
+
+## Theme options
+
+Options declared in `theme.conf` and accepted through `html_theme_options`:
+
+| Option | Description |
+| --- | --- |
+| `announcement` | Banner content rendered above the header |
+| `dark_css_variables` | Dark-mode CSS variable overrides |
+| `dark_logo` | Logo path for dark mode |
+| `footer_icons` | Footer icon list with `name`, `url`, `html`, and `class` keys |
+| `light_css_variables` | Light-mode CSS variable overrides |
+| `light_logo` | Logo path for light mode |
+| `mask_icon` | Safari pinned-tab icon |
+| `project_description` | Project summary used by sidebar/meta templates |
+| `project_name` | Short project name |
+| `project_title` | Alternate long-form title |
+| `project_url` | Canonical project home URL |
+| `show_meta_app_icon_tags` | Emit app icon meta tags |
+| `show_meta_manifest_tag` | Emit web manifest link tag |
+| `show_meta_og_tags` | Emit Open Graph tags |
+| `sidebar_hide_name` | Hide the sidebar brand name when a logo is present |
+| `source_branch` | Source branch used for edit/view links |
+| `source_directory` | Repository path containing docs sources |
+| `source_edit_link` | Override the generated edit link |
+| `source_repository` | Repository URL used for source links and footer GitHub icon |
+| `source_view_link` | Override the generated view-source link |
+| `top_of_page_button` | Single top-of-page action, defaults to `edit` |
+| `top_of_page_buttons` | Multiple top-of-page actions |
+
 ## Bundled assets
 
-### Templates
+| File | Purpose |
+| --- | --- |
+| `theme/sidebar/brand.html` | Sidebar brand block |
+| `theme/sidebar/projects.html` | Cross-project navigation |
+| `theme/static/css/custom.css` | Base layout and typography overrides |
+| `theme/static/css/argparse-highlight.css` | CLI lexer highlighting rules |
+| `theme/static/js/spa-nav.js` | Deferred navigation enhancer |
 
-| Template | Description |
-|----------|-------------|
-| `sidebar/brand.html` | Project logo and name |
-| `sidebar/projects.html` | Cross-project navigation links |
+## Relationship to gp-sphinx
 
-### Stylesheets
+`gp-sphinx` sets this theme automatically via `merge_sphinx_config()` and
+pre-populates `source_repository`, `source_branch`, `source_directory`, footer
+icons, and the IBM Plex font stacks consumed by the theme templates.
 
-| File | Description |
-|------|-------------|
-| `css/custom.css` | Base typography and layout overrides |
-| `css/argparse-highlight.css` | Syntax colors for CLI output lexers |
-
-### JavaScript
-
-| File | Description |
-|------|-------------|
-| `js/spa-nav.js` | SPA-style page navigation (deferred loading) |
-
-## Inheritance
-
-- **Parent theme**: Furo (`inherit = furo` in `theme.conf`)
-- **Entry point**: registered via `sphinx.html_themes` as `"sphinx-gptheme"`
-- **Sidebars**: scroll-start, brand, search, navigation, projects, scroll-end
-
-This site is built with sphinx-gptheme.
+```{package-reference} sphinx-gptheme
+```
 
 [Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/master/packages/sphinx-gptheme)

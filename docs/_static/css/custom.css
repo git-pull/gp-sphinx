@@ -232,3 +232,34 @@ img[src*="codecov.io"] {
 ::view-transition-new(root) {
   animation-duration: 150ms;
 }
+
+.package-demo-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  margin: 1.25rem 0;
+}
+
+.package-demo-card {
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.75rem;
+  background: var(--color-background-secondary);
+  padding: 1rem;
+}
+
+.package-demo-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.font-specimen-sans {
+  font-family: var(--font-stack);
+  font-size: 1.25rem;
+  line-height: 1.35;
+}
+
+.font-specimen-mono {
+  font-family: var(--font-stack--monospace);
+  font-size: 1rem;
+  line-height: 1.5;
+}

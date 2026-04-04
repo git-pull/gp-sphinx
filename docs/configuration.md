@@ -2,166 +2,160 @@
 
 # Configuration
 
-Reference for `merge_sphinx_config()` and the shared defaults it applies.
-
-## merge_sphinx_config()
-
-All parameters are keyword-only.
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `project` | `str` | required | Sphinx project name |
-| `version` | `str` | required | Project version (also sets `release`) |
-| `copyright` | `str` | required | Copyright string |
-| `extensions` | `list[str] \| None` | `None` | Replace entire extension list (overrides defaults) |
-| `extra_extensions` | `list[str] \| None` | `None` | Append to default extension list |
-| `remove_extensions` | `list[str] \| None` | `None` | Remove specific extensions from defaults |
-| `theme_options` | `dict \| None` | `None` | Deep-merged with `DEFAULT_THEME_OPTIONS` |
-| `source_repository` | `str \| None` | `None` | GitHub URL (auto-computes `issue_url_tpl` and footer icon) |
-| `source_branch` | `str` | `"master"` | Default branch name |
-| `light_logo` / `dark_logo` | `str \| None` | `None` | Theme logo paths |
-| `docs_url` | `str \| None` | `None` | Docs URL (auto-computes OGP settings) |
-| `intersphinx_mapping` | `Mapping \| None` | `None` | Intersphinx targets |
-| `**overrides` | `Any` | — | Any Sphinx config key, passed through verbatim |
-
-`**overrides` is the escape hatch — any valid Sphinx configuration key can be
-passed as a keyword argument. This includes extension-specific settings like
-`rediraffe_redirects`, `pytest_fixture_lint_level`, or `html_favicon`.
-Auto-computed values can also be overridden this way.
-
-## Auto-computed values
-
-When `source_repository` is provided:
-
-- `issue_url_tpl` for `linkify_issues`
-- `html_theme_options["source_repository"]`
-- Footer icon GitHub URL
-
-When `docs_url` is provided:
-
-- `ogp_site_url` for `sphinxext.opengraph`
-- `ogp_site_name` (set to project name)
-- `ogp_image` (`_static/img/icons/icon-192x192.png`)
-
-When `linkcode_resolve` is in `**overrides`:
-
-- `sphinx.ext.linkcode` is auto-appended to extensions
-
-## Hardcoded defaults
-
-Set unconditionally. Override via `**overrides` if needed:
-
-| Key | Value |
-|-----|-------|
-| `master_doc` | `"index"` |
-| `release` | same as `version` |
-| `source_suffix` | `{".rst": "restructuredtext", ".md": "markdown"}` |
-| `html_static_path` | `["_static"]` |
-| `templates_path` | `["_templates"]` |
-| `pygments_style` | `"monokai"` |
-| `pygments_dark_style` | `"monokai"` |
-| `exclude_patterns` | `["_build"]` |
-
-## Injected setup()
-
-The returned config includes a `setup` function that:
-
-- Registers `js/spa-nav.js` with deferred loading (from sphinx-gptheme)
-- Connects a `build-finished` hook to remove `tabs.js` (sphinx-inline-tabs workaround)
+Reference for `gp_sphinx.config.merge_sphinx_config()` and the shared defaults
+it applies.
 
 ## Integration pattern
 
 ```python
-conf = merge_sphinx_config(...)
+from gp_sphinx.config import merge_sphinx_config
+
+conf = merge_sphinx_config(
+    project="my-project",
+    version="1.2.3",
+    copyright="2026, Your Name",
+    source_repository="https://github.com/your-org/my-project/",
+)
 globals().update(conf)
 ```
 
-This injects all keys into the module namespace, which is how Sphinx
-reads `conf.py`.
+`merge_sphinx_config()` returns a flat dictionary meant to be injected into the
+module namespace with `globals().update(conf)`. That is the conventional Sphinx
+integration point: Sphinx reads `conf.py` globals directly, and the returned
+mapping already includes the coordinator’s generated `setup(app)` hook.
 
-## Default extensions
+## `merge_sphinx_config()` parameters
 
-| Extension | Purpose |
-|-----------|---------|
-| `sphinx.ext.autodoc` | Auto-document Python objects |
-| `sphinx_fonts` | Self-hosted fonts via Fontsource CDN |
-| `sphinx.ext.intersphinx` | Cross-project linking |
-| `sphinx_autodoc_typehints` | Type hints in docstrings |
-| `sphinx.ext.todo` | TODO directive |
-| `sphinx.ext.napoleon` | NumPy/Google docstring support |
-| `sphinx_inline_tabs` | Inline tab containers |
-| `sphinx_copybutton` | Copy button on code blocks |
-| `sphinxext.opengraph` | OpenGraph meta tags |
-| `sphinxext.rediraffe` | URL redirects |
-| `sphinx_design` | Cards, grids, badges |
-| `myst_parser` | Markdown support |
-| `linkify_issues` | Auto-link `#123` to issues (from gp-libs) |
+All parameters are keyword-only.
 
-## Default theme
+| Parameter | Type | Default | Description |
+| --- | --- | --- | --- |
+| `project` | `str` | required | Project name assigned to `project` and used in derived metadata |
+| `version` | `str` | required | Version string assigned to both `version` and `release` |
+| `copyright` | `str` | required | Copyright string for Sphinx metadata |
+| `extensions` | `list[str] \| None` | `None` | Seed extension list; when omitted, uses `DEFAULT_EXTENSIONS` |
+| `extra_extensions` | `list[str] \| None` | `None` | Additional extensions appended after the base list is chosen |
+| `remove_extensions` | `list[str] \| None` | `None` | Extensions removed from the selected base list |
+| `theme_options` | `dict[str, Any] \| None` | `None` | Deep-merged into `DEFAULT_THEME_OPTIONS` after auto-populated source/logo values |
+| `source_repository` | `str \| None` | `None` | GitHub repository URL used for issue links, footer icon URLs, and theme source metadata |
+| `source_branch` | `str` | `"master"` | Source branch stored in `html_theme_options["source_branch"]` |
+| `light_logo` | `str \| None` | `None` | Light-mode logo path merged into theme options |
+| `dark_logo` | `str \| None` | `None` | Dark-mode logo path merged into theme options |
+| `docs_url` | `str \| None` | `None` | Canonical docs URL used to derive Open Graph settings |
+| `intersphinx_mapping` | `Mapping[str, tuple[str, str \| None]] \| None` | `None` | Mapping assigned to `intersphinx_mapping` when provided |
+| `**overrides` | `Any` | none | Final escape hatch for any Sphinx config key; applied after all defaults and auto-computed values |
 
-`sphinx-gptheme` — Furo child theme. Source directory `docs/`, source
-branch `master`, GitHub footer icon. Theme options are deep-merged when
-`theme_options` is passed.
+## Auto-computed values
 
-## Font defaults
-
-- **IBM Plex Sans**: weights 400, 500, 600, 700 (normal + italic)
-- **IBM Plex Mono**: weight 400 (normal + italic)
-- **Preload**: Sans 400 normal, Sans 700 normal, Mono 400 normal
-- **Fallbacks**: metric-matched Arial/Courier New for zero-CLS loading
-- **CSS variables**: `--font-stack`, `--font-stack--monospace`, `--font-stack--headings`
-
-## MyST defaults
-
-Extensions: `colon_fence`, `substitution`, `replacements`, `strikethrough`, `linkify`.
-Heading anchors: 4 levels.
-
-## Autodoc defaults
-
-`DEFAULT_AUTODOC_OPTIONS`:
-
-| Setting | Value |
-|---------|-------|
-| `autoclass_content` | `"both"` |
-| `autodoc_member_order` | `"bysource"` |
-| `autodoc_class_signature` | `"separated"` |
-| `autodoc_typehints` | `"description"` |
-| `toc_object_entries_show_parents` | `"hide"` |
-
-`DEFAULT_AUTODOC_OPTIONS` dict (applied to `autodoc_default_options`):
+### From `source_repository`
 
 | Key | Value |
-|-----|-------|
-| `members` | `True` |
-| `undoc-members` | `True` |
-| `private-members` | `False` |
-| `show-inheritance` | `True` |
-| `member-order` | `"bysource"` |
+| --- | --- |
+| `issue_url_tpl` | `"{repo}/issues/{issue_id}"` |
+| `html_theme_options["source_repository"]` | repository URL |
+| `html_theme_options["footer_icons"][0]["url"]` | repository URL for the GitHub footer icon |
 
-## Static paths and source suffix
+### From `docs_url`
+
+| Key | Value |
+| --- | --- |
+| `ogp_site_url` | `docs_url` |
+| `ogp_site_name` | `project` |
+| `ogp_image` | `"_static/img/icons/icon-192x192.png"` |
+
+### From `**overrides`
+
+If `linkcode_resolve` is present in `**overrides`, `merge_sphinx_config()`
+automatically appends `sphinx.ext.linkcode` to `extensions` if it is not
+already present.
+
+## Injected `setup(app)`
+
+The returned config includes a `setup(app)` function from
+`gp_sphinx.config.setup`. It does two things:
+
+| Action | Effect |
+| --- | --- |
+| `app.add_js_file("js/spa-nav.js", loading_method="defer")` | Registers the bundled SPA navigation script from `sphinx-gptheme` |
+| `app.connect("build-finished", remove_tabs_js)` | Removes `_static/tabs.js` after HTML builds as a `sphinx-inline-tabs` workaround |
+
+## Always-set coordinator values
+
+These are injected even though they are not exposed as `DEFAULT_*` constants:
+
+| Key | Value |
+| --- | --- |
+| `master_doc` | `"index"` |
+| `release` | `version` |
+| `html_theme` | `DEFAULT_THEME` |
+| `html_theme_path` | `[]` |
+| `rediraffe_redirects` | `{}` |
+| `rediraffe_branch` | `"master~1"` |
+| `exclude_patterns` | `["_build"]` |
+| `setup` | `gp_sphinx.config.setup` |
+
+## Shared `DEFAULT_*` constants
+
+### Extensions and source parsing
 
 | Constant | Value |
-|----------|-------|
+| --- | --- |
+| `DEFAULT_EXTENSIONS` | `["sphinx.ext.autodoc", "sphinx_fonts", "sphinx.ext.intersphinx", "sphinx_autodoc_typehints", "sphinx.ext.todo", "sphinx.ext.napoleon", "sphinx_inline_tabs", "sphinx_copybutton", "sphinxext.opengraph", "sphinxext.rediraffe", "sphinx_design", "myst_parser", "linkify_issues"]` |
 | `DEFAULT_SOURCE_SUFFIX` | `{".rst": "restructuredtext", ".md": "markdown"}` |
-| `DEFAULT_HTML_STATIC_PATH` | `["_static"]` |
+| `DEFAULT_MYST_EXTENSIONS` | `["colon_fence", "substitution", "replacements", "strikethrough", "linkify"]` |
+| `DEFAULT_MYST_HEADING_ANCHORS` | `4` |
 | `DEFAULT_TEMPLATES_PATH` | `["_templates"]` |
+| `DEFAULT_HTML_STATIC_PATH` | `["_static"]` |
 
-## Copybutton defaults
-
-`DEFAULT_COPYBUTTON_PROMPT_TEXT` — regex matching Python (`>>>`), continuation (`...`), shell (`$`, `#`), and IPython prompts. See `defaults.py` for the full pattern.
+### Theme defaults
 
 | Constant | Value |
-|----------|-------|
+| --- | --- |
+| `DEFAULT_THEME` | `"sphinx-gptheme"` |
+| `DEFAULT_THEME_OPTIONS` | footer GitHub icon, `source_repository=""`, `source_branch="master"`, `source_directory="docs/"` |
+
+### Font defaults
+
+| Constant | Value |
+| --- | --- |
+| `DEFAULT_SPHINX_FONTS` | IBM Plex Sans (400/500/600/700, normal+italic) and IBM Plex Mono (400, normal+italic) Fontsource definitions |
+| `DEFAULT_SPHINX_FONT_PRELOAD` | `("IBM Plex Sans", 400, "normal")`, `("IBM Plex Sans", 700, "normal")`, `("IBM Plex Mono", 400, "normal")` |
+| `DEFAULT_SPHINX_FONT_FALLBACKS` | Metric-adjusted Arial and Courier fallback declarations |
+| `DEFAULT_SPHINX_FONT_CSS_VARIABLES` | `--font-stack`, `--font-stack--monospace`, `--font-stack--headings` |
+
+### Syntax highlighting and copybutton
+
+| Constant | Value |
+| --- | --- |
+| `DEFAULT_PYGMENTS_STYLE` | `"monokai"` |
+| `DEFAULT_PYGMENTS_DARK_STYLE` | `"monokai"` |
+| `DEFAULT_COPYBUTTON_PROMPT_TEXT` | regex matching Python, shell, and IPython prompts |
 | `DEFAULT_COPYBUTTON_PROMPT_IS_REGEXP` | `True` |
 | `DEFAULT_COPYBUTTON_REMOVE_PROMPTS` | `True` |
 | `DEFAULT_COPYBUTTON_LINE_CONTINUATION_CHARACTER` | `"\\"` |
 
-## Other defaults
+### Autodoc defaults
 
 | Constant | Value |
-|----------|-------|
+| --- | --- |
+| `DEFAULT_AUTOCLASS_CONTENT` | `"both"` |
+| `DEFAULT_AUTODOC_MEMBER_ORDER` | `"bysource"` |
+| `DEFAULT_AUTODOC_CLASS_SIGNATURE` | `"separated"` |
+| `DEFAULT_AUTODOC_TYPEHINTS` | `"description"` |
+| `DEFAULT_TOC_OBJECT_ENTRIES_SHOW_PARENTS` | `"hide"` |
+| `DEFAULT_AUTODOC_OPTIONS` | `{"undoc-members": True, "members": True, "private-members": True, "show-inheritance": True, "member-order": "bysource"}` |
+
+### Napoleon and warning defaults
+
+| Constant | Value |
+| --- | --- |
 | `DEFAULT_NAPOLEON_GOOGLE_DOCSTRING` | `True` |
 | `DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC` | `False` |
 | `DEFAULT_SUPPRESS_WARNINGS` | `["sphinx_autodoc_typehints.forward_reference"]` |
 
-Rediraffe: `rediraffe_redirects = {}`, `rediraffe_branch = "master~1"`.
+## Parameter interactions
+
+- `extensions`, `extra_extensions`, and `remove_extensions` are applied in that order.
+- `theme_options` is deep-merged, so nested theme dictionaries can be overridden without replacing the whole structure.
+- `**overrides` runs last, so it can replace any default or auto-computed value.
+- The returned `setup(app)` hook survives `globals().update(conf)` intact because Sphinx reads it as a normal top-level `conf.py` function.

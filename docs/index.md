@@ -16,7 +16,7 @@ Install and get started in minutes.
 :::{grid-item-card} Packages
 :link: packages/index
 :link-type: doc
-Five workspace packages — coordinator, extensions, and theme.
+Seven workspace packages — coordinator, extensions, and theme.
 :::
 
 :::{grid-item-card} Configuration

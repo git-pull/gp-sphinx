@@ -78,17 +78,13 @@ def deep_merge(base: dict[str, t.Any], override: dict[str, t.Any]) -> dict[str, 
     When both values for a key are dicts, they are merged recursively.
     Otherwise the value from *override* wins.
 
-    Parameters
-    ----------
-    base : dict
-        The base dictionary.
-    override : dict
-        The dictionary whose values take precedence.
+    :param base: The base dictionary.
+    :type base: dict
+    :param override: The dictionary whose values take precedence.
+    :type override: dict
 
-    Returns
-    -------
-    dict
-        A new merged dictionary.
+    :returns: A new merged dictionary.
+    :rtype: dict
 
     Examples
     --------
@@ -118,21 +114,18 @@ def make_linkcode_resolve(
     on GitHub. The returned function follows the interface expected by
     ``sphinx.ext.linkcode``.
 
-    Parameters
-    ----------
-    package_module : types.ModuleType
-        The top-level package module (e.g., ``import libtmux; libtmux``).
+    :param package_module: The top-level package module
+        (e.g., ``import libtmux; libtmux``).
         Used to compute relative file paths.
-    github_url : str
-        Base GitHub repository URL (e.g.,
+    :type package_module: types.ModuleType
+    :param github_url: Base GitHub repository URL (e.g.,
         ``"https://github.com/tmux-python/libtmux"``).
-    src_dir : str
-        Directory containing the source package (default ``"src"``).
+    :type github_url: str
+    :param src_dir: Directory containing the source package (default ``"src"``).
+    :type src_dir: str
 
-    Returns
-    -------
-    Callable[[str, dict[str, str]], str | None]
-        A function suitable for ``linkcode_resolve`` in Sphinx config.
+    :returns: A function suitable for ``linkcode_resolve`` in Sphinx config.
+    :rtype: Callable[[str, dict[str, str]], str | None]
 
     Examples
     --------
@@ -232,45 +225,42 @@ def merge_sphinx_config(
     for the ``linkify_issues`` extension. When ``docs_url`` is provided,
     ``ogp_site_url``, ``ogp_image``, and ``ogp_site_name`` are auto-computed
     for ``sphinxext.opengraph``. All auto-computed values can be overridden
-    via ``\**overrides``.
+    via ``overrides``.
 
-    Parameters
-    ----------
-    project : str
-        Sphinx project name.
-    version : str
-        Project version string.
-    copyright : str
-        Copyright string.
-    extensions : list[str] | None
-        Replace the default extension list entirely. Usually not needed.
-    extra_extensions : list[str] | None
-        Add extensions to the defaults (e.g., ``["sphinx_argparse_neo.exemplar"]``).
-    remove_extensions : list[str] | None
-        Remove specific defaults (e.g., ``["sphinx_design"]``).
-    theme_options : dict | None
-        Deep-merged with default theme options.
-    source_repository : str | None
-        GitHub repository URL.
-    source_branch : str
-        Default branch name.
-    light_logo : str | None
-        Path to light-mode logo.
-    dark_logo : str | None
-        Path to dark-mode logo.
-    docs_url : str | None
-        Documentation site URL (e.g., ``"https://libtmux.git-pull.com"``).
+    :param project: Sphinx project name.
+    :type project: str
+    :param version: Project version string.
+    :type version: str
+    :param copyright: Copyright string.
+    :type copyright: str
+    :param extensions: Replace the default extension list entirely. Usually not needed.
+    :type extensions: list[str] | None
+    :param extra_extensions: Add extensions to the defaults
+        (e.g., ``["sphinx_argparse_neo.exemplar"]``).
+    :type extra_extensions: list[str] | None
+    :param remove_extensions: Remove specific defaults (e.g., ``["sphinx_design"]``).
+    :type remove_extensions: list[str] | None
+    :param theme_options: Deep-merged with default theme options.
+    :type theme_options: dict | None
+    :param source_repository: GitHub repository URL.
+    :type source_repository: str | None
+    :param source_branch: Default branch name.
+    :type source_branch: str
+    :param light_logo: Path to light-mode logo.
+    :type light_logo: str | None
+    :param dark_logo: Path to dark-mode logo.
+    :type dark_logo: str | None
+    :param docs_url: Documentation site URL (e.g., ``"https://libtmux.git-pull.com"``).
         Used to auto-compute ``ogp_site_url`` and ``ogp_site_name``.
-    intersphinx_mapping : dict | None
-        Intersphinx targets.
-    \**overrides
-        Any additional Sphinx config values.
+    :type docs_url: str | None
+    :param intersphinx_mapping: Intersphinx targets.
+    :type intersphinx_mapping: dict | None
+    :param overrides: Any additional Sphinx config values.
+    :type overrides: dict
 
-    Returns
-    -------
-    dict[str, Any]
-        Complete Sphinx configuration namespace including a ``setup``
+    :returns: Complete Sphinx configuration namespace including a ``setup``
         function for workaround hooks.
+    :rtype: dict[str, Any]
 
     Examples
     --------
