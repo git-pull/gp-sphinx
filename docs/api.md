@@ -18,7 +18,7 @@ For shared defaults and configuration options, see {doc}`configuration`.
 
 ### Wiring into conf.py
 
-Pass the resolver to `merge_sphinx_config()` via `**overrides`.
+Pass the resolver to {py:func}`~gp_sphinx.config.merge_sphinx_config` via `**overrides`.
 `sphinx.ext.linkcode` is auto-appended to extensions when `linkcode_resolve`
 is provided:
 
@@ -43,4 +43,10 @@ globals().update(conf)
 
 ```{eval-rst}
 .. autofunction:: gp_sphinx.config.deep_merge
+```
+
+## setup
+
+```{eval-rst}
+.. autofunction:: gp_sphinx.config.setup
 ```

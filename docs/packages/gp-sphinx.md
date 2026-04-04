@@ -2,7 +2,7 @@
 
 {bdg-warning-line}`Alpha`
 
-Shared configuration coordinator for Sphinx projects. `merge_sphinx_config()`
+Shared configuration coordinator for Sphinx projects. {py:func}`~gp_sphinx.config.merge_sphinx_config`
 builds a complete `conf.py` namespace from the workspace defaults and leaves
 per-project overrides in one place.
 

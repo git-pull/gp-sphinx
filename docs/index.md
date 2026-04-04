@@ -22,7 +22,7 @@ Seven workspace packages — coordinator, extensions, and theme.
 :::{grid-item-card} Configuration
 :link: configuration
 :link-type: doc
-Parameter reference for `merge_sphinx_config()` and shared defaults.
+Parameter reference for {py:func}`~gp_sphinx.config.merge_sphinx_config` and shared defaults.
 :::
 
 ::::

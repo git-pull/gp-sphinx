@@ -2,7 +2,7 @@
 
 # Configuration
 
-Reference for `gp_sphinx.config.merge_sphinx_config()` and the shared defaults
+Reference for {py:func}`gp_sphinx.config.merge_sphinx_config` and the shared defaults
 it applies.
 
 ## Integration pattern
@@ -19,7 +19,7 @@ conf = merge_sphinx_config(
 globals().update(conf)
 ```
 
-`merge_sphinx_config()` returns a flat dictionary meant to be injected into the
+{py:func}`~gp_sphinx.config.merge_sphinx_config` returns a flat dictionary meant to be injected into the
 module namespace with `globals().update(conf)`. That is the conventional Sphinx
 integration point: Sphinx reads `conf.py` globals directly, and the returned
 mapping already includes the coordinator’s generated `setup(app)` hook.
@@ -72,7 +72,7 @@ already present.
 ## Injected `setup(app)`
 
 The returned config includes a `setup(app)` function from
-`gp_sphinx.config.setup`. It does two things:
+{py:func}`gp_sphinx.config.setup`. It does two things:
 
 | Action | Effect |
 | --- | --- |
@@ -92,7 +92,7 @@ These are injected even though they are not exposed as `DEFAULT_*` constants:
 | `rediraffe_redirects` | `{}` |
 | `rediraffe_branch` | `"master~1"` |
 | `exclude_patterns` | `["_build"]` |
-| `setup` | `gp_sphinx.config.setup` |
+| `setup` | {py:func}`gp_sphinx.config.setup` |
 
 ## Shared `DEFAULT_*` constants
 
