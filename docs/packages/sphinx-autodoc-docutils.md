@@ -25,7 +25,9 @@ Use a single-object directive when you want one rendered reference entry:
 ```{eval-rst}
 .. autodirective:: my_project.docs_ext.MyDirective
 ```
+````
 
+````md
 ```{eval-rst}
 .. autorole:: my_project.docs_roles.cli_option_role
 ```
@@ -37,15 +39,21 @@ Use the bulk directives to render a full module reference plus an index:
 ```{eval-rst}
 .. autodirective-index:: my_project.docs_ext
 ```
+````
 
+````md
 ```{eval-rst}
 .. autodirectives:: my_project.docs_ext
 ```
+````
 
+````md
 ```{eval-rst}
 .. autorole-index:: my_project.docs_roles
 ```
+````
 
+````md
 ```{eval-rst}
 .. autoroles:: my_project.docs_roles
 ```
