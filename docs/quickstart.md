@@ -85,7 +85,7 @@ globals().update(conf)
 ```python
 conf = merge_sphinx_config(
     # ...
-    extra_extensions=["argparse_exemplar", "sphinx_click"],
+    extra_extensions=["sphinx_argparse_neo.exemplar", "sphinx_click"],
 )
 ```
 

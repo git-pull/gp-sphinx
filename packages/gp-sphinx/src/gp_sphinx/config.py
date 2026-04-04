@@ -245,7 +245,7 @@ def merge_sphinx_config(
     extensions : list[str] | None
         Replace the default extension list entirely. Usually not needed.
     extra_extensions : list[str] | None
-        Add extensions to the defaults (e.g., ``["argparse_exemplar"]``).
+        Add extensions to the defaults (e.g., ``["sphinx_argparse_neo.exemplar"]``).
     remove_extensions : list[str] | None
         Remove specific defaults (e.g., ``["sphinx_design"]``).
     theme_options : dict | None
