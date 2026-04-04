@@ -241,13 +241,13 @@ def setup(app: Sphinx) -> SetupDict:
         "sphinx_fonts",
         [],
         "html",
-        description="Font family definitions (list of dicts with family, package, version, weights, styles)",
+        description="Font family dicts (family, package, version, weights, styles).",
     )
     app.add_config_value(
         "sphinx_font_fallbacks",
         [],
         "html",
-        description="Fallback @font-face declarations with metric overrides for CLS reduction",
+        description="Fallback @font-face declarations with metric overrides for CLS.",
     )
     app.add_config_value(
         "sphinx_font_css_variables",
@@ -259,7 +259,7 @@ def setup(app: Sphinx) -> SetupDict:
         "sphinx_font_preload",
         [],
         "html",
-        description="Critical font variants to preload as (family, weight, style) tuples",
+        description="Critical font variants to preload (family, weight, style).",
     )
     app.connect("builder-inited", _on_builder_inited)
     app.connect("html-page-context", _on_html_page_context)
