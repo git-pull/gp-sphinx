@@ -29,7 +29,7 @@ the next docs build.
 Extending the surface extractor
 --------------------------------
 To capture a new ``app.add_*`` call, add a handler to the mock
-``_MockApp`` class inside ``collect_extension_surface()``.  Follow the pattern
+``RecorderApp`` class inside ``collect_extension_surface()``.  Follow the pattern
 of the existing ``add_directive`` / ``add_role`` handlers.
 
 Examples
