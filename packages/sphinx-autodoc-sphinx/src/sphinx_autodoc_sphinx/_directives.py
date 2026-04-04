@@ -189,19 +189,35 @@ def _config_values_from_calls(
 ) -> list[SphinxConfigValue]:
     """Extract config-value metadata from recorded setup calls.
 
+    Handles both positional and keyword-style ``add_config_value()`` calls.
+
     Examples
     --------
+    Positional args:
+
     >>> values = _config_values_from_calls(
     ...     "demo_ext",
     ...     [("add_config_value", ("demo_option", 1, "env"), {"types": (int,)})],
     ... )
     >>> values[0].name
     'demo_option'
+
+    Keyword args (name positional, rest as kwargs):
+
+    >>> kw_args = {"default": True, "rebuild": "html"}
+    >>> kw_call = ("add_config_value", ("kw_opt",), kw_args)
+    >>> values = _config_values_from_calls("demo_ext", [kw_call])
+    >>> values[0].name
+    'kw_opt'
+    >>> values[0].default
+    True
+    >>> values[0].rebuild
+    'html'
     """
     values: list[SphinxConfigValue] = []
     seen: set[str] = set()
     for call_name, args, kwargs in calls:
-        if call_name != "add_config_value" or len(args) < 3:
+        if call_name != "add_config_value" or len(args) < 1:
             continue
         name = str(args[0])
         if name in seen:
@@ -211,8 +227,8 @@ def _config_values_from_calls(
             SphinxConfigValue(
                 module_name=module_name,
                 name=name,
-                default=args[1],
-                rebuild=str(kwargs.get("rebuild", args[2])),
+                default=kwargs.get("default", args[1] if len(args) > 1 else None),
+                rebuild=str(kwargs.get("rebuild", args[2] if len(args) > 2 else "")),
                 types=kwargs.get("types", args[3] if len(args) > 3 else ()),
                 description=str(
                     kwargs.get("description", args[4] if len(args) > 4 else "")
