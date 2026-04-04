@@ -83,6 +83,24 @@ point: roles and directives should be documentable the same way fixtures are.
    :no-index:
 ```
 
+### Bulk directives demo
+
+Renders all directive classes in a module at once:
+
+```{eval-rst}
+.. autodirectives:: docutils_demo
+   :no-index:
+```
+
+### Bulk roles demo
+
+Renders all role callables in a module at once:
+
+```{eval-rst}
+.. autoroles:: docutils_demo
+   :no-index:
+```
+
 The extension itself registers directives, not docutils roles or Sphinx config
 values. The generated package reference below lists its registered surface from
 the live `setup()` calls.

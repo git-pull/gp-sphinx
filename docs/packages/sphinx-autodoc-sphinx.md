@@ -54,6 +54,14 @@ directive documentation.
    :no-index:
 ```
 
+### Bulk config values demo
+
+Renders all config values from a module at once:
+
+```{eval-rst}
+.. autoconfigvalues:: sphinx_config_demo
+```
+
 ### Document the extension's own directive helper
 
 ```{eval-rst}

@@ -208,6 +208,7 @@ def _directive_markup(
             lines.extend(
                 [
                     f"   .. rst:directive:option:: {clean_option_name}",
+                    "      :no-index:" if no_index else "",
                     "",
                     f"      Validator: ``{clean_converter_name}``.",
                     "",
