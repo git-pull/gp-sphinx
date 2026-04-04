@@ -118,6 +118,8 @@ Heading anchors: 4 levels.
 
 ## Autodoc defaults
 
+`DEFAULT_AUTODOC_OPTIONS`:
+
 | Setting | Value |
 |---------|-------|
 | `autoclass_content` | `"both"` |
@@ -126,13 +128,40 @@ Heading anchors: 4 levels.
 | `autodoc_typehints` | `"description"` |
 | `toc_object_entries_show_parents` | `"hide"` |
 
+`DEFAULT_AUTODOC_OPTIONS` dict (applied to `autodoc_default_options`):
+
+| Key | Value |
+|-----|-------|
+| `members` | `True` |
+| `undoc-members` | `True` |
+| `private-members` | `False` |
+| `show-inheritance` | `True` |
+| `member-order` | `"bysource"` |
+
+## Static paths and source suffix
+
+| Constant | Value |
+|----------|-------|
+| `DEFAULT_SOURCE_SUFFIX` | `{".rst": "restructuredtext", ".md": "markdown"}` |
+| `DEFAULT_HTML_STATIC_PATH` | `["_static"]` |
+| `DEFAULT_TEMPLATES_PATH` | `["_templates"]` |
+
 ## Copybutton defaults
 
-Regex prompt stripping for `>>>`, `...`, `$`, `#`, IPython prompts.
-Line continuation character: `\`.
+`DEFAULT_COPYBUTTON_PROMPT_TEXT` — regex matching Python (`>>>`), continuation (`...`), shell (`$`, `#`), and IPython prompts. See `defaults.py` for the full pattern.
+
+| Constant | Value |
+|----------|-------|
+| `DEFAULT_COPYBUTTON_PROMPT_IS_REGEXP` | `True` |
+| `DEFAULT_COPYBUTTON_REMOVE_PROMPTS` | `True` |
+| `DEFAULT_COPYBUTTON_LINE_CONTINUATION_CHARACTER` | `"\\"` |
 
 ## Other defaults
 
-- **Napoleon**: Google docstrings enabled, `napoleon_include_init_with_doc = False`
-- **Suppress warnings**: `sphinx_autodoc_typehints.forward_reference`
-- **Rediraffe**: `rediraffe_redirects = {}`, `rediraffe_branch = "master~1"`
+| Constant | Value |
+|----------|-------|
+| `DEFAULT_NAPOLEON_GOOGLE_DOCSTRING` | `True` |
+| `DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC` | `False` |
+| `DEFAULT_SUPPRESS_WARNINGS` | `["sphinx_autodoc_typehints.forward_reference"]` |
+
+Rediraffe: `rediraffe_redirects = {}`, `rediraffe_branch = "master~1"`.
