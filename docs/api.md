@@ -19,7 +19,7 @@ For shared defaults and configuration options, see {doc}`configuration`.
 ### Wiring into conf.py
 
 Pass the resolver to {py:func}`~gp_sphinx.config.merge_sphinx_config` via `**overrides`.
-`sphinx.ext.linkcode` is auto-appended to extensions when `linkcode_resolve`
+{py:mod}`sphinx:sphinx.ext.linkcode` is auto-appended to extensions when `linkcode_resolve`
 is provided:
 
 ```python

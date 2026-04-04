@@ -4,7 +4,7 @@
 
 Experimental Sphinx extension for documenting config values registered by
 extension `setup()` hooks. It takes the repetitive part of `conf.py`
-reference-writing, records `app.add_config_value()` calls, and renders them as
+reference-writing, records {py:meth}`sphinx:~sphinx.application.Sphinx.add_config_value` calls, and renders them as
 live `confval` entries and summary indexes.
 
 ```console

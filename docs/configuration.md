@@ -66,7 +66,7 @@ All parameters are keyword-only.
 ### From `**overrides`
 
 If `linkcode_resolve` is present in `**overrides`, `merge_sphinx_config()`
-automatically appends `sphinx.ext.linkcode` to `extensions` if it is not
+automatically appends {py:mod}`sphinx:sphinx.ext.linkcode` to `extensions` if it is not
 already present.
 
 ## Injected `setup(app)`

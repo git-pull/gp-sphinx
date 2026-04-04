@@ -41,7 +41,7 @@ globals().update(conf)
 - Shared extension defaults, theme defaults, fonts, MyST, napoleon, copybutton, and rediraffe settings.
 - Auto-computed values like `issue_url_tpl`, `ogp_site_url`, `ogp_site_name`, and `ogp_image` when repository and docs URLs are provided.
 - A `setup(app)` hook that registers `js/spa-nav.js` and removes `tabs.js` after HTML builds.
-- Support for appending `sphinx.ext.linkcode` automatically when `linkcode_resolve` is supplied in `**overrides`.
+- Support for appending {py:mod}`sphinx:sphinx.ext.linkcode` automatically when `linkcode_resolve` is supplied in `**overrides`.
 
 See {doc}`/configuration` for the complete parameter reference and every shared `DEFAULT_*` constant.
 
