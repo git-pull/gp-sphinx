@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import typing as t
 
 from sphinx.application import Sphinx
@@ -17,6 +18,8 @@ from sphinx_autodoc_docutils._directives import (
 
 if t.TYPE_CHECKING:
     from sphinx.util.typing import ExtensionMetadata
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 def setup(app: Sphinx) -> ExtensionMetadata:
