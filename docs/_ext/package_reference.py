@@ -278,10 +278,10 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
 
     for name, args, kwargs in app.calls:
         if name == "add_config_value":
-            if len(args) < 2:
+            if len(args) < 1:
                 continue
             option = str(args[0])
-            default = args[1]
+            default = kwargs.get("default", args[1] if len(args) > 1 else None)
             rebuild = str(kwargs.get("rebuild", args[2] if len(args) > 2 else ""))
             types = kwargs.get("types")
             config_values.append(
