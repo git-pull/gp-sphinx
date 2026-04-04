@@ -189,6 +189,64 @@ def test_workspace_package_grid_markdown_structure(
     assert (substring in output) == present
 
 
+class DomainRegistrationFixture(t.NamedTuple):
+    """Expected py-domain registration from _register_extension_objects."""
+
+    test_id: str
+    full_name: str
+    expected_objtype: str
+    expected_docname: str
+
+
+DOMAIN_REGISTRATION_FIXTURES: list[DomainRegistrationFixture] = [
+    DomainRegistrationFixture(
+        test_id="autodirective_class",
+        full_name="sphinx_autodoc_docutils._directives.AutoDirective",
+        expected_objtype="class",
+        expected_docname="packages/sphinx-autodoc-docutils",
+    ),
+    DomainRegistrationFixture(
+        test_id="autorole_class",
+        full_name="sphinx_autodoc_docutils._directives.AutoRole",
+        expected_objtype="class",
+        expected_docname="packages/sphinx-autodoc-docutils",
+    ),
+    DomainRegistrationFixture(
+        test_id="sphinx_autoconfigvalue_class",
+        full_name="sphinx_autodoc_sphinx._directives.AutoconfigvalueDirective",
+        expected_objtype="class",
+        expected_docname="packages/sphinx-autodoc-sphinx",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(DomainRegistrationFixture._fields),
+    DOMAIN_REGISTRATION_FIXTURES,
+    ids=[f.test_id for f in DOMAIN_REGISTRATION_FIXTURES],
+)
+def test_register_extension_objects_populates_py_domain(
+    test_id: str,
+    full_name: str,
+    expected_objtype: str,
+    expected_docname: str,
+) -> None:
+    """_register_extension_objects writes extension classes into the py domain dict."""
+
+    class _MockPyDomain:
+        objects: dict[str, t.Any] = {}
+
+    class _MockEnv:
+        domains: dict[str, object] = {"py": _MockPyDomain()}
+
+    package_reference._register_extension_objects(None, _MockEnv())
+
+    assert full_name in _MockPyDomain.objects, f"{full_name!r} not registered"
+    entry = _MockPyDomain.objects[full_name]
+    assert entry.objtype == expected_objtype
+    assert entry.docname == expected_docname
+
+
 def test_workspace_package_grid_markdown_badge_not_in_card_titles() -> None:
     """Maturity badges appear in the card footer, not in card title lines."""
     output = package_reference.workspace_package_grid_markdown()

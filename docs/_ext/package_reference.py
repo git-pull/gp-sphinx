@@ -751,6 +751,87 @@ def workspace_package_grid_markdown() -> str:
     return "\n".join(lines)
 
 
+def _register_extension_objects(
+    app: t.Any,
+    env: t.Any,
+) -> None:
+    """Populate the Sphinx py domain so {py:obj} callables resolve as links.
+
+    Runs on ``env-check-consistency`` — after all source files are read and
+    ``clear_doc()`` calls are complete, but before the write phase resolves
+    cross-references.  Registering earlier (e.g. ``env-before-read-docs``)
+    fails because ``clear_doc()`` wipes domain entries whose docname matches
+    the page being re-read.
+
+    Examples
+    --------
+    >>> class _MockPyDomain:
+    ...     objects: dict[str, object] = {}
+    >>> class _MockEnv:
+    ...     domains: dict[str, object] = {"py": _MockPyDomain()}
+    >>> _register_extension_objects(None, _MockEnv())
+    >>> "sphinx_autodoc_docutils._directives.AutoDirective" in _MockPyDomain.objects
+    True
+    """
+    try:
+        from sphinx.domains.python import ObjectEntry
+
+        py_domain = env.domains["py"]
+    except (KeyError, AttributeError, ImportError):
+        return
+
+    for package in workspace_packages():
+        module_name = package["module_name"]
+        pkg_docname = f"packages/{package['name']}"
+
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError:
+            continue
+
+        setup_fn = getattr(module, "setup", None)
+        if not callable(setup_fn):
+            continue
+
+        recorder = RecorderApp()
+        try:
+            setup_fn(recorder)
+        except Exception:
+            continue
+
+        for call_name, args, _kwargs in recorder.calls:
+            obj: object = None
+            objtype = "class"
+            if call_name == "add_directive" and len(args) >= 2:
+                obj, objtype = args[1], "class"
+            elif call_name == "add_directive_to_domain" and len(args) >= 3:
+                obj, objtype = args[2], "class"
+            elif call_name == "add_role" and len(args) >= 2:
+                obj = args[1]
+                objtype = "function" if not inspect.isclass(obj) else "class"
+            elif call_name == "add_role_to_domain" and len(args) >= 3:
+                obj = args[2]
+                objtype = "function" if not inspect.isclass(obj) else "class"
+            elif call_name == "add_lexer" and len(args) >= 2:
+                obj, objtype = args[1], "class"
+
+            if obj is None:
+                continue
+
+            mod = getattr(obj, "__module__", None) or type(obj).__module__
+            name = getattr(obj, "__name__", None) or type(obj).__name__
+            full_name = f"{mod}.{name}"
+            if full_name in py_domain.objects:
+                continue
+            node_id = full_name.replace(".", "-")
+            py_domain.objects[full_name] = ObjectEntry(
+                docname=pkg_docname,
+                node_id=node_id,
+                objtype=objtype,
+                aliased=False,
+            )
+
+
 class PackageReferenceDirective(SphinxDirective):
     """Render a generated package reference block inside a page."""
 
@@ -784,6 +865,7 @@ def setup(app: t.Any) -> dict[str, object]:
     ensure_workspace_imports()
     app.add_directive("package-reference", PackageReferenceDirective)
     app.add_directive("workspace-package-grid", WorkspacePackageGridDirective)
+    app.connect("env-check-consistency", _register_extension_objects)
     return {
         "parallel_read_safe": True,
         "parallel_write_safe": True,
