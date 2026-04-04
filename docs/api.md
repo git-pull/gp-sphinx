@@ -16,6 +16,29 @@ For shared defaults and configuration options, see {doc}`configuration`.
 .. autofunction:: gp_sphinx.config.make_linkcode_resolve
 ```
 
+### Wiring into conf.py
+
+Pass the resolver to `merge_sphinx_config()` via `**overrides`.
+`sphinx.ext.linkcode` is auto-appended to extensions when `linkcode_resolve`
+is provided:
+
+```python
+import my_project
+from gp_sphinx.config import make_linkcode_resolve, merge_sphinx_config
+
+conf = merge_sphinx_config(
+    project="my-project",
+    version=my_project.__version__,
+    copyright="2026, My Name",
+    source_repository="https://github.com/my-org/my-project/",
+    linkcode_resolve=make_linkcode_resolve(
+        my_project,
+        "https://github.com/my-org/my-project",
+    ),
+)
+globals().update(conf)
+```
+
 ## deep_merge
 
 ```{eval-rst}
