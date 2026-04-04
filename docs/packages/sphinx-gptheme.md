@@ -20,18 +20,65 @@ html_theme = "sphinx-gptheme"
 When used with gp-sphinx, the theme is set automatically by
 `merge_sphinx_config()`.
 
-## What it provides
+## Theme options
 
-- **Templates**: `page.html`, `sidebar/brand.html`, `sidebar/projects.html`
-- **Static assets**: `css/custom.css`, `js/spa-nav.js`
-- **Parent theme**: Furo (declared in `theme.conf` with `inherit = furo`)
+Options declared in `theme.conf` (passed via `html_theme_options`):
+
+| Option | Description |
+|--------|-------------|
+| `announcement` | Banner text displayed above the header |
+| `light_logo` | Logo path for light mode |
+| `dark_logo` | Logo path for dark mode |
+| `sidebar_hide_name` | Hide project name in sidebar brand |
+| `footer_icons` | List of footer icon dicts (`name`, `url`, `html`, `class`) |
+| `light_css_variables` | CSS custom property overrides for light mode |
+| `dark_css_variables` | CSS custom property overrides for dark mode |
+
+### Example
+
+```python
+html_theme_options = {
+    "light_logo": "img/my-logo.svg",
+    "dark_logo": "img/my-logo-dark.svg",
+    "announcement": "<em>Note:</em> This project is in alpha.",
+    "footer_icons": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/my-org/my-project",
+            "html": "<svg>...</svg>",
+            "class": "",
+        },
+    ],
+}
+```
+
+## Bundled assets
+
+### Templates
+
+| Template | Description |
+|----------|-------------|
+| `sidebar/brand.html` | Project logo and name |
+| `sidebar/projects.html` | Cross-project navigation links |
+
+### Stylesheets
+
+| File | Description |
+|------|-------------|
+| `css/custom.css` | Base typography and layout overrides |
+| `css/argparse-highlight.css` | Syntax colors for CLI output lexers |
+
+### JavaScript
+
+| File | Description |
+|------|-------------|
+| `js/spa-nav.js` | SPA-style page navigation (deferred loading) |
+
+## Inheritance
+
+- **Parent theme**: Furo (`inherit = furo` in `theme.conf`)
 - **Entry point**: registered via `sphinx.html_themes` as `"sphinx-gptheme"`
-
-## SPA navigation
-
-`spa-nav.js` intercepts internal link clicks and swaps page content without
-a full page reload, preserving scroll position and sidebar state. Loaded
-with `defer` by the `setup()` function injected by `merge_sphinx_config()`.
+- **Sidebars**: scroll-start, brand, search, navigation, projects, scroll-end
 
 This site is built with sphinx-gptheme.
 
