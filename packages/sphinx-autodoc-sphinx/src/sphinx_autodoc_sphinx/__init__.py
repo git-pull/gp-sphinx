@@ -13,8 +13,11 @@ from sphinx_autodoc_sphinx._directives import (
     AutosphinxconfigIndexDirective,
 )
 
+if t.TYPE_CHECKING:
+    from sphinx.util.typing import ExtensionMetadata
 
-def setup(app: Sphinx) -> dict[str, t.Any]:
+
+def setup(app: Sphinx) -> ExtensionMetadata:
     """Register config-value documentation directives.
 
     Examples

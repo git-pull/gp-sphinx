@@ -15,8 +15,11 @@ from sphinx_autodoc_docutils._directives import (
     AutoRoles,
 )
 
+if t.TYPE_CHECKING:
+    from sphinx.util.typing import ExtensionMetadata
 
-def setup(app: Sphinx) -> dict[str, t.Any]:
+
+def setup(app: Sphinx) -> ExtensionMetadata:
     """Register the extension."""
     app.add_directive("autodirective", AutoDirective)
     app.add_directive("autodirectives", AutoDirectives)
