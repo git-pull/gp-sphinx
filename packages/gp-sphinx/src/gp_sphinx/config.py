@@ -69,6 +69,8 @@ if t.TYPE_CHECKING:
 
     from sphinx.application import Sphinx
 
+from gp_sphinx.myst_lexer import MystLexer
+
 logger = logging.getLogger(__name__)
 
 
@@ -466,3 +468,5 @@ def setup(app: Sphinx) -> None:
     """
     app.add_js_file("js/spa-nav.js", loading_method="defer")
     app.connect("build-finished", remove_tabs_js)
+    app.add_lexer("myst", MystLexer)
+    app.add_lexer("myst-md", MystLexer)
