@@ -27,6 +27,9 @@ from docutils.parsers.rst import directives
 from docutils.statemachine import StringList
 from sphinx.util.docutils import SphinxDirective
 
+if t.TYPE_CHECKING:
+    from sphinx.util.typing import OptionSpec
+
 
 class InvalidConfigValuePathError(ValueError):
     """Raised when a config-value path is missing the ``module.option`` form.
@@ -377,7 +380,7 @@ class AutoconfigvalueDirective(SphinxDirective):
 
     required_arguments = 1
     has_content = False
-    option_spec: t.ClassVar[dict[str, t.Any]] = {"no-index": directives.flag}
+    option_spec: t.ClassVar[OptionSpec] = {"no-index": directives.flag}
 
     def run(self) -> list[nodes.Node]:
         value = discover_config_value(self.arguments[0])
@@ -392,7 +395,7 @@ class AutoconfigvaluesDirective(SphinxDirective):
 
     required_arguments = 1
     has_content = False
-    option_spec: t.ClassVar[dict[str, t.Any]] = {"no-index": directives.flag}
+    option_spec: t.ClassVar[OptionSpec] = {"no-index": directives.flag}
 
     def run(self) -> list[nodes.Node]:
         markup = render_config_values_markup(

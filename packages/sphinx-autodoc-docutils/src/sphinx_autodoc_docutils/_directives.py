@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import importlib
 import inspect
+import typing as t
 
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from docutils.statemachine import StringList
 from sphinx.util.docutils import SphinxDirective
+
+if t.TYPE_CHECKING:
+    from sphinx.util.typing import OptionSpec
 
 
 def _summary(value: object) -> str:
@@ -277,7 +281,7 @@ class AutoDirective(SphinxDirective):
 
     required_arguments = 1
     has_content = False
-    option_spec = {"no-index": directives.flag}
+    option_spec: t.ClassVar[OptionSpec] = {"no-index": directives.flag}
 
     def run(self) -> list[nodes.Node]:
         path = self.arguments[0]
@@ -299,7 +303,7 @@ class AutoDirectives(SphinxDirective):
 
     required_arguments = 1
     has_content = False
-    option_spec = {"no-index": directives.flag}
+    option_spec: t.ClassVar[OptionSpec] = {"no-index": directives.flag}
 
     def run(self) -> list[nodes.Node]:
         module_name = self.arguments[0]
@@ -336,7 +340,7 @@ class AutoRole(SphinxDirective):
 
     required_arguments = 1
     has_content = False
-    option_spec = {"no-index": directives.flag}
+    option_spec: t.ClassVar[OptionSpec] = {"no-index": directives.flag}
 
     def run(self) -> list[nodes.Node]:
         path = self.arguments[0]
@@ -359,7 +363,7 @@ class AutoRoles(SphinxDirective):
 
     required_arguments = 1
     has_content = False
-    option_spec = {"no-index": directives.flag}
+    option_spec: t.ClassVar[OptionSpec] = {"no-index": directives.flag}
 
     def run(self) -> list[nodes.Node]:
         module_name = self.arguments[0]
