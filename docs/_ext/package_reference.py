@@ -56,6 +56,7 @@ from __future__ import annotations
 import configparser
 import importlib
 import inspect
+import logging
 import os
 import pathlib
 import pkgutil
@@ -70,6 +71,8 @@ if sys.version_info >= (3, 11):
     import tomllib
 else:
     import tomli as tomllib  # type: ignore[import-not-found]
+
+logger = logging.getLogger(__name__)
 
 
 class SurfaceDict(t.TypedDict):
@@ -502,14 +505,23 @@ def theme_options(package_dir: pathlib.Path) -> list[str]:
 def package_reference_markdown(package_name: str) -> str:
     """Render the generated Markdown fragment for a workspace package page.
 
+    Returns an empty string and logs a warning when ``package_name`` is not
+    found among the workspace packages.
+
     Examples
     --------
     >>> "Registered Surface" in package_reference_markdown("sphinx-fonts")
     True
+    >>> package_reference_markdown("nonexistent-package")
+    ''
     """
     package = next(
-        item for item in workspace_packages() if item["name"] == package_name
+        (item for item in workspace_packages() if item["name"] == package_name),
+        None,
     )
+    if package is None:
+        logger.warning("package-reference: unknown package %r", package_name)
+        return ""
     package_dir = pathlib.Path(package["package_dir"])
     module_name = package["module_name"]
     extension_blocks = [

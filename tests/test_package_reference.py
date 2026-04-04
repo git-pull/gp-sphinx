@@ -71,6 +71,12 @@ def test_docs_package_pages_exist_for_every_workspace_package() -> None:
     assert page_names == package_names
 
 
+def test_package_reference_markdown_unknown_package_returns_empty() -> None:
+    """Unknown package names return an empty string rather than crashing."""
+    result = package_reference.package_reference_markdown("nonexistent-package")
+    assert result == ""
+
+
 def test_redirects_cover_legacy_extensions_paths() -> None:
     """Legacy extensions/* redirects exist for the packages index and pages."""
     redirects = (REPO_ROOT / "docs" / "redirects.txt").read_text().splitlines()
