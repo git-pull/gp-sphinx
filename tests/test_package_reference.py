@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import pathlib
 import sys
+import typing as t
+
+import pytest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "docs" / "_ext"))
 
@@ -105,3 +108,93 @@ def test_redirects_cover_legacy_extensions_paths() -> None:
         },
     }
     assert redirect_map == expected
+
+
+class MaturityBadgeFixture(t.NamedTuple):
+    """Fixture for maturity_badge() input/output pairs."""
+
+    test_id: str
+    maturity: str
+    expected: str
+
+
+MATURITY_BADGE_FIXTURES: list[MaturityBadgeFixture] = [
+    MaturityBadgeFixture(
+        test_id="alpha",
+        maturity="Alpha",
+        expected="{bdg-warning-line}`Alpha`",
+    ),
+    MaturityBadgeFixture(
+        test_id="beta",
+        maturity="Beta",
+        expected="{bdg-success-line}`Beta`",
+    ),
+    MaturityBadgeFixture(
+        test_id="unknown_falls_back_to_secondary",
+        maturity="Stable",
+        expected="{bdg-secondary-line}`Stable`",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(MaturityBadgeFixture._fields),
+    MATURITY_BADGE_FIXTURES,
+    ids=[f.test_id for f in MATURITY_BADGE_FIXTURES],
+)
+def test_maturity_badge(test_id: str, maturity: str, expected: str) -> None:
+    """maturity_badge() returns the correct sphinx-design badge role."""
+    assert package_reference.maturity_badge(maturity) == expected
+
+
+class GridMarkdownFixture(t.NamedTuple):
+    """Fixture for workspace_package_grid_markdown() structural checks."""
+
+    test_id: str
+    substring: str
+    present: bool
+
+
+GRID_MARKDOWN_FIXTURES: list[GridMarkdownFixture] = [
+    GridMarkdownFixture(
+        test_id="has_grid_directive",
+        substring="::::{grid} 1 1 2 2",
+        present=True,
+    ),
+    GridMarkdownFixture(
+        test_id="has_card_footer_separator",
+        substring="+++",
+        present=True,
+    ),
+    GridMarkdownFixture(
+        test_id="maturity_badge_present_somewhere_in_output",
+        substring="{bdg-",
+        present=True,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(GridMarkdownFixture._fields),
+    GRID_MARKDOWN_FIXTURES,
+    ids=[f.test_id for f in GRID_MARKDOWN_FIXTURES],
+)
+def test_workspace_package_grid_markdown_structure(
+    test_id: str,
+    substring: str,
+    present: bool,
+) -> None:
+    """Grid markdown output has the expected structural properties."""
+    output = package_reference.workspace_package_grid_markdown()
+    assert (substring in output) == present
+
+
+def test_workspace_package_grid_markdown_badge_not_in_card_titles() -> None:
+    """Maturity badges appear in the card footer, not in card title lines."""
+    output = package_reference.workspace_package_grid_markdown()
+    title_lines = [
+        line for line in output.splitlines() if line.startswith(":::{grid-item-card}")
+    ]
+    assert title_lines, "expected at least one card title line"
+    for line in title_lines:
+        assert "{bdg-" not in line, f"badge found in card title: {line!r}"

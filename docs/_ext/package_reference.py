@@ -722,6 +722,8 @@ def workspace_package_grid_markdown() -> str:
     --------
     >>> "grid-item-card" in workspace_package_grid_markdown()
     True
+    >>> "+++" in workspace_package_grid_markdown()
+    True
     """
     lines = [
         "::::{grid} 1 1 2 2",
@@ -731,11 +733,14 @@ def workspace_package_grid_markdown() -> str:
     for package in workspace_packages():
         lines.extend(
             [
-                f":::{{grid-item-card}} {package['name']} {maturity_badge(package['maturity'])}",
+                f":::{{grid-item-card}} {package['name']}",
                 f":link: {package['name']}",
                 ":link-type: doc",
                 "",
                 str(package["description"]),
+                "",
+                "+++",
+                maturity_badge(package["maturity"]),
                 ":::",
                 "",
             ]
