@@ -51,6 +51,19 @@ pytest_external_fixture_links = {
 .. autofixtures:: spf_demo_fixtures
 ```
 
+#### autofixtures options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `:order:` | `"source"` | `"source"` preserves module order; `"alpha"` sorts alphabetically |
+| `:exclude:` | (empty) | Comma-separated fixture names to skip |
+
+#### autofixture-index options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `:exclude:` | (empty) | Comma-separated fixture names to exclude from index |
+
 ### Single autodoc entries
 
 ```{eval-rst}
