@@ -1,5 +1,37 @@
 """Generate package reference sections from live workspace metadata.
 
+Architecture
+------------
+This Sphinx extension auto-generates the "Registered Surface" and "Copyable
+config snippet" sections that appear at the bottom of every
+``docs/packages/<name>.md`` page.  It works in three layers:
+
+1. **Workspace discovery** (``workspace_packages()``) — walks
+   ``packages/*/pyproject.toml`` to find every publishable package and reads
+   its name, version, description, classifiers, and GitHub URL.
+
+2. **Surface extraction** (``collect_extension_surface()``) — imports the
+   module and monkey-patches ``app.add_*`` methods on a lightweight mock
+   ``Sphinx`` object to intercept calls that ``setup()`` makes.  Each
+   registered item (config value, directive, role, lexer, theme) is captured
+   into a ``SurfaceDict``.
+
+3. **Rendering** (``package_reference_markdown()``) — converts the collected
+   surface into a Markdown fragment (config snippet + tables), which the
+   ``PackageReferenceDirective`` injects into the page via a raw docutils node.
+
+Adding a new package
+--------------------
+No code changes are required.  Once a ``packages/<name>/pyproject.toml``
+exists with a ``[project]`` table the package is picked up automatically on
+the next docs build.
+
+Extending the surface extractor
+--------------------------------
+To capture a new ``app.add_*`` call, add a handler to the mock
+``_MockApp`` class inside ``collect_extension_surface()``.  Follow the pattern
+of the existing ``add_directive`` / ``add_role`` handlers.
+
 Examples
 --------
 >>> package = workspace_packages()[0]
