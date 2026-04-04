@@ -385,7 +385,7 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                 {
                     "name": f"std:{directive_name}",
                     "kind": "cross-reference directive",
-                    "callable": "`sphinx.application.Sphinx.add_crossref_type`",
+                    "callable": "{py:meth}`~sphinx.application.Sphinx.add_crossref_type`",
                     "summary": "Registers a standard-domain cross-reference target.",
                     "options": "",
                 }
@@ -394,7 +394,7 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                 {
                     "name": f"std:{role_name}",
                     "kind": "cross-reference role",
-                    "callable": "`sphinx.application.Sphinx.add_crossref_type`",
+                    "callable": "{py:meth}`~sphinx.application.Sphinx.add_crossref_type`",
                     "summary": "Registers a standard-domain cross-reference role.",
                 }
             )
@@ -457,16 +457,18 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
 
 
 def object_path(value: object) -> str:
-    """Return a best-effort dotted import path for an arbitrary object.
+    """Return a ``{py:obj}`` cross-reference for an arbitrary object.
+
+    Uses the ``~`` prefix so Sphinx renders just the short name as link text.
 
     Examples
     --------
     >>> object_path(RecorderApp)
-    '`package_reference.RecorderApp`'
+    '{py:obj}`~package_reference.RecorderApp`'
     """
     module_name = getattr(value, "__module__", type(value).__module__)
     object_name = getattr(value, "__name__", type(value).__name__)
-    return f"`{module_name}.{object_name}`"
+    return f"{{py:obj}}`~{module_name}.{object_name}`"
 
 
 def unique_by_name(items: list[dict[str, str]]) -> list[dict[str, str]]:
