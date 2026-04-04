@@ -217,6 +217,12 @@ DOMAIN_REGISTRATION_FIXTURES: list[DomainRegistrationFixture] = [
         expected_objtype="class",
         expected_docname="packages/sphinx-autodoc-sphinx",
     ),
+    DomainRegistrationFixture(
+        test_id="exemplar_role_from_submodule",
+        full_name="sphinx_argparse_neo.roles.cli_option_role",
+        expected_objtype="function",
+        expected_docname="packages/sphinx-argparse-neo",
+    ),
 ]
 
 

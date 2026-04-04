@@ -781,55 +781,66 @@ def _register_extension_objects(
         return
 
     for package in workspace_packages():
-        module_name = package["module_name"]
         pkg_docname = f"packages/{package['name']}"
 
-        try:
-            module = importlib.import_module(module_name)
-        except ImportError:
-            continue
-
-        setup_fn = getattr(module, "setup", None)
-        if not callable(setup_fn):
-            continue
-
-        recorder = RecorderApp()
-        try:
-            setup_fn(recorder)
-        except Exception:
-            continue
-
-        for call_name, args, _kwargs in recorder.calls:
-            obj: object = None
-            objtype = "class"
-            if call_name == "add_directive" and len(args) >= 2:
-                obj, objtype = args[1], "class"
-            elif call_name == "add_directive_to_domain" and len(args) >= 3:
-                obj, objtype = args[2], "class"
-            elif call_name == "add_role" and len(args) >= 2:
-                obj = args[1]
-                objtype = "function" if not inspect.isclass(obj) else "class"
-            elif call_name == "add_role_to_domain" and len(args) >= 3:
-                obj = args[2]
-                objtype = "function" if not inspect.isclass(obj) else "class"
-            elif call_name == "add_lexer" and len(args) >= 2:
-                obj, objtype = args[1], "class"
-
-            if obj is None:
+        for ext_module_name in extension_modules(package["module_name"]):
+            try:
+                module = importlib.import_module(ext_module_name)
+            except ImportError:
                 continue
 
-            mod = getattr(obj, "__module__", None) or type(obj).__module__
-            name = getattr(obj, "__name__", None) or type(obj).__name__
-            full_name = f"{mod}.{name}"
-            if full_name in py_domain.objects:
+            setup_fn = getattr(module, "setup", None)
+            if not callable(setup_fn):
                 continue
-            node_id = full_name.replace(".", "-")
-            py_domain.objects[full_name] = ObjectEntry(
-                docname=pkg_docname,
-                node_id=node_id,
-                objtype=objtype,
-                aliased=False,
-            )
+
+            recorder = RecorderApp()
+            docutils_roles: list[tuple[str, object]] = []
+            original_local = roles.register_local_role
+            original_canonical = roles.register_canonical_role
+
+            def _capture(role_name: str, role_fn: object) -> None:
+                docutils_roles.append((role_name, role_fn))
+
+            try:
+                roles.register_local_role = t.cast(t.Any, _capture)
+                roles.register_canonical_role = t.cast(t.Any, _capture)
+                setup_fn(recorder)
+            except Exception:
+                continue
+            finally:
+                roles.register_local_role = original_local
+                roles.register_canonical_role = original_canonical
+
+            raw_objs: list[tuple[object, str]] = []  # (obj, objtype)
+            for call_name, args, _kwargs in recorder.calls:
+                if call_name == "add_directive" and len(args) >= 2:
+                    raw_objs.append((args[1], "class"))
+                elif call_name == "add_directive_to_domain" and len(args) >= 3:
+                    raw_objs.append((args[2], "class"))
+                elif call_name == "add_role" and len(args) >= 2:
+                    obj = args[1]
+                    raw_objs.append((obj, "function" if not inspect.isclass(obj) else "class"))
+                elif call_name == "add_role_to_domain" and len(args) >= 3:
+                    obj = args[2]
+                    raw_objs.append((obj, "function" if not inspect.isclass(obj) else "class"))
+                elif call_name == "add_lexer" and len(args) >= 2:
+                    raw_objs.append((args[1], "class"))
+            for _role_name, role_fn in docutils_roles:
+                raw_objs.append((role_fn, "function" if not inspect.isclass(role_fn) else "class"))
+
+            for obj, objtype in raw_objs:
+                mod = getattr(obj, "__module__", None) or type(obj).__module__
+                name = getattr(obj, "__name__", None) or type(obj).__name__
+                full_name = f"{mod}.{name}"
+                if full_name in py_domain.objects:
+                    continue
+                node_id = full_name.replace(".", "-")
+                py_domain.objects[full_name] = ObjectEntry(
+                    docname=pkg_docname,
+                    node_id=node_id,
+                    objtype=objtype,
+                    aliased=False,
+                )
 
 
 class PackageReferenceDirective(SphinxDirective):
