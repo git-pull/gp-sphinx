@@ -106,7 +106,7 @@ def _registered_name(name: str) -> str:
     return name.removesuffix("Directive").lower()
 
 
-def _option_rows(option_spec: object) -> list[str]:
+def _option_rows(option_spec: OptionSpec | None) -> list[str]:
     """Return table rows describing a directive or role option spec.
 
     Examples
