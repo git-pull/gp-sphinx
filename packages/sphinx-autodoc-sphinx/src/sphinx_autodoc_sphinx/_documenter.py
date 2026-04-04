@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import typing as t
-
 from sphinx.ext.autodoc import Documenter
 
 
@@ -38,6 +36,14 @@ class SphinxConfigDocumenter(Documenter):
     def get_doc(self) -> list[list[str]] | None:
         # Config values usually don't have docstrings attached to the values dict,
         # but we can format the default value and type.
-        default, rebuild, types = t.cast(tuple[object, object, object], self.object)
+        # Sphinx 8.x uses _Opt (class with .default/.rebuild/.valid_types attrs);
+        # older Sphinx used a plain tuple. Support both.
+        opt = self.object
+        if isinstance(opt, tuple):
+            default, rebuild, types = opt
+        else:
+            default = getattr(opt, "default", None)
+            rebuild = getattr(opt, "rebuild", "")
+            types = getattr(opt, "valid_types", ())
         doc = [f"Default: {default}", f"Rebuild: {rebuild}", f"Types: {types}"]
         return [doc]
