@@ -15,7 +15,7 @@ $ cd gp-sphinx
 Install packages:
 
 ```console
-$ uv sync --all-extras --dev
+$ uv sync --all-packages --all-extras --group dev
 ```
 
 ## Tests
