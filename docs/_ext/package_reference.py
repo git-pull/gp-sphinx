@@ -317,6 +317,11 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
     def _record_local(name: str, role: object) -> None:
         registered_roles.append((name, role))
 
+    # Temporarily replace the two docutils global role-registration functions so
+    # that any role registered by setup(app) is captured in registered_roles.
+    # The try/finally guarantees restoration even if setup() raises.
+    # Limitation: this mutates process-global state and is not safe for
+    # parallel Sphinx builds (sphinx -j N); single-threaded builds only.
     try:
         roles.register_local_role = t.cast(t.Any, _record_local)
         roles.register_canonical_role = t.cast(t.Any, _record_local)

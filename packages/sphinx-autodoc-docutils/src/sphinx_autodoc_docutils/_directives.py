@@ -132,6 +132,10 @@ def _option_rows(option_spec: OptionSpec | None) -> list[str]:
     return rows
 
 
+# NOTE: This function is byte-for-byte identical to
+# sphinx_autodoc_sphinx._directives._render_blocks.  Both packages depend only
+# on sphinx (not on each other), so a shared location would require a new
+# dependency.  If a third caller emerges, extract to gp_sphinx._render.
 def _render_blocks(directive: SphinxDirective, markup: str) -> list[nodes.Node]:
     """Parse generated markup through Sphinx when available.
 
