@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 import pathlib
 import sys
 
@@ -23,12 +22,10 @@ sys.path.insert(0, str(cwd / "_ext"))  # docs demo modules
 import gp_sphinx  # noqa: E402
 from gp_sphinx.config import merge_sphinx_config  # noqa: E402
 
-intersphinx_mapping = {}
-if os.environ.get("GP_SPHINX_ENABLE_INTERSPHINX") == "1":
-    intersphinx_mapping = {
-        "py": ("https://docs.python.org/", None),
-        "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
-    }
+intersphinx_mapping = {
+    "py": ("https://docs.python.org/3/", None),
+    "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
+}
 
 conf = merge_sphinx_config(
     project=gp_sphinx.__title__,
