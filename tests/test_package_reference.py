@@ -240,10 +240,10 @@ def test_register_extension_objects_populates_py_domain(
     """_register_extension_objects writes extension classes into the py domain dict."""
 
     class _MockPyDomain:
-        objects: dict[str, t.Any] = {}
+        objects: t.ClassVar[dict[str, t.Any]] = {}
 
     class _MockEnv:
-        domains: dict[str, object] = {"py": _MockPyDomain()}
+        domains: t.ClassVar[dict[str, object]] = {"py": _MockPyDomain()}
 
     package_reference._register_extension_objects(None, _MockEnv())
 

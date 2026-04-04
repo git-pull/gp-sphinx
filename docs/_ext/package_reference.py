@@ -798,8 +798,12 @@ def _register_extension_objects(
             original_local = roles.register_local_role
             original_canonical = roles.register_canonical_role
 
-            def _capture(role_name: str, role_fn: object) -> None:
-                docutils_roles.append((role_name, role_fn))
+            def _capture(
+                role_name: str,
+                role_fn: object,
+                _roles: list[tuple[str, object]] = docutils_roles,
+            ) -> None:
+                _roles.append((role_name, role_fn))
 
             try:
                 roles.register_local_role = t.cast(t.Any, _capture)
@@ -819,14 +823,20 @@ def _register_extension_objects(
                     raw_objs.append((args[2], "class"))
                 elif call_name == "add_role" and len(args) >= 2:
                     obj = args[1]
-                    raw_objs.append((obj, "function" if not inspect.isclass(obj) else "class"))
+                    raw_objs.append(
+                        (obj, "function" if not inspect.isclass(obj) else "class")
+                    )
                 elif call_name == "add_role_to_domain" and len(args) >= 3:
                     obj = args[2]
-                    raw_objs.append((obj, "function" if not inspect.isclass(obj) else "class"))
+                    raw_objs.append(
+                        (obj, "function" if not inspect.isclass(obj) else "class")
+                    )
                 elif call_name == "add_lexer" and len(args) >= 2:
                     raw_objs.append((args[1], "class"))
             for _role_name, role_fn in docutils_roles:
-                raw_objs.append((role_fn, "function" if not inspect.isclass(role_fn) else "class"))
+                raw_objs.append(
+                    (role_fn, "function" if not inspect.isclass(role_fn) else "class")
+                )
 
             for obj, objtype in raw_objs:
                 mod = getattr(obj, "__module__", None) or type(obj).__module__
