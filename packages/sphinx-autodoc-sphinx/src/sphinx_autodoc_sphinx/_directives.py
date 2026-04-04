@@ -19,16 +19,20 @@ True
 from __future__ import annotations
 
 import importlib
+import pprint
 import typing as t
 from dataclasses import dataclass
 
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.statemachine import StringList
+from sphinx import addnodes
 from sphinx.util.docutils import SphinxDirective
 
 if t.TYPE_CHECKING:
     from sphinx.util.typing import OptionSpec
+
+_COMPLEX_REPR_THRESHOLD = 60
 
 
 class InvalidConfigValuePathError(ValueError):
@@ -158,6 +162,48 @@ def _render_default(value: object) -> str:  # object: only calls repr()
     return f"``{value!r}``"
 
 
+def _is_complex_default(value: object) -> bool:  # object: only calls repr()
+    """Return True when repr of value exceeds the inline display threshold.
+
+    Values whose repr is longer than :data:`_COMPLEX_REPR_THRESHOLD` chars
+    are rendered as a Pygments-highlighted ``literal_block`` node rather than
+    as an inline ``:default:`` field literal.
+
+    Examples
+    --------
+    >>> _is_complex_default(True)
+    False
+    >>> _is_complex_default("warning")
+    False
+    >>> _is_complex_default(frozenset(range(15)))
+    True
+    """
+    return len(repr(value)) > _COMPLEX_REPR_THRESHOLD
+
+
+def _make_default_block(value: object) -> nodes.literal_block:  # object: calls repr
+    """Return a Pygments-highlighted ``literal_block`` for a complex default.
+
+    The ``language='python'`` attribute causes Sphinx's HTML writer to call
+    ``highlighter.highlight_block()``, producing ``<div class="highlight-python">``.
+
+    Examples
+    --------
+    >>> block = _make_default_block({"k": "v"})
+    >>> block["language"]
+    'python'
+    >>> "'k'" in block.astext()
+    True
+    """
+    formatted = pprint.pformat(value, width=72)
+    block = nodes.literal_block(formatted, formatted)
+    block["language"] = "python"
+    block["linenos"] = False
+    block["highlight_args"] = {}
+    block["force"] = False
+    return block
+
+
 def _render_types(
     types: object, default: object
 ) -> str:  # object: uses isinstance guards
@@ -279,6 +325,11 @@ def render_config_value_markup(
 ) -> str:
     """Return reStructuredText for one real ``confval`` entry.
 
+    Simple defaults (repr ≤ :data:`_COMPLEX_REPR_THRESHOLD` chars) use the
+    inline ``:default:`` field.  Complex defaults omit the field; callers that
+    need Pygments output should inject a :func:`_make_default_block` node into
+    the parsed ``desc_content`` directly.
+
     Examples
     --------
     >>> value = SphinxConfigValue("demo_ext", "demo_option", True, "html", (bool,))
@@ -292,9 +343,10 @@ def render_config_value_markup(
         f".. confval:: {value.name}",
         "   :no-index:" if no_index else "",
         f"   :type: {_render_types(value.types, value.default)}",
-        f"   :default: {_render_default(value.default)}",
-        "",
     ]
+    if not _is_complex_default(value.default):
+        lines.append(f"   :default: {_render_default(value.default)}")
+    lines.append("")
     if value.description:
         lines.extend([f"   {value.description}", ""])
     lines.extend(
@@ -399,6 +451,23 @@ def _render_blocks(directive: SphinxDirective, markup: str) -> list[nodes.Node]:
     return [container] if container.children else []
 
 
+def _iter_desc_content(
+    node_list: list[nodes.Node],
+) -> t.Iterator[addnodes.desc_content]:
+    """Yield ``desc_content`` nodes from a list of parsed nodes.
+
+    ``addnodes.desc_content`` is the ``<dd>`` body of a Sphinx object
+    description (confval, function, etc.).
+
+    Examples
+    --------
+    >>> list(_iter_desc_content([]))
+    []
+    """
+    for node in node_list:
+        yield from node.traverse(addnodes.desc_content)
+
+
 class AutoconfigvalueDirective(SphinxDirective):
     """Render one config value from a fully-qualified ``module.option`` path."""
 
@@ -422,10 +491,21 @@ class AutoconfigvaluesDirective(SphinxDirective):
     option_spec: t.ClassVar[OptionSpec] = {"no-index": directives.flag}
 
     def run(self) -> list[nodes.Node]:
-        markup = render_config_values_markup(
-            self.arguments[0], no_index="no-index" in self.options
-        )
-        return _render_blocks(self, markup) if markup else []
+        module_name = self.arguments[0]
+        no_index = "no-index" in self.options
+        result: list[nodes.Node] = []
+        for value in discover_config_values(module_name):
+            markup = render_config_value_markup(value, no_index=no_index)
+            value_nodes = _render_blocks(self, markup)
+            if _is_complex_default(value.default):
+                block = _make_default_block(value.default)
+                for desc_content in _iter_desc_content(value_nodes):
+                    # Insert before the trailing metadata paragraphs
+                    # ("Registered by …" and "Rebuild: …")
+                    idx = max(0, len(desc_content) - 2)
+                    desc_content.insert(idx, block)
+            result.extend(value_nodes)
+        return result
 
 
 class AutoconfigvalueIndexDirective(SphinxDirective):
