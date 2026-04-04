@@ -46,6 +46,20 @@ def test_directive_markup_contains_path_and_summary() -> None:
     assert "Generate a summary index for all directives in a module." in markup
 
 
+def test_directive_classes_empty_for_module_with_no_directives() -> None:
+    """A module without directive classes yields an empty list, not an error."""
+    # sphinx_fonts has no directive classes; the join produces "" and the
+    # if markup else [] guard in AutoDirectives.run() returns [] not an error.
+    result = _directive_classes("sphinx_fonts")
+    assert result == []
+
+
+def test_role_callables_empty_for_module_with_no_roles() -> None:
+    """A module without role callables yields an empty list, not an error."""
+    result = _role_callables("sphinx_fonts")
+    assert result == []
+
+
 def test_role_markup_contains_role_name_and_path() -> None:
     """Rendered role markup includes the displayed role name and path."""
     role_fn = dict(_role_callables("sphinx_argparse_neo.roles"))["cli_option_role"]

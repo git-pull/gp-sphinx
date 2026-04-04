@@ -329,7 +329,7 @@ class AutoDirectives(SphinxDirective):
             )
             for name, directive_cls in _directive_classes(module_name)
         )
-        return _render_blocks(self, markup)
+        return _render_blocks(self, markup) if markup else []
 
 
 class AutoDirectiveIndex(SphinxDirective):
@@ -389,7 +389,7 @@ class AutoRoles(SphinxDirective):
             )
             for name, role_fn in _role_callables(module_name)
         )
-        return _render_blocks(self, markup)
+        return _render_blocks(self, markup) if markup else []
 
 
 class AutoRoleIndex(SphinxDirective):
