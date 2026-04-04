@@ -21,7 +21,7 @@ extensions = ["sphinx_autodoc_sphinx"]
 
 Render one config value:
 
-````md
+````myst
 ```{eval-rst}
 .. autoconfigvalue:: sphinx_fonts.sphinx_font_preload
 ```
@@ -29,7 +29,7 @@ Render one config value:
 
 Render every config value from an extension module:
 
-````md
+````myst
 ```{eval-rst}
 .. autoconfigvalue-index:: sphinx_config_demo
 ```

@@ -92,7 +92,7 @@ The exemplar layer also registers live inline roles for CLI prose:
 
 Use native MyST directives in Markdown:
 
-````md
+````myst
 ```{argparse}
 :module: myproject.cli
 :func: create_parser

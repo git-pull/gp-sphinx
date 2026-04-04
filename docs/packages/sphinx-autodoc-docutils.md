@@ -21,13 +21,13 @@ extensions = ["sphinx_autodoc_docutils"]
 
 Use a single-object directive when you want one rendered reference entry:
 
-````md
+````myst
 ```{eval-rst}
 .. autodirective:: my_project.docs_ext.MyDirective
 ```
 ````
 
-````md
+````myst
 ```{eval-rst}
 .. autorole:: my_project.docs_roles.cli_option_role
 ```
@@ -35,25 +35,25 @@ Use a single-object directive when you want one rendered reference entry:
 
 Use the bulk directives to render a full module reference plus an index:
 
-````md
+````myst
 ```{eval-rst}
 .. autodirective-index:: my_project.docs_ext
 ```
 ````
 
-````md
+````myst
 ```{eval-rst}
 .. autodirectives:: my_project.docs_ext
 ```
 ````
 
-````md
+````myst
 ```{eval-rst}
 .. autorole-index:: my_project.docs_roles
 ```
 ````
 
-````md
+````myst
 ```{eval-rst}
 .. autoroles:: my_project.docs_roles
 ```
