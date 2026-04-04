@@ -310,44 +310,62 @@ article > section > p:first-of-type:has(> .sd-badge:first-child):not(:has(*:not(
   -webkit-user-select: none;
 }
 
-/* ── Maturity palette (CSS custom properties) ────────────── */
+/* ── Maturity palette ────────────────────────────────────────
+ * Subtle fill: Radix steps 12 (text), 11 (border), 3 (bg).
+ * Step-12 text passes WCAG AAA on step-3 tinted backgrounds.
+ * Step-11 border passes WCAG 1.4.11 (non-text contrast ≥ 3:1).
+ *
+ * !important matches sphinx-design's own !important on
+ * .sd-text-warning / .sd-text-success and .sd-outline-*.
+ * Without it, color and border-color are silently overridden.
+ * background-color does not need !important — sphinx-design
+ * does not set background on these badge variants.
+ * ─────────────────────────────────────────────────────────── */
 :root {
-  --badge-alpha-color:  #a85e14;
-  --badge-alpha-border: #d4821c;
-  --badge-beta-color:   #1a6b38;
-  --badge-beta-border:  #27a055;
+  --badge-alpha-color:  #4e2009;   /* Radix amber-12 — 11.62:1 on amber-3 (AAA) */
+  --badge-alpha-border: #ab6400;   /* Radix amber-11 — 4.11:1 on card footer (WCAG 1.4.11 ✓) */
+  --badge-alpha-bg:     #ffedc6;   /* Radix amber-3 — opaque tint, no color-mix */
+
+  --badge-beta-color:   #193b2d;   /* Radix green-12 — 10.55:1 on green-3 (AAA) */
+  --badge-beta-border:  #218358;   /* Radix green-11 — 4.22:1 on card footer (WCAG 1.4.11 ✓) */
+  --badge-beta-bg:      #ddf3e4;   /* Radix green-3 */
 }
 
 /* Furo explicit dark theme */
 body[data-theme="dark"] {
-  --badge-alpha-color:  #f0a84e;
-  --badge-alpha-border: #b87427;
-  --badge-beta-color:   #5bcb85;
-  --badge-beta-border:  #2a8d4d;
+  --badge-alpha-color:  #ffca16;   /* Radix amber-11 dark — 9.13:1 on #3f2700 (AAA) */
+  --badge-alpha-border: #8f6424;   /* Radix amber-8 dark */
+  --badge-alpha-bg:     #3f2700;   /* Radix amber-3 dark */
+
+  --badge-beta-color:   #3dd68c;   /* Radix green-11 dark — 6.66:1 on #113b29 (AA) */
+  --badge-beta-border:  #2f7c57;   /* Radix green-8 dark */
+  --badge-beta-bg:      #113b29;   /* Radix green-3 dark */
 }
 
 /* Furo auto mode: system dark when not explicitly set to light */
 @media (prefers-color-scheme: dark) {
   body:not([data-theme="light"]) {
-    --badge-alpha-color:  #f0a84e;
-    --badge-alpha-border: #b87427;
-    --badge-beta-color:   #5bcb85;
-    --badge-beta-border:  #2a8d4d;
+    --badge-alpha-color:  #ffca16;
+    --badge-alpha-border: #8f6424;
+    --badge-alpha-bg:     #3f2700;
+    --badge-beta-color:   #3dd68c;
+    --badge-beta-border:  #2f7c57;
+    --badge-beta-bg:      #113b29;
   }
 }
 
 /* {bdg-warning-line} → .sd-badge.sd-outline-warning.sd-text-warning */
 .sd-badge.sd-outline-warning {
-  color: var(--badge-alpha-color);
-  border-color: var(--badge-alpha-border);
-  background: color-mix(in srgb, var(--badge-alpha-border) 10%, transparent);
+  color: var(--badge-alpha-color) !important;
+  border-color: var(--badge-alpha-border) !important;
+  background-color: var(--badge-alpha-bg);
 }
 
 /* {bdg-success-line} → .sd-badge.sd-outline-success.sd-text-success */
 .sd-badge.sd-outline-success {
-  color: var(--badge-beta-color);
-  border-color: var(--badge-beta-border);
-  background: color-mix(in srgb, var(--badge-beta-border) 10%, transparent);
+  color: var(--badge-beta-color) !important;
+  border-color: var(--badge-beta-border) !important;
+  background-color: var(--badge-beta-bg);
 }
 
 /* Type badges (solid fills) — muted gray, scoped to metadata strip only.
@@ -375,6 +393,5 @@ article > section > p:first-of-type > .sd-badge.sd-bg-info {
   padding: 0.13rem 0.35rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  opacity: 0.8;
   vertical-align: middle;
 }
