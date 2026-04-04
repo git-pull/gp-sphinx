@@ -263,3 +263,118 @@ img[src*="codecov.io"] {
   font-size: 1rem;
   line-height: 1.5;
 }
+
+/* ── Package page metadata strip ────────────────────────────
+ * Selects the first <p> inside the top-level section that
+ * contains ONLY sphinx-design badges (no non-badge children).
+ *
+ * MyST renders {bdg-*} roles as <span class="sd-badge …"> inside
+ * a bare <p> that is a direct child of <section>, which is a
+ * direct child of <article>.
+ *
+ * :has() requires CSS Level 4 (all evergreen browsers ≥ 2024).
+ * Falls back gracefully: badges render inline without the flex strip.
+ *
+ * Overrides `article h1 { margin-bottom: 0.75rem }` (line 38)
+ * via equal specificity (0,0,2) and later source order.
+ * ────────────────────────────────────────────────────────── */
+
+/* Tighten h1 → badge strip gap so they read as a unit */
+article > section > h1 {
+  margin-bottom: 0.2rem;
+}
+
+/* Convert badge-only paragraph into a flex metadata strip */
+article > section > p:first-of-type:has(> .sd-badge:first-child):not(:has(*:not(.sd-badge))) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding: 0;
+  line-height: 1;
+}
+
+/* ── Base badge reset ────────────────────────────────────── */
+.sd-badge {
+  display: inline-flex !important;
+  align-items: center;
+  vertical-align: middle;
+  font-size: 0.67rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  padding: 0.16rem 0.4rem;
+  border-radius: 0.22rem;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Maturity palette (CSS custom properties) ────────────── */
+:root {
+  --badge-alpha-color:  #a85e14;
+  --badge-alpha-border: #d4821c;
+  --badge-beta-color:   #1a6b38;
+  --badge-beta-border:  #27a055;
+}
+
+/* Furo explicit dark theme */
+body[data-theme="dark"] {
+  --badge-alpha-color:  #f0a84e;
+  --badge-alpha-border: #b87427;
+  --badge-beta-color:   #5bcb85;
+  --badge-beta-border:  #2a8d4d;
+}
+
+/* Furo auto mode: system dark when not explicitly set to light */
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) {
+    --badge-alpha-color:  #f0a84e;
+    --badge-alpha-border: #b87427;
+    --badge-beta-color:   #5bcb85;
+    --badge-beta-border:  #2a8d4d;
+  }
+}
+
+/* {bdg-warning-line} → .sd-badge.sd-outline-warning.sd-text-warning */
+.sd-badge.sd-outline-warning {
+  color: var(--badge-alpha-color);
+  border-color: var(--badge-alpha-border);
+  background: color-mix(in srgb, var(--badge-alpha-border) 10%, transparent);
+}
+
+/* {bdg-success-line} → .sd-badge.sd-outline-success.sd-text-success */
+.sd-badge.sd-outline-success {
+  color: var(--badge-beta-color);
+  border-color: var(--badge-beta-border);
+  background: color-mix(in srgb, var(--badge-beta-border) 10%, transparent);
+}
+
+/* Type badges (solid fills) — muted gray, scoped to metadata strip only.
+ * extension:   {bdg-primary}    → .sd-badge.sd-bg-primary
+ * coordinator: {bdg-success}    → .sd-badge.sd-bg-success  (solid fill)
+ * theme:       {bdg-info}       → .sd-badge.sd-bg-info
+ * .sd-bg-success and .sd-outline-success are mutually exclusive in sphinx-design. */
+article > section > p:first-of-type > .sd-badge.sd-bg-primary,
+article > section > p:first-of-type > .sd-badge.sd-bg-success,
+article > section > p:first-of-type > .sd-badge.sd-bg-info {
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  background-color: var(--color-background-border) !important;
+  color: var(--color-foreground-secondary) !important;
+  border: 1px solid var(--color-foreground-border);
+}
+
+/* Card footer badges — compact and scannable in the grid index */
+.sd-card-footer .sd-badge {
+  font-size: 0.6rem;
+  font-weight: 500;
+  padding: 0.13rem 0.35rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  vertical-align: middle;
+}
