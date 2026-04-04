@@ -48,7 +48,7 @@ See {doc}`/configuration` for the complete parameter reference and every shared 
 :::{admonition} Live example
 This site is built with `gp-sphinx`, using the same integration pattern shown
 above. See
-[docs/conf.py](https://github.com/git-pull/gp-sphinx/blob/master/docs/conf.py)
+[docs/conf.py](https://github.com/git-pull/gp-sphinx/blob/main/docs/conf.py)
 for the exact coordinator call.
 :::
 
