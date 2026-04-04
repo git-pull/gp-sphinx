@@ -91,4 +91,4 @@ pytest_external_fixture_links = {
 ```{package-reference} sphinx-autodoc-pytest-fixtures
 ```
 
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/master/packages/sphinx-autodoc-pytest-fixtures)
+[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-pytest-fixtures)

@@ -81,4 +81,4 @@ icons, and the IBM Plex font stacks consumed by the theme templates.
 ```{package-reference} sphinx-gptheme
 ```
 
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/master/packages/sphinx-gptheme)
+[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gptheme)

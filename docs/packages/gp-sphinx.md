@@ -55,4 +55,4 @@ for the exact coordinator call.
 ```{package-reference} gp-sphinx
 ```
 
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/master/packages/gp-sphinx)
+[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-sphinx)

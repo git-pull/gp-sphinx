@@ -81,4 +81,4 @@ The extension injects these values during `html-page-context`:
 ```{package-reference} sphinx-fonts
 ```
 
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/master/packages/sphinx-fonts)
+[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-fonts)

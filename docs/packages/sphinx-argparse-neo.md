@@ -112,4 +112,4 @@ Or reStructuredText:
 ```{package-reference} sphinx-argparse-neo
 ```
 
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/master/packages/sphinx-argparse-neo)
+[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-argparse-neo)

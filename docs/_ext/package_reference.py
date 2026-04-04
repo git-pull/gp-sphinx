@@ -506,7 +506,7 @@ def package_reference_markdown(package_name: str) -> str:
             [
                 "## Package metadata",
                 "",
-                f"- Source on GitHub: [{package_name}]({package['repository']}/tree/master/packages/{package_name})",
+                f"- Source on GitHub: [{package_name}]({package['repository']}/tree/main/packages/{package_name})",
                 f"- Maturity: `{package['maturity']}`",
                 "",
             ]

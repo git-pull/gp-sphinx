@@ -76,4 +76,4 @@ surface from the live `setup()` calls.
 ```{package-reference} sphinx-autodoc-sphinx
 ```
 
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/master/packages/sphinx-autodoc-sphinx)
+[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-sphinx)
