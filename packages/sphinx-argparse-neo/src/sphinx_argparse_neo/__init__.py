@@ -68,10 +68,30 @@ def setup(app: Sphinx) -> SetupDict:
         Extension metadata.
     """
     # Configuration options
-    app.add_config_value("argparse_group_title_prefix", "", "html")
-    app.add_config_value("argparse_show_defaults", True, "html")
-    app.add_config_value("argparse_show_choices", True, "html")
-    app.add_config_value("argparse_show_types", True, "html")
+    app.add_config_value(
+        "argparse_group_title_prefix",
+        "",
+        "html",
+        description="Prefix for argument group titles",
+    )
+    app.add_config_value(
+        "argparse_show_defaults",
+        True,
+        "html",
+        description="Show default values in argument docs",
+    )
+    app.add_config_value(
+        "argparse_show_choices",
+        True,
+        "html",
+        description="Show choice constraints",
+    )
+    app.add_config_value(
+        "argparse_show_types",
+        True,
+        "html",
+        description="Show type information",
+    )
 
     # Register custom nodes
     app.add_node(

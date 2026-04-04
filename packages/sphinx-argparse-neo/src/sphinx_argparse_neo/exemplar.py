@@ -1281,17 +1281,60 @@ def setup(app: Sphinx) -> SetupDict:
     app.setup_extension("sphinx_argparse_neo")
 
     # Register configuration options
-    app.add_config_value("argparse_examples_term_suffix", "examples", "html")
-    app.add_config_value("argparse_examples_base_term", "examples", "html")
-    app.add_config_value("argparse_examples_section_title", "Examples", "html")
-    app.add_config_value("argparse_usage_pattern", "usage:", "html")
-    app.add_config_value("argparse_examples_command_prefix", "$ ", "html")
-    app.add_config_value("argparse_examples_code_language", "console", "html")
     app.add_config_value(
-        "argparse_examples_code_classes", ["highlight-console"], "html"
+        "argparse_examples_term_suffix",
+        "examples",
+        "html",
+        description="Term suffix for detecting example definition lists",
     )
-    app.add_config_value("argparse_usage_code_language", "cli-usage", "html")
-    app.add_config_value("argparse_reorder_usage_before_examples", True, "html")
+    app.add_config_value(
+        "argparse_examples_base_term",
+        "examples",
+        "html",
+        description="Base term for matching example sections",
+    )
+    app.add_config_value(
+        "argparse_examples_section_title",
+        "Examples",
+        "html",
+        description="Section title for extracted examples",
+    )
+    app.add_config_value(
+        "argparse_usage_pattern",
+        "usage:",
+        "html",
+        description="Pattern to detect usage blocks in epilog text",
+    )
+    app.add_config_value(
+        "argparse_examples_command_prefix",
+        "$ ",
+        "html",
+        description="Prefix for example commands in code blocks",
+    )
+    app.add_config_value(
+        "argparse_examples_code_language",
+        "console",
+        "html",
+        description="Language for example code blocks",
+    )
+    app.add_config_value(
+        "argparse_examples_code_classes",
+        ["highlight-console"],
+        "html",
+        description="CSS classes for example code blocks",
+    )
+    app.add_config_value(
+        "argparse_usage_code_language",
+        "cli-usage",
+        "html",
+        description="Language for usage code blocks",
+    )
+    app.add_config_value(
+        "argparse_reorder_usage_before_examples",
+        True,
+        "html",
+        description="Move usage sections before examples sections",
+    )
 
     # Override the argparse directive with our enhanced version
     app.add_directive("argparse", CleanArgParseDirective, override=True)
