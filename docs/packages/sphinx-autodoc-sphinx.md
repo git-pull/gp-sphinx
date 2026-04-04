@@ -1,6 +1,6 @@
 # sphinx-autodoc-sphinx
 
-{bdg-warning-line}`Alpha` {bdg-primary}`extension`
+{bdg-warning-line}`Alpha`
 
 Experimental Sphinx extension for documenting config values registered by
 extension `setup()` hooks. It takes the repetitive part of `conf.py`

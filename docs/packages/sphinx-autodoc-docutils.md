@@ -1,6 +1,6 @@
 # sphinx-autodoc-docutils
 
-{bdg-warning-line}`Alpha` {bdg-primary}`extension`
+{bdg-warning-line}`Alpha`
 
 Experimental Sphinx extension for documenting docutils directives and role
 callables as reference material. The extension does not invent a new domain;

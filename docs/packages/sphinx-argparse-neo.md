@@ -1,6 +1,6 @@
 # sphinx-argparse-neo
 
-{bdg-success-line}`Beta` {bdg-primary}`extension`
+{bdg-success-line}`Beta`
 
 Modern Sphinx extension for documenting `argparse` CLIs. The base package
 registers the `argparse` directive plus renderer config values; the

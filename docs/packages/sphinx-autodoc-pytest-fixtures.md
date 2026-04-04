@@ -1,6 +1,6 @@
 # sphinx-autodoc-pytest-fixtures
 
-{bdg-warning-line}`Alpha` {bdg-primary}`extension`
+{bdg-warning-line}`Alpha`
 
 Sphinx extension for documenting pytest fixtures as first-class objects. It
 registers a Python-domain fixture directive and role, autodoc helpers for bulk

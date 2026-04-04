@@ -1,6 +1,6 @@
 # sphinx-fonts
 
-{bdg-success-line}`Beta` {bdg-primary}`extension`
+{bdg-success-line}`Beta`
 
 Sphinx extension for self-hosted web fonts via Fontsource. It downloads font
 assets during the HTML build, caches them locally, copies them into
