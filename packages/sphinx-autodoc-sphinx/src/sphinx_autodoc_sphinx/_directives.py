@@ -78,9 +78,9 @@ class SphinxConfigValue:
 
     module_name: str
     name: str
-    default: object
+    default: object  # object: config defaults are genuinely heterogeneous
     rebuild: str
-    types: object = ()
+    types: object = ()  # object: Sphinx allows ENUM, not just type
     description: str = ""
 
     @property
@@ -121,7 +121,9 @@ class RecorderApp:
         'setup_extension'
         """
 
-        def _record(*args: object, **kwargs: object) -> None:
+        def _record(
+            *args: object, **kwargs: object
+        ) -> None:  # object: universal __getattr__ stub
             self.calls.append((name, args, kwargs))
 
         return _record
@@ -143,7 +145,7 @@ def _call_setup(module_name: str) -> RecorderApp:
     return app
 
 
-def _render_default(value: object) -> str:
+def _render_default(value: object) -> str:  # object: only calls repr()
     """Render a compact literal for a ``:default:`` option.
 
     Examples
@@ -156,7 +158,9 @@ def _render_default(value: object) -> str:
     return f"``{value!r}``"
 
 
-def _render_types(types: object, default: object) -> str:
+def _render_types(
+    types: object, default: object
+) -> str:  # object: uses isinstance guards
     """Render a readable type expression for ``:type:``.
 
     Examples

@@ -15,7 +15,7 @@ if t.TYPE_CHECKING:
     from sphinx.util.typing import OptionSpec
 
 
-def _summary(value: object) -> str:
+def _summary(value: object) -> str:  # object: wraps inspect.getdoc()
     """Return the first summary line for a Python object.
 
     Examples
@@ -31,7 +31,11 @@ def _summary(value: object) -> str:
     return ""
 
 
-def _module_members(module_name: str) -> list[tuple[str, object]]:
+def _module_members(
+    module_name: str,
+) -> list[
+    tuple[str, object]
+]:  # object: inspect.getmembers() returns heterogeneous values
     """Return public members defined directly in a module.
 
     Examples
@@ -65,7 +69,11 @@ def _directive_classes(module_name: str) -> list[tuple[str, type[Directive]]]:
     return results
 
 
-def _role_callables(module_name: str) -> list[tuple[str, object]]:
+def _role_callables(
+    module_name: str,
+) -> list[
+    tuple[str, object]
+]:  # object: roles have monkey-patched attrs; no Protocol fits
     """Return public docutils role callables in a module.
 
     Examples
@@ -209,7 +217,11 @@ def _directive_markup(
 
 
 def _role_markup(
-    path: str, role_name: str, role_fn: object, *, no_index: bool = False
+    path: str,
+    role_name: str,
+    role_fn: object,  # object: accesses .options/.content via getattr; Protocol impractical
+    *,
+    no_index: bool = False,
 ) -> str:
     """Return reStructuredText markup documenting one role callable.
 

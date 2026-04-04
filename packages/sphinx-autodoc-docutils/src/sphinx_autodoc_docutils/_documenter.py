@@ -15,10 +15,10 @@ class DocutilsDocumenter(Documenter):
     @classmethod
     def can_document_member(
         cls,
-        member: object,
+        member: object,  # object: stricter than Sphinx's Any; unused param
         membername: str,
         isattr: bool,
-        parent: object,
+        parent: object,  # object: stricter than Sphinx's Any; unused param
     ) -> bool:
         return False
 
