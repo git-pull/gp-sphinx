@@ -1,0 +1,2 @@
+extensions/index packages/index
+extensions/sphinx-autodoc-pytest-fixtures packages/sphinx-autodoc-pytest-fixtures
