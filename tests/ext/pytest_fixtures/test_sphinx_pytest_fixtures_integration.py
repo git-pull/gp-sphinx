@@ -1638,6 +1638,80 @@ def test_doc_pytest_plugin_warns_when_module_has_no_fixtures(
 
 
 @pytest.mark.integration
+def test_doc_pytest_plugin_project_defaults_to_generic_link(
+    tmp_path: pathlib.Path,
+) -> None:
+    """When :project: is absent, tests-url link uses generic 'test suite' text."""
+    index_rst = textwrap.dedent(
+        """\
+        Test fixtures
+        =============
+
+        .. doc-pytest-plugin:: fixture_mod
+           :package: fixture-demo
+           :tests-url: https://example.com/fixture-demo/tests
+        """,
+    )
+    result = _build_sphinx_app(
+        tmp_path,
+        index_rst=index_rst,
+        confoverrides={"pytest_fixture_lint_level": "none"},
+    )
+    html = (result.outdir / "index.html").read_text(encoding="utf-8")
+    assert "test suite" in html
+    assert "fixture-demo test suite" not in html
+
+
+@pytest.mark.integration
+def test_doc_pytest_plugin_summary_optional(tmp_path: pathlib.Path) -> None:
+    """Omitting :summary: produces a valid page; no empty paragraph emitted."""
+    index_rst = textwrap.dedent(
+        """\
+        Test fixtures
+        =============
+
+        .. doc-pytest-plugin:: fixture_mod
+           :package: fixture-demo
+
+           Body prose only.
+        """,
+    )
+    result = _build_sphinx_app(
+        tmp_path,
+        index_rst=index_rst,
+        confoverrides={"pytest_fixture_lint_level": "none"},
+    )
+    html = (result.outdir / "index.html").read_text(encoding="utf-8")
+    assert "pytest auto-detects this plugin through the" in html
+    assert "Fixture Summary" in html
+    assert "Body prose only" in html
+    assert "<p></p>" not in html
+
+
+@pytest.mark.integration
+def test_doc_pytest_plugin_missing_package_fails_build(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Missing required :package: option raises a directive error."""
+    index_rst = textwrap.dedent(
+        """\
+        Test fixtures
+        =============
+
+        .. doc-pytest-plugin:: fixture_mod
+
+           No package option here.
+        """,
+    )
+    result = _build_sphinx_app(
+        tmp_path,
+        index_rst=index_rst,
+        confoverrides={"pytest_fixture_lint_level": "none"},
+    )
+    assert "requires the :package: option" in result.warnings
+
+
+@pytest.mark.integration
 def test_doc_pytest_plugin_myst_page_mode(tmp_path: pathlib.Path) -> None:
     """MyST pages render headings, code fences, and fixture sections correctly."""
     index_md = textwrap.dedent(
