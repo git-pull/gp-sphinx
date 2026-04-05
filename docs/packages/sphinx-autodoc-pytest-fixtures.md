@@ -4,7 +4,8 @@
 
 Sphinx extension for documenting pytest fixtures as first-class objects. It
 registers a Python-domain fixture directive and role, autodoc helpers for bulk
-fixture discovery, and the badge/index UI used throughout the page below.
+fixture discovery, a higher-level pytest plugin page helper, and the
+badge/index UI used throughout the page below.
 
 ```console
 $ pip install sphinx-autodoc-pytest-fixtures
@@ -49,6 +50,20 @@ pytest_external_fixture_links = {
 
 ```{eval-rst}
 .. autofixtures:: spf_demo_fixtures
+```
+
+### Plugin page helper
+
+```{eval-rst}
+.. doc-pytest-plugin:: spf_demo_fixtures
+   :project: spf-demo
+   :package: sphinx-autodoc-pytest-fixtures
+   :summary: Use this helper to generate a polished pytest plugin page with
+      install, autodetection, and fixture reference sections.
+   :mode: reference
+
+   Add project-specific usage notes here, then let the helper render the
+   shared fixture summary and reference sections.
 ```
 
 #### autofixtures options

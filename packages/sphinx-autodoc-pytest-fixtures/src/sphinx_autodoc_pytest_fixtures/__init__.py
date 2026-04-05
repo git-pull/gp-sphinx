@@ -53,6 +53,7 @@ from sphinx_autodoc_pytest_fixtures._detection import (
 from sphinx_autodoc_pytest_fixtures._directives import (
     AutofixtureIndexDirective,
     AutofixturesDirective,
+    DocPytestPluginDirective,
     PyFixtureDirective,
 )
 from sphinx_autodoc_pytest_fixtures._documenter import FixtureDocumenter
@@ -174,6 +175,7 @@ def setup(app: Sphinx) -> SetupDict:
     app.add_directive("autofixtures", AutofixturesDirective)
     app.add_node(autofixture_index_node)
     app.add_directive("autofixture-index", AutofixtureIndexDirective)
+    app.add_directive("doc-pytest-plugin", DocPytestPluginDirective)
 
     app.connect("missing-reference", _on_missing_reference)
     app.connect("doctree-resolved", _on_doctree_resolved)

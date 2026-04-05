@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import importlib
+import pathlib
 import typing as t
 
 from docutils import nodes
-from docutils.parsers.rst import Directive, directives
-from docutils.statemachine import ViewList
+from docutils.parsers.rst import directives
 from sphinx import addnodes
 from sphinx.domains.python import PyFunction
 from sphinx.util import logging as sphinx_logging
@@ -44,6 +45,133 @@ if t.TYPE_CHECKING:
     pass
 
 logger = sphinx_logging.getLogger(__name__)
+
+
+def _iter_public_fixture_entries(
+    module: t.Any,
+    *,
+    excluded: set[str] | None = None,
+) -> list[tuple[str, str, t.Any]]:
+    """Collect public pytest fixtures from a module.
+
+    Parameters
+    ----------
+    module : Any
+        Imported module object to scan.
+    excluded : set[str] | None, optional
+        Public fixture names to skip.
+
+    Returns
+    -------
+    list[tuple[str, str, Any]]
+        Tuples of ``(attr_name, public_name, fixture_obj)`` in source order.
+    """
+    excluded = excluded or set()
+    entries: list[tuple[str, str, t.Any]] = []
+    seen_public: set[str] = set()
+
+    for attr_name, value in vars(module).items():
+        if not _is_pytest_fixture(value):
+            continue
+        try:
+            marker = _get_fixture_marker(value)
+        except AttributeError:
+            continue
+        public_name = marker.name or _get_fixture_fn(value).__name__
+        if public_name in excluded:
+            continue
+        if public_name in seen_public:
+            logger.warning(
+                "pytest fixture scan skipped duplicate public name %r in %s",
+                public_name,
+                module.__name__,
+            )
+            continue
+        seen_public.add(public_name)
+        entries.append((attr_name, public_name, value))
+
+    return entries
+
+
+def _note_module_dependency(document: nodes.document, module: t.Any) -> None:
+    """Register an imported module file as a Sphinx dependency.
+
+    Parameters
+    ----------
+    document : nodes.document
+        Current document node carrying the Sphinx environment.
+    module : Any
+        Imported module object that may expose ``__file__``.
+    """
+    env = document.settings.env
+    if hasattr(module, "__file__") and module.__file__:
+        env.note_dependency(module.__file__)
+
+
+def _render_autofixtures_nodes(
+    directive: SphinxDirective,
+    *,
+    modname: str,
+    entries: list[tuple[str, str, t.Any]],
+    order: str = "source",
+) -> list[nodes.Node]:
+    """Render ``autofixture`` directives into doctree nodes.
+
+    Parameters
+    ----------
+    directive : SphinxDirective
+        Directive instance used for nested parsing.
+    modname : str
+        Imported fixture module name.
+    entries : list[tuple[str, str, Any]]
+        Public fixture entries as ``(attr_name, public_name, fixture_obj)``.
+    order : str, optional
+        ``"source"`` keeps module order; ``"alpha"`` sorts by public name.
+
+    Returns
+    -------
+    list[nodes.Node]
+        Parsed fixture reference nodes.
+    """
+    if order == "alpha":
+        entries = sorted(entries, key=lambda entry: entry[1])
+
+    lines: list[str] = []
+    for _attr_name, public_name, _value in entries:
+        lines.append(f".. autofixture:: {modname}.{public_name}")
+        lines.append("")
+
+    content = "\n".join(lines).strip()
+    if _is_markdown_source(directive):
+        content = f"```{{eval-rst}}\n{content}\n```"
+
+    return directive.parse_text_to_nodes(
+        content,
+        offset=directive.content_offset,
+    )
+
+
+def _is_markdown_source(directive: SphinxDirective) -> bool:
+    """Return ``True`` when the current document source is Markdown/MyST."""
+    source, _line = directive.get_source_info()
+    if not source:
+        source = getattr(directive.state.document, "current_source", "")
+    if not source:
+        return False
+
+    return pathlib.Path(source).suffix.lower() in {
+        ".md",
+        ".markdown",
+        ".myst",
+    }
+
+
+def _build_doc_pytest_plugin_index_node(modname: str) -> autofixture_index_node:
+    """Create an autofixture-index placeholder node for *modname*."""
+    node = autofixture_index_node()
+    node["module"] = modname
+    node["exclude"] = set()
+    return node
 
 
 class PyFixtureDirective(PyFunction):
@@ -442,7 +570,7 @@ class PyFixtureDirective(PyFunction):
             )
 
 
-class AutofixturesDirective(Directive):
+class AutofixturesDirective(SphinxDirective):
     """Bulk fixture autodoc directive: ``.. autofixtures:: module.name``.
 
     Scans *module.name* for all pytest fixtures and emits one
@@ -474,8 +602,6 @@ class AutofixturesDirective(Directive):
 
     def run(self) -> list[nodes.Node]:
         """Scan the module and emit autofixture directives."""
-        import importlib
-
         modname = self.arguments[0].strip()
         order = self.options.get("order", "source")
         exclude_str = self.options.get("exclude", "")
@@ -492,57 +618,181 @@ class AutofixturesDirective(Directive):
             )
             return []
 
-        # Register the module file as a dependency so incremental rebuilds
-        # re-process this page when the scanned module changes.
-        env = self.state.document.settings.env
-        if hasattr(module, "__file__") and module.__file__:
-            env.note_dependency(module.__file__)
+        _note_module_dependency(self.state.document, module)
+        entries = _iter_public_fixture_entries(module, excluded=excluded)
 
-        # Collect all (attr_name, public_name, fixture_obj) triples.
-        entries: list[tuple[str, str, t.Any]] = []
-        seen_public: set[str] = set()
-        for attr_name, value in vars(module).items():
-            if not _is_pytest_fixture(value):
-                continue
-            try:
-                marker = _get_fixture_marker(value)
-            except AttributeError:
-                continue
-            public_name = marker.name or _get_fixture_fn(value).__name__
-            if public_name in excluded:
-                continue
-            if public_name in seen_public:
-                logger.warning(
-                    "autofixtures: duplicate public name %r in %s; skipping duplicate.",
-                    public_name,
-                    modname,
-                )
-                continue
-            seen_public.add(public_name)
-            entries.append((attr_name, public_name, value))
-
-        if order == "alpha":
-            entries.sort(key=lambda e: e[1])
-
-        # Build RST content: one ``autofixture::`` directive per fixture.
-        source = f"<autofixtures:{modname}>"
-        lines: list[str] = []
-        for _attr_name, public_name, _value in entries:
-            lines.append(f".. autofixture:: {modname}.{public_name}")
-            lines.append("")
-        rst_lines = ViewList(lines, source=source)
-
-        # Parse the generated RST into a container node.
-        # ViewList is compatible with nested_parse at runtime even though
-        # docutils stubs declare StringList — suppress the type mismatch.
-        container = nodes.section()
-        container.document = self.state.document
-        self.state.nested_parse(
-            rst_lines,  # type: ignore[arg-type]
-            self.content_offset,
-            container,
+        return _render_autofixtures_nodes(
+            self,
+            modname=modname,
+            entries=entries,
+            order=order,
         )
-        return container.children
+
+
+class DocPytestPluginDirective(SphinxDirective):
+    """Render a reusable pytest-plugin documentation page block.
+
+    Parameters
+    ----------
+    self : SphinxDirective
+        Directive instance populated by the Sphinx parser.
+
+    Notes
+    -----
+    ``page`` mode emits a compact install/autodiscovery intro before the
+    generated fixture summary and reference blocks. ``reference`` mode only
+    emits any authored body content plus the generated fixture sections.
+    """
+
+    required_arguments = 1
+    optional_arguments = 0
+    has_content = True
+    option_spec: t.ClassVar[dict[str, t.Any]] = {
+        "project": directives.unchanged,
+        "package": directives.unchanged,
+        "summary": directives.unchanged,
+        "mode": lambda arg: directives.choice(arg, ("page", "reference")),
+        "tests-url": directives.unchanged,
+        "install-command": directives.unchanged,
+    }
+
+    def run(self) -> list[nodes.Node]:
+        """Render intro prose plus generated fixture index/reference blocks."""
+        modname = self.arguments[0].strip()
+        project = self._require_option("project")
+        package = self._require_option("package")
+        summary = self._require_option("summary")
+        mode = self.options.get("mode", "page")
+        tests_url = self.options.get("tests-url")
+        install_command = self.options.get(
+            "install-command",
+            f"pip install {package}",
+        )
+
+        children: list[nodes.Node] = []
+        if mode == "page":
+            children.extend(
+                self._build_page_intro_nodes(
+                    project=project,
+                    summary=summary,
+                    install_command=install_command,
+                    tests_url=tests_url,
+                ),
+            )
+
+        if self.content:
+            children.extend(
+                self.parse_content_to_nodes(
+                    allow_section_headings=True,
+                ),
+            )
+
+        entries = self._get_module_fixture_entries(modname)
+        if entries is not None:
+            children.extend(
+                self._build_fixture_section_nodes(
+                    modname=modname,
+                    entries=entries,
+                ),
+            )
+
+        return children
+
+    def _require_option(self, name: str) -> str:
+        """Return a required option value or raise a directive error."""
+        value = self.options.get(name, "").strip()
+        if not value:
+            msg = f"{self.name} requires the :{name}: option"
+            raise self.error(msg)
+        return value
+
+    def _get_module_fixture_entries(
+        self,
+        modname: str,
+    ) -> list[tuple[str, str, t.Any]] | None:
+        """Import *modname* and return discovered fixture entries."""
+        try:
+            module = importlib.import_module(modname)
+        except ImportError:
+            logger.warning(
+                "doc-pytest-plugin could not import module %r; "
+                "skipping generated fixture sections",
+                modname,
+            )
+            return None
+
+        _note_module_dependency(self.state.document, module)
+        entries = _iter_public_fixture_entries(module)
+        if entries:
+            return entries
+
+        logger.warning(
+            "doc-pytest-plugin found no pytest fixtures in %r; "
+            "skipping generated fixture sections",
+            modname,
+        )
+        return None
+
+    def _build_page_intro_nodes(
+        self,
+        *,
+        project: str,
+        summary: str,
+        install_command: str,
+        tests_url: str | None,
+    ) -> list[nodes.Node]:
+        """Build the generated intro nodes for ``page`` mode."""
+        intro_nodes: list[nodes.Node] = [nodes.paragraph("", summary)]
+        intro_nodes.append(nodes.rubric("", "Install"))
+
+        install_block = nodes.literal_block("", f"$ {install_command}")
+        install_block["language"] = "console"
+        intro_nodes.append(install_block)
+
+        note = nodes.note()
+        note_para = nodes.paragraph()
+        note_para += nodes.Text("pytest auto-detects this plugin through the ")
+        note_para += nodes.literal("", "pytest11")
+        note_para += nodes.Text(
+            " entry point. Its fixtures are available without extra "
+        )
+        note_para += nodes.literal("", "conftest.py")
+        note_para += nodes.Text(" imports.")
+        note += note_para
+        intro_nodes.append(note)
+
+        if tests_url:
+            tests_para = nodes.paragraph()
+            tests_para += nodes.Text("For real-world usage examples, see the ")
+            tests_para += nodes.reference(
+                "",
+                "",
+                nodes.Text(f"{project} test suite"),
+                refuri=tests_url,
+            )
+            tests_para += nodes.Text(".")
+            intro_nodes.append(tests_para)
+
+        return intro_nodes
+
+    def _build_fixture_section_nodes(
+        self,
+        *,
+        modname: str,
+        entries: list[tuple[str, str, t.Any]],
+    ) -> list[nodes.Node]:
+        """Build generated fixture summary/reference nodes."""
+        return [
+            nodes.rubric("", "Fixture Summary"),
+            _build_doc_pytest_plugin_index_node(modname),
+            nodes.rubric("", "Fixture Reference"),
+            *_render_autofixtures_nodes(
+                self,
+                modname=modname,
+                entries=entries,
+                order="source",
+            ),
+        ]
 
 
 class AutofixtureIndexDirective(SphinxDirective):

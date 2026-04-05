@@ -80,14 +80,32 @@ import sys
 sys.path.insert(0, "{srcdir}")
 
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx_autodoc_pytest_fixtures",
+{extensions}
 ]
 
 master_doc = "index"
 exclude_patterns = ["_build"]
 html_theme = "alabaster"
 """
+
+
+def _render_conf_py(
+    srcdir: pathlib.Path,
+    *,
+    extensions: list[str] | None = None,
+) -> str:
+    """Render ``conf.py`` for the synthetic Sphinx project."""
+    if extensions is None:
+        extensions = [
+            "sphinx.ext.autodoc",
+            "sphinx_autodoc_pytest_fixtures",
+        ]
+    rendered_extensions = ",\n".join(f'    "{ext}"' for ext in extensions)
+    return CONF_PY_TEMPLATE.format(
+        srcdir=str(srcdir),
+        extensions=rendered_extensions,
+    )
+
 
 INDEX_RST = textwrap.dedent(
     """\
@@ -154,6 +172,8 @@ def _build_sphinx_app(
     confoverrides: dict[str, t.Any] | None = None,
     fixture_source: str | None = None,
     index_rst: str | None = None,
+    index_name: str = "index.rst",
+    extensions: list[str] | None = None,
 ) -> _SphinxResult:
     """Write project files and run a full Sphinx HTML build; return results.
 
@@ -169,6 +189,10 @@ def _build_sphinx_app(
     index_rst :
         Override the RST index written to ``index.rst``.
         Defaults to :data:`INDEX_RST`.
+    index_name :
+        Index filename to write, such as ``index.rst`` or ``index.md``.
+    extensions :
+        Optional extension list for ``conf.py``.
     """
     from sphinx.application import Sphinx
 
@@ -185,10 +209,10 @@ def _build_sphinx_app(
         encoding="utf-8",
     )
     (srcdir / "conf.py").write_text(
-        CONF_PY_TEMPLATE.format(srcdir=str(srcdir)),
+        _render_conf_py(srcdir, extensions=extensions),
         encoding="utf-8",
     )
-    (srcdir / "index.rst").write_text(
+    (srcdir / index_name).write_text(
         index_rst if index_rst is not None else INDEX_RST,
         encoding="utf-8",
     )
@@ -289,10 +313,7 @@ def test_manual_directive_without_module(tmp_path: pathlib.Path) -> None:
     doctreedir.mkdir()
 
     (srcdir / "fixture_mod.py").write_text(FIXTURE_MOD_SOURCE, encoding="utf-8")
-    (srcdir / "conf.py").write_text(
-        CONF_PY_TEMPLATE.format(srcdir=str(srcdir)),
-        encoding="utf-8",
-    )
+    (srcdir / "conf.py").write_text(_render_conf_py(srcdir), encoding="utf-8")
     # Bare directive with no currentmodule
     (srcdir / "index.rst").write_text(
         "Manual\n======\n\n.. py:fixture:: bare_server\n\n   Bare server docs.\n",
@@ -334,10 +355,7 @@ def test_xref_resolves(tmp_path: pathlib.Path) -> None:
     doctreedir.mkdir()
 
     (srcdir / "fixture_mod.py").write_text(FIXTURE_MOD_SOURCE, encoding="utf-8")
-    (srcdir / "conf.py").write_text(
-        CONF_PY_TEMPLATE.format(srcdir=str(srcdir)),
-        encoding="utf-8",
-    )
+    (srcdir / "conf.py").write_text(_render_conf_py(srcdir), encoding="utf-8")
     (srcdir / "index.rst").write_text(
         textwrap.dedent(
             """\
@@ -459,10 +477,7 @@ def test_builtin_dep_external_link(tmp_path: pathlib.Path) -> None:
     doctreedir.mkdir()
 
     (srcdir / "fixture_mod.py").write_text(src, encoding="utf-8")
-    (srcdir / "conf.py").write_text(
-        CONF_PY_TEMPLATE.format(srcdir=str(srcdir)),
-        encoding="utf-8",
-    )
+    (srcdir / "conf.py").write_text(_render_conf_py(srcdir), encoding="utf-8")
     (srcdir / "index.rst").write_text(
         "Fixtures\n========\n\n.. py:module:: fixture_mod\n\n"
         ".. autofixture:: fixture_mod.needs_tmp\n",
@@ -506,10 +521,7 @@ def test_kind_override_hook_option(tmp_path: pathlib.Path) -> None:
     doctreedir.mkdir()
 
     (srcdir / "fixture_mod.py").write_text(FIXTURE_MOD_SOURCE, encoding="utf-8")
-    (srcdir / "conf.py").write_text(
-        CONF_PY_TEMPLATE.format(srcdir=str(srcdir)),
-        encoding="utf-8",
-    )
+    (srcdir / "conf.py").write_text(_render_conf_py(srcdir), encoding="utf-8")
     (srcdir / "index.rst").write_text(
         textwrap.dedent(
             """\
@@ -1549,6 +1561,206 @@ def test_autofixtures_directive_import_error(tmp_path: pathlib.Path) -> None:
 
 
 # ---------------------------------------------------------------------------
+# doc-pytest-plugin directive
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.integration
+def test_doc_pytest_plugin_page_mode(tmp_path: pathlib.Path) -> None:
+    """page mode renders install, autodetection, body, and fixture sections."""
+    index_rst = textwrap.dedent(
+        """\
+        Test fixtures
+        =============
+
+        .. doc-pytest-plugin:: fixture_mod
+           :project: fixture-demo
+           :package: fixture-demo
+           :summary: fixture-demo ships a pytest plugin for local test setup.
+           :tests-url: https://example.com/fixture-demo/tests
+           :install-command: uv add --dev fixture-demo
+
+           Use the plugin when you want isolated test resources with minimal
+           conftest boilerplate.
+        """,
+    )
+    result = _build_sphinx_app(
+        tmp_path,
+        index_rst=index_rst,
+        confoverrides={"pytest_fixture_lint_level": "none"},
+    )
+    html = (result.outdir / "index.html").read_text(encoding="utf-8")
+    assert "fixture-demo ships a pytest plugin for local test setup" in html
+    assert "highlight-console" in html
+    assert "--dev" in html
+    assert "pytest auto-detects this plugin through the" in html
+    assert "fixture-demo test suite" in html
+    assert "Use the plugin when you want isolated test resources" in html
+    assert "Fixture Summary" in html
+    assert "Fixture Reference" in html
+    assert "my_server" in html
+
+
+@pytest.mark.integration
+def test_doc_pytest_plugin_reference_mode(tmp_path: pathlib.Path) -> None:
+    """reference mode skips the generated intro but keeps body and fixtures."""
+    index_rst = textwrap.dedent(
+        """\
+        Test fixtures
+        =============
+
+        .. doc-pytest-plugin:: fixture_mod
+           :project: fixture-demo
+           :package: fixture-demo
+           :summary: fixture-demo ships a pytest plugin for local test setup.
+           :mode: reference
+
+           Keep this page focused on the fixture catalogue.
+        """,
+    )
+    result = _build_sphinx_app(
+        tmp_path,
+        index_rst=index_rst,
+        confoverrides={"pytest_fixture_lint_level": "none"},
+    )
+    html = (result.outdir / "index.html").read_text(encoding="utf-8")
+    assert "Keep this page focused on the fixture catalogue" in html
+    assert "uv add --dev fixture-demo" not in html
+    assert "pytest auto-detects this plugin through the" not in html
+    assert "Fixture Summary" in html
+    assert "Fixture Reference" in html
+
+
+@pytest.mark.integration
+def test_doc_pytest_plugin_warns_when_module_has_no_fixtures(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Modules with no fixtures warn and omit generated fixture sections."""
+    fixture_source = textwrap.dedent(
+        """\
+        from __future__ import annotations
+
+        def helper() -> str:
+            return "helper"
+        """,
+    )
+    index_rst = textwrap.dedent(
+        """\
+        Test fixtures
+        =============
+
+        .. doc-pytest-plugin:: fixture_mod
+           :project: fixture-demo
+           :package: fixture-demo
+           :summary: fixture-demo ships a pytest plugin for local test setup.
+        """,
+    )
+    result = _build_sphinx_app(
+        tmp_path,
+        fixture_source=fixture_source,
+        index_rst=index_rst,
+        confoverrides={"pytest_fixture_lint_level": "none"},
+    )
+    html = (result.outdir / "index.html").read_text(encoding="utf-8")
+    assert "Fixture Summary" not in html
+    assert "Fixture Reference" not in html
+    assert "found no pytest fixtures" in result.warnings
+
+
+@pytest.mark.integration
+def test_doc_pytest_plugin_myst_page_mode(tmp_path: pathlib.Path) -> None:
+    """MyST pages render headings, code fences, and fixture sections correctly."""
+    index_md = textwrap.dedent(
+        """\
+        # Test fixtures
+
+        :::{doc-pytest-plugin} fixture_mod
+        :project: fixture-demo
+        :package: fixture-demo
+        :summary: fixture-demo ships a pytest plugin for local test setup.
+        :tests-url: https://example.com/fixture-demo/tests
+
+        ## Recommended fixtures
+
+        Use this page when you want generated fixture docs and authored notes.
+
+        ## Bootstrapping in `conftest.py`
+
+        ```python
+        import pytest
+
+
+        @pytest.fixture(autouse=True)
+        def setup(my_server: str) -> None:
+            pass
+        ```
+        :::
+        """,
+    )
+    result = _build_sphinx_app(
+        tmp_path,
+        index_rst=index_md,
+        index_name="index.md",
+        extensions=[
+            "myst_parser",
+            "sphinx.ext.autodoc",
+            "sphinx_autodoc_pytest_fixtures",
+        ],
+        confoverrides={
+            "pytest_fixture_lint_level": "none",
+            "myst_enable_extensions": ["colon_fence"],
+        },
+    )
+    html = (result.outdir / "index.html").read_text(encoding="utf-8")
+    assert "Recommended fixtures" in html
+    assert "Bootstrapping in" in html
+    assert "highlight-python" in html
+    assert "Fixture Summary" in html
+    assert "Fixture Reference" in html
+    assert "fake server" in html
+    assert ".. rubric::" not in html
+    assert ".. autofixture-index::" not in html
+    assert ".. autofixtures::" not in html
+    assert ".. autofixture::" not in html
+
+
+@pytest.mark.integration
+def test_autofixtures_directive_myst_page_mode(tmp_path: pathlib.Path) -> None:
+    """MyST pages render ``autofixtures`` output instead of leaking directives."""
+    index_md = textwrap.dedent(
+        """\
+        # Test fixtures
+
+        :::{eval-rst}
+        .. py:module:: fixture_mod
+        :::
+
+        :::{autofixtures} fixture_mod
+        :order: source
+        :::
+        """,
+    )
+    result = _build_sphinx_app(
+        tmp_path,
+        index_rst=index_md,
+        index_name="index.md",
+        extensions=[
+            "myst_parser",
+            "sphinx.ext.autodoc",
+            "sphinx_autodoc_pytest_fixtures",
+        ],
+        confoverrides={
+            "pytest_fixture_lint_level": "none",
+            "myst_enable_extensions": ["colon_fence"],
+        },
+    )
+    html = (result.outdir / "index.html").read_text(encoding="utf-8")
+    assert "fake server" in html
+    assert "my_client" in html
+    assert ".. autofixture::" not in html
+
+
+# ---------------------------------------------------------------------------
 # Search pair index entries
 # ---------------------------------------------------------------------------
 
@@ -1741,7 +1953,7 @@ def test_cross_doc_used_by_link(tmp_path: pathlib.Path) -> None:
     doctreedir.mkdir()
 
     (srcdir / "fixture_mod.py").write_text(CROSS_DOC_FIXTURE_SOURCE, encoding="utf-8")
-    conf = CONF_PY_TEMPLATE.format(srcdir=str(srcdir))
+    conf = _render_conf_py(srcdir)
     (srcdir / "conf.py").write_text(conf, encoding="utf-8")
     (srcdir / "index.rst").write_text(CROSS_DOC_INDEX_RST, encoding="utf-8")
     (srcdir / "api.rst").write_text(CROSS_DOC_API_RST, encoding="utf-8")
@@ -1828,7 +2040,7 @@ def test_text_builder_does_not_crash(tmp_path: pathlib.Path) -> None:
     doctreedir.mkdir()
 
     (srcdir / "fixture_mod.py").write_text(FIXTURE_MOD_SOURCE, encoding="utf-8")
-    conf_py = CONF_PY_TEMPLATE.format(srcdir=str(srcdir))
+    conf_py = _render_conf_py(srcdir)
     (srcdir / "conf.py").write_text(conf_py, encoding="utf-8")
     (srcdir / "index.rst").write_text(INDEX_RST, encoding="utf-8")
 
