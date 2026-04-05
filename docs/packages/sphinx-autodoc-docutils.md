@@ -116,4 +116,4 @@ the live `setup()` calls.
 ```{package-reference} sphinx-autodoc-docutils
 ```
 
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-docutils)
+[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-docutils) · [PyPI](https://pypi.org/project/sphinx-autodoc-docutils/)
