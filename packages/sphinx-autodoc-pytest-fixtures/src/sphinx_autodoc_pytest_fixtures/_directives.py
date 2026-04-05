@@ -166,14 +166,6 @@ def _is_markdown_source(directive: SphinxDirective) -> bool:
     }
 
 
-def _build_doc_pytest_plugin_index_node(modname: str) -> autofixture_index_node:
-    """Create an autofixture-index placeholder node for *modname*."""
-    node = autofixture_index_node()
-    node["module"] = modname
-    node["exclude"] = set()
-    return node
-
-
 class PyFixtureDirective(PyFunction):
     """Sphinx directive for documenting pytest fixtures: ``.. py:fixture::``.
 
@@ -782,9 +774,12 @@ class DocPytestPluginDirective(SphinxDirective):
         entries: list[tuple[str, str, t.Any]],
     ) -> list[nodes.Node]:
         """Build generated fixture summary/reference nodes."""
+        idx_node = autofixture_index_node()
+        idx_node["module"] = modname
+        idx_node["exclude"] = set()
         return [
             nodes.rubric("", "Fixture Summary"),
-            _build_doc_pytest_plugin_index_node(modname),
+            idx_node,
             nodes.rubric("", "Fixture Reference"),
             *_render_autofixtures_nodes(
                 self,
