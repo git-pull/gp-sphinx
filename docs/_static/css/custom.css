@@ -368,6 +368,95 @@ body[data-theme="dark"] {
   background-color: var(--badge-beta-bg);
 }
 
+/* ── Safety badge compatibility ─────────────────────────────
+ * Downstream projects like libtmux-mcp emit safety badges via
+ * a custom extension. Keep the docs-site copy aligned with the
+ * packaged theme CSS so previews match downstream builds.
+ * ────────────────────────────────────────────────────────── */
+:root {
+  --badge-safety-readonly-bg: #1f7a3f;
+  --badge-safety-readonly-border: #2a8d4d;
+  --badge-safety-readonly-text: #f3fff7;
+  --badge-safety-mutating-bg: #b96a1a;
+  --badge-safety-mutating-border: #cf7a23;
+  --badge-safety-mutating-text: #fff8ef;
+  --badge-safety-destructive-bg: #b4232c;
+  --badge-safety-destructive-border: #cb3640;
+  --badge-safety-destructive-text: #fff5f5;
+}
+
+h2:has(> .sd-badge[role="note"][aria-label^="Safety tier:"]),
+h3:has(> .sd-badge[role="note"][aria-label^="Safety tier:"]),
+h4:has(> .sd-badge[role="note"][aria-label^="Safety tier:"]) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.sd-badge[role="note"][aria-label^="Safety tier:"] {
+  gap: 0.28rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+}
+
+.sd-badge[role="note"][aria-label^="Safety tier:"]::before {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 1em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.sd-badge.sd-bg-success[role="note"][aria-label^="Safety tier:"] {
+  background-color: var(--badge-safety-readonly-bg) !important;
+  color: var(--badge-safety-readonly-text) !important;
+  border-color: var(--badge-safety-readonly-border);
+}
+
+.sd-badge.sd-bg-warning[role="note"][aria-label^="Safety tier:"] {
+  background-color: var(--badge-safety-mutating-bg) !important;
+  color: var(--badge-safety-mutating-text) !important;
+  border-color: var(--badge-safety-mutating-border);
+}
+
+.sd-badge.sd-bg-danger[role="note"][aria-label^="Safety tier:"] {
+  background-color: var(--badge-safety-destructive-bg) !important;
+  color: var(--badge-safety-destructive-text) !important;
+  border-color: var(--badge-safety-destructive-border);
+}
+
+.sd-badge.sd-bg-success[role="note"][aria-label^="Safety tier:"]::before {
+  content: "🔍";
+}
+
+.sd-badge.sd-bg-warning[role="note"][aria-label^="Safety tier:"]::before {
+  content: "✏️";
+}
+
+.sd-badge.sd-bg-danger[role="note"][aria-label^="Safety tier:"]::before {
+  content: "💣";
+}
+
+h2 .sd-badge[role="note"][aria-label^="Safety tier:"],
+h3 .sd-badge[role="note"][aria-label^="Safety tier:"] {
+  font-size: 0.68rem;
+  padding: 0.17rem 0.4rem;
+}
+
+p .sd-badge[role="note"][aria-label^="Safety tier:"],
+li .sd-badge[role="note"][aria-label^="Safety tier:"],
+td .sd-badge[role="note"][aria-label^="Safety tier:"],
+a .sd-badge[role="note"][aria-label^="Safety tier:"] {
+  font-size: 0.62rem;
+  padding: 0.12rem 0.32rem;
+}
+
+code.docutils + .sd-badge[role="note"][aria-label^="Safety tier:"],
+.sd-badge[role="note"][aria-label^="Safety tier:"] + code.docutils {
+  margin-left: 0.4em;
+}
+
 /* Type badges (solid fills) — muted gray, scoped to metadata strip only.
  * extension:   {bdg-primary}    → .sd-badge.sd-bg-primary
  * coordinator: {bdg-success}    → .sd-badge.sd-bg-success  (solid fill)
