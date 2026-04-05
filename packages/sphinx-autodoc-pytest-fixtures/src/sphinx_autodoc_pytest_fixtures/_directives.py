@@ -624,16 +624,15 @@ class AutofixturesDirective(SphinxDirective):
 class DocPytestPluginDirective(SphinxDirective):
     """Render a reusable pytest-plugin documentation page block.
 
+    Always emits an install section, pytest11 autodiscovery note, and
+    generated fixture summary/reference. The directive body is free-form:
+    ``allow_section_headings=True`` is intentional so projects can add
+    "Recommended fixtures" and similar sections inline.
+
     Parameters
     ----------
     self : SphinxDirective
         Directive instance populated by the Sphinx parser.
-
-    Notes
-    -----
-    ``page`` mode emits a compact install/autodiscovery intro before the
-    generated fixture summary and reference blocks. ``reference`` mode only
-    emits any authored body content plus the generated fixture sections.
     """
 
     required_arguments = 1
@@ -643,7 +642,6 @@ class DocPytestPluginDirective(SphinxDirective):
         "project": directives.unchanged,
         "package": directives.unchanged,
         "summary": directives.unchanged,
-        "mode": lambda arg: directives.choice(arg, ("page", "reference")),
         "tests-url": directives.unchanged,
         "install-command": directives.unchanged,
     }
@@ -651,10 +649,9 @@ class DocPytestPluginDirective(SphinxDirective):
     def run(self) -> list[nodes.Node]:
         """Render intro prose plus generated fixture index/reference blocks."""
         modname = self.arguments[0].strip()
-        project = self._require_option("project")
         package = self._require_option("package")
-        summary = self._require_option("summary")
-        mode = self.options.get("mode", "page")
+        project = self.options.get("project", "").strip()
+        summary = self.options.get("summary", "").strip()
         tests_url = self.options.get("tests-url")
         install_command = self.options.get(
             "install-command",
@@ -662,15 +659,14 @@ class DocPytestPluginDirective(SphinxDirective):
         )
 
         children: list[nodes.Node] = []
-        if mode == "page":
-            children.extend(
-                self._build_page_intro_nodes(
-                    project=project,
-                    summary=summary,
-                    install_command=install_command,
-                    tests_url=tests_url,
-                ),
-            )
+        children.extend(
+            self._build_page_intro_nodes(
+                project=project,
+                summary=summary,
+                install_command=install_command,
+                tests_url=tests_url,
+            ),
+        )
 
         if self.content:
             children.extend(
@@ -733,8 +729,10 @@ class DocPytestPluginDirective(SphinxDirective):
         install_command: str,
         tests_url: str | None,
     ) -> list[nodes.Node]:
-        """Build the generated intro nodes for ``page`` mode."""
-        intro_nodes: list[nodes.Node] = [nodes.paragraph("", summary)]
+        """Build the generated intro nodes."""
+        intro_nodes: list[nodes.Node] = []
+        if summary:
+            intro_nodes.append(nodes.paragraph("", summary))
         intro_nodes.append(nodes.rubric("", "Install"))
 
         install_block = nodes.literal_block("", f"$ {install_command}")
@@ -754,12 +752,13 @@ class DocPytestPluginDirective(SphinxDirective):
         intro_nodes.append(note)
 
         if tests_url:
+            link_text = f"{project} test suite" if project else "test suite"
             tests_para = nodes.paragraph()
             tests_para += nodes.Text("For real-world usage examples, see the ")
             tests_para += nodes.reference(
                 "",
                 "",
-                nodes.Text(f"{project} test suite"),
+                nodes.Text(link_text),
                 refuri=tests_url,
             )
             tests_para += nodes.Text(".")

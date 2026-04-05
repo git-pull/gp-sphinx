@@ -54,17 +54,12 @@ pytest_external_fixture_links = {
 
 ### Plugin page helper
 
-```{eval-rst}
-.. doc-pytest-plugin:: spf_demo_fixtures
-   :project: spf-demo
-   :package: sphinx-autodoc-pytest-fixtures
-   :summary: Use this helper to generate a polished pytest plugin page with
-      install, autodetection, and fixture reference sections.
-   :mode: reference
+:::{doc-pytest-plugin} spf_demo_fixtures
+:package: sphinx-autodoc-pytest-fixtures
 
-   Add project-specific usage notes here, then let the helper render the
-   shared fixture summary and reference sections.
-```
+Add project-specific usage notes here. The helper renders the install
+section, autodiscovery note, and full fixture summary/reference.
+:::
 
 #### autofixtures options
 

@@ -1602,36 +1602,6 @@ def test_doc_pytest_plugin_page_mode(tmp_path: pathlib.Path) -> None:
 
 
 @pytest.mark.integration
-def test_doc_pytest_plugin_reference_mode(tmp_path: pathlib.Path) -> None:
-    """reference mode skips the generated intro but keeps body and fixtures."""
-    index_rst = textwrap.dedent(
-        """\
-        Test fixtures
-        =============
-
-        .. doc-pytest-plugin:: fixture_mod
-           :project: fixture-demo
-           :package: fixture-demo
-           :summary: fixture-demo ships a pytest plugin for local test setup.
-           :mode: reference
-
-           Keep this page focused on the fixture catalogue.
-        """,
-    )
-    result = _build_sphinx_app(
-        tmp_path,
-        index_rst=index_rst,
-        confoverrides={"pytest_fixture_lint_level": "none"},
-    )
-    html = (result.outdir / "index.html").read_text(encoding="utf-8")
-    assert "Keep this page focused on the fixture catalogue" in html
-    assert "uv add --dev fixture-demo" not in html
-    assert "pytest auto-detects this plugin through the" not in html
-    assert "Fixture Summary" in html
-    assert "Fixture Reference" in html
-
-
-@pytest.mark.integration
 def test_doc_pytest_plugin_warns_when_module_has_no_fixtures(
     tmp_path: pathlib.Path,
 ) -> None:
