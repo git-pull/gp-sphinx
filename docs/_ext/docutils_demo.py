@@ -86,5 +86,5 @@ def demo_badge_role(
     return [nodes.literal(rawtext, text, classes=classes)], []
 
 
-demo_badge_role.options = {"class": directives.class_option}
-demo_badge_role.content = True
+demo_badge_role.options = {"class": directives.class_option}  # type: ignore[attr-defined]
+demo_badge_role.content = True  # type: ignore[attr-defined]
