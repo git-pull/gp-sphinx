@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-autodoc-sphinx"
-version = "0.0.1a0"
+version = "0.0.1a1"
 description = "Sphinx extension for documenting extension config values as first-class conf.py reference entries"
 requires-python = ">=3.10,<4.0"
 authors = [

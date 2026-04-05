@@ -396,7 +396,7 @@ wheels = [
 
 [[package]]
 name = "gp-sphinx"
-version = "0.0.1a0"
+version = "0.0.1a1"
 source = { editable = "packages/gp-sphinx" }
 dependencies = [
     { name = "docutils" },
@@ -444,7 +444,7 @@ provides-extras = ["argparse"]
 
 [[package]]
 name = "gp-sphinx-workspace"
-version = "0.0.1a0"
+version = "0.0.1a1"
 source = { editable = "." }
 dependencies = [
     { name = "gp-sphinx" },
@@ -1193,7 +1193,7 @@ wheels = [
 
 [[package]]
 name = "sphinx-argparse-neo"
-version = "0.0.1a0"
+version = "0.0.1a1"
 source = { editable = "packages/sphinx-argparse-neo" }
 dependencies = [
     { name = "docutils" },
@@ -1252,7 +1252,7 @@ wheels = [
 
 [[package]]
 name = "sphinx-autodoc-docutils"
-version = "0.0.1a0"
+version = "0.0.1a1"
 source = { editable = "packages/sphinx-autodoc-docutils" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1264,7 +1264,7 @@ requires-dist = [{ name = "sphinx" }]
 
 [[package]]
 name = "sphinx-autodoc-pytest-fixtures"
-version = "0.0.1a0"
+version = "0.0.1a1"
 source = { editable = "packages/sphinx-autodoc-pytest-fixtures" }
 dependencies = [
     { name = "pytest" },
@@ -1280,7 +1280,7 @@ requires-dist = [
 
 [[package]]
 name = "sphinx-autodoc-sphinx"
-version = "0.0.1a0"
+version = "0.0.1a1"
 source = { editable = "packages/sphinx-autodoc-sphinx" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1380,7 +1380,7 @@ wheels = [
 
 [[package]]
 name = "sphinx-fonts"
-version = "0.0.1a0"
+version = "0.0.1a1"
 source = { editable = "packages/sphinx-fonts" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1392,7 +1392,7 @@ requires-dist = [{ name = "sphinx" }]
 
 [[package]]
 name = "sphinx-gptheme"
-version = "0.0.1a0"
+version = "0.0.1a1"
 source = { editable = "packages/sphinx-gptheme" }
 dependencies = [
     { name = "furo" },

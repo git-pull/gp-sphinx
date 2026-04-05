@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-argparse-neo"
-version = "0.0.1a0"
+version = "0.0.1a1"
 description = "Modern Sphinx extension for documenting argparse-based CLI tools"
 requires-python = ">=3.10,<4.0"
 authors = [
