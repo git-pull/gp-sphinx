@@ -224,6 +224,25 @@ img[src*="codecov.io"] {
   background: var(--color-background-secondary);
 }
 
+/* ── Shared badge tuning ────────────────────────────────────
+ * Keep sphinx-design semantics, but tighten the stock badge
+ * box model so inline metadata reads lighter and more native
+ * to the rest of the theme.
+ * ────────────────────────────────────────────────────────── */
+.sd-badge {
+  display: inline-flex !important;
+  align-items: center;
+  vertical-align: middle;
+  font-size: 0.67rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  padding: 0.16rem 0.4rem;
+  border-radius: 0.22rem;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* ── View Transitions (SPA navigation) ────────────────────
  * Crossfade between pages during SPA navigation.
  * Browsers without View Transitions API get instant swap.
