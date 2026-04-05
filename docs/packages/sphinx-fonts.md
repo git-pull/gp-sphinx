@@ -1,6 +1,6 @@
 # sphinx-fonts
 
-{bdg-success-line}`Beta`
+{bdg-success-line}`Beta` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-fonts>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-fonts/>`
 
 Sphinx extension for self-hosted web fonts via Fontsource. It downloads font
 assets during the HTML build, caches them locally, copies them into

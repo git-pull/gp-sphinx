@@ -1,6 +1,6 @@
 # sphinx-autodoc-sphinx
 
-{bdg-warning-line}`Alpha`
+{bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-sphinx>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-autodoc-sphinx/>`
 
 Experimental Sphinx extension for documenting config values registered by
 extension `setup()` hooks. It takes the repetitive part of `conf.py`

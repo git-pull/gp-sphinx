@@ -1,6 +1,6 @@
 # sphinx-gptheme
 
-{bdg-success-line}`Beta`
+{bdg-success-line}`Beta` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gptheme>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-gptheme/>`
 
 Furo child theme for git-pull documentation sites. It keeps Furo’s responsive
 layout and dark mode, then layers in shared sidebars, typography, source-link
