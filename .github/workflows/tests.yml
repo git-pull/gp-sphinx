@@ -79,7 +79,7 @@ jobs:
         run: uv sync --all-packages --all-extras --group dev
 
       - name: Build documentation with warnings as errors
-        run: uv run sphinx-build -W -b html docs docs/_build/html
+        run: uv run sphinx-build -W -b dirhtml docs docs/_build/html
 
   packages:
     runs-on: ubuntu-latest
