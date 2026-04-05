@@ -4,7 +4,8 @@
 
 Sphinx extension for documenting pytest fixtures as first-class objects. It
 registers a Python-domain fixture directive and role, autodoc helpers for bulk
-fixture discovery, and the badge/index UI used throughout the page below.
+fixture discovery, a higher-level pytest plugin page helper, and the
+badge/index UI used throughout the page below.
 
 ```console
 $ pip install sphinx-autodoc-pytest-fixtures
@@ -49,7 +50,41 @@ pytest_external_fixture_links = {
 
 ```{eval-rst}
 .. autofixtures:: spf_demo_fixtures
+   :no-index:
 ```
+
+### Plugin page helper
+
+:::{doc-pytest-plugin} spf_demo_fixtures
+:package: sphinx-autodoc-pytest-fixtures
+
+Add project-specific usage notes here. The helper renders the install
+section, autodiscovery note, and full fixture summary/reference.
+:::
+
+#### When to use `doc-pytest-plugin`
+
+Use this directive for a standard pytest plugin page where you want consistent
+house-style: an install section, the `pytest11` autodiscovery note, and a
+generated fixture summary and reference.
+
+#### Manual recipe (power path)
+
+When you need custom layout — a different section order, content between the
+summary and reference, or no install block — use the low-level directives
+directly:
+
+````markdown
+## Fixture Summary
+
+```{autofixture-index} libvcs.pytest_plugin
+```
+
+## Fixture Reference
+
+```{autofixtures} libvcs.pytest_plugin
+```
+````
 
 #### autofixtures options
 
@@ -57,6 +92,7 @@ pytest_external_fixture_links = {
 |--------|---------|-------------|
 | `:order:` | `"source"` | `"source"` preserves module order; `"alpha"` sorts alphabetically |
 | `:exclude:` | (empty) | Comma-separated fixture names to skip |
+| `:no-index:` | (off) | Emit descriptions without registering fixtures in the domain index; use when the same module is documented twice on one page |
 
 #### autofixture-index options
 
