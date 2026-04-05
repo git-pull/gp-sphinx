@@ -162,6 +162,7 @@ testpaths = [
   "packages/gp-sphinx/src",
   "packages/sphinx-fonts/src",
   "packages/sphinx-gptheme/src",
+  "packages/sphinx-autodoc-sphinx/src",
 ]
 filterwarnings = [
   "ignore:distutils Version classes are deprecated. Use packaging.version instead.",
