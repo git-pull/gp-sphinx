@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import importlib
-import pathlib
 import typing as t
 
 from docutils import nodes
@@ -108,12 +107,34 @@ def _note_module_dependency(document: nodes.document, module: t.Any) -> None:
         env.note_dependency(module.__file__)
 
 
+def _is_native_myst(directive: SphinxDirective) -> bool:
+    """Return ``True`` when *directive* is invoked natively by MyST-parser.
+
+    MyST-parser passes a ``MockState`` to directives it invokes directly,
+    whose ``nested_parse`` renders Markdown rather than RST.  In that context
+    the generated ``autofixture`` RST content must be wrapped in an
+    ``{eval-rst}`` fence so that MyST's nested renderer processes it as RST.
+
+    Directives invoked inside an ``{eval-rst}`` block use a regular docutils
+    ``Body`` state (RST ``nested_parse``), so no wrapping is needed —
+    passing a backtick fence there would produce spurious ``[docutils]``
+    inline-literal warnings.
+    """
+    try:
+        from myst_parser.mocking import MockState  # noqa: PLC0415
+
+        return isinstance(directive.state, MockState)
+    except ImportError:
+        return False
+
+
 def _render_autofixtures_nodes(
     directive: SphinxDirective,
     *,
     modname: str,
     entries: list[tuple[str, str, t.Any]],
     order: str = "source",
+    no_index: bool = False,
 ) -> list[nodes.Node]:
     """Render ``autofixture`` directives into doctree nodes.
 
@@ -127,6 +148,10 @@ def _render_autofixtures_nodes(
         Public fixture entries as ``(attr_name, public_name, fixture_obj)``.
     order : str, optional
         ``"source"`` keeps module order; ``"alpha"`` sorts by public name.
+    no_index : bool, optional
+        When ``True``, each generated ``autofixture`` directive gets
+        ``:no-index:`` so the fixtures are described but not registered in
+        the Sphinx domain index.
 
     Returns
     -------
@@ -139,31 +164,18 @@ def _render_autofixtures_nodes(
     lines: list[str] = []
     for _attr_name, public_name, _value in entries:
         lines.append(f".. autofixture:: {modname}.{public_name}")
+        if no_index:
+            lines.append("   :no-index:")
         lines.append("")
 
     content = "\n".join(lines).strip()
-    if _is_markdown_source(directive):
+    if _is_native_myst(directive):
         content = f"```{{eval-rst}}\n{content}\n```"
 
     return directive.parse_text_to_nodes(
         content,
         offset=directive.content_offset,
     )
-
-
-def _is_markdown_source(directive: SphinxDirective) -> bool:
-    """Return ``True`` when the current document source is Markdown/MyST."""
-    source, _line = directive.get_source_info()
-    if not source:
-        source = getattr(directive.state.document, "current_source", "")
-    if not source:
-        return False
-
-    return pathlib.Path(source).suffix.lower() in {
-        ".md",
-        ".markdown",
-        ".myst",
-    }
 
 
 class PyFixtureDirective(PyFunction):
@@ -590,6 +602,7 @@ class AutofixturesDirective(SphinxDirective):
     option_spec: t.ClassVar[dict[str, t.Any]] = {
         "order": directives.unchanged,
         "exclude": directives.unchanged,
+        "no-index": directives.flag,
     }
 
     def run(self) -> list[nodes.Node]:
@@ -618,6 +631,7 @@ class AutofixturesDirective(SphinxDirective):
             modname=modname,
             entries=entries,
             order=order,
+            no_index="no-index" in self.options,
         )
 
 

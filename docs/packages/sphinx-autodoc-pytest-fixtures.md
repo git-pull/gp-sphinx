@@ -50,6 +50,7 @@ pytest_external_fixture_links = {
 
 ```{eval-rst}
 .. autofixtures:: spf_demo_fixtures
+   :no-index:
 ```
 
 ### Plugin page helper
@@ -91,6 +92,7 @@ directly:
 |--------|---------|-------------|
 | `:order:` | `"source"` | `"source"` preserves module order; `"alpha"` sorts alphabetically |
 | `:exclude:` | (empty) | Comma-separated fixture names to skip |
+| `:no-index:` | (off) | Emit descriptions without registering fixtures in the domain index; use when the same module is documented twice on one page |
 
 #### autofixture-index options
 
