@@ -457,6 +457,30 @@ code.docutils + .sd-badge[role="note"][aria-label^="Safety tier:"],
   margin-left: 0.4em;
 }
 
+/* ── Safety badge link behavior ────────────────────────────
+ * Keep docs-site previews aligned with the packaged theme:
+ * tool links underline only the code token, not the gap or
+ * the attached safety badge.
+ * ────────────────────────────────────────────────────────── */
+a.reference:has(.sd-badge[role="note"][aria-label^="Safety tier:"]) {
+  text-decoration: none;
+}
+
+a.reference:has(.sd-badge[role="note"][aria-label^="Safety tier:"])
+  .sd-badge[role="note"][aria-label^="Safety tier:"] {
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+a.reference:has(.sd-badge[role="note"][aria-label^="Safety tier:"]) code {
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+a.reference:has(.sd-badge[role="note"][aria-label^="Safety tier:"]):hover code {
+  text-decoration: underline;
+}
+
 /* Type badges (solid fills) — muted gray, scoped to metadata strip only.
  * extension:   {bdg-primary}    → .sd-badge.sd-bg-primary
  * coordinator: {bdg-success}    → .sd-badge.sd-bg-success  (solid fill)

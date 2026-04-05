@@ -333,6 +333,30 @@ code.docutils + .sd-badge[role="note"][aria-label^="Safety tier:"],
   margin-left: 0.4em;
 }
 
+/* ── Safety badge link behavior ────────────────────────────
+ * When a tool link includes inline code plus a safety badge,
+ * keep the hover underline on the code token only so the gap
+ * and badge do not get decorated.
+ * ────────────────────────────────────────────────────────── */
+a.reference:has(.sd-badge[role="note"][aria-label^="Safety tier:"]) {
+  text-decoration: none;
+}
+
+a.reference:has(.sd-badge[role="note"][aria-label^="Safety tier:"])
+  .sd-badge[role="note"][aria-label^="Safety tier:"] {
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+a.reference:has(.sd-badge[role="note"][aria-label^="Safety tier:"]) code {
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+a.reference:has(.sd-badge[role="note"][aria-label^="Safety tier:"]):hover code {
+  text-decoration: underline;
+}
+
 /* ── View Transitions (SPA navigation) ────────────────────
  * Crossfade between pages during SPA navigation.
  * Browsers without View Transitions API get instant swap.
