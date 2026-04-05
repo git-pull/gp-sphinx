@@ -61,6 +61,30 @@ Add project-specific usage notes here. The helper renders the install
 section, autodiscovery note, and full fixture summary/reference.
 :::
 
+#### When to use `doc-pytest-plugin`
+
+Use this directive for a standard pytest plugin page where you want consistent
+house-style: an install section, the `pytest11` autodiscovery note, and a
+generated fixture summary and reference.
+
+#### Manual recipe (power path)
+
+When you need custom layout — a different section order, content between the
+summary and reference, or no install block — use the low-level directives
+directly:
+
+````markdown
+## Fixture Summary
+
+```{autofixture-index} libvcs.pytest_plugin
+```
+
+## Fixture Reference
+
+```{autofixtures} libvcs.pytest_plugin
+```
+````
+
 #### autofixtures options
 
 | Option | Default | Description |
