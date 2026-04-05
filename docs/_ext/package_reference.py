@@ -540,6 +540,8 @@ def package_reference_markdown(package_name: str) -> str:
     --------
     >>> "Registered Surface" in package_reference_markdown("sphinx-fonts")
     True
+    >>> "pypi.org/project/sphinx-fonts" in package_reference_markdown("sphinx-fonts")
+    True
     >>> package_reference_markdown("nonexistent-package")
     ''
     """
@@ -574,11 +576,13 @@ def package_reference_markdown(package_name: str) -> str:
     lines.extend(["]", "```", ""])
 
     if package["repository"]:
+        pypi_url = f"https://pypi.org/project/{package_name}/"
         lines.extend(
             [
                 "## Package metadata",
                 "",
                 f"- Source on GitHub: [{package_name}]({package['repository']}/tree/main/packages/{package_name})",
+                f"- PyPI: [{package_name}]({pypi_url})",
                 f"- Maturity: `{package['maturity']}`",
                 "",
             ]
