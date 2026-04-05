@@ -127,6 +127,9 @@ jobs:
           - sphinx-gptheme
           - sphinx-fonts
           - sphinx-argparse-neo
+          - sphinx-autodoc-docutils
+          - sphinx-autodoc-sphinx
+          - sphinx-autodoc-pytest-fixtures
     steps:
       - uses: actions/checkout@v6
 

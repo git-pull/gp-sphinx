@@ -480,6 +480,63 @@ def smoke_sphinx_argparse_neo(dist_dir: pathlib.Path, version: str) -> None:
         )
 
 
+def smoke_sphinx_autodoc_docutils(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the autodoc-docutils extension installs and imports cleanly."""
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(
+            python_path,
+            *_workspace_wheel_requirements(dist_dir),
+        )
+        _run_python(
+            python_path,
+            (
+                "import sphinx_autodoc_docutils; "
+                "from sphinx_autodoc_docutils import setup, AutoDirective, AutoRole; "
+                "assert callable(setup); "
+                "assert AutoDirective is not None; "
+                "assert AutoRole is not None"
+            ),
+        )
+
+
+def smoke_sphinx_autodoc_sphinx(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the autodoc-sphinx extension installs and imports cleanly."""
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(
+            python_path,
+            *_workspace_wheel_requirements(dist_dir),
+        )
+        _run_python(
+            python_path,
+            (
+                "import sphinx_autodoc_sphinx; "
+                "from sphinx_autodoc_sphinx import setup, AutoconfigvalueDirective; "
+                "assert callable(setup); "
+                "assert AutoconfigvalueDirective is not None"
+            ),
+        )
+
+
+def smoke_sphinx_autodoc_pytest_fixtures(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the autodoc-pytest-fixtures extension installs and imports cleanly."""
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(
+            python_path,
+            *_workspace_wheel_requirements(dist_dir),
+        )
+        _run_python(
+            python_path,
+            (
+                "import sphinx_autodoc_pytest_fixtures; "
+                "from sphinx_autodoc_pytest_fixtures import setup; "
+                "assert callable(setup)"
+            ),
+        )
+
+
 def smoke(
     target: str,
     *,
@@ -501,6 +558,9 @@ def smoke(
         "sphinx-gptheme": smoke_sphinx_gptheme,
         "sphinx-fonts": smoke_sphinx_fonts,
         "sphinx-argparse-neo": smoke_sphinx_argparse_neo,
+        "sphinx-autodoc-docutils": smoke_sphinx_autodoc_docutils,
+        "sphinx-autodoc-sphinx": smoke_sphinx_autodoc_sphinx,
+        "sphinx-autodoc-pytest-fixtures": smoke_sphinx_autodoc_pytest_fixtures,
     }
     if target not in runners:
         message = f"unknown smoke target: {target}"
@@ -530,6 +590,9 @@ def main() -> int:
             "sphinx-gptheme",
             "sphinx-fonts",
             "sphinx-argparse-neo",
+            "sphinx-autodoc-docutils",
+            "sphinx-autodoc-sphinx",
+            "sphinx-autodoc-pytest-fixtures",
         ],
     )
     smoke_parser.add_argument("--dist-dir", type=pathlib.Path)
