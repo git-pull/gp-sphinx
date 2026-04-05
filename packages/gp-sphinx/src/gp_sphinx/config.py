@@ -214,7 +214,7 @@ def merge_sphinx_config(
     remove_extensions: list[str] | None = None,
     theme_options: dict[str, t.Any] | None = None,
     source_repository: str | None = None,
-    source_branch: str = "master",
+    source_branch: str = "main",
     light_logo: str | None = None,
     dark_logo: str | None = None,
     docs_url: str | None = None,

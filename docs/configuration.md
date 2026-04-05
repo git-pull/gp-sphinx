@@ -38,7 +38,7 @@ All parameters are keyword-only.
 | `remove_extensions` | `list[str] \| None` | `None` | Extensions removed from the selected base list |
 | `theme_options` | `dict[str, Any] \| None` | `None` | Deep-merged into `DEFAULT_THEME_OPTIONS` after auto-populated source/logo values |
 | `source_repository` | `str \| None` | `None` | GitHub repository URL used for issue links, footer icon URLs, and theme source metadata |
-| `source_branch` | `str` | `"master"` | Source branch stored in `html_theme_options["source_branch"]` |
+| `source_branch` | `str` | `"main"` | Source branch stored in `html_theme_options["source_branch"]` |
 | `light_logo` | `str \| None` | `None` | Light-mode logo path merged into theme options |
 | `dark_logo` | `str \| None` | `None` | Dark-mode logo path merged into theme options |
 | `docs_url` | `str \| None` | `None` | Canonical docs URL used to derive Open Graph settings |
@@ -112,7 +112,7 @@ These are injected even though they are not exposed as `DEFAULT_*` constants:
 | Constant | Value |
 | --- | --- |
 | `DEFAULT_THEME` | `"sphinx-gptheme"` |
-| `DEFAULT_THEME_OPTIONS` | footer GitHub icon, `source_repository=""`, `source_branch="master"`, `source_directory="docs/"` |
+| `DEFAULT_THEME_OPTIONS` | footer GitHub icon, `source_repository=""`, `source_branch="main"`, `source_directory="docs/"` |
 
 ### Font defaults
 

@@ -33,7 +33,7 @@ conf = merge_sphinx_config(
     copyright=gp_sphinx.__copyright__,
     source_repository=f"{gp_sphinx.__github__}/",
     docs_url=gp_sphinx.__docs__,
-    source_branch="master",
+    source_branch="main",
     extra_extensions=[
         "package_reference",
         "sphinx_autodoc_pytest_fixtures",
