@@ -130,24 +130,28 @@ def setup(app: Sphinx) -> SetupDict:
         default=PYTEST_HIDDEN,
         rebuild="env",
         types=[frozenset],
+        description="Fixture names to hide from dependency tracking",
     )
     app.add_config_value(
         _CONFIG_BUILTIN_LINKS,
         default=PYTEST_BUILTIN_LINKS,
         rebuild="env",
         types=[dict],
+        description="Fallback URLs for pytest built-in fixtures",
     )
     app.add_config_value(
         _CONFIG_EXTERNAL_LINKS,
         default={},
         rebuild="env",
         types=[dict],
+        description="Custom external fixture link URLs",
     )
     app.add_config_value(
         _CONFIG_LINT_LEVEL,
         default="warning",
         rebuild="env",
         types=[str],
+        description="Validation severity: 'none', 'warning', or 'error'",
     )
 
     # Register std:fixture so :external+pytest:std:fixture: intersphinx

@@ -69,6 +69,8 @@ if t.TYPE_CHECKING:
 
     from sphinx.application import Sphinx
 
+from gp_sphinx.myst_lexer import MystLexer
+
 logger = logging.getLogger(__name__)
 
 
@@ -212,14 +214,14 @@ def merge_sphinx_config(
     remove_extensions: list[str] | None = None,
     theme_options: dict[str, t.Any] | None = None,
     source_repository: str | None = None,
-    source_branch: str = "master",
+    source_branch: str = "main",
     light_logo: str | None = None,
     dark_logo: str | None = None,
     docs_url: str | None = None,
     intersphinx_mapping: t.Mapping[str, tuple[str, str | None]] | None = None,
     **overrides: t.Any,
 ) -> dict[str, t.Any]:
-    """Build a complete Sphinx conf namespace from shared defaults.
+    r"""Build a complete Sphinx conf namespace from shared defaults.
 
     Returns a flat dictionary suitable for injection into a ``docs/conf.py``
     module namespace via ``globals().update(conf)``.
@@ -232,7 +234,7 @@ def merge_sphinx_config(
     for the ``linkify_issues`` extension. When ``docs_url`` is provided,
     ``ogp_site_url``, ``ogp_image``, and ``ogp_site_name`` are auto-computed
     for ``sphinxext.opengraph``. All auto-computed values can be overridden
-    via ``**overrides``.
+    via ``overrides``.
 
     Parameters
     ----------
@@ -245,7 +247,7 @@ def merge_sphinx_config(
     extensions : list[str] | None
         Replace the default extension list entirely. Usually not needed.
     extra_extensions : list[str] | None
-        Add extensions to the defaults (e.g., ``["argparse_exemplar"]``).
+        Add extensions to the defaults (e.g., ``["sphinx_argparse_neo.exemplar"]``).
     remove_extensions : list[str] | None
         Remove specific defaults (e.g., ``["sphinx_design"]``).
     theme_options : dict | None
@@ -263,7 +265,7 @@ def merge_sphinx_config(
         Used to auto-compute ``ogp_site_url`` and ``ogp_site_name``.
     intersphinx_mapping : dict | None
         Intersphinx targets.
-    **overrides
+    **overrides : Any
         Any additional Sphinx config values.
 
     Returns
@@ -476,3 +478,5 @@ def setup(app: Sphinx) -> None:
     """
     app.add_js_file("js/spa-nav.js", loading_method="defer")
     app.connect("build-finished", remove_tabs_js)
+    app.add_lexer("myst", MystLexer)
+    app.add_lexer("myst-md", MystLexer)

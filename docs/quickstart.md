@@ -85,7 +85,7 @@ globals().update(conf)
 ```python
 conf = merge_sphinx_config(
     # ...
-    extra_extensions=["argparse_exemplar", "sphinx_click"],
+    extra_extensions=["sphinx_argparse_neo.exemplar", "sphinx_click"],
 )
 ```
 
@@ -108,6 +108,32 @@ conf = merge_sphinx_config(
     theme_options={"sidebar_hide_name": True},
 )
 ```
+
+## Your first build
+
+Create a docs directory with a static assets folder:
+
+```console
+$ mkdir -p docs/_static
+```
+
+Create a minimal `docs/index.md`:
+
+```markdown
+# My Project
+
+Welcome to my project documentation.
+```
+
+Create `docs/conf.py` using the pattern from {ref}`Usage <quickstart>` above.
+
+Build the HTML output:
+
+```console
+$ uv run sphinx-build -b html docs docs/_build/html
+```
+
+Open `docs/_build/html/index.html` in your browser to see the result.
 
 [pip]: https://pip.pypa.io/en/stable/
 [pipx]: https://pypa.github.io/pipx/docs/

@@ -237,10 +237,30 @@ def setup(app: Sphinx) -> SetupDict:
     SetupDict
         Extension metadata.
     """
-    app.add_config_value("sphinx_fonts", [], "html")
-    app.add_config_value("sphinx_font_fallbacks", [], "html")
-    app.add_config_value("sphinx_font_css_variables", {}, "html")
-    app.add_config_value("sphinx_font_preload", [], "html")
+    app.add_config_value(
+        "sphinx_fonts",
+        [],
+        "html",
+        description="Font family dicts (family, package, version, weights, styles).",
+    )
+    app.add_config_value(
+        "sphinx_font_fallbacks",
+        [],
+        "html",
+        description="Fallback @font-face declarations with metric overrides for CLS.",
+    )
+    app.add_config_value(
+        "sphinx_font_css_variables",
+        {},
+        "html",
+        description="CSS custom properties for Furo font stacks (e.g. --font-stack)",
+    )
+    app.add_config_value(
+        "sphinx_font_preload",
+        [],
+        "html",
+        description="Critical font variants to preload (family, weight, style).",
+    )
     app.connect("builder-inited", _on_builder_inited)
     app.connect("html-page-context", _on_html_page_context)
     return {

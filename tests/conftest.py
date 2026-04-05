@@ -7,8 +7,16 @@ available globally, and to avoid conftest.py from being included in the wheel.
 from __future__ import annotations
 
 import pathlib
+import sys
 
 import pytest
+
+for src_path in sorted(
+    (pathlib.Path(__file__).resolve().parents[1] / "packages").glob("*/src")
+):
+    src_str = str(src_path)
+    if src_str not in sys.path:
+        sys.path.insert(0, src_str)
 
 
 @pytest.fixture(autouse=True)

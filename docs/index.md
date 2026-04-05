@@ -4,7 +4,7 @@
 
 Shared Sphinx documentation platform for [git-pull](https://github.com/git-pull) projects.
 
-::::{grid} 1 1 2 2
+::::{grid} 1 1 2 3
 :gutter: 2 2 3 3
 
 :::{grid-item-card} Quickstart
@@ -13,10 +13,16 @@ Shared Sphinx documentation platform for [git-pull](https://github.com/git-pull)
 Install and get started in minutes.
 :::
 
-:::{grid-item-card} Contributing
-:link: project/index
+:::{grid-item-card} Packages
+:link: packages/index
 :link-type: doc
-Development setup, code style, release process.
+Seven workspace packages — coordinator, extensions, and theme.
+:::
+
+:::{grid-item-card} Configuration
+:link: configuration
+:link-type: doc
+Parameter reference for {py:func}`~gp_sphinx.config.merge_sphinx_config` and shared defaults.
 :::
 
 ::::
@@ -51,7 +57,9 @@ globals().update(conf)
 :hidden:
 
 quickstart
-extensions/index
+configuration
+packages/index
+api
 project/index
 history
 ```

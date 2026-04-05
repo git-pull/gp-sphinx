@@ -11,13 +11,21 @@ project_root = cwd.parent
 sys.path.insert(0, str(project_root / "packages" / "gp-sphinx" / "src"))
 sys.path.insert(0, str(project_root / "packages" / "sphinx-fonts" / "src"))
 sys.path.insert(0, str(project_root / "packages" / "sphinx-gptheme" / "src"))
+sys.path.insert(0, str(project_root / "packages" / "sphinx-argparse-neo" / "src"))
 sys.path.insert(
     0, str(project_root / "packages" / "sphinx-autodoc-pytest-fixtures" / "src")
 )
-sys.path.insert(0, str(cwd / "_ext"))  # spf_demo_fixtures for badge demo
+sys.path.insert(0, str(project_root / "packages" / "sphinx-autodoc-docutils" / "src"))
+sys.path.insert(0, str(project_root / "packages" / "sphinx-autodoc-sphinx" / "src"))
+sys.path.insert(0, str(cwd / "_ext"))  # docs demo modules
 
 import gp_sphinx  # noqa: E402
 from gp_sphinx.config import merge_sphinx_config  # noqa: E402
+
+intersphinx_mapping = {
+    "py": ("https://docs.python.org/3/", None),
+    "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
+}
 
 conf = merge_sphinx_config(
     project=gp_sphinx.__title__,
@@ -25,13 +33,16 @@ conf = merge_sphinx_config(
     copyright=gp_sphinx.__copyright__,
     source_repository=f"{gp_sphinx.__github__}/",
     docs_url=gp_sphinx.__docs__,
-    source_branch="master",
-    extra_extensions=["sphinx_autodoc_pytest_fixtures"],
+    source_branch="main",
+    extra_extensions=[
+        "package_reference",
+        "sphinx_autodoc_pytest_fixtures",
+        "sphinx_autodoc_docutils",
+        "sphinx_autodoc_sphinx",
+        "sphinx_argparse_neo.exemplar",
+    ],
     pytest_fixture_lint_level="none",
     rediraffe_redirects="redirects.txt",
-    intersphinx_mapping={
-        "py": ("https://docs.python.org/", None),
-        "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
-    },
+    intersphinx_mapping=intersphinx_mapping,
 )
 globals().update(conf)

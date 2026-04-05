@@ -495,8 +495,8 @@ def test_setup_return_value() -> None:
     app = t.cast(
         Sphinx,
         types.SimpleNamespace(
-            add_config_value=lambda name, default, rebuild: config_values.append(
-                (name, default, rebuild)
+            add_config_value=lambda name, default, rebuild, **kwargs: (
+                config_values.append((name, default, rebuild))
             ),
             connect=lambda event, handler: connections.append((event, handler)),
         ),
@@ -519,8 +519,8 @@ def test_setup_config_values() -> None:
     app = t.cast(
         Sphinx,
         types.SimpleNamespace(
-            add_config_value=lambda name, default, rebuild: config_values.append(
-                (name, default, rebuild)
+            add_config_value=lambda name, default, rebuild, **kwargs: (
+                config_values.append((name, default, rebuild))
             ),
             connect=lambda event, handler: connections.append((event, handler)),
         ),
@@ -544,8 +544,8 @@ def test_setup_event_connections() -> None:
     app = t.cast(
         Sphinx,
         types.SimpleNamespace(
-            add_config_value=lambda name, default, rebuild: config_values.append(
-                (name, default, rebuild)
+            add_config_value=lambda name, default, rebuild, **kwargs: (
+                config_values.append((name, default, rebuild))
             ),
             connect=lambda event, handler: connections.append((event, handler)),
         ),

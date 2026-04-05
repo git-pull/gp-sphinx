@@ -115,7 +115,7 @@ DEFAULT_THEME_OPTIONS: FuroThemeOptions = {
         },
     ],
     "source_repository": "",
-    "source_branch": "master",
+    "source_branch": "main",
     "source_directory": "docs/",
 }
 """Default Furo theme options.

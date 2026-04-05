@@ -20,6 +20,8 @@ sphinx-fonts = { workspace = true }
 sphinx-gptheme = { workspace = true }
 sphinx-argparse-neo = { workspace = true }
 sphinx-autodoc-pytest-fixtures = { workspace = true }
+sphinx-autodoc-docutils = { workspace = true }
+sphinx-autodoc-sphinx = { workspace = true }
 gp-sphinx = { workspace = true }
 
 [dependency-groups]
@@ -27,6 +29,8 @@ dev = [
   "gp-sphinx",
   "sphinx-argparse-neo",
   "sphinx-autodoc-pytest-fixtures",
+  "sphinx-autodoc-docutils",
+  "sphinx-autodoc-sphinx",
   # Docs
   "sphinx-autobuild",
   # Testing
@@ -57,7 +61,7 @@ packages = ["src/gp_sphinx_workspace"]
 [tool.mypy]
 strict = true
 python_version = "3.10"
-mypy_path = "scripts/ci"
+mypy_path = "scripts/ci:docs/_ext:stubs"
 files = [
   "packages/",
   "tests/",
@@ -79,6 +83,12 @@ ignore_errors = true
 
 [tool.ruff]
 target-version = "py310"
+extend-exclude = [
+  "build_extensions.py",
+  "copy_packages.py",
+  "rewrite_docutils.py",
+  "rewrite_sphinx.py",
+]
 
 [tool.ruff.lint]
 select = [
@@ -116,6 +126,8 @@ known-first-party = [
   "sphinx_gptheme",
   "sphinx_argparse_neo",
   "sphinx_autodoc_pytest_fixtures",
+  "sphinx_autodoc_docutils",
+  "sphinx_autodoc_sphinx",
 ]
 combine-as-imports = true
 required-imports = [
@@ -127,14 +139,19 @@ convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
 "*/__init__.py" = ["F401"]
+"docs/_ext/package_reference.py" = ["B009", "D102", "D301", "E501", "PERF401"]
 "packages/sphinx-argparse-neo/**/*.py" = ["E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "packages/sphinx-autodoc-pytest-fixtures/**/*.py" = ["D417", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
+"packages/sphinx-autodoc-docutils/**/*.py" = ["D417", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/argparse_neo/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
+"tests/ext/autodoc_docutils/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
+"tests/ext/autodoc_sphinx/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/pytest_fixtures/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
+"tests/ext/docutils/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 
 [tool.pytest.ini_options]
-addopts = "--tb=short --no-header --showlocals --doctest-modules --ignore=packages/sphinx-argparse-neo --ignore=packages/sphinx-autodoc-pytest-fixtures"
+addopts = "--tb=short --no-header --showlocals --doctest-modules --ignore=packages/sphinx-argparse-neo --ignore=packages/sphinx-autodoc-pytest-fixtures --ignore=packages/sphinx-autodoc-docutils"
 doctest_optionflags = "ELLIPSIS NORMALIZE_WHITESPACE"
 markers = [
   "integration: sphinx integration tests (require full sphinx build)",
@@ -145,6 +162,7 @@ testpaths = [
   "packages/gp-sphinx/src",
   "packages/sphinx-fonts/src",
   "packages/sphinx-gptheme/src",
+  "packages/sphinx-autodoc-sphinx/src",
 ]
 filterwarnings = [
   "ignore:distutils Version classes are deprecated. Use packaging.version instead.",
