@@ -28,6 +28,17 @@ $ uv add gp-sphinx --prerelease allow
   return annotations — alias names are preserved and linked rather than
   expanding to the underlying union or generic type (#9)
 
+### Bug fixes
+
+- Load font weight 300 for IBM Plex Sans and IBM Plex Mono
+  ([Furo](https://github.com/pradyunsg/furo) and sphinx-design use
+  `font-weight: 300` for lighter text, but the weight was never loaded,
+  causing browsers to synthesize a light variant)
+- Replace `font-weight: 650` with `700` in badge CSS across
+  `sphinx-autodoc-pytest-fixtures`, `sphinx-gptheme`, and docs (650 is not
+  a standard Fontsource weight, so browsers were synthesizing bold instead
+  of using the real font file)
+
 ### Workspace packages
 
 - `sphinx-autodoc-pytest-fixtures` — Sphinx autodocumenter for pytest fixtures.
