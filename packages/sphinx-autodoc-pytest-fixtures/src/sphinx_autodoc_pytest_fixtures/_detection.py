@@ -244,15 +244,34 @@ def _get_return_annotation(obj: t.Any) -> t.Any:
         ``TYPE_CHECKING`` guards not importable at doc-build time).
     """
     fn = _get_fixture_fn(obj)
+    raw_ann = inspect.signature(fn).return_annotation
     try:
         hints = t.get_type_hints(fn)
     except (NameError, AttributeError, TypeError, RecursionError):
         # Forward references (TYPE_CHECKING guards), parameterized generics
         # (TypeError in some Python versions), circular imports (RecursionError),
         # or other resolution failures.  Fall back to the raw annotation string.
-        ann = inspect.signature(fn).return_annotation
-        return inspect.Parameter.empty if ann is inspect.Parameter.empty else ann
+        return (
+            inspect.Parameter.empty if raw_ann is inspect.Parameter.empty else raw_ann
+        )
     ret = hints.get("return", inspect.Parameter.empty)
+    # Preserve TypeAlias names: when the raw annotation is a bare identifier
+    # (e.g. ``"MyAlias"``) but ``get_type_hints`` expanded it to a type whose
+    # own name differs (i.e. a TypeAlias expanded to its definition, such as
+    # ``Base | None``), return the raw string so _qualify_forward_ref can
+    # produce a cross-reference to the alias itself.
+    # We do NOT short-circuit for real types (e.g. ``-> str``) because
+    # ``str.__qualname__ == "str"`` matches the raw annotation.
+    if (
+        isinstance(raw_ann, str)
+        and raw_ann.isidentifier()
+        and ret is not inspect.Parameter.empty
+    ):
+        resolved_name = getattr(ret, "__qualname__", None) or getattr(
+            ret, "__name__", None
+        )
+        if resolved_name != raw_ann:
+            return raw_ann
     if ret is inspect.Parameter.empty:
         return ret
     # Unwrap Generator/Iterator and their async counterparts so that

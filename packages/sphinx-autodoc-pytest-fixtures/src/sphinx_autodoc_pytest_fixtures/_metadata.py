@@ -112,8 +112,8 @@ def _qualify_forward_ref(name: str, fn: t.Any) -> str | None:
                         if imported_name == name:
                             return f"{child.module}.{alias.name}"
 
-                # Case 2: ``Name: TypeAlias = ...`` defined *in* this module.
-                # The alias lives in the current module, so return module.Name.
+                # Case 2: ``Name: TypeAlias = ...`` defined *in* this module,
+                # inside a TYPE_CHECKING guard.
                 if (
                     isinstance(child, ast.AnnAssign)
                     and isinstance(child.target, ast.Name)
@@ -122,6 +122,19 @@ def _qualify_forward_ref(name: str, fn: t.Any) -> str | None:
                     and _is_type_alias_annotation(child.annotation)
                 ):
                     return f"{module}.{name}"
+
+    # Case 3: ``Name: TypeAlias = ...`` at module level (outside TYPE_CHECKING).
+    # This covers the common pattern where the alias is public and defined
+    # directly in the module body.
+    for node in tree.body:
+        if (
+            isinstance(node, ast.AnnAssign)
+            and isinstance(node.target, ast.Name)
+            and node.target.id == name
+            and node.annotation is not None
+            and _is_type_alias_annotation(node.annotation)
+        ):
+            return f"{module}.{name}"
 
     return None
 
