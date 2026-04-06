@@ -537,6 +537,24 @@ def smoke_sphinx_autodoc_pytest_fixtures(dist_dir: pathlib.Path, version: str) -
         )
 
 
+def smoke_sphinx_autodoc_api_style(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the autodoc-api-style extension installs and imports cleanly."""
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(
+            python_path,
+            *_workspace_wheel_requirements(dist_dir),
+        )
+        _run_python(
+            python_path,
+            (
+                "import sphinx_autodoc_api_style; "
+                "from sphinx_autodoc_api_style import setup; "
+                "assert callable(setup)"
+            ),
+        )
+
+
 def smoke(
     target: str,
     *,
@@ -561,6 +579,7 @@ def smoke(
         "sphinx-autodoc-docutils": smoke_sphinx_autodoc_docutils,
         "sphinx-autodoc-sphinx": smoke_sphinx_autodoc_sphinx,
         "sphinx-autodoc-pytest-fixtures": smoke_sphinx_autodoc_pytest_fixtures,
+        "sphinx-autodoc-api-style": smoke_sphinx_autodoc_api_style,
     }
     if target not in runners:
         message = f"unknown smoke target: {target}"
@@ -593,6 +612,7 @@ def main() -> int:
             "sphinx-autodoc-docutils",
             "sphinx-autodoc-sphinx",
             "sphinx-autodoc-pytest-fixtures",
+            "sphinx-autodoc-api-style",
         ],
     )
     smoke_parser.add_argument("--dist-dir", type=pathlib.Path)

@@ -130,6 +130,7 @@ jobs:
           - sphinx-autodoc-docutils
           - sphinx-autodoc-sphinx
           - sphinx-autodoc-pytest-fixtures
+          - sphinx-autodoc-api-style
     steps:
       - uses: actions/checkout@v6
 
