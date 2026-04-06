@@ -20,6 +20,8 @@ $ uv add gp-sphinx --prerelease allow
 
 ### Features
 
+- `sphinx-autodoc-fastmcp`: new Sphinx extension for FastMCP tool docs (card-style
+  `desc` layouts, safety badges, MyST directives, cross-reference roles)
 - Initial release of `gp_sphinx` shared documentation platform
 - `merge_sphinx_config()` API for building complete Sphinx config from shared defaults
 - Shared extension list, theme options, MyST config, font config

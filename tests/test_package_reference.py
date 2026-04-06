@@ -23,6 +23,7 @@ def test_workspace_packages_lists_publishable_packages() -> None:
         "sphinx-argparse-neo",
         "sphinx-autodoc-api-style",
         "sphinx-autodoc-docutils",
+        "sphinx-autodoc-fastmcp",
         "sphinx-autodoc-pytest-fixtures",
         "sphinx-autodoc-sphinx",
         "sphinx-fonts",

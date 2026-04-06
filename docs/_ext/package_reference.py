@@ -41,6 +41,7 @@ Examples
 ...     "sphinx-gptheme",
 ...     "sphinx-argparse-neo",
 ...     "sphinx-autodoc-docutils",
+...     "sphinx-autodoc-fastmcp",
 ...     "sphinx-autodoc-pytest-fixtures",
 ...     "sphinx-autodoc-sphinx",
 ... }
