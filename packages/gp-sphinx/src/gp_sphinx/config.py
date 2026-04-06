@@ -31,7 +31,6 @@ import inspect
 import logging
 import os.path
 import pathlib
-import types
 import typing as t
 
 from gp_sphinx.defaults import (
@@ -65,6 +64,7 @@ from gp_sphinx.defaults import (
 )
 
 if t.TYPE_CHECKING:
+    import types
     from collections.abc import Callable
 
     from sphinx.application import Sphinx

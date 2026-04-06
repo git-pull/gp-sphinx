@@ -13,7 +13,6 @@ Run integration tests specifically:
 from __future__ import annotations
 
 import io
-import pathlib
 import sys
 import textwrap
 import typing as t
@@ -22,6 +21,11 @@ import pytest
 
 import sphinx_autodoc_pytest_fixtures
 from sphinx_autodoc_pytest_fixtures import _CSS
+
+if t.TYPE_CHECKING:
+    import pathlib
+
+    from sphinx.domains.python import PythonDomain
 
 # ---------------------------------------------------------------------------
 # Synthetic fixture module written to tmp_path for each test run
@@ -251,7 +255,6 @@ def _build_sphinx_app(
 @pytest.mark.integration
 def test_fixture_target_id(tmp_path: pathlib.Path) -> None:
     """Registered fixtures have non-empty IDs in their signature nodes."""
-    from sphinx.domains.python import PythonDomain
 
     result = _build_sphinx_app(tmp_path)
     domain = t.cast("PythonDomain", result.app.env.get_domain("py"))
@@ -264,7 +267,6 @@ def test_fixture_target_id(tmp_path: pathlib.Path) -> None:
 @pytest.mark.integration
 def test_fixture_in_domain_objects(tmp_path: pathlib.Path) -> None:
     """Domain objects registry has qualified fixture names with objtype='fixture'."""
-    from sphinx.domains.python import PythonDomain
 
     result = _build_sphinx_app(tmp_path)
     domain = t.cast("PythonDomain", result.app.env.get_domain("py"))
@@ -303,7 +305,6 @@ def test_fixture_in_inventory(tmp_path: pathlib.Path) -> None:
 def test_manual_directive_without_module(tmp_path: pathlib.Path) -> None:
     """Manual py:fixture without currentmodule uses bare name as target."""
     from sphinx.application import Sphinx
-    from sphinx.domains.python import PythonDomain
 
     srcdir = tmp_path / "src"
     outdir = tmp_path / "out"
@@ -846,7 +847,6 @@ def test_autouse_note_present(tmp_path: pathlib.Path) -> None:
 @pytest.mark.integration
 def test_name_alias_registered_in_domain(tmp_path: pathlib.Path) -> None:
     """Fixtures with name= alias are registered under the alias, not internal name."""
-    from sphinx.domains.python import PythonDomain
 
     result = _build_sphinx_app(tmp_path)
     domain = t.cast("PythonDomain", result.app.env.get_domain("py"))

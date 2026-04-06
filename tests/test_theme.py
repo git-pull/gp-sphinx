@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-import pathlib
+from typing import TYPE_CHECKING
 
 from sphinx_gptheme import get_theme_path, setup
+
+if TYPE_CHECKING:
+    import pathlib
 
 
 def test_theme_path_exists() -> None:

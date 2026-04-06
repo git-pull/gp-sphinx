@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import collections.abc
+import collections.abc  # noqa: TC003 — needed at runtime for get_type_hints()
 import types
 import typing as t
 
@@ -138,7 +138,7 @@ def test_get_return_annotation_unwraps_iterator() -> None:
 
     @pytest.fixture
     def server_fixture() -> collections.abc.Iterator[Server]:
-        yield Server()
+        return Server()
 
     ann = sphinx_autodoc_pytest_fixtures._get_return_annotation(server_fixture)
     assert ann is Server
@@ -310,7 +310,7 @@ def test_setup_registers_autodocumenter() -> None:
         add_crossref_type=lambda *a, **kw: None,
         add_directive_to_domain=lambda d, n, cls: None,
         add_role_to_domain=lambda d, n, role: None,
-        add_autodocumenter=lambda cls: registered.append(cls),
+        add_autodocumenter=registered.append,
         add_directive=lambda name, cls: None,
         add_node=lambda *a, **kw: None,
         add_css_file=lambda *a, **kw: None,

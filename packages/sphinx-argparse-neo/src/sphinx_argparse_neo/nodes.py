@@ -97,7 +97,7 @@ def _token_to_css_class(token_type: t.Any) -> str:
     if len(parts) >= 3:
         # Token.Name.Attribute -> "na" (first char of each of last two parts)
         return parts[-2][0].lower() + parts[-1][0].lower()
-    elif len(parts) == 2:
+    if len(parts) == 2:
         # Token.Punctuation -> "p" (first char of last part)
         return parts[-1][0].lower()
     return ""
@@ -230,8 +230,6 @@ class argparse_program(nodes.General, nodes.Element):
     'myapp'
     """
 
-    pass
-
 
 class argparse_usage(nodes.General, nodes.Element):
     """Node for displaying program usage.
@@ -245,8 +243,6 @@ class argparse_usage(nodes.General, nodes.Element):
     >>> node["usage"]
     'myapp [-h] [--verbose] command'
     """
-
-    pass
 
 
 class argparse_group(nodes.General, nodes.Element):
@@ -266,8 +262,6 @@ class argparse_group(nodes.General, nodes.Element):
     >>> node["title"]
     'Output Options'
     """
-
-    pass
 
 
 class argparse_argument(nodes.Part, nodes.Element):
@@ -296,8 +290,6 @@ class argparse_argument(nodes.Part, nodes.Element):
     ['-v', '--verbose']
     """
 
-    pass
-
 
 class argparse_subcommands(nodes.General, nodes.Element):
     """Container node for subcommands section.
@@ -309,8 +301,6 @@ class argparse_subcommands(nodes.General, nodes.Element):
     >>> node["title"]
     'Commands'
     """
-
-    pass
 
 
 class argparse_subcommand(nodes.General, nodes.Element):
@@ -333,8 +323,6 @@ class argparse_subcommand(nodes.General, nodes.Element):
     >>> node["name"]
     'sync'
     """
-
-    pass
 
 
 # HTML Visitor Functions

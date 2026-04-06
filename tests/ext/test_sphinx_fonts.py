@@ -9,9 +9,11 @@ import typing as t
 import urllib.error
 
 import pytest
-from sphinx.application import Sphinx
 
 import sphinx_fonts
+
+if t.TYPE_CHECKING:
+    from sphinx.application import Sphinx
 
 # --- _cache_dir tests ---
 
@@ -227,7 +229,7 @@ def _make_app(
     )
     builder = types.SimpleNamespace(format=builder_format)
     return t.cast(
-        Sphinx,
+        "Sphinx",
         types.SimpleNamespace(
             builder=builder,
             config=config,
@@ -434,7 +436,7 @@ def test_on_builder_inited_fallbacks_and_variables(
 def test_on_html_page_context_with_attrs() -> None:
     """_on_html_page_context injects font data from app attributes."""
     app = t.cast(
-        Sphinx,
+        "Sphinx",
         types.SimpleNamespace(
             _font_preload_hrefs=["font-400.woff2"],
             _font_faces=[
@@ -467,7 +469,7 @@ def test_on_html_page_context_with_attrs() -> None:
 
 def test_on_html_page_context_without_attrs() -> None:
     """_on_html_page_context uses defaults when app attrs are missing."""
-    app = t.cast(Sphinx, types.SimpleNamespace())
+    app = t.cast("Sphinx", types.SimpleNamespace())
     context: dict[str, t.Any] = {}
 
     sphinx_fonts._on_html_page_context(
@@ -493,7 +495,7 @@ def test_setup_return_value() -> None:
     connections: list[tuple[str, t.Any]] = []
 
     app = t.cast(
-        Sphinx,
+        "Sphinx",
         types.SimpleNamespace(
             add_config_value=lambda name, default, rebuild, **kwargs: (
                 config_values.append((name, default, rebuild))
@@ -517,7 +519,7 @@ def test_setup_config_values() -> None:
     connections: list[tuple[str, t.Any]] = []
 
     app = t.cast(
-        Sphinx,
+        "Sphinx",
         types.SimpleNamespace(
             add_config_value=lambda name, default, rebuild, **kwargs: (
                 config_values.append((name, default, rebuild))
@@ -542,7 +544,7 @@ def test_setup_event_connections() -> None:
     connections: list[tuple[str, t.Any]] = []
 
     app = t.cast(
-        Sphinx,
+        "Sphinx",
         types.SimpleNamespace(
             add_config_value=lambda name, default, rebuild, **kwargs: (
                 config_values.append((name, default, rebuild))

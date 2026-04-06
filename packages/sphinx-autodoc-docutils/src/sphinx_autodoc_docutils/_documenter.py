@@ -24,9 +24,9 @@ class DocutilsDocumenter(Documenter):
 
     def import_object(self, raiseerror: bool = False) -> bool:
         directive_registry = t.cast(
-            dict[str, object], getattr(directives, "_directives", {})
+            "dict[str, object]", getattr(directives, "_directives", {})
         )
-        role_registry = t.cast(dict[str, object], getattr(roles, "_roles", {}))
+        role_registry = t.cast("dict[str, object]", getattr(roles, "_roles", {}))
         if self.name in directive_registry:
             self.object = directive_registry[self.name]
             self.docutils_type = "directive"
@@ -41,7 +41,7 @@ class DocutilsDocumenter(Documenter):
 
     def get_real_modname(self) -> str:
         if hasattr(self.object, "__module__"):
-            return t.cast(str, self.object.__module__)
+            return t.cast("str", self.object.__module__)
         return type(self.object).__module__
 
     def get_doc(self) -> list[list[str]] | None:

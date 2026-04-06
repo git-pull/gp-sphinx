@@ -8,7 +8,6 @@ import re
 import typing as t
 
 from docutils import nodes
-from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
 
 from sphinx_autodoc_pytest_fixtures._constants import (
@@ -27,7 +26,7 @@ from sphinx_autodoc_pytest_fixtures._models import FixtureDep, FixtureMeta
 from sphinx_autodoc_pytest_fixtures._store import _get_spf_store
 
 if t.TYPE_CHECKING:
-    pass
+    from sphinx import addnodes
 
 logger = sphinx_logging.getLogger(__name__)
 
@@ -39,6 +38,19 @@ def _is_type_checking_guard(node: ast.If) -> bool:
     return (isinstance(test, ast.Name) and test.id == "TYPE_CHECKING") or (
         isinstance(test, ast.Attribute) and test.attr == "TYPE_CHECKING"
     )
+
+
+def _is_type_alias_annotation(annotation: ast.expr) -> bool:
+    """Return True if *annotation* is a ``TypeAlias`` marker.
+
+    Recognises both the bare name form (``TypeAlias``) and the attribute form
+    (``t.TypeAlias``, ``typing.TypeAlias``).
+    """
+    if isinstance(annotation, ast.Name) and annotation.id == "TypeAlias":
+        return True
+    if isinstance(annotation, ast.Attribute) and annotation.attr == "TypeAlias":
+        return True
+    return False
 
 
 def _qualify_forward_ref(name: str, fn: t.Any) -> str | None:
@@ -73,8 +85,17 @@ def _qualify_forward_ref(name: str, fn: t.Any) -> str | None:
         return None
 
     # Fast path: name is available at runtime (not behind TYPE_CHECKING).
+    # Guard: only use the object's module/qualname when the qualname actually
+    # matches *name*.  TypeAlias values (e.g. ``str | None``) have
+    # ``__qualname__ == "Union"``, which must not be returned for an alias
+    # named ``"MyAlias"``.
     obj = getattr(mod, name, None)
-    if obj is not None and hasattr(obj, "__module__") and hasattr(obj, "__qualname__"):
+    if (
+        obj is not None
+        and hasattr(obj, "__module__")
+        and hasattr(obj, "__qualname__")
+        and obj.__qualname__ == name
+    ):
         return f"{obj.__module__}.{obj.__qualname__}"
 
     # Slow path: parse the module source to find TYPE_CHECKING imports.
@@ -93,11 +114,36 @@ def _qualify_forward_ref(name: str, fn: t.Any) -> str | None:
     for node in ast.walk(tree):
         if isinstance(node, ast.If) and _is_type_checking_guard(node):
             for child in ast.walk(node):
+                # Case 1: ``from some.module import Name`` — existing behaviour.
                 if isinstance(child, ast.ImportFrom) and child.module:
                     for alias in child.names:
-                        imported_name = alias.asname if alias.asname else alias.name
+                        imported_name = alias.asname or alias.name
                         if imported_name == name:
                             return f"{child.module}.{alias.name}"
+
+                # Case 2: ``Name: TypeAlias = ...`` defined *in* this module,
+                # inside a TYPE_CHECKING guard.
+                if (
+                    isinstance(child, ast.AnnAssign)
+                    and isinstance(child.target, ast.Name)
+                    and child.target.id == name
+                    and child.annotation is not None
+                    and _is_type_alias_annotation(child.annotation)
+                ):
+                    return f"{module}.{name}"
+
+    # Case 3: ``Name: TypeAlias = ...`` at module level (outside TYPE_CHECKING).
+    # This covers the common pattern where the alias is public and defined
+    # directly in the module body.
+    for node in tree.body:
+        if (
+            isinstance(node, ast.AnnAssign)
+            and isinstance(node.target, ast.Name)
+            and node.target.id == name
+            and node.annotation is not None
+            and _is_type_alias_annotation(node.annotation)
+        ):
+            return f"{module}.{name}"
 
     return None
 

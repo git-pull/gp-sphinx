@@ -22,9 +22,6 @@ from sphinx_autodoc_pytest_fixtures._models import (
     _FixtureMarker,
 )
 
-if t.TYPE_CHECKING:
-    pass
-
 logger = sphinx_logging.getLogger(__name__)
 
 
@@ -129,11 +126,11 @@ def _iter_injectable_params(
     """
     sig = inspect.signature(_get_fixture_fn(obj))
     for name, param in sig.parameters.items():
-        if param.kind in (
+        if param.kind in {
             inspect.Parameter.POSITIONAL_ONLY,
             inspect.Parameter.VAR_POSITIONAL,
             inspect.Parameter.VAR_KEYWORD,
-        ):
+        }:
             continue
         yield name, param
 
@@ -247,26 +244,45 @@ def _get_return_annotation(obj: t.Any) -> t.Any:
         ``TYPE_CHECKING`` guards not importable at doc-build time).
     """
     fn = _get_fixture_fn(obj)
+    raw_ann = inspect.signature(fn).return_annotation
     try:
         hints = t.get_type_hints(fn)
     except (NameError, AttributeError, TypeError, RecursionError):
         # Forward references (TYPE_CHECKING guards), parameterized generics
         # (TypeError in some Python versions), circular imports (RecursionError),
         # or other resolution failures.  Fall back to the raw annotation string.
-        ann = inspect.signature(fn).return_annotation
-        return inspect.Parameter.empty if ann is inspect.Parameter.empty else ann
+        return (
+            inspect.Parameter.empty if raw_ann is inspect.Parameter.empty else raw_ann
+        )
     ret = hints.get("return", inspect.Parameter.empty)
+    # Preserve TypeAlias names: when the raw annotation is a bare identifier
+    # (e.g. ``"MyAlias"``) and ``get_type_hints`` expanded it to a complex type
+    # (union, generic alias) rather than a real class, return the raw string so
+    # _qualify_forward_ref can produce a cross-reference to the alias itself.
+    #
+    # We use ``isinstance(ret, type)`` as the discriminator:
+    # - Real classes (including import-aliased ones like ``Options``):
+    #   ``isinstance(Options, type)`` → True → use resolved class.
+    # - TypeAlias expansions (``Base | None``, ``Sequence[str]``, …):
+    #   ``isinstance(union_or_generic, type)`` → False → preserve raw name.
+    if (
+        isinstance(raw_ann, str)
+        and raw_ann.isidentifier()
+        and ret is not inspect.Parameter.empty
+        and not isinstance(ret, type)
+    ):
+        return raw_ann
     if ret is inspect.Parameter.empty:
         return ret
     # Unwrap Generator/Iterator and their async counterparts so that
     # yield-based fixtures show the injected type, not the generator type.
     origin = t.get_origin(ret)
-    if origin in (
+    if origin in {
         collections.abc.Generator,
         collections.abc.Iterator,
         collections.abc.AsyncGenerator,
         collections.abc.AsyncIterator,
-    ):
+    }:
         args = t.get_args(ret)
         return args[0] if args else inspect.Parameter.empty
     return ret

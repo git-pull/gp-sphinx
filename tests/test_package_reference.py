@@ -83,7 +83,7 @@ def test_extension_modules_skips_unimportable_module() -> None:
 def test_collect_extension_surface_skips_unimportable_module() -> None:
     """An ImportError in collect_extension_surface returns an empty SurfaceDict."""
     surface = package_reference.collect_extension_surface(
-        "_this_module_does_not_exist_"
+        "_this_module_does_not_exist_",
     )
     assert surface["module"] == "_this_module_does_not_exist_"
     assert surface["config_values"] == []

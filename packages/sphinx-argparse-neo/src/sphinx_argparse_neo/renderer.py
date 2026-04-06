@@ -20,18 +20,19 @@ from sphinx_argparse_neo.nodes import (
     argparse_subcommands,
     argparse_usage,
 )
-from sphinx_argparse_neo.parser import (
-    ArgumentGroup,
-    ArgumentInfo,
-    MutuallyExclusiveGroup,
-    ParserInfo,
-    SubcommandInfo,
-)
 from sphinx_argparse_neo.utils import escape_rst_emphasis
 
 if t.TYPE_CHECKING:
     from docutils.parsers.rst.states import RSTState
     from sphinx.config import Config
+
+    from sphinx_argparse_neo.parser import (
+        ArgumentGroup,
+        ArgumentInfo,
+        MutuallyExclusiveGroup,
+        ParserInfo,
+        SubcommandInfo,
+    )
 
 
 @dataclasses.dataclass

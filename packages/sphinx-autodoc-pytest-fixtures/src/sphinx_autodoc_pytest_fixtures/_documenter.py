@@ -27,9 +27,6 @@ from sphinx_autodoc_pytest_fixtures._metadata import (
     _register_fixture_meta,
 )
 
-if t.TYPE_CHECKING:
-    pass
-
 logger = sphinx_logging.getLogger(__name__)
 
 

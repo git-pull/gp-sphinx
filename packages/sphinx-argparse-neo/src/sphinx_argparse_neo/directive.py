@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import typing as t
 
-from docutils import nodes
 from docutils.parsers.rst import directives
 from sphinx.util.docutils import SphinxDirective
 
@@ -19,6 +18,8 @@ from sphinx_argparse_neo.renderer import ArgparseRenderer, RenderConfig
 if t.TYPE_CHECKING:
     import argparse
     from collections.abc import Callable
+
+    from docutils import nodes
 
 
 class ArgparseDirective(SphinxDirective):

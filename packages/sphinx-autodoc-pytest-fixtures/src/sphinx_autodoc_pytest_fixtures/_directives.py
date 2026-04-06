@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+import operator
 import typing as t
 
 from docutils import nodes
@@ -39,9 +40,6 @@ from sphinx_autodoc_pytest_fixtures._models import (
     autofixture_index_node,
 )
 from sphinx_autodoc_pytest_fixtures._store import _get_spf_store, _resolve_builtin_url
-
-if t.TYPE_CHECKING:
-    pass
 
 logger = sphinx_logging.getLogger(__name__)
 
@@ -159,7 +157,7 @@ def _render_autofixtures_nodes(
         Parsed fixture reference nodes.
     """
     if order == "alpha":
-        entries = sorted(entries, key=lambda entry: entry[1])
+        entries = sorted(entries, key=operator.itemgetter(1))
 
     lines: list[str] = []
     for _attr_name, public_name, _value in entries:
@@ -527,7 +525,7 @@ class PyFixtureDirective(PyFunction):
             self.indexnode["entries"].append(
                 ("pair", f"{scope}-scoped fixtures; {name}", node_id, "", None)
             )
-        if kind not in ("resource",) and node_id:
+        if kind != "resource" and node_id:
             kind_label = {
                 "factory": "factory fixtures",
                 "override_hook": "override hooks",

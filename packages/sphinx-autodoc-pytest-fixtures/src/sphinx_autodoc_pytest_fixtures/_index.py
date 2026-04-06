@@ -6,7 +6,6 @@ import typing as t
 
 from docutils import nodes
 from sphinx import addnodes
-from sphinx.domains.python import PythonDomain
 from sphinx.util import logging as sphinx_logging
 from sphinx.util.nodes import make_refnode
 
@@ -17,11 +16,16 @@ from sphinx_autodoc_pytest_fixtures._constants import (
     _RST_INLINE_PATTERN,
 )
 from sphinx_autodoc_pytest_fixtures._css import _CSS
-from sphinx_autodoc_pytest_fixtures._models import FixtureMeta, autofixture_index_node
-from sphinx_autodoc_pytest_fixtures._store import FixtureStoreDict
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
+    from sphinx.domains.python import PythonDomain
+
+    from sphinx_autodoc_pytest_fixtures._models import (
+        FixtureMeta,
+        autofixture_index_node,
+    )
+    from sphinx_autodoc_pytest_fixtures._store import FixtureStoreDict
 
 logger = sphinx_logging.getLogger(__name__)
 

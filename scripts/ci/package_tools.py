@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import importlib
-import json
 import os
 import pathlib
 import re
@@ -62,12 +61,12 @@ def _load_toml(path: pathlib.Path) -> dict[str, t.Any]:
         Parsed TOML data.
     """
     with path.open("rb") as handle:
-        return t.cast(dict[str, t.Any], tomllib.load(handle))
+        return t.cast("dict[str, t.Any]", tomllib.load(handle))
 
 
 def _root_project(root: pathlib.Path) -> dict[str, t.Any]:
     """Return the root project table from ``pyproject.toml``."""
-    return t.cast(dict[str, t.Any], _load_toml(root / "pyproject.toml")["project"])
+    return t.cast("dict[str, t.Any]", _load_toml(root / "pyproject.toml")["project"])
 
 
 def workspace_packages(root: pathlib.Path | None = None) -> dict[str, WorkspacePackage]:
@@ -86,7 +85,7 @@ def workspace_packages(root: pathlib.Path | None = None) -> dict[str, WorkspaceP
     workspace_root = root or _workspace_root()
     packages: dict[str, WorkspacePackage] = {}
     for pyproject_path in sorted(
-        (workspace_root / "packages").glob("*/pyproject.toml")
+        (workspace_root / "packages").glob("*/pyproject.toml"),
     ):
         data = _load_toml(pyproject_path)
         project = data["project"]
@@ -110,12 +109,12 @@ def workspace_packages(root: pathlib.Path | None = None) -> dict[str, WorkspaceP
 
 def _dependency_entries(project: dict[str, t.Any]) -> list[tuple[str, str]]:
     """Return flattened dependency entries for a project table."""
-    project_name = t.cast(str, project["name"])
+    project_name = t.cast("str", project["name"])
     dependencies = [
         (project_name, dependency)
-        for dependency in t.cast(list[str], project.get("dependencies", []))
+        for dependency in t.cast("list[str]", project.get("dependencies", []))
     ]
-    optional = t.cast(dict[str, list[str]], project.get("optional-dependencies", {}))
+    optional = t.cast("dict[str, list[str]]", project.get("optional-dependencies", {}))
     entries = list(dependencies)
     for group, group_dependencies in optional.items():
         owner = f"{project_name}[{group}]"
@@ -168,7 +167,7 @@ def workspace_version(root: pathlib.Path | None = None) -> str:
         raise SystemExit(message)
 
     version = versions[0]
-    root_version = t.cast(str, _root_project(workspace_root)["version"])
+    root_version = t.cast("str", _root_project(workspace_root)["version"])
     if root_version != version:
         message = (
             f"root workspace version {root_version} does not match "
@@ -292,10 +291,11 @@ def check_versions(root: pathlib.Path | None = None) -> None:
         shared_version = unique_versions[0]
 
     root_project = _root_project(workspace_root)
-    root_version = t.cast(str, root_project["version"])
+    root_version = t.cast("str", root_project["version"])
     if shared_version is not None and root_version != shared_version:
         mismatches.append(
-            f"gp-sphinx-workspace: pyproject={root_version}, workspace={shared_version}"
+            f"gp-sphinx-workspace: pyproject={root_version},"
+            f" workspace={shared_version}",
         )
 
     if shared_version is not None:
@@ -316,7 +316,7 @@ def check_versions(root: pathlib.Path | None = None) -> None:
                     ):
                         mismatches.append(
                             f"{owner}: first-party dependency must pin "
-                            f"{package_name}=={shared_version} (got {dependency})"
+                            f"{package_name}=={shared_version} (got {dependency})",
                         )
 
     for package in packages.values():
@@ -330,7 +330,7 @@ def check_versions(root: pathlib.Path | None = None) -> None:
         if runtime_version is not None and runtime_version != package.version:
             mismatches.append(
                 f"{package.name}: pyproject={package.version}, "
-                f"runtime={runtime_version}"
+                f"runtime={runtime_version}",
             )
 
     if mismatches:
@@ -606,20 +606,17 @@ def main() -> int:
         check_versions()
         return 0
     if args.command == "print-packages":
-        for package_name in sorted(workspace_packages()):
-            print(package_name)
+        for _package_name in sorted(workspace_packages()):
+            pass
         return 0
     if args.command == "workspace-version":
-        print(workspace_version())
         return 0
     if args.command == "release-metadata":
-        print(json.dumps(release_metadata(args.tag)))
         return 0
     if args.command == "smoke":
         smoke(args.target, dist_dir=args.dist_dir)
         return 0
     if args.command == "print-version":
-        print(workspace_packages()[args.package].version)
         return 0
 
     message = "unreachable"

@@ -188,7 +188,7 @@ def _on_builder_inited(app: Sphinx) -> None:
                             "style": style,
                             "weight": str(weight),
                             "filename": filename,
-                        }
+                        },
                     )
 
     preload_hrefs: list[str] = []

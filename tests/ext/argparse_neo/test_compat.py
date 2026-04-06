@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import argparse
 import sys
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -14,6 +14,9 @@ from sphinx_argparse_neo.compat import (
     import_module,
     mock_imports,
 )
+
+if TYPE_CHECKING:
+    import argparse
 
 # --- MockModule tests ---
 
