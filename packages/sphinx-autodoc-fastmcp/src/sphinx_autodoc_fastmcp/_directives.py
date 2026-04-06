@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from docutils import nodes
-from sphinx import addnodes
 from sphinx.util.docutils import SphinxDirective
 
 from sphinx_autodoc_fastmcp._badges import build_toolbar
@@ -21,7 +20,7 @@ from sphinx_autodoc_fastmcp._parsing import (
 
 
 class FastMCPToolDirective(SphinxDirective):
-    """Autodocument one MCP tool: section (ToC/labels) + ``desc`` card."""
+    """Autodocument one MCP tool: section (ToC/labels) + card body."""
 
     required_arguments = 1
     optional_arguments = 0
@@ -29,7 +28,7 @@ class FastMCPToolDirective(SphinxDirective):
     final_argument_whitespace = False
 
     def run(self) -> list[nodes.Node]:
-        """Build section + ``mcp`` ``desc`` nodes for one tool."""
+        """Build section with title row + docstring/returns for one tool."""
         arg = self.arguments[0]
         func_name = arg.split(".")[-1] if "." in arg else arg
 
@@ -48,36 +47,24 @@ class FastMCPToolDirective(SphinxDirective):
         return self._build_tool_section(tool)
 
     def _build_tool_section(self, tool: ToolInfo) -> list[nodes.Node]:
-        """Build visually hidden section title + card ``desc``."""
+        """Build section card: title (literal + badges) + summary + returns."""
         document = self.state.document
         section_id = tool.name.replace("_", "-")
 
         section = nodes.section()
         section["ids"].append(section_id)
+        section["classes"].append(_CSS.TOOL_SECTION)
         document.note_explicit_target(section)
 
         title_node = nodes.title("", "")
+        title_node["classes"].append(f"{_CSS.PREFIX}-tool-title")
         title_node += nodes.literal("", tool.name)
-        title_node["classes"].append(_CSS.SECTION_TITLE_HIDDEN)
+        title_node += nodes.Text(" ")
+        title_node += build_toolbar(tool.safety)
         section += title_node
 
-        desc_node = addnodes.desc()
-        desc_node["domain"] = "mcp"
-        desc_node["objtype"] = "tool"
-        desc_node["desctype"] = "tool"
-        desc_node["classes"].extend(["mcp", "tool"])
-        self.set_source_info(desc_node)
-
-        signode = addnodes.desc_signature("", "")
-        self.set_source_info(signode)
-        signode += addnodes.desc_name("", tool.name)
-        signode += build_toolbar(tool.safety)
-
-        content_node = addnodes.desc_content("")
-        self.set_source_info(content_node)
-
         first_para = first_paragraph(tool.docstring)
-        content_node += parse_rst_inline(first_para, self.state, self.lineno)
+        section += parse_rst_inline(first_para, self.state, self.lineno)
 
         if tool.return_annotation:
             returns_para = nodes.paragraph("")
@@ -89,11 +76,7 @@ class FastMCPToolDirective(SphinxDirective):
             )
             for child in type_para.children:
                 returns_para += child.deepcopy()
-            content_node += returns_para
-
-        desc_node += signode
-        desc_node += content_node
-        section += desc_node
+            section += returns_para
 
         return [section]
 

@@ -6,6 +6,7 @@ import typing as t
 
 from docutils import nodes
 from sphinx import addnodes
+from sphinx_autodoc_badges import BadgeNode
 
 from sphinx_autodoc_api_style._badges import (
     _MOD_ORDER,
@@ -62,7 +63,7 @@ def test_badge_group_returns_inline() -> None:
 def test_badge_group_type_badge_present() -> None:
     """Type badge is present when show_type_badge is True (default)."""
     group = build_badge_group("class", modifiers=frozenset())
-    badges = list(group.findall(nodes.abbreviation))
+    badges = list(group.findall(BadgeNode))
     assert len(badges) == 1
     assert badges[0].astext() == "class"
     assert _CSS.BADGE_TYPE in badges[0]["classes"]
@@ -72,7 +73,7 @@ def test_badge_group_type_badge_present() -> None:
 def test_badge_group_type_badge_suppressed() -> None:
     """Type badge is absent when show_type_badge is False."""
     group = build_badge_group("function", modifiers=frozenset(), show_type_badge=False)
-    badges = list(group.findall(nodes.abbreviation))
+    badges = list(group.findall(BadgeNode))
     assert len(badges) == 0
 
 
@@ -82,7 +83,7 @@ def test_badge_group_with_modifiers() -> None:
         "method",
         modifiers=frozenset({"async", "abstract"}),
     )
-    badges = list(group.findall(nodes.abbreviation))
+    badges = list(group.findall(BadgeNode))
     labels = [b.astext() for b in badges]
     assert "abstract" in labels
     assert "async" in labels
@@ -95,7 +96,7 @@ def test_badge_group_modifier_order() -> None:
     """Modifiers appear in the canonical order defined by _MOD_ORDER."""
     all_mods = frozenset(_MOD_ORDER)
     group = build_badge_group("function", modifiers=all_mods)
-    badges = list(group.findall(nodes.abbreviation))
+    badges = list(group.findall(BadgeNode))
     mod_labels = [b.astext() for b in badges if _CSS.BADGE_MOD in b["classes"]]
     expected = list(_MOD_ORDER)
     assert mod_labels == expected
@@ -107,7 +108,7 @@ def test_badge_group_tabindex() -> None:
         "function",
         modifiers=frozenset({"async"}),
     )
-    for badge in group.findall(nodes.abbreviation):
+    for badge in group.findall(BadgeNode):
         assert badge.get("tabindex") == "0"
 
 
@@ -117,12 +118,12 @@ def test_badge_group_tooltips() -> None:
         "function",
         modifiers=frozenset({"async"}),
     )
-    badges = list(group.findall(nodes.abbreviation))
+    badges = list(group.findall(BadgeNode))
     async_badge = [b for b in badges if b.astext() == "async"][0]
-    assert async_badge["explanation"] == _MOD_TOOLTIPS["async"]
+    assert async_badge["badge_tooltip"] == _MOD_TOOLTIPS["async"]
 
     func_badge = [b for b in badges if b.astext() == "function"][0]
-    assert func_badge["explanation"] == _TYPE_TOOLTIPS["function"]
+    assert func_badge["badge_tooltip"] == _TYPE_TOOLTIPS["function"]
 
 
 def test_badge_group_text_separators() -> None:
@@ -146,7 +147,7 @@ def test_badge_group_single_badge_no_separator() -> None:
 def test_badge_group_deprecated() -> None:
     """Deprecated modifier badge uses DEPRECATED CSS class."""
     group = build_badge_group("class", modifiers=frozenset({"deprecated"}))
-    badges = list(group.findall(nodes.abbreviation))
+    badges = list(group.findall(BadgeNode))
     dep_badge = [b for b in badges if b.astext() == "deprecated"][0]
     assert _CSS.DEPRECATED in dep_badge["classes"]
     assert _CSS.BADGE_MOD in dep_badge["classes"]
@@ -156,7 +157,7 @@ def test_badge_group_all_type_labels() -> None:
     """All handled objtypes produce a valid type badge label."""
     for objtype in _HANDLED_OBJTYPES:
         group = build_badge_group(objtype, modifiers=frozenset())
-        badges = list(group.findall(nodes.abbreviation))
+        badges = list(group.findall(BadgeNode))
         assert len(badges) >= 1
         label = badges[-1].astext()
         assert label == _TYPE_LABELS.get(objtype, objtype)
@@ -298,9 +299,9 @@ def test_inject_badges_idempotent() -> None:
     sig = addnodes.desc_signature()
     sig += addnodes.desc_name("", "my_func")
     _inject_badges(sig, "function")
-    badge_count_1 = len(list(sig.findall(nodes.abbreviation)))
+    badge_count_1 = len(list(sig.findall(BadgeNode)))
     _inject_badges(sig, "function")
-    badge_count_2 = len(list(sig.findall(nodes.abbreviation)))
+    badge_count_2 = len(list(sig.findall(BadgeNode)))
     assert badge_count_1 == badge_count_2
 
 
@@ -334,7 +335,7 @@ def test_inject_badges_detects_deprecated_parent() -> None:
 
     _inject_badges(sig, "function")
 
-    badges = list(sig.findall(nodes.abbreviation))
+    badges = list(sig.findall(BadgeNode))
     labels = [b.astext() for b in badges]
     assert "deprecated" in labels
 

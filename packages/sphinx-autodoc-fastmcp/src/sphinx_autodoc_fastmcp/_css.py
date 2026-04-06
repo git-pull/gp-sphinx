@@ -10,6 +10,9 @@ Examples
 
 >>> _CSS.TOOLBAR
 'smf-toolbar'
+
+>>> _CSS.TOOL_SECTION
+'smf-tool-section'
 """
 
 from __future__ import annotations
@@ -19,6 +22,7 @@ class _CSS:
     """CSS class name constants (``smf-`` = sphinx autodoc fastmcp)."""
 
     PREFIX = "smf"
+    TOOL_SECTION = f"{PREFIX}-tool-section"
     BADGE_GROUP = f"{PREFIX}-badge-group"
     BADGE = f"{PREFIX}-badge"
     BADGE_TYPE = f"{PREFIX}-badge--type"

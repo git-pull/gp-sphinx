@@ -27,6 +27,7 @@ readme = "README.md"
 keywords = ["sphinx", "fastmcp", "mcp", "documentation", "badges"]
 dependencies = [
   "sphinx",
+  "sphinx-autodoc-badges==0.0.1a5",
 ]
 
 [project.urls]

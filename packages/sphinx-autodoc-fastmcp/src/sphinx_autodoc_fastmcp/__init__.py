@@ -13,13 +13,8 @@ import logging
 import pathlib
 import typing as t
 
-from docutils import nodes
 from sphinx.application import Sphinx
 
-from sphinx_autodoc_fastmcp._badges import (
-    depart_abbreviation_html,
-    visit_abbreviation_html,
-)
 from sphinx_autodoc_fastmcp._collector import collect_tools
 from sphinx_autodoc_fastmcp._directives import (
     FastMCPToolDirective,
@@ -38,6 +33,7 @@ from sphinx_autodoc_fastmcp._roles import (
 from sphinx_autodoc_fastmcp._transforms import (
     add_section_badges,
     badge_role,
+    collect_tool_section_content,
     register_tool_labels,
     resolve_tool_refs,
 )
@@ -70,6 +66,8 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     >>> callable(setup)
     True
     """
+    app.setup_extension("sphinx_autodoc_badges")
+
     app.add_config_value("fastmcp_tool_modules", [], "env")
     app.add_config_value("fastmcp_area_map", {}, "env")
     app.add_config_value("fastmcp_model_module", "", "env")
@@ -87,14 +85,9 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.connect("builder-inited", _add_static_path)
     app.add_css_file("css/sphinx_autodoc_fastmcp.css")
 
-    app.add_node(
-        nodes.abbreviation,
-        override=True,
-        html=(visit_abbreviation_html, depart_abbreviation_html),
-    )
-
     app.connect("builder-inited", collect_tools)
     app.connect("doctree-read", register_tool_labels)
+    app.connect("doctree-read", collect_tool_section_content)
     app.connect("doctree-resolved", add_section_badges)
     app.connect("doctree-resolved", resolve_tool_refs)
 

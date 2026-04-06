@@ -33,15 +33,9 @@ import logging
 import pathlib
 import typing as t
 
-from docutils import nodes
-
 from sphinx_autodoc_api_style._badges import build_badge_group
 from sphinx_autodoc_api_style._css import _CSS
-from sphinx_autodoc_api_style._transforms import (
-    depart_abbreviation_html,
-    on_doctree_resolved,
-    visit_abbreviation_html,
-)
+from sphinx_autodoc_api_style._transforms import on_doctree_resolved
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -84,6 +78,7 @@ def setup(app: Sphinx) -> _SetupDict:
     True
     """
     app.setup_extension("sphinx.ext.autodoc")
+    app.setup_extension("sphinx_autodoc_badges")
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
 
@@ -93,12 +88,6 @@ def setup(app: Sphinx) -> _SetupDict:
 
     app.connect("builder-inited", _add_static_path)
     app.add_css_file("css/api_style.css")
-
-    app.add_node(
-        nodes.abbreviation,
-        override=True,
-        html=(visit_abbreviation_html, depart_abbreviation_html),
-    )
 
     app.connect("doctree-resolved", on_doctree_resolved)
 

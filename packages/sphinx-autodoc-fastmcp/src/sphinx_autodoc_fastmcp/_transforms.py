@@ -10,6 +10,7 @@ from docutils import nodes
 from sphinx.application import Sphinx
 
 from sphinx_autodoc_fastmcp._badges import build_safety_badge
+from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._models import ToolInfo
 from sphinx_autodoc_fastmcp._roles import _tool_ref_placeholder
 
@@ -17,6 +18,33 @@ if t.TYPE_CHECKING:
     from sphinx.domains.std import StandardDomain
 
 logger = logging.getLogger(__name__)
+
+
+def collect_tool_section_content(app: Sphinx, doctree: nodes.document) -> None:
+    """Move siblings following each tool section into the section.
+
+    Directive-returned ``nodes.section`` is a closed node — MyST does not
+    "enter" it.  This transform runs after parsing and re-parents prose,
+    code blocks, and ``{fastmcp-tool-input}`` tables that sit between one
+    tool section and the next boundary (``---`` transition or another tool
+    section).
+    """
+    for section in list(doctree.findall(nodes.section)):
+        if _CSS.TOOL_SECTION not in section.get("classes", []):
+            continue
+        parent = section.parent
+        if parent is None:
+            continue
+        idx = parent.index(section)
+        while idx + 1 < len(parent.children):
+            sibling = parent.children[idx + 1]
+            if isinstance(sibling, nodes.transition):
+                parent.remove(sibling)
+                break
+            if isinstance(sibling, nodes.section):
+                break
+            parent.remove(sibling)
+            section.append(sibling)
 
 
 def register_tool_labels(app: Sphinx, doctree: nodes.document) -> None:
@@ -112,9 +140,10 @@ def resolve_tool_refs(
             tool_info = tool_data.get(tool_name)
             badge = None
             if tool_info:
+                style = "inline-icon" if icon_pos.startswith("inline") else "icon-only"
                 badge = build_safety_badge(tool_info.safety, icon_only=True)
-                if icon_pos.startswith("inline"):
-                    badge["classes"].append("smf-badge--icon-only-inline")
+                if style == "inline-icon":
+                    badge["classes"].append("sab-inline-icon")
 
             if icon_pos == "left":
                 if badge:

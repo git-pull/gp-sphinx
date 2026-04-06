@@ -18,7 +18,8 @@ from sphinx_autodoc_pytest_fixtures._store import FixtureStoreDict, _get_spf_sto
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
     from sphinx.domains.python import PythonDomain
-    from sphinx.writers.html5 import HTML5Translator
+
+    pass
 
 logger = sphinx_logging.getLogger(__name__)
 
@@ -295,31 +296,3 @@ def _on_doctree_resolved(
     # Resolve autofixture-index placeholders
     for idx_node in list(doctree.findall(autofixture_index_node)):
         _resolve_fixture_index(idx_node, store, py_domain, app, docname)
-
-
-def _visit_abbreviation_html(
-    self: HTML5Translator,
-    node: nodes.abbreviation,
-) -> None:
-    """Emit ``<abbr>`` with ``tabindex`` when present.
-
-    Sphinx's built-in ``visit_abbreviation`` only passes ``explanation`` \u2192
-    ``title``.  It silently drops all other node attributes (including
-    ``tabindex``).  This override is a strict superset: non-badge abbreviation
-    nodes produce byte-identical output because the ``tabindex`` guard only
-    fires when the attribute is explicitly set.
-    """
-    attrs: dict[str, t.Any] = {}
-    if node.get("explanation"):
-        attrs["title"] = node["explanation"]
-    if node.get("tabindex"):
-        attrs["tabindex"] = node["tabindex"]
-    self.body.append(self.starttag(node, "abbr", "", **attrs))
-
-
-def _depart_abbreviation_html(
-    self: HTML5Translator,
-    node: nodes.abbreviation,
-) -> None:
-    """Close the ``<abbr>`` tag."""
-    self.body.append("</abbr>")

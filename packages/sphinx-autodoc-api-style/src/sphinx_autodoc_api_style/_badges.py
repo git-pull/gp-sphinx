@@ -1,8 +1,7 @@
 """Badge group rendering helpers for sphinx_autodoc_api_style.
 
-Builds portable ``nodes.abbreviation`` badge groups that render as
-``<abbr title="...">`` in HTML with hover tooltips and keyboard-accessible
-focus states.
+Uses shared ``BadgeNode`` from ``sphinx_autodoc_badges`` instead of
+``nodes.abbreviation`` -- avoids global abbreviation visitor override.
 
 Examples
 --------
@@ -14,6 +13,7 @@ True
 from __future__ import annotations
 
 from docutils import nodes
+from sphinx_autodoc_badges import BadgeNode, build_badge
 
 from sphinx_autodoc_api_style._css import _CSS
 
@@ -108,7 +108,7 @@ def build_badge_group(
     Returns
     -------
     nodes.inline
-        Badge group container with abbreviation badge children.
+        Badge group container with BadgeNode children.
 
     Examples
     --------
@@ -117,29 +117,29 @@ def build_badge_group(
     True
 
     >>> group = build_badge_group("method", modifiers=frozenset({"async"}))
-    >>> len(list(group.findall(nodes.abbreviation))) == 2
+    >>> len(list(group.findall(BadgeNode))) == 2
     True
 
     >>> group = build_badge_group(
     ...     "class",
     ...     modifiers=frozenset({"abstract", "deprecated"}),
     ... )
-    >>> labels = [n.astext() for n in group.findall(nodes.abbreviation)]
+    >>> labels = [n.astext() for n in group.findall(BadgeNode)]
     >>> "deprecated" in labels and "abstract" in labels and "class" in labels
     True
     """
     group = nodes.inline(classes=[_CSS.BADGE_GROUP])
-    badges: list[nodes.abbreviation] = []
+    badges: list[BadgeNode] = []
 
     for mod in _MOD_ORDER:
         if mod not in modifiers:
             continue
         badges.append(
-            nodes.abbreviation(
+            build_badge(
                 _MOD_LABELS[mod],
-                _MOD_LABELS[mod],
-                explanation=_MOD_TOOLTIPS[mod],
+                tooltip=_MOD_TOOLTIPS[mod],
                 classes=[_CSS.BADGE, _CSS.BADGE_MOD, _MOD_CSS[mod]],
+                fill="outline",
             ),
         )
 
@@ -147,16 +147,13 @@ def build_badge_group(
         label = _TYPE_LABELS.get(objtype, objtype)
         tooltip = _TYPE_TOOLTIPS.get(objtype, f"Python {objtype}")
         badges.append(
-            nodes.abbreviation(
+            build_badge(
                 label,
-                label,
-                explanation=tooltip,
+                tooltip=tooltip,
                 classes=[_CSS.BADGE, _CSS.BADGE_TYPE, _CSS.obj_type(objtype)],
+                fill="outline",
             ),
         )
-
-    for badge in badges:
-        badge["tabindex"] = "0"
 
     for i, badge in enumerate(badges):
         group += badge

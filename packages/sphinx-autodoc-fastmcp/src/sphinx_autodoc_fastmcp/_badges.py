@@ -1,20 +1,29 @@
-"""Badge nodes and HTML visitors for sphinx_autodoc_fastmcp."""
+"""Badge helpers for sphinx_autodoc_fastmcp (thin wrappers over shared API)."""
 
 from __future__ import annotations
 
-import typing as t
-
 from docutils import nodes
-from sphinx.writers.html5 import HTML5Translator
+from sphinx_autodoc_badges import (
+    BadgeNode,
+    build_badge,
+    build_badge_group,
+    build_toolbar as _sab_build_toolbar,
+)
 
 from sphinx_autodoc_fastmcp._css import _CSS
 
 _SAFETY_LABELS = ("readonly", "mutating", "destructive")
 
 _SAFETY_TOOLTIPS: dict[str, str] = {
-    "readonly": "Read-only — does not modify external state",
-    "mutating": "Mutating — creates or modifies objects",
-    "destructive": "Destructive — may remove data; not reversible",
+    "readonly": "Read-only \u2014 does not modify external state",
+    "mutating": "Mutating \u2014 creates or modifies objects",
+    "destructive": "Destructive \u2014 may remove data; not reversible",
+}
+
+_SAFETY_ICONS: dict[str, str] = {
+    "readonly": "\U0001f50d",
+    "mutating": "\u270f\ufe0f",
+    "destructive": "\U0001f4a3",
 }
 
 _TYPE_TOOLTIP = "MCP tool"
@@ -24,19 +33,19 @@ def build_safety_badge(
     safety: str,
     *,
     icon_only: bool = False,
-) -> nodes.abbreviation:
-    """Build a single safety tier badge as an ``abbreviation`` node.
+) -> BadgeNode:
+    """Build a safety tier badge.
 
     Parameters
     ----------
     safety : str
         One of ``readonly``, ``mutating``, ``destructive``.
     icon_only : bool
-        When True, use a narrow non-breaking space for icon-only layouts.
+        When True, create an icon-only badge (empty text, 16x16 colored box).
 
     Returns
     -------
-    nodes.abbreviation
+    BadgeNode
 
     Examples
     --------
@@ -45,36 +54,36 @@ def build_safety_badge(
     'readonly'
     """
     label = safety if safety in _SAFETY_LABELS else safety
-    text = "\u00a0" if icon_only else label
-    classes = [_CSS.BADGE, _CSS.BADGE_SAFETY]
-    if safety in _SAFETY_LABELS:
-        classes.append(_CSS.safety_class(safety))
-    if icon_only:
-        classes.append(f"{_CSS.PREFIX}-badge--icon-only")
-    abbr = nodes.abbreviation(
+    text = "" if icon_only else label
+    style = "icon-only" if icon_only else "full"
+    classes = [_CSS.BADGE_SAFETY, _CSS.safety_class(safety)]
+    return build_badge(
         text,
-        text,
-        explanation=_SAFETY_TOOLTIPS.get(safety, f"Safety: {safety}"),
+        tooltip=_SAFETY_TOOLTIPS.get(safety, f"Safety: {safety}"),
+        icon=_SAFETY_ICONS.get(safety, ""),
         classes=classes,
+        style=style,
     )
-    abbr["tabindex"] = "0"
-    return abbr
 
 
-def build_type_tool_badge() -> nodes.abbreviation:
-    """Rightmost type badge labeling the entry as an MCP tool."""
-    abbr = nodes.abbreviation(
+def build_type_tool_badge() -> BadgeNode:
+    """Rightmost type badge labeling the entry as an MCP tool.
+
+    Examples
+    --------
+    >>> b = build_type_tool_badge()
+    >>> b.astext()
+    'tool'
+    """
+    return build_badge(
         "tool",
-        "tool",
-        explanation=_TYPE_TOOLTIP,
-        classes=[_CSS.BADGE, _CSS.BADGE_TYPE, _CSS.TYPE_TOOL],
+        tooltip=_TYPE_TOOLTIP,
+        classes=[_CSS.BADGE_TYPE, _CSS.TYPE_TOOL],
     )
-    abbr["tabindex"] = "0"
-    return abbr
 
 
 def build_tool_badge_group(safety: str) -> nodes.inline:
-    """Badge group for a tool signature: safety tier + type ``tool``.
+    """Badge group: safety tier + type ``tool``.
 
     Parameters
     ----------
@@ -84,46 +93,29 @@ def build_tool_badge_group(safety: str) -> nodes.inline:
     Returns
     -------
     nodes.inline
-        Container with class ``smf-badge-group``.
 
     Examples
     --------
     >>> g = build_tool_badge_group("readonly")
-    >>> _CSS.BADGE_GROUP in g["classes"]
+    >>> "sab-badge-group" in g["classes"]
     True
     """
-    group = nodes.inline(classes=[_CSS.BADGE_GROUP])
-    safety_badge = build_safety_badge(safety)
-    type_badge = build_type_tool_badge()
-    group += safety_badge
-    group += nodes.Text(" ")
-    group += type_badge
-    return group
+    return build_badge_group(
+        [build_safety_badge(safety), build_type_tool_badge()],
+        classes=[_CSS.BADGE_GROUP],
+    )
 
 
 def build_toolbar(safety: str) -> nodes.inline:
-    """Toolbar container (signature right side): badge group only."""
-    toolbar = nodes.inline(classes=[_CSS.TOOLBAR])
-    toolbar += build_tool_badge_group(safety)
-    return toolbar
+    """Toolbar on the title row (flex ``margin-left: auto``).
 
-
-def visit_abbreviation_html(
-    self: HTML5Translator,
-    node: nodes.abbreviation,
-) -> None:
-    """Emit ``<abbr>`` with ``tabindex`` when present (keyboard tooltips)."""
-    attrs: dict[str, t.Any] = {}
-    if node.get("explanation"):
-        attrs["title"] = node["explanation"]
-    if node.get("tabindex"):
-        attrs["tabindex"] = node["tabindex"]
-    self.body.append(self.starttag(node, "abbr", "", **attrs))
-
-
-def depart_abbreviation_html(
-    self: HTML5Translator,
-    node: nodes.abbreviation,
-) -> None:
-    """Close the ``<abbr>`` tag."""
-    self.body.append("</abbr>")
+    Examples
+    --------
+    >>> t = build_toolbar("readonly")
+    >>> "sab-toolbar" in t["classes"]
+    True
+    """
+    return _sab_build_toolbar(
+        build_tool_badge_group(safety),
+        classes=[_CSS.TOOLBAR],
+    )
