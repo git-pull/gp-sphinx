@@ -461,6 +461,57 @@ def test_get_return_annotation_preserves_bare_identifier_alias(
     del sys.modules[mod_name]
 
 
+def test_get_return_annotation_class_import_alias_resolves_to_class(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """_get_return_annotation resolves import-aliased classes to the actual class.
+
+    When a fixture has ``from mod import Cls as Alias`` at module level and
+    annotates ``-> Alias``, ``get_type_hints()`` resolves the string to the
+    real class.  The function must return the class (not the raw string
+    ``"Alias"``) so Sphinx can link to the class documentation.
+    """
+    import types
+
+    mod_source = textwrap.dedent("""\
+        from __future__ import annotations
+        import pytest
+
+        class RealClass:
+            pass
+
+        # Import alias pattern: annotate with the alias name
+        AliasForClass = RealClass
+    """)
+    mod_name = "fake_import_alias_mod"
+    mod = types.ModuleType(mod_name)
+    exec(compile(mod_source, "<string>", "exec"), mod.__dict__)
+    import sys
+
+    sys.modules[mod_name] = mod
+
+    fn_source = textwrap.dedent("""\
+        from __future__ import annotations
+        import pytest
+
+        @pytest.fixture
+        def my_fixture() -> AliasForClass:
+            return RealClass()
+    """)
+    exec(compile(fn_source, "<string>", "exec"), mod.__dict__)
+    fixture_obj = mod.__dict__["my_fixture"]
+
+    ann = _get_return_annotation(fixture_obj)
+    # Should return the class object, not the raw string "AliasForClass"
+    RealClass = mod.__dict__["RealClass"]
+    assert ann is RealClass, (
+        f"Expected RealClass but got {ann!r}. "
+        "_get_return_annotation should resolve import-aliased class names."
+    )
+
+    del sys.modules[mod_name]
+
+
 # ---------------------------------------------------------------------------
 # Integration: meta.return_display is qualified for TYPE_CHECKING alias return
 # ---------------------------------------------------------------------------

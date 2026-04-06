@@ -256,22 +256,22 @@ def _get_return_annotation(obj: t.Any) -> t.Any:
         )
     ret = hints.get("return", inspect.Parameter.empty)
     # Preserve TypeAlias names: when the raw annotation is a bare identifier
-    # (e.g. ``"MyAlias"``) but ``get_type_hints`` expanded it to a type whose
-    # own name differs (i.e. a TypeAlias expanded to its definition, such as
-    # ``Base | None``), return the raw string so _qualify_forward_ref can
-    # produce a cross-reference to the alias itself.
-    # We do NOT short-circuit for real types (e.g. ``-> str``) because
-    # ``str.__qualname__ == "str"`` matches the raw annotation.
+    # (e.g. ``"MyAlias"``) and ``get_type_hints`` expanded it to a complex type
+    # (union, generic alias) rather than a real class, return the raw string so
+    # _qualify_forward_ref can produce a cross-reference to the alias itself.
+    #
+    # We use ``isinstance(ret, type)`` as the discriminator:
+    # - Real classes (including import-aliased ones like ``Options``):
+    #   ``isinstance(Options, type)`` → True → use resolved class.
+    # - TypeAlias expansions (``Base | None``, ``Sequence[str]``, …):
+    #   ``isinstance(union_or_generic, type)`` → False → preserve raw name.
     if (
         isinstance(raw_ann, str)
         and raw_ann.isidentifier()
         and ret is not inspect.Parameter.empty
+        and not isinstance(ret, type)
     ):
-        resolved_name = getattr(ret, "__qualname__", None) or getattr(
-            ret, "__name__", None
-        )
-        if resolved_name != raw_ann:
-            return raw_ann
+        return raw_ann
     if ret is inspect.Parameter.empty:
         return ret
     # Unwrap Generator/Iterator and their async counterparts so that
