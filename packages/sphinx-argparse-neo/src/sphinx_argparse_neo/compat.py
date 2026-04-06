@@ -13,11 +13,11 @@ from __future__ import annotations
 import contextlib
 import importlib
 import sys
-import types
 import typing as t
 
 if t.TYPE_CHECKING:
     import argparse
+    import types
     from collections.abc import Iterator
 
 

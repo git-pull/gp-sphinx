@@ -5,8 +5,6 @@ from __future__ import annotations
 import logging
 import typing as t
 
-from sphinx.application import Sphinx
-
 from sphinx_autodoc_sphinx._directives import (
     AutoconfigvalueDirective,
     AutoconfigvalueIndexDirective,
@@ -15,6 +13,7 @@ from sphinx_autodoc_sphinx._directives import (
 )
 
 if t.TYPE_CHECKING:
+    from sphinx.application import Sphinx
     from sphinx.util.typing import ExtensionMetadata
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())

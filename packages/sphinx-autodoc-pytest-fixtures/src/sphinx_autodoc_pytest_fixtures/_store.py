@@ -12,10 +12,11 @@ from sphinx_autodoc_pytest_fixtures._constants import (
     _STORE_VERSION,
     PYTEST_BUILTIN_LINKS,
 )
-from sphinx_autodoc_pytest_fixtures._models import FixtureDep, FixtureMeta
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
+
+    from sphinx_autodoc_pytest_fixtures._models import FixtureDep, FixtureMeta
 
 logger = sphinx_logging.getLogger(__name__)
 
@@ -93,8 +94,8 @@ def _get_spf_store(env: t.Any) -> FixtureStoreDict:
     )
     if store.get("_store_version") != _STORE_VERSION:
         # Stale pickle — mutate in-place to preserve existing references.
-        t.cast(dict[str, t.Any], store).clear()
-        t.cast(dict[str, t.Any], store).update(_make_empty_store())
+        t.cast("dict[str, t.Any]", store).clear()
+        t.cast("dict[str, t.Any]", store).update(_make_empty_store())
     return store
 
 

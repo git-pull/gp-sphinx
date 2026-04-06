@@ -12,7 +12,7 @@ import sys
 import pytest
 
 for src_path in sorted(
-    (pathlib.Path(__file__).resolve().parents[1] / "packages").glob("*/src")
+    (pathlib.Path(__file__).resolve().parents[1] / "packages").glob("*/src"),
 ):
     src_str = str(src_path)
     if src_str not in sys.path:

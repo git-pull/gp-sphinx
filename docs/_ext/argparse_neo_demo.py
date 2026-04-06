@@ -39,7 +39,7 @@ def build_parser() -> argparse.ArgumentParser:
 
             Machine-readable output examples:
                 gp-demo sync --format json packages/sphinx-fonts
-            """
+            """,
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

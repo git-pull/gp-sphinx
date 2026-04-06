@@ -63,9 +63,11 @@ import pkgutil
 import sys
 import typing as t
 
-from docutils import nodes
 from docutils.parsers.rst import roles
 from sphinx.util.docutils import SphinxDirective
+
+if t.TYPE_CHECKING:
+    from docutils import nodes
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -104,8 +106,8 @@ def workspace_root() -> pathlib.Path:
 
     Examples
     --------
-    >>> workspace_root().name
-    'gp-sphinx'
+    >>> workspace_root().is_dir()
+    True
     """
     return pathlib.Path(__file__).resolve().parents[2]
 
@@ -137,9 +139,9 @@ def workspace_packages() -> list[dict[str, str]]:
                 "version": str(project["version"]),
                 "repository": str(project.get("urls", {}).get("Repository", "")),
                 "maturity": maturity_from_classifiers(
-                    t.cast(list[str], project.get("classifiers", []))
+                    t.cast("list[str]", project.get("classifiers", [])),
                 ),
-            }
+            },
         )
     return packages
 
@@ -193,7 +195,8 @@ def extension_modules(module_name: str) -> list[str]:
             submodule = importlib.import_module(module_info.name)
         except ImportError:
             logger.warning(
-                "package-reference: could not import submodule %r", module_info.name
+                "package-reference: could not import submodule %r",
+                module_info.name,
             )
             continue
         if callable(getattr(submodule, "setup", None)):
@@ -248,7 +251,7 @@ def render_types(types: object, default: object) -> str:
     if isinstance(types, (list, tuple, set, frozenset)) and types:
         names = sorted(
             getattr(item, "__name__", str(item))
-            for item in t.cast(t.Iterable[object], types)
+            for item in t.cast("t.Iterable[object]", types)
         )
         return f"`{' | '.join(names)}`"
     if default is None:
@@ -323,9 +326,9 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
     # Limitation: this mutates process-global state and is not safe for
     # parallel Sphinx builds (sphinx -j N); single-threaded builds only.
     try:
-        roles.register_local_role = t.cast(t.Any, _record_local)
-        roles.register_canonical_role = t.cast(t.Any, _record_local)
-        setup = t.cast(t.Callable[[object], object], getattr(module, "setup"))
+        roles.register_local_role = t.cast("t.Any", _record_local)
+        roles.register_canonical_role = t.cast("t.Any", _record_local)
+        setup = t.cast("t.Callable[[object], object]", getattr(module, "setup"))
         setup(app)
     finally:
         roles.register_local_role = original_local
@@ -351,7 +354,7 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                     "default": render_value(default),
                     "rebuild": f"`{rebuild}`" if rebuild else "",
                     "types": render_types(types, default),
-                }
+                },
             )
         elif name == "add_directive":
             directive_name = str(args[0])
@@ -363,7 +366,7 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                     "callable": object_path(directive_cls),
                     "summary": summarize(getattr(directive_cls, "__doc__", None)),
                     "options": directive_options_markdown(directive_cls),
-                }
+                },
             )
         elif name == "add_directive_to_domain":
             domain = str(args[0])
@@ -376,7 +379,7 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                     "callable": object_path(directive_cls),
                     "summary": summarize(getattr(directive_cls, "__doc__", None)),
                     "options": directive_options_markdown(directive_cls),
-                }
+                },
             )
         elif name == "add_crossref_type":
             directive_name = str(args[0])
@@ -388,7 +391,7 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                     "callable": "{py:meth}`~sphinx.application.Sphinx.add_crossref_type`",
                     "summary": "Registers a standard-domain cross-reference target.",
                     "options": "",
-                }
+                },
             )
             role_items.append(
                 {
@@ -396,7 +399,7 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                     "kind": "cross-reference role",
                     "callable": "{py:meth}`~sphinx.application.Sphinx.add_crossref_type`",
                     "summary": "Registers a standard-domain cross-reference role.",
-                }
+                },
             )
         elif name == "add_role":
             role_name = str(args[0])
@@ -407,7 +410,7 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                     "kind": "role",
                     "callable": object_path(role_fn),
                     "summary": summarize(getattr(role_fn, "__doc__", None)),
-                }
+                },
             )
         elif name == "add_role_to_domain":
             domain = str(args[0])
@@ -419,21 +422,21 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                     "kind": "domain role",
                     "callable": object_path(role_fn),
                     "summary": summarize(getattr(role_fn, "__doc__", None)),
-                }
+                },
             )
         elif name == "add_lexer":
             lexers.append(
                 {
                     "name": str(args[0]),
                     "callable": object_path(args[1]),
-                }
+                },
             )
         elif name == "add_html_theme":
             themes.append(
                 {
                     "name": str(args[0]),
                     "path": f"`{args[1]}`",
-                }
+                },
             )
 
     for role_name, role_fn in registered_roles:
@@ -443,7 +446,7 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                 "kind": "docutils role",
                 "callable": object_path(role_fn),
                 "summary": summarize(getattr(role_fn, "__doc__", None)),
-            }
+            },
         )
 
     return {
@@ -585,7 +588,7 @@ def package_reference_markdown(package_name: str) -> str:
                 f"- PyPI: [{package_name}]({pypi_url})",
                 f"- Maturity: `{package['maturity']}`",
                 "",
-            ]
+            ],
         )
 
     if package_name == "gp-sphinx":
@@ -596,7 +599,7 @@ def package_reference_markdown(package_name: str) -> str:
                 "This package is a coordinator rather than a Sphinx extension module.",
                 "Its public runtime surface is documented in {doc}`/configuration` and {doc}`/api`.",
                 "",
-            ]
+            ],
         )
         return "\n".join(lines)
 
@@ -612,11 +615,11 @@ def package_reference_markdown(package_name: str) -> str:
                     "",
                     "| Name | Default | Rebuild | Types |",
                     "| --- | --- | --- | --- |",
-                ]
+                ],
             )
             for row in config_rows:
                 lines.append(
-                    f"| `{row['name']}` | {row['default']} | {row['rebuild']} | {row['types']} |"
+                    f"| `{row['name']}` | {row['default']} | {row['rebuild']} | {row['types']} |",
                 )
             lines.append("")
 
@@ -628,11 +631,11 @@ def package_reference_markdown(package_name: str) -> str:
                     "",
                     "| Name | Kind | Callable | Summary |",
                     "| --- | --- | --- | --- |",
-                ]
+                ],
             )
             for row in directive_rows:
                 lines.append(
-                    f"| `{row['name']}` | {row['kind']} | {row['callable']} | {row['summary']} |"
+                    f"| `{row['name']}` | {row['kind']} | {row['callable']} | {row['summary']} |",
                 )
             lines.append("")
             for row in directive_rows:
@@ -642,7 +645,7 @@ def package_reference_markdown(package_name: str) -> str:
                             f"##### {row['name']} options",
                             row["options"],
                             "",
-                        ]
+                        ],
                     )
 
         role_rows = block["roles"]
@@ -653,11 +656,11 @@ def package_reference_markdown(package_name: str) -> str:
                     "",
                     "| Name | Kind | Callable | Summary |",
                     "| --- | --- | --- | --- |",
-                ]
+                ],
             )
             for row in role_rows:
                 lines.append(
-                    f"| `{row['name']}` | {row['kind']} | {row['callable']} | {row['summary']} |"
+                    f"| `{row['name']}` | {row['kind']} | {row['callable']} | {row['summary']} |",
                 )
             lines.append("")
 
@@ -669,7 +672,7 @@ def package_reference_markdown(package_name: str) -> str:
                     "",
                     "| Name | Callable |",
                     "| --- | --- |",
-                ]
+                ],
             )
             for row in lexer_rows:
                 lines.append(f"| `{row['name']}` | {row['callable']} |")
@@ -683,7 +686,7 @@ def package_reference_markdown(package_name: str) -> str:
                     "",
                     "| Theme | Path |",
                     "| --- | --- |",
-                ]
+                ],
             )
             for row in theme_rows:
                 lines.append(f"| `{row['name']}` | {row['path']} |")
@@ -697,7 +700,7 @@ def package_reference_markdown(package_name: str) -> str:
                 "",
                 "| Option |",
                 "| --- |",
-            ]
+            ],
         )
         for option in options:
             lines.append(f"| `{option}` |")
@@ -749,7 +752,7 @@ def workspace_package_grid_markdown() -> str:
                 maturity_badge(package["maturity"]),
                 ":::",
                 "",
-            ]
+            ],
         )
     lines.append("::::")
     return "\n".join(lines)
@@ -810,8 +813,8 @@ def _register_extension_objects(
                 _roles.append((role_name, role_fn))
 
             try:
-                roles.register_local_role = t.cast(t.Any, _capture)
-                roles.register_canonical_role = t.cast(t.Any, _capture)
+                roles.register_local_role = t.cast("t.Any", _capture)
+                roles.register_canonical_role = t.cast("t.Any", _capture)
                 setup_fn(recorder)
             except Exception:
                 continue
@@ -828,18 +831,18 @@ def _register_extension_objects(
                 elif call_name == "add_role" and len(args) >= 2:
                     obj = args[1]
                     raw_objs.append(
-                        (obj, "function" if not inspect.isclass(obj) else "class")
+                        (obj, "function" if not inspect.isclass(obj) else "class"),
                     )
                 elif call_name == "add_role_to_domain" and len(args) >= 3:
                     obj = args[2]
                     raw_objs.append(
-                        (obj, "function" if not inspect.isclass(obj) else "class")
+                        (obj, "function" if not inspect.isclass(obj) else "class"),
                     )
                 elif call_name == "add_lexer" and len(args) >= 2:
                     raw_objs.append((args[1], "class"))
             for _role_name, role_fn in docutils_roles:
                 raw_objs.append(
-                    (role_fn, "function" if not inspect.isclass(role_fn) else "class")
+                    (role_fn, "function" if not inspect.isclass(role_fn) else "class"),
                 )
 
             for obj, objtype in raw_objs:

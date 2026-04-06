@@ -139,13 +139,15 @@ class MystLexer(MarkdownLexer):
             (
                 # group opening: backtick fence + directive + optional
                 # info string (e.g. ```{eval-rst} some-arg)
-                r"(?P<opening>^```\{eval-rst\}[^\n]*)"
-                r"(?P<newline>\n)"
-                # group body: RST content, non-greedy to stop at first
-                # closing fence
-                r"(?P<body>(?:.|\n)*?)"
-                # group closing: bare ``` at start of line
-                r"(?P<closing>^```[ \t]*$\n?)",
+                (
+                    r"(?P<opening>^```\{eval-rst\}[^\n]*)"
+                    r"(?P<newline>\n)"
+                    # group body: RST content, non-greedy to stop at first
+                    # closing fence
+                    r"(?P<body>(?:.|\n)*?)"
+                    # group closing: bare ``` at start of line
+                    r"(?P<closing>^```[ \t]*$\n?)"
+                ),
                 _handle_eval_rst,
             ),
             # All MarkdownLexer root rules follow unchanged, providing

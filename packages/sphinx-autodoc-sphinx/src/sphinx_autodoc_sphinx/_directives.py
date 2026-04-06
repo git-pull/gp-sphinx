@@ -59,7 +59,7 @@ class UnknownConfigValueError(LookupError):
 
     def __init__(self, module_name: str, value_name: str) -> None:
         super().__init__(
-            f"No config value named {value_name!r} registered by {module_name!r}"
+            f"No config value named {value_name!r} registered by {module_name!r}",
         )
 
 
@@ -126,7 +126,8 @@ class RecorderApp:
         """
 
         def _record(
-            *args: object, **kwargs: object
+            *args: object,
+            **kwargs: object,
         ) -> None:  # object: universal __getattr__ stub
             self.calls.append((name, args, kwargs))
 
@@ -205,7 +206,8 @@ def _make_default_block(value: object) -> nodes.literal_block:  # object: calls 
 
 
 def _render_types(
-    types: object, default: object
+    types: object,
+    default: object,
 ) -> str:  # object: uses isinstance guards
     """Render a readable type expression for ``:type:``.
 
@@ -219,7 +221,7 @@ def _render_types(
     if isinstance(types, (list, tuple, set, frozenset)) and types:
         names = sorted(
             "None" if getattr(item, "__name__", "") == "NoneType" else item.__name__
-            for item in t.cast(t.Iterable[type], types)
+            for item in t.cast("t.Iterable[type]", types)
         )
         return f"``{' | '.join(names)}``"
     if types:
@@ -277,9 +279,9 @@ def _config_values_from_calls(
                 rebuild=str(kwargs.get("rebuild", args[2] if len(args) > 2 else "")),
                 types=kwargs.get("types", args[3] if len(args) > 3 else ()),
                 description=str(
-                    kwargs.get("description", args[4] if len(args) > 4 else "")
+                    kwargs.get("description", args[4] if len(args) > 4 else ""),
                 ),
-            )
+            ),
         )
     return values
 
@@ -321,7 +323,9 @@ def discover_config_value(path: str) -> SphinxConfigValue:
 
 
 def render_config_value_markup(
-    value: SphinxConfigValue, *, no_index: bool = False
+    value: SphinxConfigValue,
+    *,
+    no_index: bool = False,
 ) -> str:
     """Return reStructuredText for one real ``confval`` entry.
 
@@ -354,7 +358,7 @@ def render_config_value_markup(
             f"   Registered by ``{value.module_name}.setup()``.",
             "",
             f"   Rebuild: ``{value.rebuild or 'none'}``.",
-        ]
+        ],
     )
     return "\n".join(lines)
 
@@ -375,7 +379,9 @@ def render_config_values_markup(module_name: str, *, no_index: bool = False) -> 
 
 
 def render_config_index_markup(
-    module_name: str, *, heading: str = "Config Value Index"
+    module_name: str,
+    *,
+    heading: str = "Config Value Index",
 ) -> str:
     """Return a list-table index summarizing a module's config values.
 
@@ -407,7 +413,7 @@ def render_config_index_markup(
                 f"     - {_render_types(value.types, value.default)}",
                 f"     - {_render_default(value.default)}",
                 f"     - ``{value.rebuild or 'none'}``",
-            ]
+            ],
         )
     return "\n".join(lines)
 

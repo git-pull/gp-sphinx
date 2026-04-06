@@ -6,10 +6,8 @@ import typing as t
 
 from sphinx.util import logging as sphinx_logging
 
-from sphinx_autodoc_pytest_fixtures._store import FixtureStoreDict
-
 if t.TYPE_CHECKING:
-    pass
+    from sphinx_autodoc_pytest_fixtures._store import FixtureStoreDict
 
 logger = sphinx_logging.getLogger(__name__)
 
@@ -56,7 +54,7 @@ def _validate_store(store: FixtureStoreDict, app: t.Any) -> None:
             emitted = True
 
         # SPF002: Missing return/yield annotation
-        if meta.return_display in ("", "..."):
+        if meta.return_display in {"", "..."}:
             _emit(
                 "fixture %r has no return annotation",
                 meta.public_name,

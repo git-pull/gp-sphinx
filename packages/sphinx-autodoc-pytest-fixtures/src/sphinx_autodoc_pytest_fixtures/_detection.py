@@ -22,9 +22,6 @@ from sphinx_autodoc_pytest_fixtures._models import (
     _FixtureMarker,
 )
 
-if t.TYPE_CHECKING:
-    pass
-
 logger = sphinx_logging.getLogger(__name__)
 
 
@@ -129,11 +126,11 @@ def _iter_injectable_params(
     """
     sig = inspect.signature(_get_fixture_fn(obj))
     for name, param in sig.parameters.items():
-        if param.kind in (
+        if param.kind in {
             inspect.Parameter.POSITIONAL_ONLY,
             inspect.Parameter.VAR_POSITIONAL,
             inspect.Parameter.VAR_KEYWORD,
-        ):
+        }:
             continue
         yield name, param
 
@@ -261,12 +258,12 @@ def _get_return_annotation(obj: t.Any) -> t.Any:
     # Unwrap Generator/Iterator and their async counterparts so that
     # yield-based fixtures show the injected type, not the generator type.
     origin = t.get_origin(ret)
-    if origin in (
+    if origin in {
         collections.abc.Generator,
         collections.abc.Iterator,
         collections.abc.AsyncGenerator,
         collections.abc.AsyncIterator,
-    ):
+    }:
         args = t.get_args(ret)
         return args[0] if args else inspect.Parameter.empty
     return ret

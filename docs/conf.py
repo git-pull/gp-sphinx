@@ -13,7 +13,8 @@ sys.path.insert(0, str(project_root / "packages" / "sphinx-fonts" / "src"))
 sys.path.insert(0, str(project_root / "packages" / "sphinx-gptheme" / "src"))
 sys.path.insert(0, str(project_root / "packages" / "sphinx-argparse-neo" / "src"))
 sys.path.insert(
-    0, str(project_root / "packages" / "sphinx-autodoc-pytest-fixtures" / "src")
+    0,
+    str(project_root / "packages" / "sphinx-autodoc-pytest-fixtures" / "src"),
 )
 sys.path.insert(0, str(project_root / "packages" / "sphinx-autodoc-docutils" / "src"))
 sys.path.insert(0, str(project_root / "packages" / "sphinx-autodoc-sphinx" / "src"))

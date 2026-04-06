@@ -1,8 +1,3 @@
-"""Type stubs for pygments.lexers.markup (RstLexer and MarkdownLexer).
-
-Only the symbols used by gp_sphinx.myst_lexer are covered here.
-"""
-
 from collections.abc import Iterable, Iterator
 from typing import Any, ClassVar
 

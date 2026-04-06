@@ -6,10 +6,8 @@ import typing as t
 
 from docutils import nodes
 from sphinx import addnodes
-from sphinx.domains.python import PythonDomain
 from sphinx.util import logging as sphinx_logging
 from sphinx.util.nodes import make_refnode
-from sphinx.writers.html5 import HTML5Translator
 
 from sphinx_autodoc_pytest_fixtures._badges import _build_badge_group_node
 from sphinx_autodoc_pytest_fixtures._constants import _FIELD_LABELS
@@ -19,6 +17,8 @@ from sphinx_autodoc_pytest_fixtures._store import FixtureStoreDict, _get_spf_sto
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
+    from sphinx.domains.python import PythonDomain
+    from sphinx.writers.html5 import HTML5Translator
 
 logger = sphinx_logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ def _on_missing_reference(
         return None
 
     # Existing func/obj/any fallback for legacy :func: references.
-    if reftype not in ("func", "obj", "any"):
+    if reftype not in {"func", "obj", "any"}:
         return None
 
     matches = py_domain.find_obj(

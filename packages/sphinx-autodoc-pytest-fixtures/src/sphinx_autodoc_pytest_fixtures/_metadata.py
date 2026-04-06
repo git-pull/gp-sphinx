@@ -8,7 +8,6 @@ import re
 import typing as t
 
 from docutils import nodes
-from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
 
 from sphinx_autodoc_pytest_fixtures._constants import (
@@ -27,7 +26,7 @@ from sphinx_autodoc_pytest_fixtures._models import FixtureDep, FixtureMeta
 from sphinx_autodoc_pytest_fixtures._store import _get_spf_store
 
 if t.TYPE_CHECKING:
-    pass
+    from sphinx import addnodes
 
 logger = sphinx_logging.getLogger(__name__)
 
@@ -39,6 +38,19 @@ def _is_type_checking_guard(node: ast.If) -> bool:
     return (isinstance(test, ast.Name) and test.id == "TYPE_CHECKING") or (
         isinstance(test, ast.Attribute) and test.attr == "TYPE_CHECKING"
     )
+
+
+def _is_type_alias_annotation(annotation: ast.expr) -> bool:
+    """Return True if *annotation* is a ``TypeAlias`` marker.
+
+    Recognises both the bare name form (``TypeAlias``) and the attribute form
+    (``t.TypeAlias``, ``typing.TypeAlias``).
+    """
+    if isinstance(annotation, ast.Name) and annotation.id == "TypeAlias":
+        return True
+    if isinstance(annotation, ast.Attribute) and annotation.attr == "TypeAlias":
+        return True
+    return False
 
 
 def _qualify_forward_ref(name: str, fn: t.Any) -> str | None:
@@ -93,11 +105,23 @@ def _qualify_forward_ref(name: str, fn: t.Any) -> str | None:
     for node in ast.walk(tree):
         if isinstance(node, ast.If) and _is_type_checking_guard(node):
             for child in ast.walk(node):
+                # Case 1: ``from some.module import Name`` — existing behaviour.
                 if isinstance(child, ast.ImportFrom) and child.module:
                     for alias in child.names:
-                        imported_name = alias.asname if alias.asname else alias.name
+                        imported_name = alias.asname or alias.name
                         if imported_name == name:
                             return f"{child.module}.{alias.name}"
+
+                # Case 2: ``Name: TypeAlias = ...`` defined *in* this module.
+                # The alias lives in the current module, so return module.Name.
+                if (
+                    isinstance(child, ast.AnnAssign)
+                    and isinstance(child.target, ast.Name)
+                    and child.target.id == name
+                    and child.annotation is not None
+                    and _is_type_alias_annotation(child.annotation)
+                ):
+                    return f"{module}.{name}"
 
     return None
 
