@@ -606,17 +606,21 @@ def main() -> int:
         check_versions()
         return 0
     if args.command == "print-packages":
-        for _package_name in sorted(workspace_packages()):
-            pass
+        for package_name in sorted(workspace_packages()):
+            print(package_name)
         return 0
     if args.command == "workspace-version":
+        print(workspace_version())
         return 0
     if args.command == "release-metadata":
+        for key, value in release_metadata(args.tag).items():
+            print(f"{key}={value}")
         return 0
     if args.command == "smoke":
         smoke(args.target, dist_dir=args.dist_dir)
         return 0
     if args.command == "print-version":
+        print(workspace_packages()[args.package].version)
         return 0
 
     message = "unreachable"
