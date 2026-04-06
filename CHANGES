@@ -30,10 +30,10 @@ $ uv add gp-sphinx --prerelease allow
 
 ### Bug fixes
 
-- Load font weight 300 for IBM Plex Sans and IBM Plex Mono
-  ([Furo](https://github.com/pradyunsg/furo) and sphinx-design use
-  `font-weight: 300` for lighter text, but the weight was never loaded,
-  causing browsers to synthesize a light variant)
+- Load full weight range `[300, 400, 500, 600, 700]` for both IBM Plex
+  Sans and IBM Plex Mono (badges render in monospace at `font-weight: 700`,
+  Furo code blocks use 300, and intermediate weights inherit from
+  surrounding context — previously only Sans had the full set)
 - Replace `font-weight: 650` with `700` in badge CSS across
   `sphinx-autodoc-pytest-fixtures`, `sphinx-gptheme`, and docs (650 is not
   a standard Fontsource weight, so browsers were synthesizing bold instead
