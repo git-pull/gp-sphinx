@@ -402,7 +402,7 @@ def smoke_gp_sphinx(dist_dir: pathlib.Path, version: str) -> None:
 
                 conf = merge_sphinx_config(
                     project="demo",
-                    version="0.0.1a2",
+                    version="0.0.1a3",
                     copyright="2026",
                 )
                 globals().update(conf)
