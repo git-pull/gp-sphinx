@@ -23,6 +23,7 @@ sphinx-autodoc-pytest-fixtures = { workspace = true }
 sphinx-autodoc-docutils = { workspace = true }
 sphinx-autodoc-sphinx = { workspace = true }
 sphinx-autodoc-api-style = { workspace = true }
+sphinx-autodoc-fastmcp = { workspace = true }
 gp-sphinx = { workspace = true }
 
 [dependency-groups]
@@ -33,6 +34,7 @@ dev = [
   "sphinx-autodoc-docutils",
   "sphinx-autodoc-sphinx",
   "sphinx-autodoc-api-style",
+  "sphinx-autodoc-fastmcp",
   # Docs
   "sphinx-autobuild",
   # Testing
@@ -132,6 +134,7 @@ known-first-party = [
   "sphinx_autodoc_docutils",
   "sphinx_autodoc_sphinx",
   "sphinx_autodoc_api_style",
+  "sphinx_autodoc_fastmcp",
 ]
 combine-as-imports = true
 required-imports = [
@@ -148,12 +151,14 @@ convention = "numpy"
 "packages/sphinx-autodoc-pytest-fixtures/**/*.py" = ["D417", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "packages/sphinx-autodoc-docutils/**/*.py" = ["D417", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "packages/sphinx-autodoc-api-style/**/*.py" = ["D417", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
+"packages/sphinx-autodoc-fastmcp/**/*.py" = ["D417", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/argparse_neo/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/autodoc_docutils/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/autodoc_sphinx/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/pytest_fixtures/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/api_style/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
+"tests/ext/fastmcp/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/docutils/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 
 [tool.pytest.ini_options]
@@ -170,6 +175,7 @@ testpaths = [
   "packages/sphinx-gptheme/src",
   "packages/sphinx-autodoc-sphinx/src",
   "packages/sphinx-autodoc-api-style/src",
+  "packages/sphinx-autodoc-fastmcp/src",
 ]
 filterwarnings = [
   "ignore:distutils Version classes are deprecated. Use packaging.version instead.",
