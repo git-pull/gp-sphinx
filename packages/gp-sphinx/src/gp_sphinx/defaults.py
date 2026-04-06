@@ -203,7 +203,7 @@ DEFAULT_SPHINX_FONTS: list[FontConfig] = [
         "family": "IBM Plex Mono",
         "package": "@fontsource/ibm-plex-mono",
         "version": "5.2.7",
-        "weights": [300, 400],
+        "weights": [300, 400, 500, 600, 700],
         "styles": ["normal", "italic"],
         "subset": "latin",
     },
