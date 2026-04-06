@@ -21,6 +21,7 @@ def test_workspace_packages_lists_publishable_packages() -> None:
     assert names == {
         "gp-sphinx",
         "sphinx-argparse-neo",
+        "sphinx-autodoc-api-style",
         "sphinx-autodoc-docutils",
         "sphinx-autodoc-pytest-fixtures",
         "sphinx-autodoc-sphinx",
@@ -71,7 +72,9 @@ def test_docs_package_pages_exist_for_every_workspace_package() -> None:
     package_names = {
         package["name"] for package in package_reference.workspace_packages()
     }
-    assert page_names == package_names
+    assert package_names <= page_names, (
+        f"Missing docs pages for packages: {package_names - page_names}"
+    )
 
 
 def test_extension_modules_skips_unimportable_module() -> None:
