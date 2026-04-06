@@ -35,9 +35,9 @@ $ uv add gp-sphinx --prerelease allow
   Furo code blocks use 300, and intermediate weights inherit from
   surrounding context — previously only Sans had the full set)
 - Replace `font-weight: 650` with `700` in badge CSS across
-  `sphinx-autodoc-pytest-fixtures`, `sphinx-gptheme`, and docs (650 is not
-  a standard Fontsource weight, so browsers were synthesizing bold instead
-  of using the real font file)
+  `sphinx-autodoc-api-style`, `sphinx-autodoc-pytest-fixtures`,
+  `sphinx-gptheme`, and docs (650 is not a standard Fontsource weight,
+  so browsers were synthesizing bold instead of using the real font file)
 
 ### Workspace packages
 
