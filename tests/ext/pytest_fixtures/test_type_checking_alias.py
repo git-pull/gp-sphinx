@@ -265,6 +265,42 @@ def test_qualify_forward_ref_typealias_t_dot_typealias_form(
 # ---------------------------------------------------------------------------
 
 
+def test_qualify_forward_ref_fast_path_skips_typealias_value(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Fast path must not use a TypeAlias value's __module__/__qualname__.
+
+    When ``name`` is a TypeAlias at module scope, ``getattr(mod, name)``
+    returns the alias *value* (e.g. a union type whose ``__qualname__``
+    is ``"Union"``), not the alias itself.  Without guarding, the fast
+    path would return ``"typing.Union"`` — which is wrong.
+    """
+    import types as _types
+
+    mod_name = "fake_fast_path_alias_mod"
+    mod = _types.ModuleType(mod_name)
+    # Add the alias VALUE (a union type) as a runtime attribute, simulating
+    # how ``MyAlias: TypeAlias = str | None`` is visible at runtime.
+    mod.__dict__["MyAlias"] = str | None  # type: ignore[assignment]
+    sys.modules[mod_name] = mod
+
+    source = textwrap.dedent("""\
+        from __future__ import annotations
+        from typing import TypeAlias
+        MyAlias: TypeAlias = str | None
+    """)
+    monkeypatch.setattr(spf_meta.inspect, "getsource", lambda _: source)
+    fn = _make_fixture_fn(mod_name)
+
+    result = _qualify_forward_ref("MyAlias", fn)
+    assert result == f"{mod_name}.MyAlias", (
+        f"Expected '{mod_name}.MyAlias' but got {result!r}. "
+        "Fast path returned the alias value's module/qualname instead of the alias name."
+    )
+
+    del sys.modules[mod_name]
+
+
 def test_qualify_forward_ref_module_level_typealias(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

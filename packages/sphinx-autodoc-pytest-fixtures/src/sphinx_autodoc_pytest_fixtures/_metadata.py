@@ -85,8 +85,17 @@ def _qualify_forward_ref(name: str, fn: t.Any) -> str | None:
         return None
 
     # Fast path: name is available at runtime (not behind TYPE_CHECKING).
+    # Guard: only use the object's module/qualname when the qualname actually
+    # matches *name*.  TypeAlias values (e.g. ``str | None``) have
+    # ``__qualname__ == "Union"``, which must not be returned for an alias
+    # named ``"MyAlias"``.
     obj = getattr(mod, name, None)
-    if obj is not None and hasattr(obj, "__module__") and hasattr(obj, "__qualname__"):
+    if (
+        obj is not None
+        and hasattr(obj, "__module__")
+        and hasattr(obj, "__qualname__")
+        and obj.__qualname__ == name
+    ):
         return f"{obj.__module__}.{obj.__qualname__}"
 
     # Slow path: parse the module source to find TYPE_CHECKING imports.
