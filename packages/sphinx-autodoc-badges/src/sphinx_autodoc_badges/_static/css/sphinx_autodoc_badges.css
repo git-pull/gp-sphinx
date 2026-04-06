@@ -5,6 +5,14 @@
  * (--sab-bg, --sab-fg, --sab-border).
  */
 
+:root {
+  /* Subtle “buffed pill”: top highlight + soft inner shade (light UI / white page bg) */
+  --sab-buff-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.12);
+  --sab-buff-shadow-dark-ui: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.28);
+}
+
 /* ── Base badge ─────────────────────────────────────────── */
 .sab-badge {
   display: inline-flex;
@@ -17,8 +25,10 @@
   padding: var(--sab-padding-v, 0.35em) var(--sab-padding-h, 0.65em);
   border-radius: var(--sab-radius, 0.25rem);
   border: var(--sab-border, none);
-  background: var(--sab-bg);
-  color: var(--sab-fg);
+  /* Use background-color + fallbacks so unset --sab-* does not interact badly
+   * with later theme shorthands (e.g. sphinx-design loaded after extensions). */
+  background-color: var(--sab-bg, transparent);
+  color: var(--sab-fg, inherit);
   vertical-align: middle;
   white-space: nowrap;
   text-align: center;
@@ -26,6 +36,20 @@
   user-select: none;
   -webkit-user-select: none;
   box-sizing: border-box;
+}
+
+.sab-badge:not(.sab-outline):not(.sab-inline-icon) {
+  box-shadow: var(--sab-buff-shadow);
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) .sab-badge:not(.sab-outline):not(.sab-inline-icon) {
+    box-shadow: var(--sab-buff-shadow-dark-ui);
+  }
+}
+
+body[data-theme="dark"] .sab-badge:not(.sab-outline):not(.sab-inline-icon) {
+  box-shadow: var(--sab-buff-shadow-dark-ui);
 }
 
 .sab-badge:focus-visible {
@@ -146,9 +170,13 @@ code.docutils .sab-badge.sab-inline-icon:last-child {
 }
 
 .body p .sab-badge,
+.body li .sab-badge,
 .body td .sab-badge,
+.body a .sab-badge,
 [role="main"] p .sab-badge,
-[role="main"] td .sab-badge {
+[role="main"] li .sab-badge,
+[role="main"] td .sab-badge,
+[role="main"] a .sab-badge {
   font-size: 0.62rem;
   padding: 0.12rem 0.32rem;
 }
@@ -187,7 +215,7 @@ code.docutils .sab-badge.sab-inline-icon:last-child {
 /* ── TOC sidebar: compact badges ─────────────────────────
  * Smaller badges that still show text (matching production).
  * Container wrappers collapse to inline flow.
- * Emoji icons hidden at this size.
+ * Emoji icons shown at compact size (data-icon / ::before).
  */
 .toc-tree .sab-toolbar,
 .toc-tree .sab-badge-group {
@@ -200,17 +228,15 @@ code.docutils .sab-badge.sab-inline-icon:last-child {
 }
 
 .toc-tree .sab-badge {
-  font-size: 0.55rem;
-  padding: 0.08rem 0.22rem;
-  gap: 0;
+  font-size: 0.58rem;
+  padding: 0.1rem 0.25rem;
+  gap: 0.06rem;
   vertical-align: middle;
   line-height: 1.1;
 }
 
 .toc-tree .sab-badge::before {
-  display: none;
-}
-
-.toc-tree .sab-badge[data-icon]::before {
-  display: none;
+  font-size: 0.5rem;
+  margin-right: 0.08rem;
+  flex-shrink: 0;
 }
