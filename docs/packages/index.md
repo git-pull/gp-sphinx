@@ -1,6 +1,6 @@
 # Packages
 
-Seven workspace packages, each independently installable.
+Eight workspace packages, each independently installable.
 
 ```{workspace-package-grid}
 ```
@@ -9,6 +9,7 @@ Seven workspace packages, each independently installable.
 :hidden:
 
 gp-sphinx
+sphinx-autodoc-api-style
 sphinx-autodoc-docutils
 sphinx-autodoc-sphinx
 sphinx-autodoc-pytest-fixtures
