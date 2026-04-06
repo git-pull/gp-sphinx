@@ -24,6 +24,9 @@ $ uv add gp-sphinx --prerelease allow
 - `merge_sphinx_config()` API for building complete Sphinx config from shared defaults
 - Shared extension list, theme options, MyST config, font config
 - Bundled workarounds (tabs.js removal, spa-nav.js injection)
+- `sphinx-autodoc-pytest-fixtures`: Fixture tables now resolve `TypeAlias`
+  return annotations — alias names are preserved and linked rather than
+  expanding to the underlying union or generic type (#9)
 
 ### Workspace packages
 
