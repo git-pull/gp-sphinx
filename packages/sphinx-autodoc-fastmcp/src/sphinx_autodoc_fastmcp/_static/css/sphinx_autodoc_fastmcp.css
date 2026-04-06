@@ -1,0 +1,205 @@
+/* sphinx_autodoc_fastmcp — FastMCP tool cards (dl.mcp.tool) + smf badges */
+
+:root {
+  --smf-badge-font-size: 0.67rem;
+  --smf-badge-padding-v: 0.16rem;
+  --smf-badge-border-w: 1px;
+
+  --smf-safety-readonly-bg: #dcfce7;
+  --smf-safety-readonly-fg: #166534;
+  --smf-safety-readonly-border: #22c55e;
+
+  --smf-safety-mutating-bg: #fef3c7;
+  --smf-safety-mutating-fg: #92400e;
+  --smf-safety-mutating-border: #f59e0b;
+
+  --smf-safety-destructive-bg: #fee2e2;
+  --smf-safety-destructive-fg: #991b1b;
+  --smf-safety-destructive-border: #ef4444;
+
+  --smf-type-tool-bg: #ecfeff;
+  --smf-type-tool-fg: #0e7490;
+  --smf-type-tool-border: #06b6d4;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) {
+    --smf-safety-readonly-bg: #14532d;
+    --smf-safety-readonly-fg: #bbf7d0;
+    --smf-safety-readonly-border: #22c55e;
+
+    --smf-safety-mutating-bg: #78350f;
+    --smf-safety-mutating-fg: #fde68a;
+    --smf-safety-mutating-border: #f59e0b;
+
+    --smf-safety-destructive-bg: #7f1d1d;
+    --smf-safety-destructive-fg: #fecaca;
+    --smf-safety-destructive-border: #ef4444;
+
+    --smf-type-tool-bg: #083344;
+    --smf-type-tool-fg: #67e8f9;
+    --smf-type-tool-border: #22d3ee;
+  }
+}
+
+body[data-theme="dark"] {
+  --smf-safety-readonly-bg: #14532d;
+  --smf-safety-readonly-fg: #bbf7d0;
+  --smf-safety-readonly-border: #22c55e;
+
+  --smf-safety-mutating-bg: #78350f;
+  --smf-safety-mutating-fg: #fde68a;
+  --smf-safety-mutating-border: #f59e0b;
+
+  --smf-safety-destructive-bg: #7f1d1d;
+  --smf-safety-destructive-fg: #fecaca;
+  --smf-safety-destructive-border: #ef4444;
+
+  --smf-type-tool-bg: #083344;
+  --smf-type-tool-fg: #67e8f9;
+  --smf-type-tool-border: #22d3ee;
+}
+
+/* Hide ToC-only section title; card carries the visible header */
+.smf-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Signature row — match api-style flex */
+dl.mcp.tool > dt {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+dl.mcp.tool > dt .smf-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  margin-left: auto;
+  white-space: nowrap;
+  text-indent: 0;
+  order: 99;
+}
+
+dl.mcp.tool > dt .smf-badge-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+/* Badge base */
+.smf-badge {
+  position: relative;
+  display: inline-block;
+  font-size: var(--smf-badge-font-size, 0.67rem);
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0.01em;
+  padding: var(--smf-badge-padding-v, 0.16rem) 0.5rem;
+  border-radius: 0.22rem;
+  border: var(--smf-badge-border-w, 1px) solid;
+  vertical-align: middle;
+}
+
+.smf-badge[tabindex]:focus::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-background-primary);
+  border: 1px solid var(--color-background-border);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  white-space: nowrap;
+  border-radius: 0.2rem;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.smf-badge[tabindex]:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+}
+
+/* Safety tiers */
+abbr.smf-safety-readonly {
+  background-color: var(--smf-safety-readonly-bg);
+  color: var(--smf-safety-readonly-fg);
+  border-color: var(--smf-safety-readonly-border);
+}
+
+abbr.smf-safety-mutating {
+  background-color: var(--smf-safety-mutating-bg);
+  color: var(--smf-safety-mutating-fg);
+  border-color: var(--smf-safety-mutating-border);
+}
+
+abbr.smf-safety-destructive {
+  background-color: var(--smf-safety-destructive-bg);
+  color: var(--smf-safety-destructive-fg);
+  border-color: var(--smf-safety-destructive-border);
+}
+
+abbr.smf-type-tool {
+  background-color: var(--smf-type-tool-bg);
+  color: var(--smf-type-tool-fg);
+  border-color: var(--smf-type-tool-border);
+}
+
+abbr.smf-badge {
+  border-bottom-style: solid;
+  border-bottom-width: var(--smf-badge-border-w, 1px);
+  text-decoration: underline dotted;
+}
+
+.smf-badge--icon-only {
+  min-width: 0.65rem;
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
+}
+
+/* Card — aligned with sphinx-autodoc-api-style dl.py */
+dl.mcp.tool {
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.5rem;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  overflow: visible;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+dl.mcp.tool > dt {
+  background: var(--color-background-secondary);
+  border-bottom: 1px solid var(--color-background-border);
+  padding: 0.5rem 0.75rem;
+  text-indent: 0;
+  margin: 0;
+  padding-left: 1rem;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+  min-height: 2rem;
+  transition: background 100ms ease-out;
+}
+
+dl.mcp.tool > dt:hover {
+  background: var(--color-api-background-hover);
+}
+
+dl.mcp.tool > dd {
+  padding: 0.75rem 1rem;
+  margin-left: 0 !important;
+}
