@@ -306,8 +306,13 @@ Examples
 'bysource'
 """
 
-DEFAULT_AUTOCLASS_CONTENT: str = "both"
-"""Default autodoc autoclass_content setting (show __init__ and class docstring)."""
+DEFAULT_AUTOCLASS_CONTENT: str = "class"
+"""Default autodoc autoclass_content setting.
+
+Uses ``"class"`` (class docstring only) with ``autodoc_class_signature =
+"separated"`` so ``__init__`` is documented as a separate member and its
+parameters appear only once -- not duplicated in the class body.
+"""
 
 DEFAULT_AUTODOC_MEMBER_ORDER: str = "bysource"
 """Default autodoc member ordering."""

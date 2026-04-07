@@ -1,0 +1,54 @@
+/* sphinx_autodoc_layout — layout.css
+ * Prefix: gal-
+ * Semantic region wrappers and disclosure fold styling.
+ */
+
+/* ── Region spacing ────────────────────────────────── */
+.gal-region + .gal-region {
+  margin-top: 1rem;
+}
+
+.gal-region--members {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-background-border);
+}
+
+/* ── Override api-style field-list grid ─────────────── */
+/* Use descendant selector (not child >) so it survives
+   the <details> wrapper inserted by gal_fold.          */
+dl.py:not(.fixture) > dd .gal-region--fields dl.field-list {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0 1rem;
+}
+
+/* ── Fold (disclosure) ─────────────────────────────── */
+details.gal-fold {
+  margin: 0;
+}
+
+details.gal-fold > summary.gal-fold-summary {
+  cursor: pointer;
+  color: var(--color-foreground-muted);
+  font-size: 0.85em;
+  font-weight: 600;
+  padding: 0.25rem 0;
+  list-style: none;
+}
+
+details.gal-fold > summary.gal-fold-summary::-webkit-details-marker {
+  display: none;
+}
+
+details.gal-fold > summary.gal-fold-summary::before {
+  content: "\25B8  ";
+}
+
+details.gal-fold[open] > summary.gal-fold-summary::before {
+  content: "\25BE  ";
+}
+
+details.gal-fold > summary.gal-fold-summary:hover {
+  color: var(--color-link);
+}

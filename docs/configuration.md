@@ -138,7 +138,7 @@ These are injected even though they are not exposed as `DEFAULT_*` constants:
 
 | Constant | Value |
 | --- | --- |
-| `DEFAULT_AUTOCLASS_CONTENT` | `"both"` |
+| `DEFAULT_AUTOCLASS_CONTENT` | `"class"` |
 | `DEFAULT_AUTODOC_MEMBER_ORDER` | `"bysource"` |
 | `DEFAULT_AUTODOC_CLASS_SIGNATURE` | `"separated"` |
 | `DEFAULT_AUTODOC_TYPEHINTS` | `"description"` |

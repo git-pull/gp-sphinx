@@ -1,0 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sphinx-autodoc-layout"
+version = "0.0.1a6"
+description = "Componentized layout for Sphinx autodoc output"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = ["sphinx>=7.2"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sphinx_autodoc_layout"]

@@ -25,6 +25,7 @@ def test_workspace_packages_lists_publishable_packages() -> None:
         "sphinx-autodoc-badges",
         "sphinx-autodoc-docutils",
         "sphinx-autodoc-fastmcp",
+        "sphinx-autodoc-layout",
         "sphinx-autodoc-pytest-fixtures",
         "sphinx-autodoc-sphinx",
         "sphinx-fonts",

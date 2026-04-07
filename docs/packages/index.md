@@ -1,6 +1,6 @@
 # Packages
 
-Ten workspace packages, each independently installable.
+Eleven workspace packages, each independently installable.
 
 ```{workspace-package-grid}
 ```
@@ -13,6 +13,7 @@ sphinx-autodoc-api-style
 sphinx-autodoc-badges
 sphinx-autodoc-docutils
 sphinx-autodoc-fastmcp
+sphinx-autodoc-layout
 sphinx-autodoc-sphinx
 sphinx-autodoc-pytest-fixtures
 sphinx-fonts

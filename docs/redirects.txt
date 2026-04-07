@@ -7,5 +7,6 @@ extensions/sphinx-autodoc-sphinx packages/sphinx-autodoc-sphinx
 extensions/sphinx-autodoc-api-style packages/sphinx-autodoc-api-style
 extensions/sphinx-autodoc-badges packages/sphinx-autodoc-badges
 extensions/sphinx-autodoc-fastmcp packages/sphinx-autodoc-fastmcp
+extensions/sphinx-autodoc-layout packages/sphinx-autodoc-layout
 extensions/sphinx-fonts packages/sphinx-fonts
 extensions/sphinx-gptheme packages/sphinx-gptheme
