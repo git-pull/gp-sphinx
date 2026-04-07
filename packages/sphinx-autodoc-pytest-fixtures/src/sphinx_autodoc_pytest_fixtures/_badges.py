@@ -65,7 +65,6 @@ def _build_badge_group_node(
                 "deprecated",
                 tooltip=_BADGE_TOOLTIPS["deprecated"],
                 classes=[_CSS.BADGE, _CSS.BADGE_STATE, _CSS.DEPRECATED],
-                fill="outline",
             )
         )
 
@@ -75,7 +74,6 @@ def _build_badge_group_node(
                 scope,
                 tooltip=_BADGE_TOOLTIPS.get(scope, f"Scope: {scope}"),
                 classes=[_CSS.BADGE, _CSS.BADGE_SCOPE, _CSS.scope(scope)],
-                fill="outline",
             )
         )
 
@@ -85,7 +83,6 @@ def _build_badge_group_node(
                 "auto",
                 tooltip=_BADGE_TOOLTIPS["autouse"],
                 classes=[_CSS.BADGE, _CSS.BADGE_STATE, _CSS.AUTOUSE],
-                fill="outline",
             )
         )
     elif kind == "factory":
@@ -94,7 +91,6 @@ def _build_badge_group_node(
                 "factory",
                 tooltip=_BADGE_TOOLTIPS["factory"],
                 classes=[_CSS.BADGE, _CSS.BADGE_KIND, _CSS.FACTORY],
-                fill="outline",
             )
         )
     elif kind == "override_hook":
@@ -103,7 +99,6 @@ def _build_badge_group_node(
                 "override",
                 tooltip=_BADGE_TOOLTIPS["override_hook"],
                 classes=[_CSS.BADGE, _CSS.BADGE_KIND, _CSS.OVERRIDE],
-                fill="outline",
             )
         )
 
@@ -113,7 +108,6 @@ def _build_badge_group_node(
                 "fixture",
                 tooltip=_BADGE_TOOLTIPS["fixture"],
                 classes=[_CSS.BADGE, _CSS.BADGE_FIXTURE],
-                fill="outline",
             )
         )
 

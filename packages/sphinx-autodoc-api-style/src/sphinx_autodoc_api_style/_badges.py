@@ -151,7 +151,6 @@ def build_badge_group(
                 label,
                 tooltip=tooltip,
                 classes=[_CSS.BADGE, _CSS.BADGE_TYPE, _CSS.obj_type(objtype)],
-                fill="outline",
             ),
         )
 
