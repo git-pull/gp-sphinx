@@ -37,6 +37,18 @@ class BadgeDemoDirective(SphinxDirective):
                 p += nodes.literal(text=label)
             return p
 
+        result.append(_section("Size variants (xs / sm / default / lg / xl)"))
+        result.append(
+            _row(
+                build_badge("xs", size="xs", tooltip="Extra small"),
+                build_badge("sm", size="sm", tooltip="Small"),
+                build_badge("md", tooltip="Default (no size class)"),
+                build_badge("lg", size="lg", tooltip="Large"),
+                build_badge("xl", size="xl", tooltip="Extra large"),
+                label='build_badge("lg", size="lg")',
+            )
+        )
+
         result.append(_section("Filled (default)"))
         result.append(
             _row(
@@ -102,9 +114,7 @@ class BadgeDemoDirective(SphinxDirective):
                 build_badge("gamma", tooltip="Third"),
             ]
         )
-        result.append(
-            _row(group, label="build_badge_group([...badges...])")
-        )
+        result.append(_row(group, label="build_badge_group([...badges...])"))
 
         result.append(_section("Toolbar (push-right in flex heading)"))
         tb = build_toolbar(
@@ -125,9 +135,7 @@ class BadgeDemoDirective(SphinxDirective):
         heading_p += tb
         heading_container += heading_p
         result.append(heading_container)
-        result.append(
-            _row(label="build_toolbar(build_badge_group([...]))")
-        )
+        result.append(_row(label="build_toolbar(build_badge_group([...]))"))
 
         return result
 

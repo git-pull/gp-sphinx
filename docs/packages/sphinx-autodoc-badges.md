@@ -76,6 +76,9 @@ Every variant rendered by the real `build_badge` / `build_badge_group` /
       * - ``badge_style``
         - ``"full"``
         - Structural variant: ``"full"``, ``"icon-only"``, ``"inline-icon"``.
+      * - ``badge_size``
+        - ``""``
+        - Optional size: ``"xs"``, ``"sm"``, ``"lg"``, or ``"xl"``. Empty means default.
       * - ``tabindex``
         - ``"0"``
         - ``"0"`` for keyboard-focusable, ``""`` to skip.
@@ -182,12 +185,25 @@ All classes use the `sab-` prefix (**s**phinx **a**utodoc **b**adges).
 * - `sab-toolbar`
   - `build_toolbar()`
   - Flex push-right (`margin-left: auto`) for title rows.
+* - `sab-xs`
+  - `build_badge(size="xs")` / `BadgeNode(..., badge_size="xs")`
+  - Extra small (dense tables, tight UI).
+* - `sab-sm`
+  - `build_badge(size="sm")`
+  - Small inline badges.
+* - `sab-lg`
+  - `build_badge(size="lg")`
+  - Large (section titles, callouts).
+* - `sab-xl`
+  - `build_badge(size="xl")`
+  - Extra large (hero / landing emphasis).
 ```
 
 ## Context-aware sizing
 
 Badge size adapts automatically based on where it appears in the document.
-No extra classes needed — CSS selectors handle it.
+CSS selectors handle it. Explicit size classes (`sab-xs` … `sab-xl`) override
+contextual sizing when present (higher specificity than context rules).
 
 ```{list-table}
 :header-rows: 1
