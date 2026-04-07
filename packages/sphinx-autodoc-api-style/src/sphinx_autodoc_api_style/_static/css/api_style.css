@@ -343,33 +343,26 @@ dl.py:not(.fixture) > dt .gas-badge-group {
   border-color: var(--gas-deprecated-border);
 }
 
-/* ── abbr[title] specificity fix ───────────────────────────
- * Same fix as fixture extension: Normalize.css sets
- *   abbr[title] { border-bottom: none; text-decoration: underline dotted }
- * which conflicts with badge border styling.
+/* ── Border color reinforcement ────────────────────────────
+ * BadgeNode renders <span>; legacy builds may still emit <abbr>.
+ * Target both element-agnostically via class selectors.
  * ────────────────────────────────────────────────────────── */
-abbr.gas-badge {
-  border-bottom-style: solid;
-  border-bottom-width: var(--gas-badge-border-w, 1px);
-  text-decoration: underline dotted;
-}
-
-abbr.gas-type-function   { border-color: var(--gas-type-function-border); }
-abbr.gas-type-class      { border-color: var(--gas-type-class-border); }
-abbr.gas-type-method     { border-color: var(--gas-type-method-border); }
-abbr.gas-type-classmethod { border-color: var(--gas-type-method-border); }
-abbr.gas-type-staticmethod { border-color: var(--gas-type-method-border); }
-abbr.gas-type-property   { border-color: var(--gas-type-property-border); }
-abbr.gas-type-attribute  { border-color: var(--gas-type-attribute-border); }
-abbr.gas-type-data       { border-color: var(--gas-type-data-border); }
-abbr.gas-type-exception  { border-color: var(--gas-type-exception-border); }
-abbr.gas-type-type       { border-color: var(--gas-type-type-border); }
-abbr.gas-mod-async       { border-color: var(--gas-mod-async-border); }
-abbr.gas-mod-classmethod { border-color: var(--gas-mod-classmethod-border); }
-abbr.gas-mod-staticmethod { border-color: var(--gas-mod-staticmethod-border); }
-abbr.gas-mod-abstract    { border-color: var(--gas-mod-abstract-border); }
-abbr.gas-mod-final       { border-color: var(--gas-mod-final-border); }
-abbr.gas-deprecated      { border-color: var(--gas-deprecated-border); }
+.gas-type-function.gas-badge   { border-color: var(--gas-type-function-border); }
+.gas-type-class.gas-badge      { border-color: var(--gas-type-class-border); }
+.gas-type-method.gas-badge     { border-color: var(--gas-type-method-border); }
+.gas-type-classmethod.gas-badge { border-color: var(--gas-type-method-border); }
+.gas-type-staticmethod.gas-badge { border-color: var(--gas-type-method-border); }
+.gas-type-property.gas-badge   { border-color: var(--gas-type-property-border); }
+.gas-type-attribute.gas-badge  { border-color: var(--gas-type-attribute-border); }
+.gas-type-data.gas-badge       { border-color: var(--gas-type-data-border); }
+.gas-type-exception.gas-badge  { border-color: var(--gas-type-exception-border); }
+.gas-type-type.gas-badge       { border-color: var(--gas-type-type-border); }
+.gas-mod-async.gas-badge       { border-color: var(--gas-mod-async-border); }
+.gas-mod-classmethod.gas-badge { border-color: var(--gas-mod-classmethod-border); }
+.gas-mod-staticmethod.gas-badge { border-color: var(--gas-mod-staticmethod-border); }
+.gas-mod-abstract.gas-badge    { border-color: var(--gas-mod-abstract-border); }
+.gas-mod-final.gas-badge       { border-color: var(--gas-mod-final-border); }
+.gas-deprecated.gas-badge      { border-color: var(--gas-deprecated-border); }
 
 /* ── Deprecated entry muting ───────────────────────────── */
 dl.py.gas-deprecated > dt {
