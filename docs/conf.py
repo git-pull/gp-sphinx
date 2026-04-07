@@ -19,6 +19,10 @@ sys.path.insert(
 sys.path.insert(0, str(project_root / "packages" / "sphinx-autodoc-docutils" / "src"))
 sys.path.insert(0, str(project_root / "packages" / "sphinx-autodoc-sphinx" / "src"))
 sys.path.insert(0, str(project_root / "packages" / "sphinx-autodoc-api-style" / "src"))
+sys.path.insert(
+    0,
+    str(project_root / "packages" / "sphinx-autodoc-badges" / "src"),
+)
 sys.path.insert(0, str(cwd / "_ext"))  # docs demo modules
 
 import gp_sphinx  # noqa: E402
@@ -38,6 +42,8 @@ conf = merge_sphinx_config(
     source_branch="main",
     extra_extensions=[
         "package_reference",
+        "sab_demo",
+        "sphinx_autodoc_badges",
         "sphinx_autodoc_api_style",
         "sphinx_autodoc_pytest_fixtures",
         "sphinx_autodoc_docutils",
