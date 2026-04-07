@@ -6,6 +6,8 @@ Two generic nodes cover the full component tree:
   (narrative paragraphs, field lists, nested members).
 - ``gal_fold`` wraps a region in ``<details>/<summary>`` for
   progressive disclosure of large parameter sections.
+- ``gal_sig_fold`` wraps a ``desc_parameterlist`` in
+  ``<details>/<summary>`` for inline signature disclosure.
 
 Examples
 --------
@@ -61,4 +63,28 @@ class gal_fold(nodes.General, nodes.Element):
     'parameters'
     >>> f.get("summary")
     'Parameters (3)'
+    """
+
+
+class gal_sig_fold(nodes.General, nodes.Element):
+    """Inline disclosure wrapper for ``desc_parameterlist`` in signatures.
+
+    Wraps the parameter list in ``<details>/<summary>`` so the
+    collapsed state shows the first parameter plus ``[...]`` and
+    expanding reveals the full list one-per-line.
+
+    Parameters
+    ----------
+    first_param : str
+        Text of the first parameter (shown in collapsed summary).
+    param_count : int
+        Total number of parameters.
+
+    Examples
+    --------
+    >>> sf = gal_sig_fold(first_param="host", param_count=13)
+    >>> sf.get("first_param")
+    'host'
+    >>> sf.get("param_count")
+    13
     """

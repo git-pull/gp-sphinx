@@ -60,6 +60,29 @@ def depart_gal_fold(self: HTML5Translator, node: nodes.Element) -> None:
     self.body.append("</details>")
 
 
+def visit_gal_sig_fold(self: HTML5Translator, node: nodes.Element) -> None:
+    """Open an inline ``<details>`` for signature parameter disclosure.
+
+    The ``<summary>`` shows ``(first_param, [...])`` as a compact
+    preview.  The ``<details>`` body contains the full
+    ``desc_parameterlist`` which renders its own ``(`` and ``)``.
+    """
+    first = node.get("first_param", "")
+    self.body.append(
+        f'<details class="gal-sig-fold">'
+        f'<summary class="gal-sig-fold-summary">'
+        f'<span class="sig-paren">(</span>'
+        f'<span class="gal-sig-preview">{first}, [\u2026]</span>'
+        f'<span class="sig-paren">)</span>'
+        f"</summary>"
+    )
+
+
+def depart_gal_sig_fold(self: HTML5Translator, node: nodes.Element) -> None:
+    """Close the inline signature ``</details>``."""
+    self.body.append("</details>")
+
+
 # -- Passthrough visitors (non-HTML builders) --------------------------------
 
 

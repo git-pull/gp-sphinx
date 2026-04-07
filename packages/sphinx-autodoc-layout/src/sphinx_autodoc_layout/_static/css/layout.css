@@ -52,3 +52,61 @@ details.gal-fold[open] > summary.gal-fold-summary::before {
 details.gal-fold > summary.gal-fold-summary:hover {
   color: var(--color-link);
 }
+
+/* ── Signature fold (inline in <dt>) ───────────────── */
+details.gal-sig-fold {
+  display: inline;
+}
+
+details.gal-sig-fold > summary.gal-sig-fold-summary {
+  display: inline;
+  list-style: none;
+  cursor: pointer;
+  font-family: var(--font-stack--monospace);
+}
+
+details.gal-sig-fold > summary.gal-sig-fold-summary::-webkit-details-marker {
+  display: none;
+}
+
+details.gal-sig-fold > summary.gal-sig-fold-summary .gal-sig-preview {
+  color: var(--color-foreground-muted);
+}
+
+details.gal-sig-fold > summary.gal-sig-fold-summary:hover .gal-sig-preview {
+  color: var(--color-link);
+}
+
+/* When open: hide summary, show params as indented block */
+details.gal-sig-fold[open] > summary.gal-sig-fold-summary {
+  display: none;
+}
+
+/* When open, switch to block layout so each param
+   renders on its own indented line.                     */
+details.gal-sig-fold[open] {
+  display: inline-block;
+  vertical-align: top;
+}
+
+/* Hide raw comma text nodes between params via font-size */
+details.gal-sig-fold[open] > .desc-parameterlist,
+details.gal-sig-fold[open] > span {
+  font-size: 0;
+}
+
+details.gal-sig-fold[open] > .desc-parameterlist > *,
+details.gal-sig-fold[open] > span > * {
+  font-size: 1rem;
+}
+
+/* Each param on its own line, indented */
+details.gal-sig-fold[open] em.sig-param {
+  display: block;
+  margin-left: 2rem;
+}
+
+/* Opening paren stays inline; closing paren on last line */
+details.gal-sig-fold[open] .sig-paren {
+  font-size: 1rem;
+}
