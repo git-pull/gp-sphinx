@@ -188,6 +188,32 @@ def _inject_badges(sig_node: addnodes.desc_signature, objtype: str) -> None:
     sig_node += toolbar
 
 
+def _prune_empty_desc_content(desc_node: addnodes.desc) -> None:
+    """Remove empty desc_content nodes from a desc tree.
+
+    Sphinx always appends a desc_content child even when the object has
+    no docstring. An empty <dd></dd> wastes vertical space and creates
+    layout noise. Remove it so the CSS card only shows the signature row.
+
+    Parameters
+    ----------
+    desc_node : addnodes.desc
+        The description node to inspect.
+
+    Examples
+    --------
+    >>> from sphinx import addnodes
+    >>> desc = addnodes.desc()
+    >>> desc += addnodes.desc_content()          # empty
+    >>> _prune_empty_desc_content(desc)
+    >>> any(isinstance(c, addnodes.desc_content) for c in desc.children)
+    False
+    """
+    for child in list(desc_node.children):
+        if isinstance(child, addnodes.desc_content) and not child.children:
+            desc_node.remove(child)
+
+
 def on_doctree_resolved(
     app: Sphinx,
     doctree: nodes.document,
@@ -230,3 +256,4 @@ def on_doctree_resolved(
         for child in desc_node.children:
             if isinstance(child, addnodes.desc_signature):
                 _inject_badges(child, objtype)
+        _prune_empty_desc_content(desc_node)

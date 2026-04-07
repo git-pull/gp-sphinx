@@ -23,6 +23,7 @@ from sphinx_autodoc_api_style._transforms import (
     _detect_deprecated,
     _detect_modifiers,
     _inject_badges,
+    _prune_empty_desc_content,
     on_doctree_resolved,
 )
 
@@ -411,6 +412,55 @@ def test_inject_badges_headerlink_not_in_toolbar() -> None:
         if isinstance(c, nodes.reference) and "headerlink" in c.get("classes", [])
     ]
     assert len(sig_direct_refs) == 1, "headerlink should remain a direct child of sig"
+
+
+# ---------------------------------------------------------------------------
+# _prune_empty_desc_content
+# ---------------------------------------------------------------------------
+
+
+def test_prune_empty_desc_content_removes_empty() -> None:
+    """Empty desc_content is removed from the desc node."""
+    desc = addnodes.desc()
+    desc += addnodes.desc_signature()
+    desc += addnodes.desc_content()  # empty — no children
+
+    _prune_empty_desc_content(desc)
+
+    assert not any(isinstance(c, addnodes.desc_content) for c in desc.children)
+
+
+def test_prune_empty_desc_content_keeps_nonempty() -> None:
+    """desc_content with children is not removed."""
+    desc = addnodes.desc()
+    content = addnodes.desc_content()
+    content += nodes.paragraph("", "Has content.")
+    desc += addnodes.desc_signature()
+    desc += content
+
+    _prune_empty_desc_content(desc)
+
+    assert any(isinstance(c, addnodes.desc_content) for c in desc.children)
+
+
+def test_on_doctree_resolved_prunes_empty_desc_content() -> None:
+    """on_doctree_resolved removes empty desc_content via full pipeline."""
+    from unittest.mock import MagicMock
+
+    app = MagicMock()
+    doc = nodes.document(None, None)  # type: ignore[arg-type]
+    desc = addnodes.desc()
+    desc["domain"] = "py"
+    desc["objtype"] = "attribute"
+    sig = addnodes.desc_signature()
+    sig += addnodes.desc_name("", "session_id")
+    desc += sig
+    desc += addnodes.desc_content()  # empty — simulates undocumented attribute
+
+    doc += desc
+    on_doctree_resolved(app, doc, "index")
+
+    assert not any(isinstance(c, addnodes.desc_content) for c in desc.children)
 
 
 # ---------------------------------------------------------------------------
