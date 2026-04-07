@@ -21,6 +21,13 @@ def test_check_versions_passes_for_repo() -> None:
     package_tools.check_versions()
 
 
+def test_smoke_targets_cover_workspace_packages() -> None:
+    """Every publishable package has a smoke runner (release workflow loops all)."""
+    assert package_tools.smoke_workspace_package_names() == frozenset(
+        package_tools.workspace_packages().keys(),
+    )
+
+
 def test_release_metadata_accepts_repo_tag() -> None:
     """Repo-wide release tags resolve to the shared version."""
     assert package_tools.release_metadata("v0.0.1a5") == {"version": "0.0.1a5"}

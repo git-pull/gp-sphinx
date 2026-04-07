@@ -555,6 +555,69 @@ def smoke_sphinx_autodoc_api_style(dist_dir: pathlib.Path, version: str) -> None
         )
 
 
+def smoke_sphinx_autodoc_badges(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the autodoc-badges extension installs and imports cleanly."""
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(
+            python_path,
+            *_workspace_wheel_requirements(dist_dir),
+        )
+        _run_python(
+            python_path,
+            (
+                "import sphinx_autodoc_badges; "
+                "from sphinx_autodoc_badges import setup; "
+                "assert callable(setup)"
+            ),
+        )
+
+
+def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the autodoc-fastmcp extension installs and imports cleanly."""
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(
+            python_path,
+            *_workspace_wheel_requirements(dist_dir),
+        )
+        _run_python(
+            python_path,
+            (
+                "import sphinx_autodoc_fastmcp; "
+                "from sphinx_autodoc_fastmcp import setup; "
+                "assert callable(setup)"
+            ),
+        )
+
+
+_PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
+    "gp-sphinx": smoke_gp_sphinx,
+    "sphinx-argparse-neo": smoke_sphinx_argparse_neo,
+    "sphinx-autodoc-api-style": smoke_sphinx_autodoc_api_style,
+    "sphinx-autodoc-badges": smoke_sphinx_autodoc_badges,
+    "sphinx-autodoc-docutils": smoke_sphinx_autodoc_docutils,
+    "sphinx-autodoc-fastmcp": smoke_sphinx_autodoc_fastmcp,
+    "sphinx-autodoc-pytest-fixtures": smoke_sphinx_autodoc_pytest_fixtures,
+    "sphinx-autodoc-sphinx": smoke_sphinx_autodoc_sphinx,
+    "sphinx-fonts": smoke_sphinx_fonts,
+    "sphinx-gptheme": smoke_sphinx_gptheme,
+}
+
+
+def smoke_workspace_package_names() -> frozenset[str]:
+    """Return distribution names that have a wheel smoke test.
+
+    Excludes ``root-install``, which does not map to a built wheel.
+
+    Returns
+    -------
+    frozenset[str]
+        Keys of :data:`_PACKAGE_SMOKE_RUNNERS`.
+    """
+    return frozenset(_PACKAGE_SMOKE_RUNNERS.keys())
+
+
 def smoke(
     target: str,
     *,
@@ -571,21 +634,11 @@ def smoke(
         message = "--dist-dir is required for package smoke tests"
         raise SystemExit(message)
 
-    runners: dict[str, t.Callable[[pathlib.Path, str], None]] = {
-        "gp-sphinx": smoke_gp_sphinx,
-        "sphinx-gptheme": smoke_sphinx_gptheme,
-        "sphinx-fonts": smoke_sphinx_fonts,
-        "sphinx-argparse-neo": smoke_sphinx_argparse_neo,
-        "sphinx-autodoc-docutils": smoke_sphinx_autodoc_docutils,
-        "sphinx-autodoc-sphinx": smoke_sphinx_autodoc_sphinx,
-        "sphinx-autodoc-pytest-fixtures": smoke_sphinx_autodoc_pytest_fixtures,
-        "sphinx-autodoc-api-style": smoke_sphinx_autodoc_api_style,
-    }
-    if target not in runners:
+    if target not in _PACKAGE_SMOKE_RUNNERS:
         message = f"unknown smoke target: {target}"
         raise SystemExit(message)
     package = packages[target]
-    runners[target](dist_dir, package.version)
+    _PACKAGE_SMOKE_RUNNERS[target](dist_dir, package.version)
 
 
 def main() -> int:
@@ -603,17 +656,7 @@ def main() -> int:
     smoke_parser = subparsers.add_parser("smoke")
     smoke_parser.add_argument(
         "target",
-        choices=[
-            "root-install",
-            "gp-sphinx",
-            "sphinx-gptheme",
-            "sphinx-fonts",
-            "sphinx-argparse-neo",
-            "sphinx-autodoc-docutils",
-            "sphinx-autodoc-sphinx",
-            "sphinx-autodoc-pytest-fixtures",
-            "sphinx-autodoc-api-style",
-        ],
+        choices=["root-install", *sorted(_PACKAGE_SMOKE_RUNNERS.keys())],
     )
     smoke_parser.add_argument("--dist-dir", type=pathlib.Path)
 
