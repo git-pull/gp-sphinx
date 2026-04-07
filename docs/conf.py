@@ -23,6 +23,10 @@ sys.path.insert(
     0,
     str(project_root / "packages" / "sphinx-autodoc-badges" / "src"),
 )
+sys.path.insert(
+    0,
+    str(project_root / "packages" / "sphinx-autodoc-layout" / "src"),
+)
 sys.path.insert(0, str(cwd / "_ext"))  # docs demo modules
 
 import gp_sphinx  # noqa: E402
@@ -49,7 +53,10 @@ conf = merge_sphinx_config(
         "sphinx_autodoc_docutils",
         "sphinx_autodoc_sphinx",
         "sphinx_argparse_neo.exemplar",
+        "sphinx_autodoc_layout",
     ],
+    gal_enabled=True,
+    gal_collapsed_threshold=10,
     pytest_fixture_lint_level="none",
     rediraffe_redirects="redirects.txt",
     intersphinx_mapping=intersphinx_mapping,

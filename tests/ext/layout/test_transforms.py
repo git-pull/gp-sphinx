@@ -7,6 +7,7 @@ from sphinx import addnodes
 from sphinx_autodoc_layout._nodes import gal_fold, gal_region
 from sphinx_autodoc_layout._transforms import (
     _classify_child,
+    _count_field_entries,
     _fold_large_field_regions,
     _wrap_content_runs,
 )
@@ -128,6 +129,34 @@ def test_wrap_non_python_noop() -> None:
     assert isinstance(content.children[0], gal_region)
 
 
+def _make_sphinx_field_list(num_params: int) -> nodes.field_list:
+    """Build a Sphinx-style collapsed field list (single field + bullet_list)."""
+    fl = nodes.field_list()
+    f = nodes.field()
+    f += nodes.field_name("", "Parameters")
+    body = nodes.field_body()
+    bl = nodes.bullet_list()
+    for i in range(num_params):
+        bl += nodes.list_item("", nodes.paragraph("", f"param{i}"))
+    body += bl
+    f += body
+    fl += f
+    return fl
+
+
+# -- _count_field_entries ----------------------------------------------------
+
+
+def test_count_individual_fields() -> None:
+    fl = _make_field_list(5)
+    assert _count_field_entries(fl) == 5
+
+
+def test_count_collapsed_bullet_list() -> None:
+    fl = _make_sphinx_field_list(13)
+    assert _count_field_entries(fl) == 13
+
+
 # -- _fold_large_field_regions -----------------------------------------------
 
 
@@ -143,6 +172,20 @@ def test_fold_wraps_large_field_list() -> None:
     assert isinstance(fold, gal_fold)
     assert fold.get("summary") == "Parameters (12)"
     assert isinstance(fold.children[0], nodes.field_list)
+
+
+def test_fold_wraps_sphinx_collapsed_field_list() -> None:
+    """Sphinx-style field list (single field with bullet_list) gets folded."""
+    content = addnodes.desc_content()
+    region = gal_region(kind="fields")
+    region += _make_sphinx_field_list(13)
+    content += region
+
+    _fold_large_field_regions(content, threshold=10)
+
+    fold = region.children[0]
+    assert isinstance(fold, gal_fold)
+    assert fold.get("summary") == "Parameters (13)"
 
 
 def test_fold_skips_small_field_list() -> None:
