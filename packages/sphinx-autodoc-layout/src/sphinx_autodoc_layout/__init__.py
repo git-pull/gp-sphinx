@@ -17,15 +17,17 @@ from __future__ import annotations
 import pathlib
 import typing as t
 
-from sphinx_autodoc_layout._nodes import gal_fold, gal_region
+from sphinx_autodoc_layout._nodes import gal_fold, gal_region, gal_sig_fold
 from sphinx_autodoc_layout._transforms import on_doctree_resolved
 from sphinx_autodoc_layout._visitors import (
     depart_gal_fold,
     depart_gal_region,
+    depart_gal_sig_fold,
     passthrough_depart,
     passthrough_visit,
     visit_gal_fold,
     visit_gal_region,
+    visit_gal_sig_fold,
 )
 
 if t.TYPE_CHECKING:
@@ -72,6 +74,14 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_node(
         gal_fold,
         html=(visit_gal_fold, depart_gal_fold),
+        latex=_pt,
+        text=_pt,
+        man=_pt,
+        texinfo=_pt,
+    )
+    app.add_node(
+        gal_sig_fold,
+        html=(visit_gal_sig_fold, depart_gal_sig_fold),
         latex=_pt,
         text=_pt,
         man=_pt,

@@ -23,7 +23,7 @@ import typing as t
 from docutils import nodes
 from sphinx import addnodes
 
-from sphinx_autodoc_layout._nodes import gal_fold, gal_region
+from sphinx_autodoc_layout._nodes import gal_fold, gal_region, gal_sig_fold
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -271,6 +271,68 @@ def _fold_large_field_regions(
             region.insert(idx, fold)
 
 
+def _fold_signature_params(desc_node: addnodes.desc, threshold: int) -> None:
+    """Wrap large ``desc_parameterlist`` in ``gal_sig_fold``.
+
+    Replaces the ``desc_parameterlist`` with a ``gal_sig_fold`` node
+    that contains it.  The visitor renders a ``<details>/<summary>``
+    showing the first param + ``[...]`` when collapsed.
+
+    Parameters
+    ----------
+    desc_node : addnodes.desc
+        The description node.
+    threshold : int
+        Minimum param count to trigger folding.
+
+    Examples
+    --------
+    >>> from docutils import nodes
+    >>> from sphinx import addnodes
+    >>> desc = addnodes.desc(domain="py", objtype="function")
+    >>> sig = addnodes.desc_signature()
+    >>> sig += addnodes.desc_name("", "func")
+    >>> plist = addnodes.desc_parameterlist()
+    >>> for i in range(15):
+    ...     plist += addnodes.desc_parameter("", f"p{i}")
+    >>> sig += plist
+    >>> desc += sig
+    >>> desc += addnodes.desc_content()
+    >>> _fold_signature_params(desc, threshold=10)
+    >>> fold = [c for c in sig.children if isinstance(c, gal_sig_fold)]
+    >>> len(fold)
+    1
+    >>> fold[0].get("first_param")
+    'p0'
+    >>> fold[0].get("param_count")
+    15
+    """
+    for sig in desc_node.children:
+        if not isinstance(sig, addnodes.desc_signature):
+            continue
+        plists = list(sig.findall(addnodes.desc_parameterlist))
+        if not plists:
+            continue
+        plist = plists[0]
+        params = [c for c in plist.children if isinstance(c, addnodes.desc_parameter)]
+        if len(params) < threshold:
+            continue
+
+        first_text = params[0].astext().strip() if params else ""
+        fold = gal_sig_fold(
+            first_param=first_text,
+            param_count=len(params),
+        )
+
+        # Wrap the desc_parameterlist in the fold node.
+        # The fold visitor emits a <details> with a compact summary;
+        # the desc_parameterlist visitor emits its own ( and ).
+        idx = list(sig.children).index(plist)
+        sig.remove(plist)
+        fold += plist
+        sig.insert(idx, fold)
+
+
 def on_doctree_resolved(
     app: Sphinx,
     doctree: nodes.document,
@@ -309,16 +371,15 @@ def on_doctree_resolved(
 
         _wrap_content_runs(desc_node)
 
-        if fold_params:
-            objtype = desc_node.get("objtype", "")
-            if objtype not in _SKIP_FOLD_OBJTYPES:
-                content = next(
-                    (
-                        c
-                        for c in desc_node.children
-                        if isinstance(c, addnodes.desc_content)
-                    ),
-                    None,
-                )
-                if content is not None:
-                    _fold_large_field_regions(content, threshold)
+        objtype = desc_node.get("objtype", "")
+        if fold_params and objtype not in _SKIP_FOLD_OBJTYPES:
+            # Fold the signature param list (inline in <dt>)
+            _fold_signature_params(desc_node, threshold)
+
+            # Fold the field list in desc_content
+            content = next(
+                (c for c in desc_node.children if isinstance(c, addnodes.desc_content)),
+                None,
+            )
+            if content is not None:
+                _fold_large_field_regions(content, threshold)
