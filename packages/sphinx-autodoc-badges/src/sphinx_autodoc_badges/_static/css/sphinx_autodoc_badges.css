@@ -38,6 +38,27 @@
   box-sizing: border-box;
 }
 
+/* ── Size variants (explicit; compose with outline / icon-only / color classes) ─ */
+.sab-badge.sab-xs {
+  font-size: 0.58em;
+  padding: 0.2em 0.42em;
+}
+
+.sab-badge.sab-sm {
+  font-size: 0.65em;
+  padding: 0.28em 0.52em;
+}
+
+.sab-badge.sab-lg {
+  font-size: 0.88em;
+  padding: 0.4em 0.75em;
+}
+
+.sab-badge.sab-xl {
+  font-size: 1.05em;
+  padding: 0.45em 0.85em;
+}
+
 .sab-badge:not(.sab-outline):not(.sab-inline-icon) {
   box-shadow: var(--sab-buff-shadow);
 }
@@ -160,55 +181,52 @@ code.docutils .sab-badge.sab-inline-icon:last-child {
 /* ── Context-aware badge sizing ─────────────────────────── *
  * Scoped to .document-content (Furo main body) to avoid
  * applying in sidebar, TOC, or navigation contexts.
+ * Ancestors use :where() so explicit .sab-xs–.sab-xl size classes win.
  */
-.body h2 .sab-badge,
-.body h3 .sab-badge,
-[role="main"] h2 .sab-badge,
-[role="main"] h3 .sab-badge {
+:where(.body h2, .body h3, [role="main"] h2, [role="main"] h3) .sab-badge {
   font-size: 0.68rem;
   padding: 0.17rem 0.4rem;
 }
 
-.body p .sab-badge,
-.body li .sab-badge,
-.body td .sab-badge,
-.body a .sab-badge,
-[role="main"] p .sab-badge,
-[role="main"] li .sab-badge,
-[role="main"] td .sab-badge,
-[role="main"] a .sab-badge {
+:where(
+    .body p,
+    .body li,
+    .body td,
+    .body a,
+    [role="main"] p,
+    [role="main"] li,
+    [role="main"] td,
+    [role="main"] a
+  )
+  .sab-badge {
   font-size: 0.62rem;
   padding: 0.12rem 0.32rem;
 }
 
 /* ── Consistent code → badge spacing (body only) ────────── */
-.body code.docutils + .sab-badge,
-.body .sab-badge + code.docutils,
-[role="main"] code.docutils + .sab-badge,
-[role="main"] .sab-badge + code.docutils {
+:where(.body) code.docutils + .sab-badge,
+:where(.body) .sab-badge + code.docutils,
+:where([role="main"]) code.docutils + .sab-badge,
+:where([role="main"]) .sab-badge + code.docutils {
   margin-left: 0.4em;
 }
 
 /* ── Link behavior: underline code only, on hover ───────── */
-.body a.reference .sab-badge,
-[role="main"] a.reference .sab-badge {
+:where(.body, [role="main"]) a.reference .sab-badge {
   text-decoration: none;
   vertical-align: middle;
 }
 
-.body a.reference:has(.sab-badge) code,
-[role="main"] a.reference:has(.sab-badge) code {
+:where(.body, [role="main"]) a.reference:has(.sab-badge) code {
   vertical-align: middle;
   text-decoration: none;
 }
 
-.body a.reference:has(.sab-badge),
-[role="main"] a.reference:has(.sab-badge) {
+:where(.body, [role="main"]) a.reference:has(.sab-badge) {
   text-decoration: none;
 }
 
-.body a.reference:has(.sab-badge):hover code,
-[role="main"] a.reference:has(.sab-badge):hover code {
+:where(.body, [role="main"]) a.reference:has(.sab-badge):hover code {
   text-decoration: underline;
 }
 
@@ -217,8 +235,8 @@ code.docutils .sab-badge.sab-inline-icon:last-child {
  * Container wrappers collapse to inline flow.
  * Emoji icons shown at compact size (data-icon / ::before).
  */
-.toc-tree .sab-toolbar,
-.toc-tree .sab-badge-group {
+:where(.toc-tree) .sab-toolbar,
+:where(.toc-tree) .sab-badge-group {
   display: inline;
   gap: 0;
   margin: 0;
@@ -227,7 +245,7 @@ code.docutils .sab-badge.sab-inline-icon:last-child {
   background: none;
 }
 
-.toc-tree .sab-badge {
+:where(.toc-tree) .sab-badge {
   font-size: 0.58rem;
   padding: 0.1rem 0.25rem;
   gap: 0.06rem;
@@ -235,7 +253,7 @@ code.docutils .sab-badge.sab-inline-icon:last-child {
   line-height: 1.1;
 }
 
-.toc-tree .sab-badge::before {
+:where(.toc-tree) .sab-badge::before {
   font-size: 0.5rem;
   margin-right: 0.08rem;
   flex-shrink: 0;

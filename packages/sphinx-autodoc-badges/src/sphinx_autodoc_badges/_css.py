@@ -13,6 +13,9 @@ Examples
 
 >>> SAB.ICON_ONLY
 'sab-icon-only'
+
+>>> SAB.SM
+'sab-sm'
 """
 
 from __future__ import annotations
@@ -38,3 +41,7 @@ class SAB:
     INLINE_ICON = f"{PREFIX}-inline-icon"
     OUTLINE = f"{PREFIX}-outline"
     FILLED = f"{PREFIX}-filled"
+    XS = f"{PREFIX}-xs"
+    SM = f"{PREFIX}-sm"
+    LG = f"{PREFIX}-lg"
+    XL = f"{PREFIX}-xl"

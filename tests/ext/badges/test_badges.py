@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from docutils import nodes
 from sphinx_autodoc_badges import (
     BadgeNode,
@@ -97,6 +98,24 @@ def test_build_badge_outline() -> None:
     assert "gas-type-function" in b["classes"]
 
 
+def test_badge_node_size() -> None:
+    """badge_size adds sab-{xs,sm,lg,xl} class."""
+    assert SAB.LG in BadgeNode("x", badge_size="lg")["classes"]
+
+
+def test_badge_node_invalid_size_raises() -> None:
+    """Invalid badge_size raises ValueError."""
+    with pytest.raises(ValueError, match="badge_size"):
+        BadgeNode("x", badge_size="huge")
+
+
+def test_build_badge_size() -> None:
+    """build_badge size= forwards to BadgeNode."""
+    b = build_badge("label", size="sm")
+    assert SAB.SM in b["classes"]
+    assert b["badge_size"] == "sm"
+
+
 def test_build_badge_group() -> None:
     """build_badge_group wraps badges with spacing."""
     b1 = build_badge("a")
@@ -150,3 +169,7 @@ def test_css_constants() -> None:
     assert SAB.PREFIX == "sab"
     assert SAB.BADGE == "sab-badge"
     assert SAB.ICON_ONLY == "sab-icon-only"
+    assert SAB.XS == "sab-xs"
+    assert SAB.SM == "sab-sm"
+    assert SAB.LG == "sab-lg"
+    assert SAB.XL == "sab-xl"

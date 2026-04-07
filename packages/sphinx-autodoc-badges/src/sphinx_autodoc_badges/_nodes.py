@@ -11,6 +11,10 @@ Examples
 
 >>> "sab-badge" in node["classes"]
 True
+
+>>> n2 = BadgeNode("sm", badge_size="sm")
+>>> "sab-sm" in n2["classes"]
+True
 """
 
 from __future__ import annotations
@@ -18,6 +22,8 @@ from __future__ import annotations
 import typing as t
 
 from docutils import nodes
+
+_BADGE_SIZES = frozenset({"xs", "sm", "lg", "xl"})
 
 
 class BadgeNode(nodes.inline):
@@ -44,6 +50,7 @@ class BadgeNode(nodes.inline):
         badge_tooltip: str = "",
         badge_icon: str = "",
         badge_style: str = "full",
+        badge_size: str = "",
         tabindex: str = "0",
         classes: list[str] | None = None,
         **attributes: t.Any,
@@ -60,5 +67,12 @@ class BadgeNode(nodes.inline):
         if badge_style != "full":
             self["badge_style"] = badge_style
             self["classes"].append(f"sab-{badge_style}")
+        if badge_size:
+            if badge_size not in _BADGE_SIZES:
+                allowed = sorted(_BADGE_SIZES)
+                msg = f"badge_size must be one of {allowed!r}, got {badge_size!r}"
+                raise ValueError(msg)
+            self["badge_size"] = badge_size
+            self["classes"].append(f"sab-{badge_size}")
         if tabindex:
             self["tabindex"] = tabindex

@@ -27,6 +27,7 @@ def build_badge(
     classes: t.Sequence[str] = (),
     style: str = "full",
     fill: str = "filled",
+    size: str = "",
     tabindex: str = "0",
 ) -> BadgeNode:
     """Build a single badge node.
@@ -45,6 +46,9 @@ def build_badge(
         Structural variant: ``"full"``, ``"icon-only"``, ``"inline-icon"``.
     fill : str
         Visual fill: ``"filled"`` (default) or ``"outline"``.
+    size : str
+        Optional size tier: ``"xs"``, ``"sm"``, ``"lg"``, or ``"xl"``.
+        Empty string uses the default (no extra class).
     tabindex : str
         ``"0"`` for focusable, ``""`` to skip.
 
@@ -61,6 +65,10 @@ def build_badge(
     >>> b = build_badge("", style="icon-only", classes=["smf-safety-readonly"])
     >>> "sab-icon-only" in b["classes"]
     True
+
+    >>> b = build_badge("big", size="lg")
+    >>> "sab-lg" in b["classes"]
+    True
     """
     extra_classes = list(classes)
     if fill == "outline":
@@ -70,6 +78,7 @@ def build_badge(
         badge_tooltip=tooltip,
         badge_icon=icon,
         badge_style=style,
+        badge_size=size,
         tabindex=tabindex,
         classes=extra_classes,
     )
