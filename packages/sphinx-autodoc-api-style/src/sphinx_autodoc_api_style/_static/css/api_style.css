@@ -230,6 +230,7 @@ dl.py:not(.fixture) > dt .gas-badge-group {
   border-radius: 0.22rem;
   border: var(--gas-badge-border-w, 1px) solid;
   vertical-align: middle;
+  text-decoration: underline dotted;
 }
 
 /* Touch/keyboard tooltip */
