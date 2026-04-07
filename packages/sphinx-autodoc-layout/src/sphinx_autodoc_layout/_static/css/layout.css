@@ -82,31 +82,35 @@ details.gal-sig-fold[open] > summary.gal-sig-fold-summary {
   display: none;
 }
 
-/* When open, switch to block layout so each param
-   renders on its own indented line.                     */
+/* When open: block flex item; font-size 0 hides raw ", " text nodes
+   between params (they are direct children of <details>, not spans). */
 details.gal-sig-fold[open] {
-  display: inline-block;
-  vertical-align: top;
-}
-
-/* Hide raw comma text nodes between params via font-size */
-details.gal-sig-fold[open] > .desc-parameterlist,
-details.gal-sig-fold[open] > span {
+  display: block;
   font-size: 0;
 }
 
-details.gal-sig-fold[open] > .desc-parameterlist > *,
-details.gal-sig-fold[open] > span > * {
-  font-size: 1rem;
-}
-
-/* Each param on its own line, indented */
-details.gal-sig-fold[open] em.sig-param {
-  display: block;
-  margin-left: 2rem;
-}
-
-/* Opening paren stays inline; closing paren on last line */
+/* Restore monospace sizing for visible signature pieces */
+details.gal-sig-fold[open] em.sig-param,
 details.gal-sig-fold[open] .sig-paren {
   font-size: 1rem;
+}
+
+/* Each param on its own line, slightly indented; trailing comma via ::after */
+details.gal-sig-fold[open] em.sig-param {
+  display: block;
+  margin-left: 1rem;
+}
+
+details.gal-sig-fold[open] em.sig-param::after {
+  content: ",";
+}
+
+details.gal-sig-fold[open] em.sig-param:last-of-type::after {
+  content: "";
+}
+
+/* api-style uses flex + align-items:center on <dt>; when sig-fold is
+   tall, centering floats the name/badge/¶ mid-height — pin to start. */
+dt:has(details.gal-sig-fold[open]) {
+  align-items: flex-start;
 }
