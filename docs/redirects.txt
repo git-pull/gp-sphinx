@@ -5,5 +5,7 @@ extensions/sphinx-autodoc-pytest-fixtures packages/sphinx-autodoc-pytest-fixture
 extensions/sphinx-autodoc-docutils packages/sphinx-autodoc-docutils
 extensions/sphinx-autodoc-sphinx packages/sphinx-autodoc-sphinx
 extensions/sphinx-autodoc-api-style packages/sphinx-autodoc-api-style
+extensions/sphinx-autodoc-badges packages/sphinx-autodoc-badges
+extensions/sphinx-autodoc-fastmcp packages/sphinx-autodoc-fastmcp
 extensions/sphinx-fonts packages/sphinx-fonts
 extensions/sphinx-gptheme packages/sphinx-gptheme

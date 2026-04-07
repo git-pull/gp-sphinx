@@ -13,7 +13,9 @@ members = [
     "gp-sphinx-workspace",
     "sphinx-argparse-neo",
     "sphinx-autodoc-api-style",
+    "sphinx-autodoc-badges",
     "sphinx-autodoc-docutils",
+    "sphinx-autodoc-fastmcp",
     "sphinx-autodoc-pytest-fixtures",
     "sphinx-autodoc-sphinx",
     "sphinx-fonts",
@@ -467,7 +469,9 @@ dev = [
     { name = "sphinx-autobuild", version = "2024.10.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx-autobuild", version = "2025.8.25", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "sphinx-autodoc-api-style" },
+    { name = "sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-docutils" },
+    { name = "sphinx-autodoc-fastmcp" },
     { name = "sphinx-autodoc-pytest-fixtures" },
     { name = "sphinx-autodoc-sphinx" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
@@ -494,7 +498,9 @@ dev = [
     { name = "sphinx-argparse-neo", editable = "packages/sphinx-argparse-neo" },
     { name = "sphinx-autobuild" },
     { name = "sphinx-autodoc-api-style", editable = "packages/sphinx-autodoc-api-style" },
+    { name = "sphinx-autodoc-badges", editable = "packages/sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-docutils", editable = "packages/sphinx-autodoc-docutils" },
+    { name = "sphinx-autodoc-fastmcp", editable = "packages/sphinx-autodoc-fastmcp" },
     { name = "sphinx-autodoc-pytest-fixtures", editable = "packages/sphinx-autodoc-pytest-fixtures" },
     { name = "sphinx-autodoc-sphinx", editable = "packages/sphinx-autodoc-sphinx" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
@@ -1272,6 +1278,22 @@ source = { editable = "packages/sphinx-autodoc-api-style" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "sphinx-autodoc-badges" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "sphinx" },
+    { name = "sphinx-autodoc-badges", editable = "packages/sphinx-autodoc-badges" },
+]
+
+[[package]]
+name = "sphinx-autodoc-badges"
+version = "0.0.1a5"
+source = { editable = "packages/sphinx-autodoc-badges" }
+dependencies = [
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
 
 [package.metadata]
@@ -1290,6 +1312,22 @@ dependencies = [
 requires-dist = [{ name = "sphinx" }]
 
 [[package]]
+name = "sphinx-autodoc-fastmcp"
+version = "0.0.1a5"
+source = { editable = "packages/sphinx-autodoc-fastmcp" }
+dependencies = [
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "sphinx-autodoc-badges" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "sphinx" },
+    { name = "sphinx-autodoc-badges", editable = "packages/sphinx-autodoc-badges" },
+]
+
+[[package]]
 name = "sphinx-autodoc-pytest-fixtures"
 version = "0.0.1a5"
 source = { editable = "packages/sphinx-autodoc-pytest-fixtures" }
@@ -1297,12 +1335,14 @@ dependencies = [
     { name = "pytest" },
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "sphinx-autodoc-badges" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "pytest" },
     { name = "sphinx" },
+    { name = "sphinx-autodoc-badges", editable = "packages/sphinx-autodoc-badges" },
 ]
 
 [[package]]

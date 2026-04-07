@@ -1,0 +1,232 @@
+/* sphinx_autodoc_fastmcp — color layer for FastMCP tool badges.
+ *
+ * Base metrics come from sphinx_autodoc_badges.css. This file matches
+ * sphinx-gptheme custom.css rules for .sd-badge[aria-label^="Safety tier:"]
+ * (font metrics, !important colors, theme --badge-safety-* variables).
+ *
+ * Safety palette: same tokens as sphinx_gptheme/theme/static/css/custom.css
+ * so readonly / mutating / destructive match production regardless of load order.
+ */
+
+:root {
+  --badge-safety-readonly-bg: #1f7a3f;
+  --badge-safety-readonly-border: #2a8d4d;
+  --badge-safety-readonly-text: #f3fff7;
+  --badge-safety-mutating-bg: #b96a1a;
+  --badge-safety-mutating-border: #cf7a23;
+  --badge-safety-mutating-text: #fff8ef;
+  --badge-safety-destructive-bg: #b4232c;
+  --badge-safety-destructive-border: #cb3640;
+  --badge-safety-destructive-text: #fff5f5;
+  --smf-type-tool-bg: #0e7490;
+  --smf-type-tool-fg: #fff;
+  --smf-type-tool-border: #0f766e;
+}
+
+/* ── sphinx-gptheme parity: same box model as .sd-badge + safety tier ──
+ * See sphinx_gptheme/theme/static/css/custom.css (.sd-badge, h2/h3 .sd-badge, …)
+ */
+.sab-badge.smf-badge--safety {
+  display: inline-flex !important;
+  align-items: center;
+  vertical-align: middle;
+  font-size: 0.67rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  padding: 0.16rem 0.4rem;
+  border-radius: 0.22rem;
+  user-select: none;
+  -webkit-user-select: none;
+  gap: 0.28rem;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+}
+
+.sab-badge.smf-badge--safety::before {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 1em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Tool card titles: match h2/h3 .sd-badge[aria-label^="Safety tier:"] */
+h2.smf-tool-title .sab-badge.smf-badge--safety,
+h3.smf-tool-title .sab-badge.smf-badge--safety,
+h4.smf-tool-title .sab-badge.smf-badge--safety,
+.smf-tool-title .sab-badge.smf-badge--safety {
+  font-size: 0.68rem;
+  padding: 0.17rem 0.4rem;
+}
+
+/* Type badge: same base scale as .sd-badge (custom.css) */
+.sab-badge.smf-badge--type {
+  display: inline-flex !important;
+  align-items: center;
+  vertical-align: middle;
+  font-size: 0.67rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  padding: 0.16rem 0.4rem;
+  border-radius: 0.22rem;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+}
+
+h2.smf-tool-title .sab-badge.smf-badge--type,
+h3.smf-tool-title .sab-badge.smf-badge--type,
+h4.smf-tool-title .sab-badge.smf-badge--type,
+.smf-tool-title .sab-badge.smf-badge--type {
+  font-size: 0.68rem;
+  padding: 0.17rem 0.4rem;
+}
+
+/*
+ * Matte safety colors: literal hex + !important so sphinx-design (loaded after
+ * this file) cannot skew var() resolution or shorthands. Keeps parity with
+ * :root --badge-safety-* above; override there + copy here if you change the palette.
+ */
+.sab-badge.smf-safety-readonly:not(.sab-inline-icon) {
+  background-color: #1f7a3f !important;
+  color: #f3fff7 !important;
+  border: 1px solid #2a8d4d !important;
+  box-shadow: var(--sab-buff-shadow) !important;
+}
+
+.sab-badge.smf-safety-mutating:not(.sab-inline-icon) {
+  background-color: #b96a1a !important;
+  color: #fff8ef !important;
+  border: 1px solid #cf7a23 !important;
+  box-shadow: var(--sab-buff-shadow) !important;
+}
+
+.sab-badge.smf-safety-destructive:not(.sab-inline-icon) {
+  background-color: #b4232c !important;
+  color: #fff5f5 !important;
+  border: 1px solid #cb3640 !important;
+  box-shadow: var(--sab-buff-shadow) !important;
+}
+
+/* MCP "tool": white label (never use --sd-color-info-text; it is dark on light teal) */
+.sab-badge.smf-type-tool:not(.sab-inline-icon) {
+  background-color: #0e7490 !important;
+  color: #ffffff !important;
+  border: 1px solid #0f766e !important;
+  box-shadow: var(--sab-buff-shadow) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) .sab-badge.smf-safety-readonly:not(.sab-inline-icon),
+  body:not([data-theme="light"]) .sab-badge.smf-safety-mutating:not(.sab-inline-icon),
+  body:not([data-theme="light"]) .sab-badge.smf-safety-destructive:not(.sab-inline-icon),
+  body:not([data-theme="light"]) .sab-badge.smf-type-tool:not(.sab-inline-icon) {
+    box-shadow: var(--sab-buff-shadow-dark-ui) !important;
+  }
+
+  body:not([data-theme="light"]) .sab-badge.smf-type-tool:not(.sab-inline-icon) {
+    background-color: #0d9488 !important;
+    color: #ffffff !important;
+    border: 1px solid #14b8a6 !important;
+  }
+}
+
+body[data-theme="dark"] .sab-badge.smf-safety-readonly:not(.sab-inline-icon),
+body[data-theme="dark"] .sab-badge.smf-safety-mutating:not(.sab-inline-icon),
+body[data-theme="dark"] .sab-badge.smf-safety-destructive:not(.sab-inline-icon),
+body[data-theme="dark"] .sab-badge.smf-type-tool:not(.sab-inline-icon) {
+  box-shadow: var(--sab-buff-shadow-dark-ui) !important;
+}
+
+body[data-theme="dark"] .sab-badge.smf-type-tool:not(.sab-inline-icon) {
+  background-color: #0d9488 !important;
+  color: #ffffff !important;
+  border: 1px solid #14b8a6 !important;
+}
+
+/* ── Emoji when data-icon absent (unicode); data-icon wins via badges base ── */
+.smf-safety-readonly:not([data-icon])::before {
+  content: "\1F50D";
+}
+
+.smf-safety-mutating:not([data-icon])::before {
+  content: "\270F\FE0F";
+}
+
+.smf-safety-destructive:not([data-icon])::before {
+  content: "\1F4A3";
+}
+
+/* ── Tool section card ──────────────────────────────────── */
+section.smf-tool-section {
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.5rem;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  overflow: visible;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+section.smf-tool-section > h1,
+section.smf-tool-section > h2,
+section.smf-tool-section > h3,
+section.smf-tool-section > h4,
+section.smf-tool-section > h5,
+section.smf-tool-section > h6 {
+  margin: 0;
+}
+
+/* Match custom.css h2/h3:has(> .sd-badge[...]) gap between code and badges */
+section.smf-tool-section > .smf-tool-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  background: var(--color-background-secondary);
+  border-bottom: 1px solid var(--color-background-border);
+  padding: 0.5rem 0.75rem 0.5rem 1rem;
+  min-height: 2rem;
+  text-indent: 0;
+  transition: background 100ms ease-out;
+}
+
+section.smf-tool-section > .smf-tool-title:hover {
+  background: var(--color-api-background-hover);
+}
+
+section.smf-tool-section > .smf-tool-title .sab-toolbar {
+  order: 99;
+}
+
+section.smf-tool-section > .smf-tool-title ~ * {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+section.smf-tool-section > .smf-tool-title + * {
+  padding-top: 0.75rem;
+}
+
+section.smf-tool-section > .smf-tool-title ~ *:last-child {
+  padding-bottom: 0.75rem;
+}
+
+.toc-tree .smf-badge--type {
+  display: none !important;
+}
+
+.smf-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,0 +1,260 @@
+/* sphinx_autodoc_badges — shared badge metrics, variants, and structural CSS.
+ *
+ * Base layer: metrics matching sphinx-design sd-badge (Bootstrap 5).
+ * Plugins add their own color classes via CSS custom properties
+ * (--sab-bg, --sab-fg, --sab-border).
+ */
+
+:root {
+  /* Subtle “buffed pill”: top highlight + soft inner shade (light UI / white page bg) */
+  --sab-buff-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.12);
+  --sab-buff-shadow-dark-ui: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.28);
+}
+
+/* ── Base badge ─────────────────────────────────────────── */
+.sab-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sab-icon-gap, 0.28rem);
+  font-size: var(--sab-font-size, 0.75em);
+  font-weight: var(--sab-font-weight, 700);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  padding: var(--sab-padding-v, 0.35em) var(--sab-padding-h, 0.65em);
+  border-radius: var(--sab-radius, 0.25rem);
+  border: var(--sab-border, none);
+  /* Use background-color + fallbacks so unset --sab-* does not interact badly
+   * with later theme shorthands (e.g. sphinx-design loaded after extensions). */
+  background-color: var(--sab-bg, transparent);
+  color: var(--sab-fg, inherit);
+  vertical-align: middle;
+  white-space: nowrap;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+}
+
+/* ── Size variants (explicit; compose with outline / icon-only / color classes) ─ */
+.sab-badge.sab-xs {
+  font-size: 0.58em;
+  padding: 0.2em 0.42em;
+}
+
+.sab-badge.sab-sm {
+  font-size: 0.65em;
+  padding: 0.28em 0.52em;
+}
+
+.sab-badge.sab-lg {
+  font-size: 0.88em;
+  padding: 0.4em 0.75em;
+}
+
+.sab-badge.sab-xl {
+  font-size: 1.05em;
+  padding: 0.45em 0.85em;
+}
+
+.sab-badge:not(.sab-outline):not(.sab-inline-icon) {
+  box-shadow: var(--sab-buff-shadow);
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) .sab-badge:not(.sab-outline):not(.sab-inline-icon) {
+    box-shadow: var(--sab-buff-shadow-dark-ui);
+  }
+}
+
+body[data-theme="dark"] .sab-badge:not(.sab-outline):not(.sab-inline-icon) {
+  box-shadow: var(--sab-buff-shadow-dark-ui);
+}
+
+.sab-badge:focus-visible {
+  outline: 2px solid var(--color-link, #2962ff);
+  outline-offset: 2px;
+}
+
+/* ── Outline fill variant ───────────────────────────────── */
+.sab-badge.sab-outline {
+  background: transparent;
+}
+
+/* ── Icon system (::before pseudo-element) ──────────────── */
+.sab-badge::before {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 1em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.sab-badge[data-icon]::before {
+  content: attr(data-icon);
+}
+
+/* ── Badge group ────────────────────────────────────────── */
+.sab-badge-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+/* ── Toolbar (flex margin-left: auto for title rows) ────── */
+.sab-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  margin-left: auto;
+  white-space: nowrap;
+  text-indent: 0;
+  order: 99;
+}
+
+/* ── Icon-only variant (outside code: 16x16 colored box) ── */
+.sab-badge.sab-icon-only {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 3px;
+  gap: 0;
+  font-size: 0;
+  line-height: 1;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+}
+
+.sab-badge.sab-icon-only::before {
+  font-size: 10px;
+  line-height: 1;
+  font-style: normal;
+  font-weight: normal;
+  margin: 0;
+  display: block;
+  opacity: 0.9;
+}
+
+/* Icon-only links: flexbox parent for consistent spacing */
+a.reference:has(> .sab-badge.sab-icon-only) {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+a.reference:has(> .sab-badge.sab-icon-only) > code {
+  margin: 0;
+}
+
+/* ── Inline-icon variant (bare emoji inside code chip) ──── */
+.sab-badge.sab-inline-icon {
+  background: transparent !important;
+  border: none !important;
+  padding: 0;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  vertical-align: -0.01em;
+  margin-right: 0.12em;
+  margin-left: 0;
+}
+
+.sab-badge.sab-inline-icon::before {
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+
+code.docutils .sab-badge.sab-inline-icon:last-child {
+  margin-left: 0.1em;
+  margin-right: 0;
+}
+
+/* ── Context-aware badge sizing ─────────────────────────── *
+ * Scoped to .document-content (Furo main body) to avoid
+ * applying in sidebar, TOC, or navigation contexts.
+ * Ancestors use :where() so explicit .sab-xs–.sab-xl size classes win.
+ */
+:where(.body h2, .body h3, [role="main"] h2, [role="main"] h3) .sab-badge {
+  font-size: 0.68rem;
+  padding: 0.17rem 0.4rem;
+}
+
+:where(
+    .body p,
+    .body li,
+    .body td,
+    .body a,
+    [role="main"] p,
+    [role="main"] li,
+    [role="main"] td,
+    [role="main"] a
+  )
+  .sab-badge {
+  font-size: 0.62rem;
+  padding: 0.12rem 0.32rem;
+}
+
+/* ── Consistent code → badge spacing (body only) ────────── */
+:where(.body) code.docutils + .sab-badge,
+:where(.body) .sab-badge + code.docutils,
+:where([role="main"]) code.docutils + .sab-badge,
+:where([role="main"]) .sab-badge + code.docutils {
+  margin-left: 0.4em;
+}
+
+/* ── Link behavior: underline code only, on hover ───────── */
+:where(.body, [role="main"]) a.reference .sab-badge {
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+:where(.body, [role="main"]) a.reference:has(.sab-badge) code {
+  vertical-align: middle;
+  text-decoration: none;
+}
+
+:where(.body, [role="main"]) a.reference:has(.sab-badge) {
+  text-decoration: none;
+}
+
+:where(.body, [role="main"]) a.reference:has(.sab-badge):hover code {
+  text-decoration: underline;
+}
+
+/* ── TOC sidebar: compact badges ─────────────────────────
+ * Smaller badges that still show text (matching production).
+ * Container wrappers collapse to inline flow.
+ * Emoji icons shown at compact size (data-icon / ::before).
+ */
+:where(.toc-tree) .sab-toolbar,
+:where(.toc-tree) .sab-badge-group {
+  display: inline;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+:where(.toc-tree) .sab-badge {
+  font-size: 0.58rem;
+  padding: 0.1rem 0.25rem;
+  gap: 0.06rem;
+  vertical-align: middle;
+  line-height: 1.1;
+}
+
+:where(.toc-tree) .sab-badge::before {
+  font-size: 0.5rem;
+  margin-right: 0.08rem;
+  flex-shrink: 0;
+}

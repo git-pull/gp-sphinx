@@ -8,6 +8,7 @@ import typing as t
 
 import pytest
 from docutils import nodes
+from sphinx_autodoc_badges import BadgeNode
 
 import sphinx_autodoc_pytest_fixtures
 import sphinx_autodoc_pytest_fixtures._store
@@ -498,14 +499,11 @@ def test_build_badge_group_node_factory_session() -> None:
 
 def test_build_badge_group_node_has_tabindex() -> None:
     """All badge abbreviation nodes have tabindex='0' for touch accessibility."""
-    from docutils import nodes
 
     node = sphinx_autodoc_pytest_fixtures._build_badge_group_node(
         "session", "factory", True
     )
-    abbreviations = [
-        child for child in node.children if isinstance(child, nodes.abbreviation)
-    ]
+    abbreviations = [child for child in node.children if isinstance(child, BadgeNode)]
     assert len(abbreviations) > 0
     for abbr in abbreviations:
         assert abbr.get("tabindex") == "0", (
@@ -875,7 +873,6 @@ def test_classify_deps_hidden_fixture() -> None:
 
 def test_has_authored_example_with_rubric() -> None:
     """Authored Example rubric suppresses auto-generated snippets."""
-    from docutils import nodes
 
     content = nodes.container()
     content += nodes.paragraph("", "Some intro text.")
@@ -886,7 +883,6 @@ def test_has_authored_example_with_rubric() -> None:
 
 def test_has_authored_example_with_doctest() -> None:
     """Doctest blocks count as authored examples."""
-    from docutils import nodes
 
     content = nodes.container()
     content += nodes.doctest_block("", ">>> 1 + 1\n2")
@@ -895,7 +891,6 @@ def test_has_authored_example_with_doctest() -> None:
 
 def test_has_authored_example_without() -> None:
     """No authored examples — auto-snippet should still be generated."""
-    from docutils import nodes
 
     content = nodes.container()
     content += nodes.paragraph("", "Just a description.")
@@ -904,7 +899,6 @@ def test_has_authored_example_without() -> None:
 
 def test_has_authored_example_nested_not_detected() -> None:
     """Nested rubrics inside admonitions are not detected (non-recursive)."""
-    from docutils import nodes
 
     content = nodes.container()
     admonition = nodes.note()
@@ -928,7 +922,6 @@ def test_build_usage_snippet_resource_returns_none() -> None:
 
 def test_build_usage_snippet_autouse_returns_note() -> None:
     """Autouse fixtures return a nodes.note admonition."""
-    from docutils import nodes
 
     result = sphinx_autodoc_pytest_fixtures._build_usage_snippet(
         "auto_cleanup", None, "resource", "function", autouse=True
@@ -939,7 +932,6 @@ def test_build_usage_snippet_autouse_returns_note() -> None:
 
 def test_build_usage_snippet_factory_returns_literal_block() -> None:
     """Factory fixtures produce a literal_block with instantiation pattern."""
-    from docutils import nodes
 
     result = sphinx_autodoc_pytest_fixtures._build_usage_snippet(
         "TestServer", "Server", "factory", "function", autouse=False
@@ -953,7 +945,6 @@ def test_build_usage_snippet_factory_returns_literal_block() -> None:
 
 def test_build_usage_snippet_override_hook_returns_conftest() -> None:
     """Override hook fixtures produce a conftest.py snippet."""
-    from docutils import nodes
 
     result = sphinx_autodoc_pytest_fixtures._build_usage_snippet(
         "home_user", "str", "override_hook", "function", autouse=False
@@ -1090,7 +1081,7 @@ def test_deprecated_badge_renders_at_slot_zero() -> None:
     node = sphinx_autodoc_pytest_fixtures._build_badge_group_node(
         "session", "resource", False, deprecated=True
     )
-    badges = [c for c in node.children if isinstance(c, nodes.abbreviation)]
+    badges = [c for c in node.children if isinstance(c, BadgeNode)]
     assert len(badges) >= 2
     # First badge should be "deprecated"
     assert badges[0].astext() == "deprecated"
@@ -1103,7 +1094,7 @@ def test_deprecated_badge_absent_when_not_deprecated() -> None:
     node = sphinx_autodoc_pytest_fixtures._build_badge_group_node(
         "session", "resource", False
     )
-    badges = [c for c in node.children if isinstance(c, nodes.abbreviation)]
+    badges = [c for c in node.children if isinstance(c, BadgeNode)]
     texts = [b.astext() for b in badges]
     assert "deprecated" not in texts
 

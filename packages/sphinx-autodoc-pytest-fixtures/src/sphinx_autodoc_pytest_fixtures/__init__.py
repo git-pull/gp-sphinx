@@ -75,10 +75,8 @@ from sphinx_autodoc_pytest_fixtures._store import (
     _on_env_updated,
 )
 from sphinx_autodoc_pytest_fixtures._transforms import (
-    _depart_abbreviation_html,
     _on_doctree_resolved,
     _on_missing_reference,
-    _visit_abbreviation_html,
 )
 
 if t.TYPE_CHECKING:
@@ -101,9 +99,8 @@ def setup(app: Sphinx) -> SetupDict:
         Extension metadata dict.
     """
     app.setup_extension("sphinx.ext.autodoc")
+    app.setup_extension("sphinx_autodoc_badges")
 
-    # Register extension CSS so projects adopting this extension get styled
-    # output without manually copying spf-* rules into their custom.css.
     import pathlib
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
@@ -114,16 +111,6 @@ def setup(app: Sphinx) -> SetupDict:
 
     app.connect("builder-inited", _add_static_path)
     app.add_css_file("css/sphinx_autodoc_pytest_fixtures.css")
-
-    # Override the built-in abbreviation visitor to emit tabindex when set.
-    # Sphinx's default visit_abbreviation only passes explanation → title,
-    # silently dropping all other attributes.  This override is a strict
-    # superset — non-badge abbreviation nodes produce identical output.
-    app.add_node(
-        nodes.abbreviation,
-        override=True,
-        html=(_visit_abbreviation_html, _depart_abbreviation_html),
-    )
 
     # --- New config values (v1.1) ---
     app.add_config_value(

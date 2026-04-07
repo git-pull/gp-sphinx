@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from docutils import nodes
+from sphinx_autodoc_badges import BadgeNode, build_badge
 
 from sphinx_autodoc_pytest_fixtures._constants import _SUPPRESSED_SCOPES
 from sphinx_autodoc_pytest_fixtures._css import _CSS
@@ -27,10 +28,7 @@ def _build_badge_group_node(
     deprecated: bool = False,
     show_fixture_badge: bool = True,
 ) -> nodes.inline:
-    """Return a badge group as portable ``nodes.abbreviation`` nodes.
-
-    Each badge renders as ``<abbr title="...">`` in HTML, providing hover
-    tooltips.  Non-HTML builders fall back to plain text.
+    """Return a badge group with shared BadgeNode children.
 
     Badge slots (left-to-right in visual order):
 
@@ -51,87 +49,68 @@ def _build_badge_group_node(
     deprecated : bool
         When True, renders a deprecated badge at slot 0 (leftmost).
     show_fixture_badge : bool
-        When False, suppresses the FIXTURE badge at slot 3.  Use in contexts
-        where the fixture type is already implied (e.g. an index table).
+        When False, suppresses the FIXTURE badge at slot 3.
 
     Returns
     -------
     nodes.inline
-        Badge group container with abbreviation badge children.
+        Badge group container with BadgeNode children.
     """
     group = nodes.inline(classes=[_CSS.BADGE_GROUP])
-    badges: list[nodes.abbreviation] = []
+    badges: list[BadgeNode] = []
 
-    # Slot 0 — deprecated badge (leftmost when present)
     if deprecated:
         badges.append(
-            nodes.abbreviation(
+            build_badge(
                 "deprecated",
-                "deprecated",
-                explanation=_BADGE_TOOLTIPS["deprecated"],
+                tooltip=_BADGE_TOOLTIPS["deprecated"],
                 classes=[_CSS.BADGE, _CSS.BADGE_STATE, _CSS.DEPRECATED],
             )
         )
 
-    # Slot 1 — scope badge (only non-function scope)
     if scope and scope not in _SUPPRESSED_SCOPES:
         badges.append(
-            nodes.abbreviation(
+            build_badge(
                 scope,
-                scope,
-                explanation=_BADGE_TOOLTIPS.get(scope, f"Scope: {scope}"),
+                tooltip=_BADGE_TOOLTIPS.get(scope, f"Scope: {scope}"),
                 classes=[_CSS.BADGE, _CSS.BADGE_SCOPE, _CSS.scope(scope)],
             )
         )
 
-    # Slot 2 — kind or autouse badge
     if autouse:
         badges.append(
-            nodes.abbreviation(
+            build_badge(
                 "auto",
-                "auto",
-                explanation=_BADGE_TOOLTIPS["autouse"],
+                tooltip=_BADGE_TOOLTIPS["autouse"],
                 classes=[_CSS.BADGE, _CSS.BADGE_STATE, _CSS.AUTOUSE],
             )
         )
     elif kind == "factory":
         badges.append(
-            nodes.abbreviation(
+            build_badge(
                 "factory",
-                "factory",
-                explanation=_BADGE_TOOLTIPS["factory"],
+                tooltip=_BADGE_TOOLTIPS["factory"],
                 classes=[_CSS.BADGE, _CSS.BADGE_KIND, _CSS.FACTORY],
             )
         )
     elif kind == "override_hook":
         badges.append(
-            nodes.abbreviation(
+            build_badge(
                 "override",
-                "override",
-                explanation=_BADGE_TOOLTIPS["override_hook"],
+                tooltip=_BADGE_TOOLTIPS["override_hook"],
                 classes=[_CSS.BADGE, _CSS.BADGE_KIND, _CSS.OVERRIDE],
             )
         )
 
-    # Slot 3 — fixture badge (rightmost, suppressed in index table context)
     if show_fixture_badge:
         badges.append(
-            nodes.abbreviation(
+            build_badge(
                 "fixture",
-                "fixture",
-                explanation=_BADGE_TOOLTIPS["fixture"],
+                tooltip=_BADGE_TOOLTIPS["fixture"],
                 classes=[_CSS.BADGE, _CSS.BADGE_FIXTURE],
             )
         )
 
-    # Make badges focusable for touch/keyboard tooltip accessibility.
-    # Sphinx's built-in visit_abbreviation does NOT emit tabindex — our
-    # custom visitor override (_visit_abbreviation_html) handles it.
-    for badge in badges:
-        badge["tabindex"] = "0"
-
-    # Interleave with text separators for non-HTML builders (CSS gap
-    # handles spacing in HTML; text/LaTeX/man builders need explicit spaces).
     for i, badge in enumerate(badges):
         group += badge
         if i < len(badges) - 1:

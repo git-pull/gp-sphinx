@@ -12,7 +12,6 @@ import typing as t
 from docutils import nodes
 from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
-from sphinx.writers.html5 import HTML5Translator
 
 from sphinx_autodoc_api_style._badges import build_badge_group
 from sphinx_autodoc_api_style._css import _CSS
@@ -189,6 +188,32 @@ def _inject_badges(sig_node: addnodes.desc_signature, objtype: str) -> None:
     sig_node += toolbar
 
 
+def _prune_empty_desc_content(desc_node: addnodes.desc) -> None:
+    """Remove empty desc_content nodes from a desc tree.
+
+    Sphinx always appends a desc_content child even when the object has
+    no docstring. An empty <dd></dd> wastes vertical space and creates
+    layout noise. Remove it so the CSS card only shows the signature row.
+
+    Parameters
+    ----------
+    desc_node : addnodes.desc
+        The description node to inspect.
+
+    Examples
+    --------
+    >>> from sphinx import addnodes
+    >>> desc = addnodes.desc()
+    >>> desc += addnodes.desc_content()          # empty
+    >>> _prune_empty_desc_content(desc)
+    >>> any(isinstance(c, addnodes.desc_content) for c in desc.children)
+    False
+    """
+    for child in list(desc_node.children):
+        if isinstance(child, addnodes.desc_content) and not child.children:
+            desc_node.remove(child)
+
+
 def on_doctree_resolved(
     app: Sphinx,
     doctree: nodes.document,
@@ -231,44 +256,4 @@ def on_doctree_resolved(
         for child in desc_node.children:
             if isinstance(child, addnodes.desc_signature):
                 _inject_badges(child, objtype)
-
-
-def visit_abbreviation_html(
-    self: HTML5Translator,
-    node: nodes.abbreviation,
-) -> None:
-    """Emit ``<abbr>`` with ``tabindex`` when present.
-
-    Strict superset of Sphinx's built-in ``visit_abbreviation``:
-    non-badge abbreviation nodes produce identical output because the
-    ``tabindex`` guard only fires when the attribute is explicitly set.
-
-    Parameters
-    ----------
-    self : HTML5Translator
-        The HTML translator instance.
-    node : nodes.abbreviation
-        The abbreviation node being visited.
-    """
-    attrs: dict[str, t.Any] = {}
-    if node.get("explanation"):
-        attrs["title"] = node["explanation"]
-    if node.get("tabindex"):
-        attrs["tabindex"] = node["tabindex"]
-    self.body.append(self.starttag(node, "abbr", "", **attrs))
-
-
-def depart_abbreviation_html(
-    self: HTML5Translator,
-    node: nodes.abbreviation,
-) -> None:
-    """Close the ``<abbr>`` tag.
-
-    Parameters
-    ----------
-    self : HTML5Translator
-        The HTML translator instance.
-    node : nodes.abbreviation
-        The abbreviation node being departed.
-    """
-    self.body.append("</abbr>")
+        _prune_empty_desc_content(desc_node)

@@ -6,6 +6,7 @@ import typing as t
 
 from docutils import nodes
 from sphinx import addnodes
+from sphinx_autodoc_badges import BadgeNode
 
 from sphinx_autodoc_api_style._badges import (
     _MOD_ORDER,
@@ -22,6 +23,7 @@ from sphinx_autodoc_api_style._transforms import (
     _detect_deprecated,
     _detect_modifiers,
     _inject_badges,
+    _prune_empty_desc_content,
     on_doctree_resolved,
 )
 
@@ -62,7 +64,7 @@ def test_badge_group_returns_inline() -> None:
 def test_badge_group_type_badge_present() -> None:
     """Type badge is present when show_type_badge is True (default)."""
     group = build_badge_group("class", modifiers=frozenset())
-    badges = list(group.findall(nodes.abbreviation))
+    badges = list(group.findall(BadgeNode))
     assert len(badges) == 1
     assert badges[0].astext() == "class"
     assert _CSS.BADGE_TYPE in badges[0]["classes"]
@@ -72,7 +74,7 @@ def test_badge_group_type_badge_present() -> None:
 def test_badge_group_type_badge_suppressed() -> None:
     """Type badge is absent when show_type_badge is False."""
     group = build_badge_group("function", modifiers=frozenset(), show_type_badge=False)
-    badges = list(group.findall(nodes.abbreviation))
+    badges = list(group.findall(BadgeNode))
     assert len(badges) == 0
 
 
@@ -82,7 +84,7 @@ def test_badge_group_with_modifiers() -> None:
         "method",
         modifiers=frozenset({"async", "abstract"}),
     )
-    badges = list(group.findall(nodes.abbreviation))
+    badges = list(group.findall(BadgeNode))
     labels = [b.astext() for b in badges]
     assert "abstract" in labels
     assert "async" in labels
@@ -95,7 +97,7 @@ def test_badge_group_modifier_order() -> None:
     """Modifiers appear in the canonical order defined by _MOD_ORDER."""
     all_mods = frozenset(_MOD_ORDER)
     group = build_badge_group("function", modifiers=all_mods)
-    badges = list(group.findall(nodes.abbreviation))
+    badges = list(group.findall(BadgeNode))
     mod_labels = [b.astext() for b in badges if _CSS.BADGE_MOD in b["classes"]]
     expected = list(_MOD_ORDER)
     assert mod_labels == expected
@@ -107,7 +109,7 @@ def test_badge_group_tabindex() -> None:
         "function",
         modifiers=frozenset({"async"}),
     )
-    for badge in group.findall(nodes.abbreviation):
+    for badge in group.findall(BadgeNode):
         assert badge.get("tabindex") == "0"
 
 
@@ -117,12 +119,12 @@ def test_badge_group_tooltips() -> None:
         "function",
         modifiers=frozenset({"async"}),
     )
-    badges = list(group.findall(nodes.abbreviation))
+    badges = list(group.findall(BadgeNode))
     async_badge = [b for b in badges if b.astext() == "async"][0]
-    assert async_badge["explanation"] == _MOD_TOOLTIPS["async"]
+    assert async_badge["badge_tooltip"] == _MOD_TOOLTIPS["async"]
 
     func_badge = [b for b in badges if b.astext() == "function"][0]
-    assert func_badge["explanation"] == _TYPE_TOOLTIPS["function"]
+    assert func_badge["badge_tooltip"] == _TYPE_TOOLTIPS["function"]
 
 
 def test_badge_group_text_separators() -> None:
@@ -146,7 +148,7 @@ def test_badge_group_single_badge_no_separator() -> None:
 def test_badge_group_deprecated() -> None:
     """Deprecated modifier badge uses DEPRECATED CSS class."""
     group = build_badge_group("class", modifiers=frozenset({"deprecated"}))
-    badges = list(group.findall(nodes.abbreviation))
+    badges = list(group.findall(BadgeNode))
     dep_badge = [b for b in badges if b.astext() == "deprecated"][0]
     assert _CSS.DEPRECATED in dep_badge["classes"]
     assert _CSS.BADGE_MOD in dep_badge["classes"]
@@ -156,7 +158,7 @@ def test_badge_group_all_type_labels() -> None:
     """All handled objtypes produce a valid type badge label."""
     for objtype in _HANDLED_OBJTYPES:
         group = build_badge_group(objtype, modifiers=frozenset())
-        badges = list(group.findall(nodes.abbreviation))
+        badges = list(group.findall(BadgeNode))
         assert len(badges) >= 1
         label = badges[-1].astext()
         assert label == _TYPE_LABELS.get(objtype, objtype)
@@ -298,9 +300,9 @@ def test_inject_badges_idempotent() -> None:
     sig = addnodes.desc_signature()
     sig += addnodes.desc_name("", "my_func")
     _inject_badges(sig, "function")
-    badge_count_1 = len(list(sig.findall(nodes.abbreviation)))
+    badge_count_1 = len(list(sig.findall(BadgeNode)))
     _inject_badges(sig, "function")
-    badge_count_2 = len(list(sig.findall(nodes.abbreviation)))
+    badge_count_2 = len(list(sig.findall(BadgeNode)))
     assert badge_count_1 == badge_count_2
 
 
@@ -334,7 +336,7 @@ def test_inject_badges_detects_deprecated_parent() -> None:
 
     _inject_badges(sig, "function")
 
-    badges = list(sig.findall(nodes.abbreviation))
+    badges = list(sig.findall(BadgeNode))
     labels = [b.astext() for b in badges]
     assert "deprecated" in labels
 
@@ -410,6 +412,55 @@ def test_inject_badges_headerlink_not_in_toolbar() -> None:
         if isinstance(c, nodes.reference) and "headerlink" in c.get("classes", [])
     ]
     assert len(sig_direct_refs) == 1, "headerlink should remain a direct child of sig"
+
+
+# ---------------------------------------------------------------------------
+# _prune_empty_desc_content
+# ---------------------------------------------------------------------------
+
+
+def test_prune_empty_desc_content_removes_empty() -> None:
+    """Empty desc_content is removed from the desc node."""
+    desc = addnodes.desc()
+    desc += addnodes.desc_signature()
+    desc += addnodes.desc_content()  # empty — no children
+
+    _prune_empty_desc_content(desc)
+
+    assert not any(isinstance(c, addnodes.desc_content) for c in desc.children)
+
+
+def test_prune_empty_desc_content_keeps_nonempty() -> None:
+    """desc_content with children is not removed."""
+    desc = addnodes.desc()
+    content = addnodes.desc_content()
+    content += nodes.paragraph("", "Has content.")
+    desc += addnodes.desc_signature()
+    desc += content
+
+    _prune_empty_desc_content(desc)
+
+    assert any(isinstance(c, addnodes.desc_content) for c in desc.children)
+
+
+def test_on_doctree_resolved_prunes_empty_desc_content() -> None:
+    """on_doctree_resolved removes empty desc_content via full pipeline."""
+    from unittest.mock import MagicMock
+
+    app = MagicMock()
+    doc = nodes.document(None, None)  # type: ignore[arg-type]
+    desc = addnodes.desc()
+    desc["domain"] = "py"
+    desc["objtype"] = "attribute"
+    sig = addnodes.desc_signature()
+    sig += addnodes.desc_name("", "session_id")
+    desc += sig
+    desc += addnodes.desc_content()  # empty — simulates undocumented attribute
+
+    doc += desc
+    on_doctree_resolved(app, doc, "index")
+
+    assert not any(isinstance(c, addnodes.desc_content) for c in desc.children)
 
 
 # ---------------------------------------------------------------------------
