@@ -46,7 +46,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.add_directive("autorole-index", AutoRoleIndex)
 
     return {
-        "version": "0.0.1a5",
+        "version": "0.0.1a6",
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }

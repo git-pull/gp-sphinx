@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-autodoc-badges"
-version = "0.0.1a5"
+version = "0.0.1a6"
 description = "Shared badge node and CSS for Sphinx autodoc extensions"
 requires-python = ">=3.10,<4.0"
 authors = [

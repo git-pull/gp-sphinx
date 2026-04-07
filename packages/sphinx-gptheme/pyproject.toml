@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-gptheme"
-version = "0.0.1a5"
+version = "0.0.1a6"
 description = "Furo child theme for git-pull project documentation"
 requires-python = ">=3.10,<4.0"
 authors = [
