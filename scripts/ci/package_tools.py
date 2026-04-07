@@ -573,6 +573,24 @@ def smoke_sphinx_autodoc_badges(dist_dir: pathlib.Path, version: str) -> None:
         )
 
 
+def smoke_sphinx_autodoc_layout(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the autodoc-layout extension installs and imports cleanly."""
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(
+            python_path,
+            *_workspace_wheel_requirements(dist_dir),
+        )
+        _run_python(
+            python_path,
+            (
+                "import sphinx_autodoc_layout; "
+                "from sphinx_autodoc_layout import setup; "
+                "assert callable(setup)"
+            ),
+        )
+
+
 def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
     """Verify the autodoc-fastmcp extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
@@ -598,6 +616,7 @@ _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-autodoc-badges": smoke_sphinx_autodoc_badges,
     "sphinx-autodoc-docutils": smoke_sphinx_autodoc_docutils,
     "sphinx-autodoc-fastmcp": smoke_sphinx_autodoc_fastmcp,
+    "sphinx-autodoc-layout": smoke_sphinx_autodoc_layout,
     "sphinx-autodoc-pytest-fixtures": smoke_sphinx_autodoc_pytest_fixtures,
     "sphinx-autodoc-sphinx": smoke_sphinx_autodoc_sphinx,
     "sphinx-fonts": smoke_sphinx_fonts,

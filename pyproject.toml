@@ -25,6 +25,7 @@ sphinx-autodoc-sphinx = { workspace = true }
 sphinx-autodoc-api-style = { workspace = true }
 sphinx-autodoc-fastmcp = { workspace = true }
 sphinx-autodoc-badges = { workspace = true }
+sphinx-autodoc-layout = { workspace = true }
 gp-sphinx = { workspace = true }
 
 [dependency-groups]
@@ -37,6 +38,7 @@ dev = [
   "sphinx-autodoc-api-style",
   "sphinx-autodoc-fastmcp",
   "sphinx-autodoc-badges",
+  "sphinx-autodoc-layout",
   # Docs
   "sphinx-autobuild",
   # Testing
