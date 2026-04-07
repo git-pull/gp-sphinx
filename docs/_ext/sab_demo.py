@@ -7,6 +7,8 @@ the actual Python + CSS pipeline.
 
 from __future__ import annotations
 
+import typing as t
+
 from docutils import nodes
 from sphinx.application import Sphinx
 from sphinx.util.docutils import SphinxDirective
@@ -140,7 +142,7 @@ class BadgeDemoDirective(SphinxDirective):
         return result
 
 
-def setup(app: Sphinx) -> dict:
+def setup(app: Sphinx) -> dict[str, t.Any]:
     """Register the ``sab-badge-demo`` directive."""
     app.add_directive("sab-badge-demo", BadgeDemoDirective)
     app.add_css_file("css/sab_demo.css")
