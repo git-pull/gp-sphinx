@@ -8,6 +8,11 @@ py_files := "find . -type f -not -path '*/\\.*' | grep -i '.*[.]py$' 2> /dev/nul
 doc_files := "find . -type f -not -path '*/\\.*' | grep -i '.*[.]rst$\\|.*[.]md$\\|.*[.]css$\\|.*[.]py$\\|mkdocs\\.yml\\|CHANGES\\|TODO\\|.*conf\\.py' 2> /dev/null"
 all_files := "find . -type f -not -path '*/\\.*' | grep -i '.*[.]py$\\|.*[.]rst$\\|.*[.]md$\\|.*[.]css$\\|.*[.]py$\\|mkdocs\\.yml\\|CHANGES\\|TODO\\|.*conf\\.py' 2> /dev/null"
 fast_test_addopts := "--tb=short --no-header --showlocals --ignore=packages/sphinx-argparse-neo --ignore=packages/sphinx-autodoc-pytest-fixtures --ignore=packages/sphinx-autodoc-docutils"
+pytest_local_opts := "-o tmp_path_retention_policy=none"
+pytest_full_basetemp := ".cache/pytest-full"
+pytest_fast_basetemp := ".cache/pytest-fast"
+pytest_watch_basetemp := ".cache/pytest-watch"
+pytest_fast_watch_basetemp := ".cache/pytest-fast-watch"
 
 # List all available commands
 default:
@@ -15,14 +20,34 @@ default:
 
 # Run tests with pytest
 test *args:
-    uv run pytest {{ args }}
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p .cache
+    cache_root="$(pwd)/{{ pytest_full_basetemp }}"
+    recipe_args="{{ args }}"
+    if [[ -n "${recipe_args// }" ]]; then
+        uv run pytest \
+            -s \
+            {{ pytest_local_opts }} \
+            --basetemp="${cache_root}" \
+            {{ args }}
+    else
+        uv run pytest \
+            -s \
+            {{ pytest_local_opts }} \
+            --basetemp="${cache_root}"
+    fi
 
 # Run the fast local test lane without doctest-modules or integration tests
 test-fast:
     #!/usr/bin/env bash
     set -euo pipefail
+    mkdir -p .cache
+    cache_root="$(pwd)/{{ pytest_fast_basetemp }}"
     uv run pytest \
+        {{ pytest_local_opts }} \
         -o "addopts={{ fast_test_addopts }}" \
+        --basetemp="${cache_root}" \
         -q \
         --capture=tee-sys \
         tests \
@@ -30,21 +55,29 @@ test-fast:
 
 # Run tests then start continuous testing with pytest-watcher
 start:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p .cache
+    cache_root="$(pwd)/{{ pytest_watch_basetemp }}"
     just test
-    uv run ptw .
+    uv run ptw . \
+        --runner "uv run pytest -s {{ pytest_local_opts }} --basetemp=${cache_root}"
 
 # Run the fast local test lane continuously with pytest-watcher
 start-fast:
     #!/usr/bin/env bash
     set -euo pipefail
+    mkdir -p .cache
+    cache_root="$(pwd)/{{ pytest_fast_watch_basetemp }}"
     just test-fast
     uv run ptw . \
-        --runner "uv run pytest -o \"addopts={{ fast_test_addopts }}\" -q --capture=tee-sys tests -m \"not integration\""
+        --runner "uv run pytest {{ pytest_local_opts }} -o \"addopts={{ fast_test_addopts }}\" --basetemp=${cache_root} -q --capture=tee-sys tests -m \"not integration\""
 
 # Watch files and run tests on change (requires entr)
 watch-test:
     #!/usr/bin/env bash
     set -euo pipefail
+    mkdir -p .cache
     if command -v entr > /dev/null; then
         {{ all_files }} | entr -c just test
     else
