@@ -21,7 +21,9 @@ $ uv sync --all-packages --all-extras --group dev
 ## Tests
 
 Preferred local commands use a fixed pytest temp root under `.cache/` and disable
-tmp-path retention for speed:
+tmp-path retention for speed. `just test` keeps full coverage, while
+`just test-fast` is a feedback loop only and intentionally excludes
+`integration` tests:
 
 ```console
 $ just test
@@ -44,7 +46,7 @@ Canonical direct pytest command for the same fast lane:
 
 ```console
 $ uv run pytest \
-    -o "addopts=--tb=short --no-header --showlocals --ignore=packages/sphinx-argparse-neo --ignore=packages/sphinx-autodoc-pytest-fixtures --ignore=packages/sphinx-autodoc-docutils" \
+    -o "addopts=--tb=short --no-header --showlocals" \
     -o tmp_path_retention_policy=none \
     --basetemp="$(pwd)/.cache/pytest-fast-direct" \
     -q \
@@ -52,6 +54,9 @@ $ uv run pytest \
     tests \
     -m "not integration"
 ```
+
+Do not use the fast lane to reason about full-suite coverage or total suite
+performance; it is intentionally deselected for local iteration.
 
 ### Automatically run tests on file save
 

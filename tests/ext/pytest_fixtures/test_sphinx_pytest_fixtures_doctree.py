@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pathlib
 import textwrap
 import typing as t
 
@@ -18,11 +19,27 @@ from tests.ext.pytest_fixtures._scenario_support import (
 )
 
 if t.TYPE_CHECKING:
-    import pathlib
-
     from sphinx.domains.python import PythonDomain
 
+    from tests._sphinx_scenarios import SharedSphinxResult
+
 pytestmark = pytest.mark.integration
+
+
+@pytest.fixture(scope="module")
+def doctree_cache_root(tmp_path_factory: pytest.TempPathFactory) -> pathlib.Path:
+    """Return a shared cache root for synthetic fixture doctree scenarios."""
+    return tmp_path_factory.mktemp("spf-doctree")
+
+
+@pytest.fixture(scope="module")
+def default_dummy_result(doctree_cache_root: pathlib.Path) -> SharedSphinxResult:
+    """Build the default dummy-builder fixture scenario once per module."""
+    return build_fixture_result(
+        doctree_cache_root / "default-dummy",
+        buildername="dummy",
+        confoverrides={"pytest_fixture_lint_level": "none"},
+    )
 
 
 def _find_fixture_desc(doctree: nodes.Node, target_id: str) -> addnodes.desc:
@@ -55,20 +72,17 @@ def _fixture_order(doctree: nodes.Node) -> list[str]:
     return fixture_ids
 
 
-def test_default_fixture_store_and_domain_contract(tmp_path: pathlib.Path) -> None:
+def test_default_fixture_store_and_domain_contract(
+    default_dummy_result: SharedSphinxResult,
+) -> None:
     """Default synthetic fixture scenario populates domain and store indices."""
-    result = build_fixture_result(
-        tmp_path,
-        buildername="dummy",
-        confoverrides={"pytest_fixture_lint_level": "none"},
-    )
-    domain = t.cast("PythonDomain", result.app.env.get_domain("py"))
+    domain = t.cast("PythonDomain", default_dummy_result.app.env.get_domain("py"))
     objects = domain.data["objects"]
 
     assert (
         normalize_warning_text(
-            result.warnings,
-            roots=(result.srcdir, result.outdir),
+            default_dummy_result.warnings,
+            roots=(default_dummy_result.srcdir, default_dummy_result.outdir),
         )
         == ""
     )
@@ -81,7 +95,7 @@ def test_default_fixture_store_and_domain_contract(tmp_path: pathlib.Path) -> No
     assert "fixture_mod.renamed_fixture" in fixture_keys
     assert "fixture_mod._internal_name" not in fixture_keys
 
-    store = result.app.env.domaindata["sphinx_autodoc_pytest_fixtures"]
+    store = default_dummy_result.app.env.domaindata["sphinx_autodoc_pytest_fixtures"]
     assert store["reverse_deps"]["fixture_mod.my_server"] == [
         "fixture_mod.my_client",
         "fixture_mod.yield_server",
@@ -90,26 +104,21 @@ def test_default_fixture_store_and_domain_contract(tmp_path: pathlib.Path) -> No
 
 
 def test_default_fixture_post_transform_snapshot(
-    tmp_path: pathlib.Path,
+    default_dummy_result: SharedSphinxResult,
     snapshot_doctree,
 ) -> None:
     """Snapshot the transformed default fixture page contract."""
-    result = build_fixture_result(
-        tmp_path,
-        buildername="dummy",
-        confoverrides={"pytest_fixture_lint_level": "none"},
-    )
-    doctree = get_doctree(result, "index", post_transforms=True)
+    doctree = get_doctree(default_dummy_result, "index", post_transforms=True)
 
     snapshot_doctree(
         doctree,
         name="default_fixture_page",
-        roots=(result.srcdir, result.outdir),
+        roots=(default_dummy_result.srcdir, default_dummy_result.outdir),
     )
 
 
 def test_manual_directive_without_module_registers_unqualified_name(
-    tmp_path: pathlib.Path,
+    doctree_cache_root: pathlib.Path,
 ) -> None:
     """Bare manual ``py:fixture`` directives register under the unqualified name."""
     index_rst = textwrap.dedent(
@@ -123,7 +132,7 @@ def test_manual_directive_without_module_registers_unqualified_name(
         """,
     )
     result = build_fixture_result(
-        tmp_path,
+        doctree_cache_root / "manual-unqualified",
         buildername="dummy",
         index_rst=index_rst,
         confoverrides={"pytest_fixture_lint_level": "none"},
@@ -134,7 +143,7 @@ def test_manual_directive_without_module_registers_unqualified_name(
 
 
 def test_dependency_rendering_snapshot(
-    tmp_path: pathlib.Path,
+    doctree_cache_root: pathlib.Path,
     snapshot_doctree,
 ) -> None:
     """Hidden, builtin, and external dependencies render via resolved references."""
@@ -163,7 +172,7 @@ def test_dependency_rendering_snapshot(
         """,
     )
     result = build_fixture_result(
-        tmp_path,
+        doctree_cache_root / "dependency-rendering",
         buildername="dummy",
         fixture_source=fixture_source,
         index_rst=index_rst,
@@ -197,7 +206,7 @@ def test_dependency_rendering_snapshot(
 
 
 def test_warning_and_manual_option_snapshot(
-    tmp_path: pathlib.Path,
+    doctree_cache_root: pathlib.Path,
     snapshot_doctree,
     snapshot_warnings,
 ) -> None:
@@ -276,7 +285,7 @@ def test_warning_and_manual_option_snapshot(
         """,
     )
     result = build_fixture_result(
-        tmp_path,
+        doctree_cache_root / "warning-and-manual-options",
         buildername="dummy",
         fixture_source=fixture_source,
         index_rst=index_rst,
@@ -297,7 +306,7 @@ def test_warning_and_manual_option_snapshot(
 
 
 def test_autofixture_index_table_snapshot(
-    tmp_path: pathlib.Path,
+    doctree_cache_root: pathlib.Path,
     snapshot_doctree,
 ) -> None:
     """Snapshot the generated fixture index table with badge flags."""
@@ -332,7 +341,7 @@ def test_autofixture_index_table_snapshot(
         """,
     )
     result = build_fixture_result(
-        tmp_path,
+        doctree_cache_root / "autofixture-index-table",
         buildername="dummy",
         fixture_source=fixture_source,
         index_rst=index_rst,
@@ -347,10 +356,10 @@ def test_autofixture_index_table_snapshot(
     )
 
 
-def test_autofixtures_directive_smoke(tmp_path: pathlib.Path) -> None:
+def test_autofixtures_directive_smoke(doctree_cache_root: pathlib.Path) -> None:
     """``autofixtures`` still expands into fixture descriptions in source order."""
     default_result = build_fixture_result(
-        tmp_path,
+        doctree_cache_root / "autofixtures-smoke",
         buildername="dummy",
         index_rst=textwrap.dedent(
             """\
@@ -376,10 +385,12 @@ def test_autofixtures_directive_smoke(tmp_path: pathlib.Path) -> None:
     ]
 
 
-def test_short_name_fixture_reference_resolves(tmp_path: pathlib.Path) -> None:
+def test_short_name_fixture_reference_resolves(
+    doctree_cache_root: pathlib.Path,
+) -> None:
     """Short-name ``:fixture:`` references resolve after post-transforms."""
     result = build_fixture_result(
-        tmp_path,
+        doctree_cache_root / "short-name-reference",
         buildername="dummy",
         index_rst=INDEX_RST
         + textwrap.dedent(
@@ -401,7 +412,7 @@ def test_short_name_fixture_reference_resolves(tmp_path: pathlib.Path) -> None:
 
 
 def test_doc_pytest_plugin_rst_snapshot(
-    tmp_path: pathlib.Path,
+    doctree_cache_root: pathlib.Path,
     snapshot_doctree,
 ) -> None:
     """Snapshot the generated RST doc-pytest-plugin page content."""
@@ -422,7 +433,7 @@ def test_doc_pytest_plugin_rst_snapshot(
         """,
     )
     result = build_fixture_result(
-        tmp_path,
+        doctree_cache_root / "doc-pytest-plugin-rst",
         buildername="dummy",
         index_rst=index_rst,
         confoverrides={"pytest_fixture_lint_level": "none"},
@@ -437,7 +448,7 @@ def test_doc_pytest_plugin_rst_snapshot(
 
 
 def test_doc_pytest_plugin_myst_snapshot(
-    tmp_path: pathlib.Path,
+    doctree_cache_root: pathlib.Path,
     snapshot_doctree,
 ) -> None:
     """Snapshot MyST ``doc-pytest-plugin`` page output after transforms."""
@@ -469,7 +480,7 @@ def test_doc_pytest_plugin_myst_snapshot(
         """,
     )
     result = build_fixture_result(
-        tmp_path,
+        doctree_cache_root / "doc-pytest-plugin-myst",
         buildername="dummy",
         index_rst=index_md,
         index_name="index.md",
@@ -493,7 +504,7 @@ def test_doc_pytest_plugin_myst_snapshot(
 
 
 def test_autofixtures_directive_myst_snapshot(
-    tmp_path: pathlib.Path,
+    doctree_cache_root: pathlib.Path,
     snapshot_doctree,
 ) -> None:
     """Snapshot MyST ``autofixtures`` output after transforms."""
@@ -511,7 +522,7 @@ def test_autofixtures_directive_myst_snapshot(
         """,
     )
     result = build_fixture_result(
-        tmp_path,
+        doctree_cache_root / "autofixtures-myst",
         buildername="dummy",
         index_rst=index_md,
         index_name="index.md",
@@ -534,10 +545,12 @@ def test_autofixtures_directive_myst_snapshot(
     )
 
 
-def test_lint_level_error_sets_nonzero_status(tmp_path: pathlib.Path) -> None:
+def test_lint_level_error_sets_nonzero_status(
+    doctree_cache_root: pathlib.Path,
+) -> None:
     """Validation errors still fail the synthetic build when lint level is error."""
     result = build_fixture_result(
-        tmp_path,
+        doctree_cache_root / "lint-level-error",
         buildername="dummy",
         confoverrides={"pytest_fixture_lint_level": "error"},
     )
