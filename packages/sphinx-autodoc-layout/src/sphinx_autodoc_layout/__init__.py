@@ -1,9 +1,7 @@
 """Componentized layout for Sphinx autodoc output.
 
-Wraps contiguous ``desc_content`` runs into semantic ``gal_region``
-nodes and folds large parameter sections with ``gal_fold`` disclosure
-blocks.  Does not modify ``desc_signature`` -- that is owned by Sphinx
-and ``sphinx-autodoc-api-style``.
+Preserves Sphinx's outer ``dl / dt / dd`` structure while rebuilding
+managed Python autodoc entries into stable ``api-*`` components.
 
 Examples
 --------
@@ -17,14 +15,29 @@ from __future__ import annotations
 import pathlib
 import typing as t
 
-from sphinx_autodoc_layout._nodes import gal_fold, gal_region, gal_sig_fold
+from sphinx import addnodes
+
+from sphinx_autodoc_layout._nodes import (
+    api_component,
+    api_inline_component,
+    api_permalink,
+    gal_fold,
+    gal_region,
+    gal_sig_fold,
+)
 from sphinx_autodoc_layout._transforms import on_doctree_resolved
 from sphinx_autodoc_layout._visitors import (
+    depart_api_component,
+    depart_api_permalink,
+    depart_desc_signature_html,
     depart_gal_fold,
     depart_gal_region,
     depart_gal_sig_fold,
     passthrough_depart,
     passthrough_visit,
+    visit_api_component,
+    visit_api_permalink,
+    visit_desc_signature_html,
     visit_gal_fold,
     visit_gal_region,
     visit_gal_sig_fold,
@@ -86,6 +99,38 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         text=_pt,
         man=_pt,
         texinfo=_pt,
+    )
+    app.add_node(
+        api_component,
+        html=(visit_api_component, depart_api_component),
+        latex=_pt,
+        text=_pt,
+        man=_pt,
+        texinfo=_pt,
+    )
+    app.add_node(
+        api_inline_component,
+        html=(visit_api_component, depart_api_component),
+        latex=_pt,
+        text=_pt,
+        man=_pt,
+        texinfo=_pt,
+    )
+    app.add_node(
+        api_permalink,
+        html=(visit_api_permalink, depart_api_permalink),
+        latex=_pt,
+        text=_pt,
+        man=_pt,
+        texinfo=_pt,
+    )
+
+    # Managed desc signatures keep Sphinx's outer ``dt`` handling but skip the
+    # stock permalink injection so layout can place ``api-link`` explicitly.
+    app.add_node(
+        addnodes.desc_signature,
+        override=True,
+        html=(visit_desc_signature_html, depart_desc_signature_html),
     )
 
     # Transform: doctree-resolved at priority 600 (after api-style at 500)

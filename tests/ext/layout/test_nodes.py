@@ -3,7 +3,14 @@
 from __future__ import annotations
 
 from docutils import nodes
-from sphinx_autodoc_layout._nodes import gal_fold, gal_region
+from sphinx_autodoc_layout._nodes import (
+    api_component,
+    api_inline_component,
+    api_permalink,
+    gal_fold,
+    gal_region,
+    gal_sig_fold,
+)
 
 
 def test_gal_region_is_general_element() -> None:
@@ -33,3 +40,28 @@ def test_gal_fold_stores_attributes() -> None:
 def test_gal_fold_default_open_is_falsy() -> None:
     f = gal_fold(kind="parameters", summary="P (1)")
     assert not f.get("open")
+
+
+def test_api_component_stores_name_and_tag() -> None:
+    node = api_component(name="api-layout", tag="div")
+    assert node.get("name") == "api-layout"
+    assert node.get("tag") == "div"
+
+
+def test_api_permalink_stores_href() -> None:
+    link = api_permalink(href="#demo.func", title="Link to this definition")
+    assert link.get("href") == "#demo.func"
+    assert link.get("title") == "Link to this definition"
+
+
+def test_api_inline_component_stores_name_and_tag() -> None:
+    node = api_inline_component(name="api-source-link", tag="span")
+    assert node.get("name") == "api-source-link"
+    assert node.get("tag") == "span"
+
+
+def test_gal_sig_fold_stores_panel_id() -> None:
+    fold = gal_sig_fold(first_param="host", param_count=13, panel_id="sig-panel")
+    assert fold.get("first_param") == "host"
+    assert fold.get("param_count") == 13
+    assert fold.get("panel_id") == "sig-panel"

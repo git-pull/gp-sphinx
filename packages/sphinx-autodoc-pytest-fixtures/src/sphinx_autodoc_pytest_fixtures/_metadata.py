@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+import logging
 import re
 import typing as t
 
@@ -28,7 +29,22 @@ from sphinx_autodoc_pytest_fixtures._store import _get_spf_store
 if t.TYPE_CHECKING:
     from sphinx import addnodes
 
-logger = sphinx_logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
+sphinx_logger = sphinx_logging.getLogger(__name__)
+
+
+def _active_logger(app: t.Any) -> t.Any:
+    """Return the logger best suited to the current execution context.
+
+    Examples
+    --------
+    >>> import types
+    >>> _active_logger(types.SimpleNamespace()).name
+    'sphinx_autodoc_pytest_fixtures._metadata'
+    """
+    if hasattr(app, "_warning"):
+        return sphinx_logger
+    return logger
 
 
 def _is_type_checking_guard(node: ast.If) -> bool:
@@ -277,7 +293,7 @@ def _register_fixture_meta(
 
     inferred_kind = _infer_kind(obj, kind or None)
     if inferred_kind not in _KNOWN_KINDS:
-        logger.warning(
+        _active_logger(app).warning(
             "unknown fixture kind %r for %r; expected one of %r",
             inferred_kind,
             canonical_name,
