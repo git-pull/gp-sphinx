@@ -2,31 +2,48 @@
  * sphinx_autodoc_layout — layout.js
  *
  * Hash-based auto-expansion for both block <details> folds and the
- * custom api-signature disclosure panel.
+ * custom api-signature disclosure wrapper.
  */
 
 (function () {
   'use strict';
 
+  function syncSignatureControls(expandedId, expanded) {
+    document
+      .querySelectorAll('.api-signature-toggle, .gal-sig-collapse')
+      .forEach(function (control) {
+        if (control.getAttribute('aria-controls') !== expandedId) return;
+        control.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      });
+  }
+
+  function setSignatureExpandedById(expandedId, expanded) {
+    if (!expandedId) return;
+
+    var expandedPanel = document.getElementById(expandedId);
+    if (!expandedPanel) return;
+
+    var signature = expandedPanel.closest('.api-signature');
+    if (signature) {
+      signature.setAttribute('data-expanded', expanded ? 'true' : 'false');
+    }
+
+    syncSignatureControls(expandedId, expanded);
+
+    if (expanded) {
+      expandedPanel.hidden = false;
+      expandedPanel.setAttribute('data-expanded', 'true');
+      expandedPanel.setAttribute('aria-hidden', 'false');
+    } else {
+      expandedPanel.hidden = true;
+      expandedPanel.setAttribute('data-expanded', 'false');
+      expandedPanel.setAttribute('aria-hidden', 'true');
+    }
+  }
+
   function setSignatureExpanded(button, expanded) {
     if (!button) return;
-
-    var panelId = button.getAttribute('aria-controls');
-    if (!panelId) return;
-
-    var panel = document.getElementById(panelId);
-    if (!panel) return;
-
-    button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    if (expanded) {
-      panel.hidden = false;
-      panel.setAttribute('data-expanded', 'true');
-      panel.setAttribute('aria-hidden', 'false');
-    } else {
-      panel.hidden = true;
-      panel.setAttribute('data-expanded', 'false');
-      panel.setAttribute('aria-hidden', 'true');
-    }
+    setSignatureExpandedById(button.getAttribute('aria-controls'), expanded);
   }
 
   function expandAncestors(target) {
@@ -50,10 +67,10 @@
 
     if (!header) return;
 
-    var button = header.querySelector('.api-signature-toggle');
-    if (!button) return;
+    var expandedPanel = header.querySelector('.api-signature-expanded');
+    if (!expandedPanel || !expandedPanel.id) return;
 
-    setSignatureExpanded(button, true);
+    setSignatureExpandedById(expandedPanel.id, true);
   }
 
   function expandForHash() {
@@ -73,7 +90,7 @@
   }
 
   document.addEventListener('click', function (event) {
-    var button = event.target.closest('.api-signature-toggle');
+    var button = event.target.closest('.api-signature-toggle, .gal-sig-collapse');
     if (!button) return;
 
     event.preventDefault();

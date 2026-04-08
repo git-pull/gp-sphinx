@@ -63,10 +63,37 @@ def _make_sphinx_field_list(num_params: int) -> nodes.field_list:
     return fl
 
 
-def _make_parameter_list(num_params: int = 2) -> addnodes.desc_parameterlist:
+def _make_parameter(
+    name: str,
+    *,
+    annotation: str | None = None,
+    default: str | None = None,
+) -> addnodes.desc_parameter:
+    param = addnodes.desc_parameter()
+    param += addnodes.desc_sig_name("", name)
+    if annotation is not None:
+        type_name = addnodes.desc_sig_name("", "", nodes.emphasis("", annotation))
+        param += addnodes.desc_sig_punctuation("", ":")
+        param += addnodes.desc_sig_space("", " ")
+        param += type_name
+    if default is not None:
+        if annotation is not None:
+            param += addnodes.desc_sig_space("", " ")
+        param += addnodes.desc_sig_operator("", "=")
+        if annotation is not None:
+            param += addnodes.desc_sig_space("", " ")
+        param += nodes.inline("", default, classes=["default_value"])
+    return param
+
+
+def _make_parameter_list(
+    num_params: int = 2,
+    *,
+    annotation: str | None = None,
+) -> addnodes.desc_parameterlist:
     plist = addnodes.desc_parameterlist()
     for i in range(num_params):
-        plist += addnodes.desc_parameter("", f"param{i}")
+        plist += _make_parameter(f"param{i}", annotation=annotation)
     return plist
 
 
@@ -88,6 +115,32 @@ def _child_component_names(node: nodes.Element) -> list[str]:
         for child in node.children
         if isinstance(child, (api_component, api_inline_component))
     ]
+
+
+def _make_typed_parameters_field_list(types: dict[str, str]) -> nodes.field_list:
+    fl = nodes.field_list()
+    field = nodes.field()
+    field += nodes.field_name("", "Parameters")
+    body = nodes.field_body()
+    bullets = nodes.bullet_list()
+    for name, type_name in types.items():
+        paragraph = nodes.paragraph()
+        paragraph += addnodes.literal_strong("", name)
+        paragraph += nodes.Text(" (")
+        paragraph += nodes.emphasis("", type_name)
+        paragraph += nodes.Text(")")
+        bullets += nodes.list_item("", paragraph)
+    body += bullets
+    field += body
+    fl += field
+    return fl
+
+
+def _find_component(node: nodes.Element, name: str) -> api_component:
+    for child in node.children:
+        if isinstance(child, api_component) and child.get("name") == name:
+            return child
+    raise AssertionError(f"component not found: {name}")
 
 
 def test_classify_paragraph_as_narrative() -> None:
@@ -263,12 +316,20 @@ def test_fold_skips_non_parameter_sections() -> None:
 
 
 def test_rebuild_signature_layout_splits_toolbar_and_permalink() -> None:
-    sig = addnodes.desc_signature(ids=["demo.func"])
+    desc = _make_desc(ids=("demo.func",))
+    sig = desc.children[0]
+    assert isinstance(sig, addnodes.desc_signature)
     sig += addnodes.desc_name("", "func")
     sig += _make_parameter_list(2)
     sig += _make_toolbar()
 
-    _rebuild_signature_layout(sig, threshold=10, include_permalink=True)
+    _rebuild_signature_layout(
+        desc,
+        sig,
+        threshold=10,
+        include_permalink=True,
+        show_annotations=True,
+    )
 
     assert len(sig.children) == 1
     layout = sig.children[0]
@@ -284,7 +345,7 @@ def test_rebuild_signature_layout_splits_toolbar_and_permalink() -> None:
     signature = left.children[0]
     assert isinstance(signature, api_component)
     assert signature.get("name") == "api-signature"
-    assert any(isinstance(child, api_permalink) for child in signature.children)
+    assert isinstance(left.children[1], api_permalink)
     assert any(
         isinstance(child, addnodes.desc_parameterlist) for child in signature.children
     )
@@ -292,39 +353,133 @@ def test_rebuild_signature_layout_splits_toolbar_and_permalink() -> None:
     assert _child_component_names(right) == ["api-badge-container", "api-source-link"]
 
 
-def test_rebuild_signature_layout_creates_fold_panel_for_large_signature() -> None:
-    sig = addnodes.desc_signature(ids=["demo.LayoutDemo.__init__"])
+def test_rebuild_signature_layout_uses_expanded_wrapper_for_large_signature() -> None:
+    desc = _make_desc(ids=("demo.LayoutDemo.__init__",))
+    sig = desc.children[0]
+    assert isinstance(sig, addnodes.desc_signature)
     sig += addnodes.desc_name("", "__init__")
     sig += _make_parameter_list(13)
     sig += _make_toolbar()
 
-    _rebuild_signature_layout(sig, threshold=10, include_permalink=True)
+    _rebuild_signature_layout(
+        desc,
+        sig,
+        threshold=10,
+        include_permalink=True,
+        show_annotations=True,
+    )
 
     layout = sig.children[0]
     assert isinstance(layout, api_component)
     left = layout.children[0]
     assert isinstance(left, api_component)
-    assert _child_component_names(left) == ["api-signature", "api-signature-panel"]
+    assert isinstance(left.children[0], api_component)
+    assert isinstance(left.children[1], api_permalink)
 
     signature = left.children[0]
-    panel = left.children[1]
     assert isinstance(signature, api_component)
-    assert isinstance(panel, api_component)
-
     assert any(isinstance(child, gal_sig_fold) for child in signature.children)
-    assert not any(
-        isinstance(child, addnodes.desc_parameterlist) for child in signature.children
+    expanded = _find_component(signature, "api-signature-expanded")
+    html_attrs = t.cast(dict[str, str], expanded.get("html_attrs", {}))
+    assert html_attrs.get("id") == ("demo.LayoutDemo.__init__--signature-expanded")
+    plist = expanded.children[0]
+    assert isinstance(plist, addnodes.desc_parameterlist)
+    assert plist.get("multi_line_parameter_list") is True
+    assert plist.get("multi_line_trailing_comma") is False
+    collapse = expanded.children[1]
+    assert isinstance(collapse, api_inline_component)
+    assert collapse.get("name") == "gal-sig-collapse"
+    collapse_attrs = t.cast(dict[str, str], collapse.get("html_attrs", {}))
+    assert collapse_attrs.get("aria-controls") == (
+        "demo.LayoutDemo.__init__--signature-expanded"
     )
-    html_attrs = t.cast(dict[str, str], panel.get("html_attrs", {}))
-    assert html_attrs.get("id") == ("demo.LayoutDemo.__init__--signature-panel")
-    assert isinstance(panel.children[0], addnodes.desc_parameterlist)
+    assert collapse.astext() == "[collapse]"
+
+
+def test_rebuild_signature_layout_enriches_annotations_from_field_list() -> None:
+    desc = _make_desc(
+        _make_typed_parameters_field_list({"host": "str", "port": "int"}),
+        ids=("demo.LayoutDemo.__init__",),
+    )
+    sig = desc.children[0]
+    assert isinstance(sig, addnodes.desc_signature)
+    sig += addnodes.desc_name("", "__init__")
+    plist = addnodes.desc_parameterlist()
+    plist += _make_parameter("host")
+    plist += _make_parameter("port", default="5432")
+    sig += plist
+
+    _wrap_content_runs(desc)
+    _rebuild_signature_layout(
+        desc,
+        sig,
+        threshold=1,
+        include_permalink=False,
+        show_annotations=True,
+    )
+
+    layout = sig.children[0]
+    assert isinstance(layout, api_component)
+    left = layout.children[0]
+    assert isinstance(left, api_component)
+    signature = left.children[0]
+    assert isinstance(signature, api_component)
+    expanded = _find_component(signature, "api-signature-expanded")
+    expanded_plist = expanded.children[0]
+    assert isinstance(expanded_plist, addnodes.desc_parameterlist)
+    params = list(expanded_plist.findall(addnodes.desc_parameter))
+
+    assert params[0].astext() == "host: str"
+    assert params[1].astext() == "port: int = 5432"
+
+
+def test_rebuild_signature_layout_strips_annotations_when_disabled() -> None:
+    desc = _make_desc(ids=("demo.LayoutDemo.__init__",))
+    sig = desc.children[0]
+    assert isinstance(sig, addnodes.desc_signature)
+    sig += addnodes.desc_name("", "__init__")
+    plist = addnodes.desc_parameterlist()
+    plist += _make_parameter("host", annotation="str")
+    plist += _make_parameter("port", annotation="int", default="5432")
+    sig += plist
+
+    _rebuild_signature_layout(
+        desc,
+        sig,
+        threshold=1,
+        include_permalink=False,
+        show_annotations=False,
+    )
+
+    layout = sig.children[0]
+    assert isinstance(layout, api_component)
+    left = layout.children[0]
+    assert isinstance(left, api_component)
+    signature = left.children[0]
+    assert isinstance(signature, api_component)
+    expanded = _find_component(signature, "api-signature-expanded")
+    expanded_plist = expanded.children[0]
+    assert isinstance(expanded_plist, addnodes.desc_parameterlist)
+    params = list(expanded_plist.findall(addnodes.desc_parameter))
+
+    assert params[0].astext() == "host"
+    assert params[1].astext() == "port=5432"
 
 
 def test_rebuild_signature_layout_skips_multiline_signatures() -> None:
-    sig = addnodes.desc_signature(ids=["demo.func"], is_multiline=True)
+    desc = _make_desc(ids=("demo.func",))
+    sig = desc.children[0]
+    assert isinstance(sig, addnodes.desc_signature)
+    sig["is_multiline"] = True
     sig += addnodes.desc_signature_line()
     original = list(sig.children)
 
-    _rebuild_signature_layout(sig, threshold=10, include_permalink=True)
+    _rebuild_signature_layout(
+        desc,
+        sig,
+        threshold=10,
+        include_permalink=True,
+        show_annotations=True,
+    )
 
     assert list(sig.children) == original

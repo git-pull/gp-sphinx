@@ -116,7 +116,9 @@ def _make_api_inline_component(
 
 def _make_api_permalink(desc_sig: addnodes.desc_signature) -> api_permalink | None:
     """Create the managed permalink node for a signature."""
-    ids = list(desc_sig.get("ids", []))
+    ids: list[str] = [
+        str(node_id) for node_id in t.cast(list[t.Any], desc_sig.get("ids", []))
+    ]
     if not ids:
         return None
     link = api_permalink(
@@ -131,7 +133,9 @@ def _primary_signature_id(desc_node: addnodes.desc) -> str | None:
     """Return the first signature id for a ``desc`` node."""
     for child in desc_node.children:
         if isinstance(child, addnodes.desc_signature):
-            ids = list(child.get("ids", []))
+            ids: list[str] = [
+                str(node_id) for node_id in t.cast(list[t.Any], child.get("ids", []))
+            ]
             if ids:
                 return ids[0]
     return None
@@ -348,9 +352,9 @@ def _count_field_entries(field_list: nodes.field_list) -> int:
 def _is_parameters_section(node: nodes.Node) -> bool:
     """Return ``True`` when *node* is an API parameters section."""
     if isinstance(node, api_component):
-        return node.get("name") == "api-parameters"
+        return str(node.get("name", "")) == "api-parameters"
     if isinstance(node, gal_region):
-        return node.get("kind") == "fields"
+        return str(node.get("kind", "")) == "fields"
     return False
 
 
@@ -388,20 +392,268 @@ def _is_viewcode_ref(node: nodes.Node) -> bool:
     )
 
 
+def _parameter_key(text: str) -> str:
+    """Return a normalized parameter key for preview and type lookup.
+
+    Examples
+    --------
+    >>> _parameter_key("host: str")
+    'host'
+    >>> _parameter_key("port: int = 5432")
+    'port'
+    """
+    key = text.strip().rstrip(",")
+    for separator in (":", "="):
+        if separator in key:
+            key = key.split(separator, 1)[0].rstrip()
+    return key.strip()
+
+
 def _count_signature_parameters(
     parameter_list: addnodes.desc_parameterlist,
 ) -> tuple[str, int]:
     """Return the first parameter text and total parameter count."""
     params = list(parameter_list.findall(addnodes.desc_parameter))
-    first = params[0].astext().strip() if params else ""
+    first = _parameter_key(params[0].astext()) if params else ""
     return first, len(params)
 
 
-def _signature_panel_id(desc_sig: addnodes.desc_signature) -> str:
-    """Return the stable DOM id for an expanded signature panel."""
-    ids = list(desc_sig.get("ids", []))
+def _signature_expanded_id(desc_sig: addnodes.desc_signature) -> str:
+    """Return the stable DOM id for an expanded signature wrapper."""
+    ids: list[str] = [
+        str(node_id) for node_id in t.cast(list[t.Any], desc_sig.get("ids", []))
+    ]
     base = ids[0] if ids else "api-signature"
-    return f"{base}--signature-panel"
+    return f"{base}--signature-expanded"
+
+
+def _parameter_has_annotation(parameter: addnodes.desc_parameter) -> bool:
+    """Return ``True`` when a parameter already contains a type annotation."""
+    return any(
+        isinstance(child, addnodes.desc_sig_punctuation) and ":" in child.astext()
+        for child in parameter.children
+    )
+
+
+def _parameter_default_index(parameter: addnodes.desc_parameter) -> int | None:
+    """Return the index of the default operator, if present."""
+    for index, child in enumerate(parameter.children):
+        if isinstance(child, addnodes.desc_sig_operator) and child.astext() == "=":
+            return index
+    return None
+
+
+def _is_space_node(child: nodes.Node) -> bool:
+    """Return ``True`` when a node renders as whitespace only."""
+    return child.astext().isspace()
+
+
+def _replace_parameter_children(
+    parameter: addnodes.desc_parameter,
+    children: list[nodes.Node],
+) -> None:
+    """Replace a parameter's direct children with *children*."""
+    parameter.children = []
+    for child in children:
+        parameter += child
+
+
+def _strip_parameter_annotation(parameter: addnodes.desc_parameter) -> None:
+    """Remove only the parameter annotation while preserving defaults."""
+    children = list(parameter.children)
+    annotation_start = next(
+        (
+            index
+            for index, child in enumerate(children)
+            if isinstance(child, addnodes.desc_sig_punctuation)
+            and ":" in child.astext()
+        ),
+        None,
+    )
+    if annotation_start is None:
+        return
+
+    default_index = _parameter_default_index(parameter)
+    prefix = children[:annotation_start]
+    while prefix and _is_space_node(prefix[-1]):
+        prefix.pop()
+
+    if default_index is None:
+        _replace_parameter_children(parameter, prefix)
+        return
+
+    suffix = children[default_index:]
+    while len(suffix) > 1 and _is_space_node(suffix[1]):
+        suffix.pop(1)
+    _replace_parameter_children(parameter, [*prefix, *suffix])
+
+
+def _make_annotation_nodes(type_nodes: list[nodes.Node]) -> list[nodes.Node]:
+    """Create signature annotation nodes from cloned *type_nodes*."""
+    type_name = addnodes.desc_sig_name("", "")
+    for child in type_nodes:
+        type_name += child.deepcopy()
+    return [
+        addnodes.desc_sig_punctuation("", ":"),
+        addnodes.desc_sig_space("", " "),
+        type_name,
+    ]
+
+
+def _inject_parameter_annotation(
+    parameter: addnodes.desc_parameter,
+    type_nodes: list[nodes.Node],
+) -> None:
+    """Insert a type annotation before a parameter default, if needed."""
+    if not type_nodes or _parameter_has_annotation(parameter):
+        return
+
+    key = _parameter_key(parameter.astext())
+    if key in {"*", "/"}:
+        return
+
+    children = list(parameter.children)
+    default_index = _parameter_default_index(parameter)
+    insert_at = len(children) if default_index is None else default_index
+
+    annotation_children = _make_annotation_nodes(type_nodes)
+    if default_index is not None:
+        annotation_children.append(addnodes.desc_sig_space("", " "))
+
+    children[insert_at:insert_at] = annotation_children
+
+    if default_index is not None:
+        operator_index = insert_at + len(annotation_children)
+        next_index = operator_index + 1
+        if next_index < len(children) and not _is_space_node(children[next_index]):
+            children.insert(next_index, addnodes.desc_sig_space("", " "))
+
+    _replace_parameter_children(parameter, children)
+
+
+def _iter_parameter_paragraphs(
+    field_body: nodes.field_body,
+) -> t.Iterator[nodes.paragraph]:
+    """Yield parameter paragraphs from a Sphinx ``Parameters`` field body."""
+    for child in field_body.children:
+        if isinstance(child, nodes.bullet_list):
+            for item in child.children:
+                if not isinstance(item, nodes.list_item):
+                    continue
+                for grandchild in item.children:
+                    if isinstance(grandchild, nodes.paragraph):
+                        yield grandchild
+        elif isinstance(child, nodes.paragraph):
+            yield child
+
+
+def _extract_type_nodes_from_paragraph(
+    paragraph: nodes.paragraph,
+) -> tuple[str, list[nodes.Node]] | None:
+    """Extract a parameter name and its type nodes from a field-list paragraph."""
+    if not paragraph.children:
+        return None
+
+    first = paragraph.children[0]
+    if not isinstance(first, (nodes.strong, addnodes.literal_strong)):
+        return None
+
+    key = _parameter_key(first.astext())
+    if not key:
+        return None
+
+    collected: list[nodes.Node] = []
+    in_type = False
+
+    for child in paragraph.children[1:]:
+        text = child.astext()
+        if not in_type:
+            if "(" not in text:
+                continue
+            in_type = True
+            after_open = text.split("(", 1)[1]
+            if ")" in after_open:
+                before_close = after_open.split(")", 1)[0]
+                if before_close:
+                    collected.append(nodes.Text(before_close))
+                break
+            if after_open:
+                collected.append(nodes.Text(after_open))
+            continue
+
+        if ")" in text:
+            before_close = text.split(")", 1)[0]
+            if before_close:
+                collected.append(nodes.Text(before_close))
+            break
+        collected.append(child.deepcopy())
+
+    if not collected:
+        return None
+    return key, collected
+
+
+def _extract_parameter_types(desc_node: addnodes.desc) -> dict[str, list[nodes.Node]]:
+    """Collect parameter annotations from the entry's ``Parameters`` field list."""
+    content = next(
+        (
+            child
+            for child in desc_node.children
+            if isinstance(child, addnodes.desc_content)
+        ),
+        None,
+    )
+    if content is None:
+        return {}
+
+    mapping: dict[str, list[nodes.Node]] = {}
+    for section in content.children:
+        if not _is_parameters_section(section):
+            continue
+        assert isinstance(section, nodes.Element)
+        for child in section.children:
+            if not isinstance(child, nodes.field_list):
+                continue
+            for field in child.children:
+                if not isinstance(field, nodes.field) or len(field.children) < 2:
+                    continue
+                name = field.children[0]
+                body = field.children[1]
+                if not isinstance(name, nodes.field_name) or not isinstance(
+                    body, nodes.field_body
+                ):
+                    continue
+                if name.astext().strip().casefold() != "parameters":
+                    continue
+                for paragraph in _iter_parameter_paragraphs(body):
+                    extracted = _extract_type_nodes_from_paragraph(paragraph)
+                    if extracted is None:
+                        continue
+                    key, type_nodes = extracted
+                    mapping[key] = type_nodes
+    return mapping
+
+
+def _prepare_folded_parameter_list(
+    parameter_list: addnodes.desc_parameterlist,
+    *,
+    parameter_types: dict[str, list[nodes.Node]],
+    show_annotations: bool,
+) -> None:
+    """Convert a parameter list to Sphinx's multiline signature rendering."""
+    parameter_list["multi_line_parameter_list"] = True
+    parameter_list["multi_line_trailing_comma"] = False
+
+    for parameter in parameter_list.findall(addnodes.desc_parameter):
+        key = _parameter_key(parameter.astext())
+        if show_annotations:
+            if _parameter_has_annotation(parameter):
+                continue
+            type_nodes = parameter_types.get(key)
+            if type_nodes is not None:
+                _inject_parameter_annotation(parameter, type_nodes)
+            continue
+        _strip_parameter_annotation(parameter)
 
 
 def _extract_toolbar_content(
@@ -425,10 +677,12 @@ def _extract_toolbar_content(
 
 
 def _rebuild_signature_layout(
+    desc_node: addnodes.desc,
     desc_sig: addnodes.desc_signature,
     *,
     threshold: int,
     include_permalink: bool,
+    show_annotations: bool,
 ) -> None:
     """Rebuild a signature into explicit API header subcomponents."""
     if desc_sig.get("is_multiline"):
@@ -465,23 +719,27 @@ def _rebuild_signature_layout(
     left = _make_api_component("api-layout-left")
     signature = _make_api_component("api-signature")
     right = _make_api_component("api-layout-right", classes=("gas-toolbar",))
-
-    panel: api_component | None = None
+    parameter_types = _extract_parameter_types(desc_node)
     folded = False
 
     for child in row_children:
         if not folded and isinstance(child, addnodes.desc_parameterlist):
             first_param, param_count = _count_signature_parameters(child)
             if param_count >= threshold:
-                panel_id = _signature_panel_id(desc_sig)
+                panel_id = _signature_expanded_id(desc_sig)
                 signature += gal_sig_fold(
                     first_param=first_param,
                     param_count=param_count,
                     panel_id=panel_id,
                 )
-                panel = _make_api_component(
-                    "api-signature-panel",
-                    classes=("gal-sig-panel",),
+                _prepare_folded_parameter_list(
+                    child,
+                    parameter_types=parameter_types,
+                    show_annotations=show_annotations,
+                )
+                expanded = _make_api_component(
+                    "api-signature-expanded",
+                    classes=("gal-sig-expanded",),
                     html_attrs={
                         "aria-hidden": "true",
                         "data-expanded": "false",
@@ -489,19 +747,28 @@ def _rebuild_signature_layout(
                         "id": panel_id,
                     },
                 )
-                panel += child
+                expanded += child
+                collapse = _make_api_inline_component(
+                    "gal-sig-collapse",
+                    tag="button",
+                    html_attrs={
+                        "aria-controls": panel_id,
+                        "aria-expanded": "true",
+                        "type": "button",
+                    },
+                )
+                collapse += nodes.Text("[collapse]")
+                expanded += collapse
+                signature += expanded
                 folded = True
                 continue
         signature += child
 
+    left += signature
     if include_permalink:
         permalink = _make_api_permalink(desc_sig)
         if permalink is not None:
-            signature += permalink
-
-    left += signature
-    if panel is not None:
-        left += panel
+            left += permalink
 
     if badge_children:
         badge_container = _make_api_inline_component("api-badge-container")
@@ -542,6 +809,7 @@ def on_doctree_resolved(
 
     threshold: int = app.config.gal_collapsed_threshold
     fold_params: bool = app.config.gal_fold_parameters
+    show_annotations: bool = app.config.gal_signature_show_annotations
     include_permalink = bool(
         app.config.html_permalinks and getattr(app.builder, "add_permalinks", False)
     )
@@ -564,9 +832,11 @@ def on_doctree_resolved(
             _append_class(child, "api-header")
             child["api_managed"] = not child.get("is_multiline", False)
             _rebuild_signature_layout(
+                desc_node,
                 child,
                 threshold=threshold if allow_signature_fold else 10**9,
                 include_permalink=include_permalink,
+                show_annotations=show_annotations,
             )
 
         if not allow_signature_fold:

@@ -119,9 +119,9 @@ class api_permalink(nodes.General, nodes.Element):
 class gal_sig_fold(nodes.General, nodes.Element):
     """Inline signature disclosure toggle for large parameter lists.
 
-    The preview button lives in the signature row, while the full
-    parameter list is rendered in a sibling ``api-signature-panel``
-    wrapper beneath it.
+    The preview button lives in the signature row, while the expanded
+    multiline signature content is rendered in a controlled wrapper
+    inside ``api-signature``.
 
     Parameters
     ----------
@@ -130,7 +130,7 @@ class gal_sig_fold(nodes.General, nodes.Element):
     param_count : int
         Total number of parameters.
     panel_id : str
-        DOM id of the controlled signature panel.
+        DOM id of the controlled expanded signature wrapper.
 
     Examples
     --------

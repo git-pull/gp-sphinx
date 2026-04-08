@@ -34,7 +34,7 @@ _LEGACY_SECTION_COMPONENTS: dict[str, str] = {
 
 def _html_attrs(node: nodes.Element) -> dict[str, str]:
     """Return sanitized HTML attributes stored on a custom node."""
-    attrs = node.get("html_attrs", {})
+    attrs: t.Any = node.get("html_attrs", {})
     return {str(key): str(value) for key, value in attrs.items()}
 
 
@@ -58,7 +58,8 @@ def visit_api_component(self: HTML5Translator, node: nodes.Element) -> None:
     tag = node.get("tag", "div")
     attrs = _html_attrs(node)
     ids = [attrs.pop("id")] if "id" in attrs else []
-    self.body.append(self.starttag(node, tag, "", ids=ids, **attrs))
+    starttag = t.cast(t.Any, self).starttag
+    self.body.append(starttag(node, tag, "", ids=ids, **attrs))
 
 
 def depart_api_component(self: HTML5Translator, node: nodes.Element) -> None:
@@ -106,8 +107,9 @@ def visit_gal_sig_fold(self: HTML5Translator, node: nodes.Element) -> None:
     first = html.escape(node.get("first_param", ""))
     panel_id = node.get("panel_id", "")
     preview = first if first else "..."
+    starttag = t.cast(t.Any, self).starttag
     self.body.append(
-        self.starttag(
+        starttag(
             node,
             "button",
             "",
