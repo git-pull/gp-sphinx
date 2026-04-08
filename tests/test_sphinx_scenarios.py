@@ -8,7 +8,6 @@ import textwrap
 import pytest
 
 from tests._sphinx_scenarios import (
-    SCENARIO_SRCDIR_TOKEN,
     ScenarioFile,
     SphinxScenario,
     build_shared_sphinx_result,
@@ -22,29 +21,14 @@ def _make_demo_scenario(
     index_title: str = "Demo",
     buildername: str = "html",
 ) -> SphinxScenario:
-    """Return a small Sphinx scenario for cache helper tests."""
+    """Return a minimal Sphinx scenario for cache helper tests."""
     conf_py = textwrap.dedent(
-        f"""\
-        from __future__ import annotations
-
-        import sys
-
-        sys.path.insert(0, "{SCENARIO_SRCDIR_TOKEN}")
-
-        extensions = ["sphinx.ext.autodoc"]
-        master_doc = "index"
-        exclude_patterns = ["_build"]
-        html_theme = "alabaster"
-        """,
-    )
-    module_source = textwrap.dedent(
         """\
         from __future__ import annotations
 
-
-        def demo() -> str:
-            \"\"\"Return a demo value.\"\"\"
-            return "demo"
+        master_doc = "index"
+        exclude_patterns = ["_build"]
+        html_theme = "alabaster"
         """,
     )
     index_rst = textwrap.dedent(
@@ -52,15 +36,13 @@ def _make_demo_scenario(
         {index_title}
         {"=" * len(index_title)}
 
-        .. automodule:: demo_module
-           :members:
+        Cache helper smoke page.
         """,
     )
     return SphinxScenario(
         buildername=buildername,
         files=(
-            ScenarioFile("demo_module.py", module_source),
-            ScenarioFile("conf.py", conf_py, substitute_srcdir=True),
+            ScenarioFile("conf.py", conf_py),
             ScenarioFile("index.rst", index_rst),
         ),
     )
@@ -80,7 +62,6 @@ def scenario_cache_root(scenario_test_root: pathlib.Path) -> pathlib.Path:
 
 @pytest.mark.integration
 def test_shared_sphinx_result_reuses_identical_builds(
-    scenario_test_root: pathlib.Path,
     scenario_cache_root: pathlib.Path,
 ) -> None:
     """Reuse the same completed build for identical scenarios."""
@@ -125,9 +106,9 @@ def test_copy_scenario_tree_keeps_cached_source_pristine(
         scenario,
         copy_root / "copy-one",
     )
-    mutated_module = first_copy / "demo_module.py"
-    mutated_module.write_text(
-        mutated_module.read_text(encoding="utf-8") + "\nMUTATED = True\n",
+    mutated_index = first_copy / "index.rst"
+    mutated_index.write_text(
+        mutated_index.read_text(encoding="utf-8") + "\nMutated copy.\n",
         encoding="utf-8",
     )
 
@@ -136,9 +117,9 @@ def test_copy_scenario_tree_keeps_cached_source_pristine(
         scenario,
         copy_root / "copy-two",
     )
-    cached_module = scenario_cache_root / f"{digest}-source" / "demo_module.py"
+    cached_index = scenario_cache_root / f"{digest}-source" / "index.rst"
 
-    assert "MUTATED = True" not in second_copy.joinpath("demo_module.py").read_text(
+    assert "Mutated copy." not in second_copy.joinpath("index.rst").read_text(
         encoding="utf-8",
     )
-    assert "MUTATED = True" not in cached_module.read_text(encoding="utf-8")
+    assert "Mutated copy." not in cached_index.read_text(encoding="utf-8")

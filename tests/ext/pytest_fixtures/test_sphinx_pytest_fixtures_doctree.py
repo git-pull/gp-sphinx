@@ -14,7 +14,6 @@ from tests._snapshots import normalize_warning_text
 from tests._sphinx_scenarios import get_doctree
 from tests.ext.pytest_fixtures._scenario_support import (
     FIXTURE_MOD_SOURCE,
-    INDEX_RST,
     build_fixture_result,
 )
 
@@ -25,6 +24,61 @@ if t.TYPE_CHECKING:
 
 pytestmark = pytest.mark.integration
 
+_AUTOFIXTURES_SMOKE_SOURCE = textwrap.dedent(
+    """\
+    from __future__ import annotations
+    import pytest
+
+    class Server:
+        \"\"\"A fake server.\"\"\"
+
+    @pytest.fixture(scope="session")
+    def my_server() -> Server:
+        \"\"\"Return a fake server for testing.\"\"\"
+        return Server()
+
+    @pytest.fixture
+    def my_client(my_server: Server) -> str:
+        \"\"\"Return a fake client connected to *my_server*.\"\"\"
+        return f"client@{my_server}"
+
+    @pytest.fixture(name="renamed_fixture")
+    def _internal_name() -> str:
+        \"\"\"Fixture with a name alias — injected as 'renamed_fixture'.\"\"\"
+        return "renamed"
+    """,
+)
+
+_AUTOFIXTURE_INDEX_SMOKE_SOURCE = textwrap.dedent(
+    """\
+    from __future__ import annotations
+    import pytest
+
+    class Server:
+        \"\"\"A fake server.\"\"\"
+
+    @pytest.fixture(scope="session")
+    def my_server() -> Server:
+        \"\"\"Return a fake server for testing.\"\"\"
+        return Server()
+
+    @pytest.fixture
+    def plain_fixture(my_server: Server) -> str:
+        \"\"\"Uses :fixture:`my_server` to build a plain resource fixture.\"\"\"
+        return "plain"
+
+    @pytest.fixture
+    def TestServer() -> type[Server]:
+        \"\"\"Return the Server class for direct instantiation (factory fixture).\"\"\"
+        return Server
+
+    @pytest.fixture(autouse=True)
+    def auto_cleanup() -> None:
+        \"\"\"Runs automatically before every test.\"\"\"
+        return None
+    """,
+)
+
 
 @pytest.fixture(scope="module")
 def default_dummy_result(
@@ -34,6 +88,34 @@ def default_dummy_result(
     return build_fixture_result(
         spf_doctree_root / "default-dummy",
         buildername="dummy",
+        confoverrides={"pytest_fixture_lint_level": "none"},
+    )
+
+
+@pytest.fixture(scope="module")
+def autofixtures_usage_result(
+    spf_doctree_root: pathlib.Path,
+) -> SharedSphinxResult:
+    """Build one dummy MyST+usage scenario for autofixtures and short-name refs."""
+    return build_fixture_result(
+        spf_doctree_root / "autofixtures-with-usage",
+        buildername="dummy",
+        fixture_source=_AUTOFIXTURES_SMOKE_SOURCE,
+        index_rst=textwrap.dedent(
+            """\
+            Test fixtures
+            =============
+
+            .. py:module:: fixture_mod
+
+            .. autofixtures:: fixture_mod
+
+            Usage
+            -----
+
+            See :fixture:`my_server` for the server fixture.
+            """,
+        ),
         confoverrides={"pytest_fixture_lint_level": "none"},
     )
 
@@ -305,15 +387,6 @@ def test_autofixture_index_resolution_smoke(
     spf_doctree_root: pathlib.Path,
 ) -> None:
     """Fixture index placeholder resolves into a linked table after transforms."""
-    fixture_source = FIXTURE_MOD_SOURCE + textwrap.dedent(
-        """\
-
-        @pytest.fixture
-        def plain_fixture() -> str:
-            \"\"\"Uses :fixture:`my_server` to build a plain resource fixture.\"\"\"
-            return "plain"
-        """,
-    )
     index_rst = textwrap.dedent(
         """\
         Test fixtures
@@ -338,7 +411,7 @@ def test_autofixture_index_resolution_smoke(
     result = build_fixture_result(
         spf_doctree_root / "autofixture-index-table",
         buildername="dummy",
-        fixture_source=fixture_source,
+        fixture_source=_AUTOFIXTURE_INDEX_SMOKE_SOURCE,
         index_rst=index_rst,
         confoverrides={"pytest_fixture_lint_level": "none"},
     )
@@ -354,51 +427,25 @@ def test_autofixture_index_resolution_smoke(
 
 
 def test_autofixtures_directive_smoke(
-    spf_doctree_root: pathlib.Path,
+    autofixtures_usage_result: SharedSphinxResult,
 ) -> None:
     """``autofixtures`` still expands into fixture descriptions."""
-    default_result = build_fixture_result(
-        spf_doctree_root / "autofixtures-smoke",
-        buildername="dummy",
-        index_rst=textwrap.dedent(
-            """\
-            Test fixtures
-            =============
-
-            .. py:module:: fixture_mod
-
-            .. autofixtures:: fixture_mod
-            """,
-        ),
-        confoverrides={"pytest_fixture_lint_level": "none"},
+    default_doctree = get_doctree(
+        autofixtures_usage_result, "index", post_transforms=True
     )
-    default_doctree = get_doctree(default_result, "index", post_transforms=True)
     fixture_ids = _fixture_order(default_doctree)
-    assert len(fixture_ids) == 7
-    assert "fixture_mod.my_server" in fixture_ids
-    assert "fixture_mod.renamed_fixture" in fixture_ids
+    assert fixture_ids == [
+        "fixture_mod.my_server",
+        "fixture_mod.my_client",
+        "fixture_mod.renamed_fixture",
+    ]
 
 
 def test_short_name_fixture_reference_resolves(
-    spf_doctree_root: pathlib.Path,
+    autofixtures_usage_result: SharedSphinxResult,
 ) -> None:
     """Short-name ``:fixture:`` references resolve after post-transforms."""
-    result = build_fixture_result(
-        spf_doctree_root / "short-name-reference",
-        buildername="dummy",
-        index_rst=INDEX_RST
-        + textwrap.dedent(
-            """\
-
-            Usage
-            -----
-
-            See :fixture:`my_server` for the server fixture.
-            """,
-        ),
-        confoverrides={"pytest_fixture_lint_level": "none"},
-    )
-    doctree = get_doctree(result, "index", post_transforms=True)
+    doctree = get_doctree(autofixtures_usage_result, "index", post_transforms=True)
     text = doctree.pformat()
 
     assert '<reference internal="True" refid="fixture_mod.my_server"' in text
@@ -464,6 +511,7 @@ def test_doc_pytest_plugin_myst_smoke(
     result = build_fixture_result(
         spf_doctree_root / "doc-pytest-plugin-myst",
         buildername="dummy",
+        fixture_source=_AUTOFIXTURES_SMOKE_SOURCE,
         index_rst=index_md,
         index_name="index.md",
         extensions=[
@@ -506,6 +554,7 @@ def test_autofixtures_directive_myst_smoke(
     result = build_fixture_result(
         spf_doctree_root / "autofixtures-myst",
         buildername="dummy",
+        fixture_source=_AUTOFIXTURES_SMOKE_SOURCE,
         index_rst=index_md,
         index_name="index.md",
         extensions=[
@@ -524,10 +573,6 @@ def test_autofixtures_directive_myst_smoke(
     assert _fixture_order(doctree) == [
         "fixture_mod.my_server",
         "fixture_mod.my_client",
-        "fixture_mod.home_user",
-        "fixture_mod.yield_server",
-        "fixture_mod.auto_cleanup",
-        "fixture_mod.TestServer",
         "fixture_mod.renamed_fixture",
     ]
     assert "Test fixtures" in doctree_text
