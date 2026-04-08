@@ -46,22 +46,24 @@ These measurements were taken from `/home/d/work/python/gp-sphinx` on
     contract-focused smoke
   - doctests still share one session-scoped writable path instead of paying
     for a fresh pytest temp directory per doctest item
+  - smoke-only pytest-fixture HTML, text, MyST, and cache scenarios now use
+    smaller fixture/source trees that only include the contracts under test
 
 | Command | Result | Meaning |
 | --- | --- | --- |
-| `/usr/bin/time -p uv run pytest -s` | `798 passed, 3 skipped in 28.53s`, wall `31.31s` | Conservative full-suite baseline |
-| `uv run pytest -s --durations=60 --durations-min=0.05` | `798 passed, 3 skipped in 34.36s` | Full-suite cost with slow-test evidence |
-| `uv run python -m cProfile -o /tmp/gp_sphinx_full_current.prof -m pytest -s` | `798 passed, 3 skipped in 33.00s` | Full-suite profile source |
-| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-abs` | `798 passed, 3 skipped in 5.35s`, wall `6.96s` | Optimized full suite, same coverage |
-| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-integration-direct tests -m integration` | `21 passed, 695 deselected in 2.38s`, wall `3.43s` | Optimized integration diagnostics only |
-| `/usr/bin/time -p uv run pytest -o "addopts=--tb=short --no-header --showlocals" -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-fast-direct --capture=tee-sys -q tests -m 'not integration'` | `689 passed, 3 skipped, 21 deselected in 1.32s`, wall `2.01s` | Optimized fast local loop only |
-| `/usr/bin/time -p just test` | `798 passed, 3 skipped in 5.29s`, wall `6.90s` | Preferred full local command |
-| `/usr/bin/time -p just test-fast` | `689 passed, 3 skipped, 21 deselected in 1.55s`, wall `2.40s` | Preferred fast local loop only |
+| `/usr/bin/time -p uv run pytest -s` | `798 passed, 3 skipped in 21.48s`, wall `24.04s` | Conservative full-suite baseline |
+| `uv run pytest -s --durations=60 --durations-min=0.05` | `798 passed, 3 skipped in 21.46s` | Full-suite cost with slow-test evidence |
+| `uv run python -m cProfile -o /tmp/gp_sphinx_full.prof -m pytest -s` | `798 passed, 3 skipped in 35.38s` | Full-suite profile source |
+| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-abs` | `798 passed, 3 skipped in 4.10s`, wall `5.34s` | Optimized full suite, same coverage |
+| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-integration-direct tests -m integration` | `21 passed, 695 deselected in 2.63s`, wall `3.74s` | Optimized integration diagnostics only |
+| `/usr/bin/time -p uv run pytest -o "addopts=--tb=short --no-header --showlocals" -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-fast-direct --capture=tee-sys -q tests -m 'not integration'` | `689 passed, 3 skipped, 21 deselected in 1.62s`, wall `2.52s` | Optimized fast local loop only |
+| `/usr/bin/time -p just test` | `798 passed, 3 skipped in 4.06s`, wall `5.34s` | Preferred full local command |
+| `/usr/bin/time -p just test-fast` | `689 passed, 3 skipped, 21 deselected in 1.55s`, wall `2.46s` | Preferred fast local loop only |
 
 Two things stand out:
 
-- the optimized full-coverage runner is still consistently fast at about
-  `5.3s` pytest time
+- the optimized full-coverage runner is now consistently fast at about
+  `4s` pytest time
 - the raw full-suite baseline is still much slower than the optimized run,
   which means the suite is still paying for real runner/path overhead on top of
   the remaining Sphinx work
@@ -103,9 +105,22 @@ The recent passes did useful work without weakening coverage:
    now reuse one session-scoped doctest path.
 4. They changed the pytest-fixture test family to use one shared session root
    in `tests/ext/pytest_fixtures/conftest.py`.
-5. They replaced the full-page MyST `autofixtures` snapshot with a smaller
+5. They now build one shared cross-document HTML result for both fixture-link
+   directions instead of paying for two separate HTML scenarios.
+6. They now build one shared dummy-builder `autofixtures + usage` scenario for
+   both the nested-parse smoke and the short-name reference smoke.
+7. They replaced the full-page MyST `autofixtures` snapshot with a smaller
    smoke that asserts the real contract: native MyST invocation expands fixture
    descriptions in source order.
+8. They changed smoke-only pytest-fixture HTML and text builds to use a
+   smaller fixture module that still exercises badge, inventory, genindex, and
+   text-builder output.
+9. They changed the MyST `autofixtures`, MyST `doc-pytest-plugin`, and
+   autofixture-index smokes to use smaller fixture modules that still exercise
+   native MyST invocation, pending-xref resolution, and final table output.
+10. They changed `tests/test_sphinx_scenarios.py` to use a plain-page Sphinx
+    scenario for cache semantics instead of paying for `autodoc` imports that
+    were not part of the contract.
 
 Concrete examples:
 
@@ -114,10 +129,18 @@ Concrete examples:
 - `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py` now uses
   a shared session root plus a shared default dummy-builder result
 - `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py` now
-  reuses the same shared session root as the doctree file
+  reuses the same shared session root as the doctree file and shares one
+  cross-document HTML build across both directional-link checks
 - `tests/ext/pytest_fixtures/test_type_checking_alias.py` now reuses that same
   session root instead of a per-test temp root
 - `tests/conftest.py` injects one session-scoped doctest `tmp_path`
+- `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py` now
+  feeds a reduced fixture module into the HTML and text smoke scenarios
+- `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py` now feeds
+  reduced fixture modules into the `autofixtures`, `doc-pytest-plugin`, and
+  fixture-index smokes
+- `tests/test_sphinx_scenarios.py` now uses a minimal page-only scenario for
+  cache identity and source-copy isolation
 
 That means the remaining expensive tests are much more likely to be real
 builder-facing contracts rather than accidental faux-E2E coverage.
@@ -141,9 +164,9 @@ The current story is no longer “it was all tmp paths”:
 
 The raw full-suite `/usr/bin/time` output is also telling:
 
-- wall `31.31s`
-- user `5.79s`
-- sys `1.61s`
+- wall `26.16s`
+- user `5.06s`
+- sys `1.32s`
 
 That wide wall-vs-CPU gap is consistent with filesystem and process overhead,
 not a Python-level hot loop.
@@ -168,7 +191,7 @@ The current full-suite cProfile was taken with:
 
 ```console
 $ uv run python -m cProfile \
-    -o /tmp/gp_sphinx_full_current.prof \
+    -o /tmp/gp_sphinx_full.prof \
     -m pytest \
     -s
 ```
@@ -177,13 +200,13 @@ $ uv run python -m cProfile \
 
 | Function | Cumulative time |
 | --- | --- |
-| `tests._sphinx_scenarios.build_shared_sphinx_result` | `22.83s` |
-| `sphinx.application.Sphinx.build` | `16.75s` |
-| `pathlib.Path.resolve` | `8.20s` |
-| `posixpath.realpath` | `8.18s` |
-| `posix.lstat` | `8.16s` |
-| `_pytest.tmpdir.mktemp` | `0.09s` |
-| `_pytest.pathlib.cleanup_dead_symlinks` | `0.22s` |
+| `tests._sphinx_scenarios.build_shared_sphinx_result` | `26.31s` |
+| `sphinx.application.Sphinx.build` | `18.80s` |
+| `pathlib.Path.resolve` | `11.79s` |
+| `posixpath.realpath` | `11.78s` |
+| `posix.lstat` | `11.76s` |
+| `_pytest.tmpdir.mktemp` | `0.21s` |
+| `_pytest.pathlib.cleanup_dead_symlinks` | `0.21s` |
 
 ### What that means
 
@@ -226,26 +249,24 @@ $ uv run pytest -s --durations=60 --durations-min=0.05
 
 | Test | Duration | Cause classification |
 | --- | --- | --- |
-| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `4.18s setup` | Real builder contract |
-| `tests/ext/layout/test_snapshots.py::test_layout_demo_init_header_snapshot_annotation_disabled` | `3.97s setup` | Real builder contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_used_by_link_html_smoke` | `3.78s call` | Real builder contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `3.77s call` | Real builder contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `3.26s setup` | Real builder contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_dependency_rendering_snapshot` | `0.73s call` | Necessary dummy-builder doctree contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_warning_and_manual_option_snapshot` | `0.67s call` | Necessary dummy-builder doctree contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_lint_level_error_sets_nonzero_status` | `0.67s call` | Necessary dummy-builder doctree/error contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_text_builder_does_not_crash` | `0.67s call` | Real builder contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_myst_smoke` | `0.66s call` | Necessary dummy-builder MyST contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_default_fixture_store_and_domain_contract` | `0.65s setup` | Necessary shared dummy-builder setup |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixtures_directive_myst_smoke` | `0.63s call` | Necessary dummy-builder MyST contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_short_name_fixture_reference_resolves` | `0.60s call` | Necessary dummy-builder xref contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixtures_directive_smoke` | `0.60s call` | Necessary dummy-builder nested-parse contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_rst_snapshot` | `0.60s call` | Necessary dummy-builder doctree contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixture_index_resolution_smoke` | `0.58s call` | Necessary dummy-builder xref/table contract |
-| `tests/test_sphinx_scenarios.py::test_shared_sphinx_result_reuses_identical_builds` | `0.58s call` | Intentional cache semantics smoke |
-| `tests/ext/pytest_fixtures/test_type_checking_alias.py::test_type_checking_alias_qualified_in_fixture_meta` | `0.54s call` | Necessary dummy-builder metadata contract |
-| `tests/test_sphinx_scenarios.py::test_copy_scenario_tree_keeps_cached_source_pristine` | `0.52s call` | Intentional cache-copy smoke |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_manual_directive_without_module_registers_unqualified_name` | `0.52s call` | Necessary dummy-builder domain-registration contract |
+| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `3.06s setup` | Real builder contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `2.74s setup` | Real builder contract |
+| `tests/ext/layout/test_snapshots.py::test_layout_demo_init_header_snapshot_annotation_disabled` | `2.72s setup` | Real builder contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `2.57s setup` | Real builder contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_warning_and_manual_option_snapshot` | `0.51s call` | Necessary dummy-builder doctree contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixture_index_resolution_smoke` | `0.47s call` | Necessary dummy-builder xref/table contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixtures_directive_myst_smoke` | `0.46s call` | Necessary dummy-builder MyST contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_rst_snapshot` | `0.46s call` | Necessary dummy-builder doctree contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_lint_level_error_sets_nonzero_status` | `0.45s call` | Necessary dummy-builder doctree/error contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_text_builder_does_not_crash` | `0.45s call` | Real builder contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_dependency_rendering_snapshot` | `0.45s call` | Necessary dummy-builder doctree contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixtures_directive_smoke` | `0.45s setup` | Necessary dummy-builder nested-parse contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_myst_smoke` | `0.44s call` | Necessary dummy-builder MyST contract |
+| `tests/ext/pytest_fixtures/test_type_checking_alias.py::test_type_checking_alias_qualified_in_fixture_meta` | `0.44s call` | Necessary dummy-builder metadata contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_default_fixture_store_and_domain_contract` | `0.43s setup` | Necessary shared dummy-builder setup |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_manual_directive_without_module_registers_unqualified_name` | `0.34s call` | Necessary dummy-builder domain-registration contract |
+| `tests/test_sphinx_scenarios.py::test_shared_sphinx_result_reuses_identical_builds` | `0.26s call` | Intentional cache semantics smoke |
+| `tests/test_sphinx_scenarios.py::test_copy_scenario_tree_keeps_cached_source_pristine` | `0.26s call` | Intentional cache-copy smoke |
 
 ### What is still over-harnessed?
 
@@ -445,6 +466,12 @@ One more specific improvement landed in this pass:
 - it now asserts the real contract directly: native MyST invocation expands
   generated fixture descriptions in the expected source order and does not leak
   directive wrapper text into the final doctree
+- one shared cross-document HTML build now covers both fixture-link directions
+- one shared dummy-builder `autofixtures + usage` scenario now covers both the
+  nested-parse smoke and the short-name fixture-reference smoke
+- smoke-only HTML, text, MyST, and cache-scenario tests now use smaller source
+  modules or page trees when the contract does not depend on the larger demo
+  fixture surface
 
 That is a good example of a rewrite that reduces harness cost and snapshot
 surface without reducing signal.
