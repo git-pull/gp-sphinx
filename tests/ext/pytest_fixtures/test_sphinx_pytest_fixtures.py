@@ -11,6 +11,8 @@ from docutils import nodes
 from sphinx_autodoc_badges import BadgeNode
 
 import sphinx_autodoc_pytest_fixtures
+import sphinx_autodoc_pytest_fixtures._directives as spf_directives
+import sphinx_autodoc_pytest_fixtures._index as spf_index
 import sphinx_autodoc_pytest_fixtures._store
 
 try:
@@ -973,6 +975,272 @@ def test_build_usage_snippet_override_hook_no_return_type() -> None:
     assert result is not None
     text = result.astext()
     assert " -> " not in text
+
+
+# ---------------------------------------------------------------------------
+# autofixtures/doc-pytest-plugin helper composition
+# ---------------------------------------------------------------------------
+
+
+def _fake_document() -> t.Any:
+    """Return a lightweight document-like object for directive helper tests."""
+    env = types.SimpleNamespace(note_dependency=lambda _path: None)
+    settings = types.SimpleNamespace(env=env)
+    return types.SimpleNamespace(settings=settings)
+
+
+def test_iter_public_fixture_entries_respects_excluded_names() -> None:
+    """Fixture scanning omits excluded public names while preserving aliases."""
+
+    @pytest.fixture(name="server")
+    def _server() -> str:
+        return "server"
+
+    @pytest.fixture
+    def auto_cleanup() -> str:
+        return "cleanup"
+
+    module = types.SimpleNamespace(
+        __name__="fixture_mod",
+        _server=_server,
+        auto_cleanup=auto_cleanup,
+        helper=lambda: "helper",
+    )
+
+    entries = spf_directives._iter_public_fixture_entries(
+        module,
+        excluded={"server"},
+    )
+
+    assert [public_name for _attr, public_name, _fixture in entries] == [
+        "auto_cleanup",
+    ]
+
+
+def test_build_autofixtures_directive_text_sorts_and_adds_no_index() -> None:
+    """Generated autofixture source preserves options without a Sphinx app."""
+    entries = [
+        ("b_fixture", "server", object()),
+        ("a_fixture", "auto_cleanup", object()),
+    ]
+
+    content = spf_directives._build_autofixtures_directive_text(
+        "fixture_mod",
+        entries,
+        order="alpha",
+        no_index=True,
+    )
+
+    assert content == "\n".join(
+        [
+            ".. autofixture:: fixture_mod.auto_cleanup",
+            "   :no-index:",
+            "",
+            ".. autofixture:: fixture_mod.server",
+            "   :no-index:",
+        ],
+    )
+
+
+def test_build_autofixtures_directive_text_wraps_eval_rst() -> None:
+    """Native MyST wrapping is handled in pure string generation."""
+    content = spf_directives._build_autofixtures_directive_text(
+        "fixture_mod",
+        [("my_server", "my_server", object())],
+        wrap_eval_rst=True,
+    )
+
+    assert content.startswith("```{eval-rst}\n")
+    assert content.endswith("\n```")
+
+
+def test_autofixtures_directive_run_warns_on_import_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Import failures warn without needing a synthetic Sphinx build."""
+    warning_calls: list[tuple[str, tuple[t.Any, ...]]] = []
+
+    def _raise_import_error(_modname: str) -> t.Any:
+        raise ImportError("boom")
+
+    def _record_warning(message: str, *args: t.Any, **_kwargs: t.Any) -> None:
+        warning_calls.append((message, args))
+
+    fake_directive = types.SimpleNamespace(
+        arguments=["fixture_mod"],
+        options={},
+        state=types.SimpleNamespace(document=_fake_document()),
+    )
+    monkeypatch.setattr(spf_directives.importlib, "import_module", _raise_import_error)
+    monkeypatch.setattr(spf_directives.logger, "warning", _record_warning)
+
+    result = spf_directives.AutofixturesDirective.run(fake_directive)
+
+    assert result == []
+    assert warning_calls == [
+        ("autofixtures: cannot import module %r — skipping.", ("fixture_mod",))
+    ]
+
+
+def test_build_doc_pytest_plugin_intro_nodes_uses_generic_test_suite_text() -> None:
+    """Generic intro copy stays generic when project is omitted."""
+    intro_nodes = spf_directives._build_doc_pytest_plugin_intro_nodes(
+        project="",
+        summary="fixture-demo ships a pytest plugin.",
+        install_command="uv add --dev fixture-demo",
+        tests_url="https://example.com/fixture-demo/tests",
+    )
+
+    assert intro_nodes[0].astext() == "fixture-demo ships a pytest plugin."
+    assert intro_nodes[-1].astext() == (
+        "For real-world usage examples, see the test suite."
+    )
+
+
+def test_build_doc_pytest_plugin_fixture_section_scaffold_contains_index_node() -> None:
+    """Fixture section scaffold is testable without parsing nested directives."""
+    section_nodes = spf_directives._build_doc_pytest_plugin_fixture_section_scaffold(
+        "fixture_mod"
+    )
+
+    assert [
+        node.astext() for node in section_nodes if isinstance(node, nodes.rubric)
+    ] == [
+        "Fixture Summary",
+        "Fixture Reference",
+    ]
+    assert isinstance(
+        section_nodes[1],
+        sphinx_autodoc_pytest_fixtures.autofixture_index_node,
+    )
+    assert section_nodes[1]["module"] == "fixture_mod"
+    assert section_nodes[1]["exclude"] == set()
+
+
+def test_compose_doc_pytest_plugin_nodes_orders_generated_sections() -> None:
+    """Intro, body, and fixture sections stay in display order."""
+    intro_nodes = [nodes.paragraph("", "intro")]
+    body_nodes = [nodes.paragraph("", "body")]
+    fixture_nodes = [nodes.paragraph("", "fixtures")]
+
+    combined = spf_directives._compose_doc_pytest_plugin_nodes(
+        intro_nodes=intro_nodes,
+        body_nodes=body_nodes,
+        fixture_section_nodes=fixture_nodes,
+    )
+
+    assert [node.astext() for node in combined] == ["intro", "body", "fixtures"]
+
+
+def test_doc_pytest_plugin_require_option_raises_error() -> None:
+    """Required options fail fast without a full directive parse."""
+    fake_directive = types.SimpleNamespace(
+        options={},
+        name="doc-pytest-plugin",
+        error=lambda message: RuntimeError(message),
+    )
+
+    with pytest.raises(RuntimeError, match="requires the :package: option"):
+        spf_directives.DocPytestPluginDirective._require_option(
+            fake_directive,
+            "package",
+        )
+
+
+def test_doc_pytest_plugin_get_module_fixture_entries_warns_when_no_fixtures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """No-fixture warnings are visible without building a whole doctree."""
+    warning_calls: list[tuple[str, tuple[t.Any, ...]]] = []
+
+    def _record_warning(message: str, *args: t.Any, **_kwargs: t.Any) -> None:
+        warning_calls.append((message, args))
+
+    module = types.SimpleNamespace(
+        __name__="fixture_mod",
+        __file__="/tmp/fixture_mod.py",
+        helper=lambda: "helper",
+    )
+    fake_directive = types.SimpleNamespace(
+        state=types.SimpleNamespace(document=_fake_document()),
+    )
+    monkeypatch.setattr(spf_directives.importlib, "import_module", lambda _name: module)
+    monkeypatch.setattr(spf_directives.logger, "warning", _record_warning)
+
+    result = spf_directives.DocPytestPluginDirective._get_module_fixture_entries(
+        fake_directive,
+        "fixture_mod",
+    )
+
+    assert result is None
+    assert warning_calls == [
+        (
+            "doc-pytest-plugin found no pytest fixtures in %r; "
+            "skipping generated fixture sections",
+            ("fixture_mod",),
+        )
+    ]
+
+
+def test_select_fixture_index_fixtures_respects_module_and_exclude() -> None:
+    """Fixture index selection is pure filtering before xref resolution."""
+    store: sphinx_autodoc_pytest_fixtures._store.FixtureStoreDict = {
+        "fixtures": {
+            "fixture_mod.server": _make_meta("fixture_mod.server", "server"),
+            "fixture_mod.client": _make_meta("fixture_mod.client", "client"),
+            "other_mod.server": _make_meta("other_mod.server", "server"),
+        },
+        "public_to_canon": {},
+        "reverse_deps": {},
+        "_store_version": sphinx_autodoc_pytest_fixtures._STORE_VERSION,
+    }
+
+    fixtures = spf_index._select_fixture_index_fixtures(
+        store,
+        "fixture_mod",
+        {"client"},
+    )
+
+    assert [meta.canonical_name for meta in fixtures] == ["fixture_mod.server"]
+
+
+def test_build_fixture_index_table_structure_contains_headers_badges_and_summary() -> (
+    None
+):
+    """Fixture index table shell is inspectable without a Sphinx app."""
+    meta = sphinx_autodoc_pytest_fixtures.FixtureMeta(
+        docname="api",
+        canonical_name="fixture_mod.old_server",
+        public_name="old_server",
+        source_name="old_server",
+        scope="session",
+        autouse=False,
+        kind="resource",
+        return_display="Server",
+        return_xref_target=None,
+        deps=(),
+        param_reprs=(),
+        has_teardown=False,
+        is_async=False,
+        summary="Deprecated server fixture.",
+        deprecated="2.0",
+    )
+
+    table, tbody = spf_index._build_fixture_index_table_structure([meta])
+
+    assert isinstance(table, nodes.table)
+    assert [entry.astext() for entry in table.findall(nodes.entry)][0:4] == [
+        "Fixture",
+        "Flags",
+        "Returns",
+        "Description",
+    ]
+    row = t.cast(nodes.row, tbody.children[0])
+    assert row.children[0].astext() == "old_server"
+    assert "fixture" in row.children[1].astext()
+    assert "deprecated" in row.children[1].astext()
+    assert row.children[2].astext() == "Server"
+    assert row.children[3].astext() == "Deprecated server fixture."
 
 
 # ---------------------------------------------------------------------------

@@ -46,7 +46,7 @@ Canonical direct pytest command for the same fast lane:
 $ uv run pytest \
     -o "addopts=--tb=short --no-header --showlocals --ignore=packages/sphinx-argparse-neo --ignore=packages/sphinx-autodoc-pytest-fixtures --ignore=packages/sphinx-autodoc-docutils" \
     -o tmp_path_retention_policy=none \
-    --basetemp=.cache/pytest-fast-direct \
+    --basetemp="$(pwd)/.cache/pytest-fast-direct" \
     -q \
     --capture=tee-sys \
     tests \

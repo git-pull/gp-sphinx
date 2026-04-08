@@ -172,6 +172,75 @@ def _build_return_type_nodes(
     return _parse_rst_inline(rst_text, app, docname)
 
 
+def _select_fixture_index_fixtures(
+    store: FixtureStoreDict,
+    modname: str,
+    exclude: set[str],
+) -> list[FixtureMeta]:
+    """Return fixture metadata that should appear in the generated index."""
+    return [
+        meta
+        for canon, meta in sorted(store["fixtures"].items())
+        if canon.startswith(f"{modname}.") and meta.public_name not in exclude
+    ]
+
+
+def _build_fixture_index_table_structure(
+    fixtures: list[FixtureMeta],
+) -> tuple[nodes.table, nodes.tbody]:
+    """Return the index table shell populated with plain fixture metadata."""
+    table = nodes.table(classes=[_CSS.FIXTURE_INDEX])
+    tgroup = nodes.tgroup(cols=len(_INDEX_TABLE_COLUMNS))
+    table += tgroup
+    for _header, width in _INDEX_TABLE_COLUMNS:
+        tgroup += nodes.colspec(colwidth=width)
+
+    thead = nodes.thead()
+    tgroup += thead
+    header_row = nodes.row()
+    thead += header_row
+    for header, _width in _INDEX_TABLE_COLUMNS:
+        entry = nodes.entry()
+        entry += nodes.paragraph("", header)
+        header_row += entry
+
+    tbody = nodes.tbody()
+    tgroup += tbody
+    for meta in fixtures:
+        row = nodes.row()
+        tbody += row
+
+        name_entry = nodes.entry()
+        name_entry += nodes.paragraph(
+            "",
+            "",
+            nodes.literal(meta.public_name, meta.public_name),
+        )
+        row += name_entry
+
+        flags_entry = nodes.entry()
+        flags_para = nodes.paragraph()
+        flags_para += _build_badge_group_node(
+            scope=meta.scope,
+            kind=meta.kind,
+            autouse=meta.autouse,
+            deprecated=bool(meta.deprecated),
+            show_fixture_badge=True,
+        )
+        flags_entry += flags_para
+        row += flags_entry
+
+        ret_entry = nodes.entry()
+        ret_entry += nodes.paragraph("", meta.return_display)
+        row += ret_entry
+
+        desc_entry = nodes.entry()
+        desc_entry += nodes.paragraph("", meta.summary)
+        row += desc_entry
+
+    return table, tbody
+
+
 def _resolve_fixture_index(
     node: autofixture_index_node,
     store: FixtureStoreDict,
@@ -202,39 +271,21 @@ def _resolve_fixture_index(
     modname = node["module"]
     exclude: set[str] = node.get("exclude", set())
 
-    fixtures = [
-        meta
-        for canon, meta in sorted(store["fixtures"].items())
-        if canon.startswith(f"{modname}.") and meta.public_name not in exclude
-    ]
+    fixtures = _select_fixture_index_fixtures(store, modname, exclude)
 
     if not fixtures:
         node.replace_self([])
         return
 
-    table = nodes.table(classes=[_CSS.FIXTURE_INDEX])
-    tgroup = nodes.tgroup(cols=len(_INDEX_TABLE_COLUMNS))
-    table += tgroup
-    for _header, width in _INDEX_TABLE_COLUMNS:
-        tgroup += nodes.colspec(colwidth=width)
-
-    thead = nodes.thead()
-    tgroup += thead
-    header_row = nodes.row()
-    thead += header_row
-    for header, _width in _INDEX_TABLE_COLUMNS:
-        entry = nodes.entry()
-        entry += nodes.paragraph("", header)
-        header_row += entry
-
-    tbody = nodes.tbody()
-    tgroup += tbody
-    for meta in fixtures:
-        row = nodes.row()
-        tbody += row
+    table, tbody = _build_fixture_index_table_structure(fixtures)
+    for meta, row_node in zip(fixtures, tbody.children, strict=True):
+        row = t.cast(nodes.row, row_node)
+        name_entry, _flags_entry, ret_entry, desc_entry = t.cast(
+            tuple[nodes.entry, nodes.entry, nodes.entry, nodes.entry],
+            tuple(row.children),
+        )
 
         # --- Fixture name: cross-ref link ---
-        name_entry = nodes.entry()
         obj_entry = py_domain.objects.get(meta.canonical_name)
         if obj_entry is not None:
             ref_node: nodes.Node = make_refnode(
@@ -248,38 +299,20 @@ def _resolve_fixture_index(
             ref_node = nodes.literal(meta.public_name, meta.public_name)
         name_para = nodes.paragraph()
         name_para += ref_node
-        name_entry += name_para
-        row += name_entry
-
-        # --- Flags: scope/kind/autouse/deprecated badges ---
-        flags_entry = nodes.entry()
-        flags_para = nodes.paragraph()
-        flags_para += _build_badge_group_node(
-            scope=meta.scope,
-            kind=meta.kind,
-            autouse=meta.autouse,
-            deprecated=bool(meta.deprecated),
-            show_fixture_badge=True,
-        )
-        flags_entry += flags_para
-        row += flags_entry
+        name_entry[:] = [name_para]
 
         # --- Returns: linked type name ---
-        ret_entry = nodes.entry()
         ret_para = nodes.paragraph()
         for ret_node in _build_return_type_nodes(meta, py_domain, app, docname):
             ret_para += ret_node
-        ret_entry += ret_para
-        row += ret_entry
+        ret_entry[:] = [ret_para]
 
         # --- Description: parsed RST inline markup ---
-        desc_entry = nodes.entry()
         desc_para = nodes.paragraph()
         if meta.summary:
             for desc_node in _parse_rst_inline(meta.summary, app, docname):
                 desc_para += desc_node
-        desc_entry += desc_para
-        row += desc_entry
+        desc_entry[:] = [desc_para]
 
     scroll_wrapper = nodes.container(classes=[_CSS.TABLE_SCROLL])
     scroll_wrapper += table

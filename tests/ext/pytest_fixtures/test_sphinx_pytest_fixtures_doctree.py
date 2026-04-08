@@ -347,45 +347,8 @@ def test_autofixture_index_table_snapshot(
     )
 
 
-def test_autofixture_index_exclude_snapshot(
-    tmp_path: pathlib.Path,
-    snapshot_doctree,
-) -> None:
-    """Snapshot ``autofixture-index`` output after exclusions are applied."""
-    index_rst = textwrap.dedent(
-        """\
-        Test
-        ====
-
-        .. py:module:: fixture_mod
-
-        .. autofixture-index:: fixture_mod
-           :exclude: my_client, auto_cleanup
-
-        .. autofixture:: fixture_mod.my_server
-
-        .. autofixture:: fixture_mod.my_client
-
-        .. autofixture:: fixture_mod.auto_cleanup
-        """,
-    )
-    result = build_fixture_result(
-        tmp_path,
-        buildername="dummy",
-        index_rst=index_rst,
-        confoverrides={"pytest_fixture_lint_level": "none"},
-    )
-    doctree = get_doctree(result, "index", post_transforms=True)
-
-    snapshot_doctree(
-        _find_first_table(doctree),
-        name="autofixture_index_exclude",
-        roots=(result.srcdir, result.outdir),
-    )
-
-
-def test_autofixtures_directive_contract(tmp_path: pathlib.Path) -> None:
-    """``autofixtures`` respects source order, alpha order, and exclusion."""
+def test_autofixtures_directive_smoke(tmp_path: pathlib.Path) -> None:
+    """``autofixtures`` still expands into fixture descriptions in source order."""
     default_result = build_fixture_result(
         tmp_path,
         buildername="dummy",
@@ -411,73 +374,6 @@ def test_autofixtures_directive_contract(tmp_path: pathlib.Path) -> None:
         "fixture_mod.TestServer",
         "fixture_mod.renamed_fixture",
     ]
-
-    alpha_result = build_fixture_result(
-        tmp_path,
-        buildername="dummy",
-        index_rst=textwrap.dedent(
-            """\
-            Test fixtures
-            =============
-
-            .. py:module:: fixture_mod
-
-            .. autofixtures:: fixture_mod
-               :order: alpha
-            """,
-        ),
-        confoverrides={"pytest_fixture_lint_level": "none"},
-    )
-    alpha_doctree = get_doctree(alpha_result, "index", post_transforms=True)
-    assert _fixture_order(alpha_doctree) == [
-        "fixture_mod.TestServer",
-        "fixture_mod.auto_cleanup",
-        "fixture_mod.home_user",
-        "fixture_mod.my_client",
-        "fixture_mod.my_server",
-        "fixture_mod.renamed_fixture",
-        "fixture_mod.yield_server",
-    ]
-
-    exclude_result = build_fixture_result(
-        tmp_path,
-        buildername="dummy",
-        index_rst=textwrap.dedent(
-            """\
-            Test fixtures
-            =============
-
-            .. py:module:: fixture_mod
-
-            .. autofixtures:: fixture_mod
-               :exclude: my_client, auto_cleanup
-            """,
-        ),
-        confoverrides={"pytest_fixture_lint_level": "none"},
-    )
-    exclude_doctree = get_doctree(exclude_result, "index", post_transforms=True)
-    assert _fixture_order(exclude_doctree) == [
-        "fixture_mod.my_server",
-        "fixture_mod.home_user",
-        "fixture_mod.yield_server",
-        "fixture_mod.TestServer",
-        "fixture_mod.renamed_fixture",
-    ]
-
-    warning_result = build_fixture_result(
-        tmp_path,
-        buildername="dummy",
-        index_rst=textwrap.dedent(
-            """\
-            Test fixtures
-            =============
-
-            .. autofixtures:: nonexistent_module_xyz_12345
-            """,
-        ),
-        confoverrides={"pytest_fixture_lint_level": "none"},
-    )
-    assert "nonexistent_module_xyz_12345" in warning_result.warnings
 
 
 def test_short_name_fixture_reference_resolves(tmp_path: pathlib.Path) -> None:
@@ -538,80 +434,6 @@ def test_doc_pytest_plugin_rst_snapshot(
         name="doc_pytest_plugin_rst",
         roots=(result.srcdir, result.outdir),
     )
-
-
-def test_doc_pytest_plugin_warning_contracts(tmp_path: pathlib.Path) -> None:
-    """Doc plugin warnings and defaults are visible without full HTML builds."""
-    no_fixtures_result = build_fixture_result(
-        tmp_path,
-        buildername="dummy",
-        fixture_source=textwrap.dedent(
-            """\
-            from __future__ import annotations
-
-            def helper() -> str:
-                return "helper"
-            """,
-        ),
-        index_rst=textwrap.dedent(
-            """\
-            Test fixtures
-            =============
-
-            .. doc-pytest-plugin:: fixture_mod
-               :project: fixture-demo
-               :package: fixture-demo
-            """,
-        ),
-        confoverrides={"pytest_fixture_lint_level": "none"},
-    )
-    no_fixtures_text = get_doctree(
-        no_fixtures_result,
-        "index",
-        post_transforms=True,
-    ).astext()
-    assert "Fixture Summary" not in no_fixtures_text
-    assert "Fixture Reference" not in no_fixtures_text
-    assert "found no pytest fixtures" in no_fixtures_result.warnings
-
-    generic_result = build_fixture_result(
-        tmp_path,
-        buildername="dummy",
-        index_rst=textwrap.dedent(
-            """\
-            Test fixtures
-            =============
-
-            .. doc-pytest-plugin:: fixture_mod
-               :package: fixture-demo
-               :tests-url: https://example.com/fixture-demo/tests
-
-               Body prose only.
-            """,
-        ),
-        confoverrides={"pytest_fixture_lint_level": "none"},
-    )
-    generic_text = get_doctree(generic_result, "index", post_transforms=True).astext()
-    assert "test suite" in generic_text
-    assert "fixture-demo test suite" not in generic_text
-    assert "Body prose only." in generic_text
-
-    missing_package_result = build_fixture_result(
-        tmp_path,
-        buildername="dummy",
-        index_rst=textwrap.dedent(
-            """\
-            Test fixtures
-            =============
-
-            .. doc-pytest-plugin:: fixture_mod
-
-               No package option here.
-            """,
-        ),
-        confoverrides={"pytest_fixture_lint_level": "none"},
-    )
-    assert "requires the :package: option" in missing_package_result.warnings
 
 
 def test_doc_pytest_plugin_myst_snapshot(

@@ -9,13 +9,14 @@ than Sphinx itself.
 
 | Command | Result |
 | --- | --- |
-| `uv run pytest -s` | `781 passed, 3 skipped in 91.73s` |
-| `uv run pytest -o "addopts=..." --capture=tee-sys -q tests -m 'not integration'` | `670 passed, 3 skipped, 23 deselected in 25.35s` |
-| `uv run pytest -o "addopts=..." -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-fast-direct --capture=tee-sys -q tests -m 'not integration'` | `670 passed, 3 skipped, 23 deselected in 2.45s`, wall time `3.07s` |
-| `uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-integration-direct tests -m integration` | `23 passed, 676 deselected in 3.18s`, wall time `4.54s` |
-| `uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-abs` | `781 passed, 3 skipped in 5.22s`, wall time `6.47s` |
-| `just test-fast` via `/usr/bin/just 1.21.0` | `670 passed, 3 skipped, 23 deselected in 1.91s`, wall time `2.60s` |
-| `just test` via `/usr/bin/just 1.21.0` | `781 passed, 3 skipped in 5.01s`, wall time `6.27s` |
+| `uv run pytest -s` | `790 passed, 3 skipped in 78.56s` |
+| `uv run pytest -o "addopts=..." --capture=tee-sys -q tests -m 'not integration' --durations=25 --durations-min=0.05` | `681 passed, 3 skipped, 21 deselected in 31.77s` |
+| `uv run pytest -o "addopts=..." -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-fast-direct --capture=tee-sys -q tests -m 'not integration'` | `681 passed, 3 skipped, 21 deselected in 2.53s`, wall time `3.39s` |
+| `uv run pytest -s tests -m integration --durations=25 --durations-min=0.05` | `21 passed, 687 deselected in 18.20s` |
+| `uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-integration-direct tests -m integration` | `21 passed, 687 deselected in 3.11s`, wall time `4.45s` |
+| `uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-abs` | `790 passed, 3 skipped in 5.00s`, wall time `6.21s` |
+| `just test-fast` via `/usr/bin/just 1.21.0` | `681 passed, 3 skipped, 21 deselected in 2.39s`, wall time `3.17s` |
+| `just test` via `/usr/bin/just 1.21.0` | `790 passed, 3 skipped in 4.99s`, wall time `6.20s` |
 
 ## Profile findings
 
@@ -72,7 +73,28 @@ Top cumulative costs:
 | `sphinx.builders.html.handle_page` / Jinja render path | `12.12s` to `10.54s` |
 
 Conclusion: the integration lane is doing real Sphinx work, but even there a
-meaningful chunk of time is still going into temp-path resolution overhead.
+meaningful chunk of time was going into temp-path resolution overhead before
+the fixed-basetemp recipes. With the runner fix in place, the remaining slow
+tests are the intentional builder-facing contracts.
+
+## Remaining slow tests under the default integration runner
+
+Current `--durations` output shows the remaining heavy tests are mostly the
+intended E2E surface:
+
+| Test | Approx. duration |
+| --- | --- |
+| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `2.56s` |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_used_by_link_html_smoke` | `2.35s` |
+| `tests/ext/layout/test_snapshots.py::test_layout_demo_init_header_snapshot_annotation_disabled` | `2.18s` |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `2.17s` |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `1.66s` |
+| `tests/test_sphinx_scenarios.py::test_shared_sphinx_result_reuses_identical_builds` | `1.47s` |
+
+The two doctree-heavy pytest-fixture scenarios that previously sat around
+`1.0–1.5s` each are now below `0.6s`, because their row/filtering and
+doc-pytest-plugin assembly logic moved into direct helper tests instead of
+always paying for a synthetic Sphinx app.
 
 ## What is still legitimately E2E
 
@@ -86,7 +108,15 @@ contract is emitted output rather than doctree structure:
 - Text-builder smoke
 
 The doctree-first split already moved most previous faux-E2E checks into
-doctree, store, or focused snapshot coverage.
+doctree, store, or focused snapshot coverage. The latest surgical refactor also
+demoted more `sphinx_autodoc_pytest_fixtures` behavior into pure helper tests:
+
+- generated nested `autofixture` directive text
+- fixture-index row selection and static table structure
+- doc-pytest-plugin intro and section assembly
+
+That leaves the builder-backed fixture tests focused on cross-document links,
+resolved references, and emitted file output.
 
 ## Temp-path heavy areas
 
@@ -186,8 +216,19 @@ So the current fixture-based helper approach is sufficient for now. Revisit a
 custom extension only if snapshot storage layout or one-fragment-per-file
 snapshots becomes a concrete maintenance problem.
 
+## Latest raw-suite note
+
+The raw `uv run pytest -s` benchmark is intentionally kept as the conservative
+baseline: `790 passed, 3 skipped in 78.56s`.
+
+It still pays for pytest's default temp-path behavior and the current
+capture-path oddities. The optimized local recipes are the preferred developer
+path; they preserve the same coverage while avoiding the temp-dir cost center
+that dominates the default runner.
+
 ## References
 
-- [pytest builtin fixtures and `tmp_path_factory`](https://docs.pytest.org/en/4.6.x/builtin.html)
+- [pytest temporary directories and retention](https://docs.pytest.org/en/stable/how-to/tmp_path.html)
+- [Sphinx testing API](https://www.sphinx-doc.org/en/master/extdev/testing.html)
 - [just 1.48.0 release notes](https://github.com/casey/just/releases/tag/1.48.0)
 - [just 1.49.0 release notes](https://github.com/casey/just/releases/tag/1.49.0)
