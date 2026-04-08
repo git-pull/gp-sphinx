@@ -20,6 +20,7 @@ from tests._sphinx_scenarios import (
 def _make_demo_scenario(
     *,
     index_title: str = "Demo",
+    buildername: str = "html",
 ) -> SphinxScenario:
     """Return a small Sphinx scenario for cache helper tests."""
     conf_py = textwrap.dedent(
@@ -56,6 +57,7 @@ def _make_demo_scenario(
         """,
     )
     return SphinxScenario(
+        buildername=buildername,
         files=(
             ScenarioFile("demo_module.py", module_source),
             ScenarioFile("conf.py", conf_py, substitute_srcdir=True),
@@ -82,7 +84,7 @@ def test_shared_sphinx_result_reuses_identical_builds(
     scenario_cache_root: pathlib.Path,
 ) -> None:
     """Reuse the same completed build for identical scenarios."""
-    scenario = _make_demo_scenario()
+    scenario = _make_demo_scenario(buildername="dummy")
 
     result_one = build_shared_sphinx_result(
         scenario_cache_root,
@@ -96,7 +98,8 @@ def test_shared_sphinx_result_reuses_identical_builds(
     )
 
     assert result_one is result_two
-    assert (result_one.outdir / "index.html").exists()
+    assert result_one.app.builder.name == "dummy"
+    assert result_one.app.env.found_docs == {"index"}
 
 
 def test_sphinx_scenario_key_changes_when_inputs_change() -> None:
