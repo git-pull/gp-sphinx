@@ -42,6 +42,7 @@ from sphinx_autodoc_pytest_fixtures._models import (
 from sphinx_autodoc_pytest_fixtures._store import _get_spf_store, _resolve_builtin_url
 
 logger = sphinx_logging.getLogger(__name__)
+AutofixtureEntry: t.TypeAlias = tuple[str, str, t.Any]
 
 
 def _iter_public_fixture_entries(
@@ -126,6 +127,119 @@ def _is_native_myst(directive: SphinxDirective) -> bool:
         return False
 
 
+def _build_autofixtures_directive_text(
+    modname: str,
+    entries: list[AutofixtureEntry],
+    *,
+    order: str = "source",
+    no_index: bool = False,
+    wrap_eval_rst: bool = False,
+) -> str:
+    """Return directive source text for generated ``autofixture`` blocks.
+
+    Parameters
+    ----------
+    modname : str
+        Imported fixture module name.
+    entries : list[AutofixtureEntry]
+        Public fixture entries as ``(attr_name, public_name, fixture_obj)``.
+    order : str, optional
+        ``"source"`` preserves discovery order and ``"alpha"`` sorts by
+        public fixture name.
+    no_index : bool, optional
+        Whether to emit ``:no-index:`` for each generated directive.
+    wrap_eval_rst : bool, optional
+        Whether to wrap the generated RST in a MyST ``{eval-rst}`` fence.
+
+    Returns
+    -------
+    str
+        Nested directive source ready for ``parse_text_to_nodes()``.
+    """
+    ordered_entries = entries
+    if order == "alpha":
+        ordered_entries = sorted(entries, key=operator.itemgetter(1))
+
+    lines: list[str] = []
+    for _attr_name, public_name, _value in ordered_entries:
+        lines.append(f".. autofixture:: {modname}.{public_name}")
+        if no_index:
+            lines.append("   :no-index:")
+        lines.append("")
+
+    content = "\n".join(lines).strip()
+    if wrap_eval_rst:
+        return f"```{{eval-rst}}\n{content}\n```"
+    return content
+
+
+def _build_doc_pytest_plugin_intro_nodes(
+    *,
+    project: str,
+    summary: str,
+    install_command: str,
+    tests_url: str | None,
+) -> list[nodes.Node]:
+    """Build the generated doc-pytest-plugin intro nodes."""
+    intro_nodes: list[nodes.Node] = []
+    if summary:
+        intro_nodes.append(nodes.paragraph("", summary))
+    intro_nodes.append(nodes.rubric("", "Install"))
+
+    install_block = nodes.literal_block("", f"$ {install_command}")
+    install_block["language"] = "console"
+    intro_nodes.append(install_block)
+
+    note = nodes.note()
+    note_para = nodes.paragraph()
+    note_para += nodes.Text("pytest auto-detects this plugin through the ")
+    note_para += nodes.literal("", "pytest11")
+    note_para += nodes.Text(" entry point. Its fixtures are available without extra ")
+    note_para += nodes.literal("", "conftest.py")
+    note_para += nodes.Text(" imports.")
+    note += note_para
+    intro_nodes.append(note)
+
+    if tests_url:
+        link_text = f"{project} test suite" if project else "test suite"
+        tests_para = nodes.paragraph()
+        tests_para += nodes.Text("For real-world usage examples, see the ")
+        tests_para += nodes.reference(
+            "",
+            "",
+            nodes.Text(link_text),
+            refuri=tests_url,
+        )
+        tests_para += nodes.Text(".")
+        intro_nodes.append(tests_para)
+
+    return intro_nodes
+
+
+def _build_doc_pytest_plugin_fixture_section_scaffold(
+    modname: str,
+) -> list[nodes.Node]:
+    """Return the generated fixture-section scaffold nodes."""
+    idx_node = autofixture_index_node()
+    idx_node["module"] = modname
+    idx_node["exclude"] = set()
+    return [
+        nodes.rubric("", "Fixture Summary"),
+        idx_node,
+        nodes.rubric("", "Fixture Reference"),
+    ]
+
+
+def _compose_doc_pytest_plugin_nodes(
+    *,
+    intro_nodes: list[nodes.Node],
+    body_nodes: list[nodes.Node],
+    fixture_section_nodes: list[nodes.Node],
+) -> list[nodes.Node]:
+    """Compose the final doc-pytest-plugin page nodes in display order."""
+    return [*intro_nodes, *body_nodes, *fixture_section_nodes]
+
+
 def _render_autofixtures_nodes(
     directive: SphinxDirective,
     *,
@@ -156,19 +270,13 @@ def _render_autofixtures_nodes(
     list[nodes.Node]
         Parsed fixture reference nodes.
     """
-    if order == "alpha":
-        entries = sorted(entries, key=operator.itemgetter(1))
-
-    lines: list[str] = []
-    for _attr_name, public_name, _value in entries:
-        lines.append(f".. autofixture:: {modname}.{public_name}")
-        if no_index:
-            lines.append("   :no-index:")
-        lines.append("")
-
-    content = "\n".join(lines).strip()
-    if _is_native_myst(directive):
-        content = f"```{{eval-rst}}\n{content}\n```"
+    content = _build_autofixtures_directive_text(
+        modname,
+        entries,
+        order=order,
+        no_index=no_index,
+        wrap_eval_rst=_is_native_myst(directive),
+    )
 
     return directive.parse_text_to_nodes(
         content,
@@ -670,33 +778,31 @@ class DocPytestPluginDirective(SphinxDirective):
             f"pip install {package}",
         )
 
-        children: list[nodes.Node] = []
-        children.extend(
-            self._build_page_intro_nodes(
-                project=project,
-                summary=summary,
-                install_command=install_command,
-                tests_url=tests_url,
-            ),
+        intro_nodes = _build_doc_pytest_plugin_intro_nodes(
+            project=project,
+            summary=summary,
+            install_command=install_command,
+            tests_url=tests_url,
         )
-
+        body_nodes: list[nodes.Node] = []
         if self.content:
-            children.extend(
-                self.parse_content_to_nodes(
-                    allow_section_headings=True,
-                ),
+            body_nodes = self.parse_content_to_nodes(
+                allow_section_headings=True,
             )
 
+        fixture_section_nodes: list[nodes.Node] = []
         entries = self._get_module_fixture_entries(modname)
         if entries is not None:
-            children.extend(
-                self._build_fixture_section_nodes(
-                    modname=modname,
-                    entries=entries,
-                ),
+            fixture_section_nodes = self._build_fixture_section_nodes(
+                modname=modname,
+                entries=entries,
             )
 
-        return children
+        return _compose_doc_pytest_plugin_nodes(
+            intro_nodes=intro_nodes,
+            body_nodes=body_nodes,
+            fixture_section_nodes=fixture_section_nodes,
+        )
 
     def _require_option(self, name: str) -> str:
         """Return a required option value or raise a directive error."""
@@ -742,41 +848,12 @@ class DocPytestPluginDirective(SphinxDirective):
         tests_url: str | None,
     ) -> list[nodes.Node]:
         """Build the generated intro nodes."""
-        intro_nodes: list[nodes.Node] = []
-        if summary:
-            intro_nodes.append(nodes.paragraph("", summary))
-        intro_nodes.append(nodes.rubric("", "Install"))
-
-        install_block = nodes.literal_block("", f"$ {install_command}")
-        install_block["language"] = "console"
-        intro_nodes.append(install_block)
-
-        note = nodes.note()
-        note_para = nodes.paragraph()
-        note_para += nodes.Text("pytest auto-detects this plugin through the ")
-        note_para += nodes.literal("", "pytest11")
-        note_para += nodes.Text(
-            " entry point. Its fixtures are available without extra "
+        return _build_doc_pytest_plugin_intro_nodes(
+            project=project,
+            summary=summary,
+            install_command=install_command,
+            tests_url=tests_url,
         )
-        note_para += nodes.literal("", "conftest.py")
-        note_para += nodes.Text(" imports.")
-        note += note_para
-        intro_nodes.append(note)
-
-        if tests_url:
-            link_text = f"{project} test suite" if project else "test suite"
-            tests_para = nodes.paragraph()
-            tests_para += nodes.Text("For real-world usage examples, see the ")
-            tests_para += nodes.reference(
-                "",
-                "",
-                nodes.Text(link_text),
-                refuri=tests_url,
-            )
-            tests_para += nodes.Text(".")
-            intro_nodes.append(tests_para)
-
-        return intro_nodes
 
     def _build_fixture_section_nodes(
         self,
@@ -785,13 +862,8 @@ class DocPytestPluginDirective(SphinxDirective):
         entries: list[tuple[str, str, t.Any]],
     ) -> list[nodes.Node]:
         """Build generated fixture summary/reference nodes."""
-        idx_node = autofixture_index_node()
-        idx_node["module"] = modname
-        idx_node["exclude"] = set()
         return [
-            nodes.rubric("", "Fixture Summary"),
-            idx_node,
-            nodes.rubric("", "Fixture Reference"),
+            *_build_doc_pytest_plugin_fixture_section_scaffold(modname),
             *_render_autofixtures_nodes(
                 self,
                 modname=modname,
