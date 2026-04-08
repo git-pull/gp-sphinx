@@ -24,18 +24,10 @@ from tests.ext.pytest_fixtures._scenario_support import (
 
 
 @pytest.fixture(scope="module")
-def fixture_integration_root(
-    tmp_path_factory: pytest.TempPathFactory,
-) -> pathlib.Path:
-    """Return a shared cache root for fixture HTML integration scenarios."""
-    return tmp_path_factory.mktemp("spf-html")
-
-
-@pytest.fixture(scope="module")
-def default_html_result(fixture_integration_root: pathlib.Path):
+def default_html_result(spf_html_root: pathlib.Path):
     """Build the default fixture HTML scenario once per module."""
     return build_fixture_result(
-        fixture_integration_root / "default-html",
+        spf_html_root / "default-html",
         buildername="html",
         confoverrides={"pytest_fixture_lint_level": "none"},
     )
@@ -71,10 +63,10 @@ def test_default_html_outputs_smoke(default_html_result) -> None:
 
 @pytest.mark.integration
 def test_cross_document_fixture_reference_html_resolves(
-    fixture_integration_root: pathlib.Path,
+    spf_html_root: pathlib.Path,
 ) -> None:
     """Cross-document fixture references resolve to HTML hyperlinks."""
-    scenario_root = fixture_integration_root / "cross-document-reference"
+    scenario_root = spf_html_root / "cross-document-reference"
     conf_text = render_conf_py(scenario_root / "src").replace(
         str(scenario_root / "src"),
         SCENARIO_SRCDIR_TOKEN,
@@ -126,7 +118,7 @@ def test_cross_document_fixture_reference_html_resolves(
         confoverrides={"pytest_fixture_lint_level": "none"},
     )
     result = build_shared_sphinx_result(
-        fixture_integration_root,
+        spf_html_root,
         scenario,
         purge_modules=("fixture_mod",),
     )
@@ -159,10 +151,10 @@ CROSS_DOC_FIXTURE_SOURCE = textwrap.dedent(
 
 @pytest.mark.integration
 def test_cross_document_used_by_link_html_smoke(
-    fixture_integration_root: pathlib.Path,
+    spf_html_root: pathlib.Path,
 ) -> None:
     """Used-by metadata links to a consumer in another HTML document."""
-    scenario_root = fixture_integration_root / "cross-document-used-by"
+    scenario_root = spf_html_root / "cross-document-used-by"
     conf_text = render_conf_py(scenario_root / "src").replace(
         str(scenario_root / "src"),
         SCENARIO_SRCDIR_TOKEN,
@@ -214,7 +206,7 @@ def test_cross_document_used_by_link_html_smoke(
         confoverrides={"pytest_fixture_lint_level": "none"},
     )
     result = build_shared_sphinx_result(
-        fixture_integration_root,
+        spf_html_root,
         scenario,
         purge_modules=("fixture_mod",),
     )
@@ -226,11 +218,11 @@ def test_cross_document_used_by_link_html_smoke(
 
 @pytest.mark.integration
 def test_text_builder_does_not_crash(
-    fixture_integration_root: pathlib.Path,
+    spf_html_root: pathlib.Path,
 ) -> None:
     """The text builder handles pytest fixture output without crashing."""
     result = build_fixture_result(
-        fixture_integration_root / "text-builder",
+        spf_html_root / "text-builder",
         buildername="text",
         confoverrides={"pytest_fixture_lint_level": "none"},
     )

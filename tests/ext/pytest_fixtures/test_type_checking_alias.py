@@ -527,7 +527,7 @@ def test_get_return_annotation_class_import_alias_resolves_to_class(
 
 @pytest.mark.integration
 def test_type_checking_alias_qualified_in_fixture_meta(
-    tmp_path: pathlib.Path,
+    spf_type_checking_root: pathlib.Path,
 ) -> None:
     """Fixture with TYPE_CHECKING TypeAlias return gets qualified return_display.
 
@@ -583,7 +583,7 @@ def test_type_checking_alias_qualified_in_fixture_meta(
         confoverrides={"pytest_fixture_lint_level": "none"},
     )
     result = build_shared_sphinx_result(
-        derive_sphinx_scenario_cache_root(tmp_path),
+        derive_sphinx_scenario_cache_root(spf_type_checking_root),
         scenario,
         purge_modules=("fixture_mod",),
     )
