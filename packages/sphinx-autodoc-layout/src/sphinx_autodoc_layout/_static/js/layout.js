@@ -28,6 +28,11 @@
       signature.setAttribute('data-expanded', expanded ? 'true' : 'false');
     }
 
+    var header = expandedPanel.closest('.api-header');
+    if (header) {
+      header.setAttribute('data-signature-expanded', expanded ? 'true' : 'false');
+    }
+
     syncSignatureControls(expandedId, expanded);
 
     if (expanded) {

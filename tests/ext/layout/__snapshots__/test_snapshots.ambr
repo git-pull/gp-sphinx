@@ -1,7 +1,7 @@
 # serializer version: 1
 # name: test_layout_demo_init_header_snapshot_annotated[annotated]
   '''
-  <dt class="sig sig-object py api-header" id="gal_demo_api.LayoutDemo.__init__">
+  <dt class="sig sig-object py api-header" data-signature-expanded="false" id="gal_demo_api.LayoutDemo.__init__">
   <div class="api-layout"><div class="api-layout-left"><div class="api-signature"><span class="sig-name descname"><span class="pre">__init__</span></span><button aria-controls="gal_demo_api.LayoutDemo.__init__--signature-expanded" aria-expanded="false" class="api-signature-toggle gal-sig-toggle" type="button"><span class="sig-paren">(</span><span class="api-signature-preview gal-sig-preview">host, [...]</span><span class="sig-paren">)</span></button><div aria-hidden="true" class="api-signature-expanded gal-sig-expanded" data-expanded="false" hidden="hidden" id="gal_demo_api.LayoutDemo.__init__--signature-expanded"><span class="sig-paren">(</span>
   
   <dl>
@@ -26,7 +26,7 @@
 # ---
 # name: test_layout_demo_init_header_snapshot_annotation_disabled[annotation_disabled]
   '''
-  <dt class="sig sig-object py api-header" id="gal_demo_api.LayoutDemo.__init__">
+  <dt class="sig sig-object py api-header" data-signature-expanded="false" id="gal_demo_api.LayoutDemo.__init__">
   <div class="api-layout"><div class="api-layout-left"><div class="api-signature"><span class="sig-name descname"><span class="pre">__init__</span></span><button aria-controls="gal_demo_api.LayoutDemo.__init__--signature-expanded" aria-expanded="false" class="api-signature-toggle gal-sig-toggle" type="button"><span class="sig-paren">(</span><span class="api-signature-preview gal-sig-preview">host, [...]</span><span class="sig-paren">)</span></button><div aria-hidden="true" class="api-signature-expanded gal-sig-expanded" data-expanded="false" hidden="hidden" id="gal_demo_api.LayoutDemo.__init__--signature-expanded"><span class="sig-paren">(</span>
   
   <dl>

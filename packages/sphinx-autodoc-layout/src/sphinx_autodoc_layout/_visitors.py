@@ -135,7 +135,13 @@ def depart_gal_sig_fold(self: HTML5Translator, node: nodes.Element) -> None:
 
 def visit_desc_signature_html(self: HTML5Translator, node: nodes.Element) -> None:
     """Render managed desc signatures without Sphinx's default permalink."""
-    SphinxHTML5Translator.visit_desc_signature(self, node)
+    if not node.get("api_managed", False):
+        SphinxHTML5Translator.visit_desc_signature(self, node)
+        return
+
+    attrs = _html_attrs(node)
+    self.body.append(self.starttag(node, "dt", **attrs))
+    self.protect_literal_text += 1
 
 
 def depart_desc_signature_html(self: HTML5Translator, node: nodes.Element) -> None:

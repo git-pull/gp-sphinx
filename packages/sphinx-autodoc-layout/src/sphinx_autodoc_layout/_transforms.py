@@ -831,6 +831,8 @@ def on_doctree_resolved(
                 continue
             _append_class(child, "api-header")
             child["api_managed"] = not child.get("is_multiline", False)
+            if child["api_managed"]:
+                child["html_attrs"] = {"data-signature-expanded": "false"}
             _rebuild_signature_layout(
                 desc_node,
                 child,

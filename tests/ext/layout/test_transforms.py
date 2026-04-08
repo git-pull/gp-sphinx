@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import types
 import typing as t
 
 from docutils import nodes
@@ -20,6 +21,7 @@ from sphinx_autodoc_layout._transforms import (
     _nest_python_members,
     _rebuild_signature_layout,
     _wrap_content_runs,
+    on_doctree_resolved,
 )
 
 
@@ -335,6 +337,7 @@ def test_rebuild_signature_layout_splits_toolbar_and_permalink() -> None:
     layout = sig.children[0]
     assert isinstance(layout, api_component)
     assert layout.get("name") == "api-layout"
+    assert layout.get("html_attrs") is None
 
     left, right = layout.children
     assert isinstance(left, api_component)
@@ -371,6 +374,7 @@ def test_rebuild_signature_layout_uses_expanded_wrapper_for_large_signature() ->
 
     layout = sig.children[0]
     assert isinstance(layout, api_component)
+    assert layout.get("html_attrs") is None
     left = layout.children[0]
     assert isinstance(left, api_component)
     assert isinstance(left.children[0], api_component)
@@ -483,3 +487,30 @@ def test_rebuild_signature_layout_skips_multiline_signatures() -> None:
     )
 
     assert list(sig.children) == original
+
+
+def test_on_doctree_resolved_marks_managed_headers_with_initial_state() -> None:
+    desc = _make_desc(ids=("demo.func",))
+    sig = desc.children[0]
+    assert isinstance(sig, addnodes.desc_signature)
+    sig += addnodes.desc_name("", "func")
+    sig += _make_parameter_list(2)
+
+    app = t.cast(
+        t.Any,
+        types.SimpleNamespace(
+            config=types.SimpleNamespace(
+                gal_enabled=True,
+                gal_collapsed_threshold=10,
+                gal_fold_parameters=True,
+                gal_signature_show_annotations=True,
+                html_permalinks=True,
+            ),
+            builder=types.SimpleNamespace(format="html", add_permalinks=True),
+        ),
+    )
+    doctree = t.cast(nodes.document, nodes.section("", desc))
+
+    on_doctree_resolved(app, doctree, "index")
+
+    assert sig.get("html_attrs") == {"data-signature-expanded": "false"}
