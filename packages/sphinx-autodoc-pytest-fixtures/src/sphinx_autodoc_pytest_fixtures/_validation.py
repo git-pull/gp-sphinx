@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import typing as t
 
 from sphinx.util import logging as sphinx_logging
@@ -9,7 +10,22 @@ from sphinx.util import logging as sphinx_logging
 if t.TYPE_CHECKING:
     from sphinx_autodoc_pytest_fixtures._store import FixtureStoreDict
 
-logger = sphinx_logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
+sphinx_logger = sphinx_logging.getLogger(__name__)
+
+
+def _active_logger(app: t.Any) -> t.Any:
+    """Return the logger best suited to the current execution context.
+
+    Examples
+    --------
+    >>> import types
+    >>> _active_logger(types.SimpleNamespace()).name
+    'sphinx_autodoc_pytest_fixtures._validation'
+    """
+    if hasattr(app, "_warning"):
+        return sphinx_logger
+    return logger
 
 
 def _validate_store(store: FixtureStoreDict, app: t.Any) -> None:
@@ -40,7 +56,8 @@ def _validate_store(store: FixtureStoreDict, app: t.Any) -> None:
     if lint_level == "none":
         return
 
-    _emit = logger.error if lint_level == "error" else logger.warning
+    active_logger = _active_logger(app)
+    _emit = active_logger.error if lint_level == "error" else active_logger.warning
     emitted = False
 
     for canon, meta in store["fixtures"].items():

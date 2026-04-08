@@ -1,29 +1,136 @@
 /* sphinx_autodoc_layout — layout.css
- * Prefix: gal-
- * Semantic region wrappers and disclosure fold styling.
+ * Stable api-* component wrappers and disclosure styling.
  */
 
-/* ── Region spacing ────────────────────────────────── */
+/* ── Content sections ───────────────────────────────── */
 .gal-region + .gal-region {
   margin-top: 1rem;
 }
 
+.api-footer,
 .gal-region--members {
   margin-top: 1.5rem;
   padding-top: 1rem;
   border-top: 1px solid var(--color-background-border);
 }
 
-/* ── Override api-style field-list grid ─────────────── */
-/* Use descendant selector (not child >) so it survives
-   the <details> wrapper inserted by gal_fold.          */
-dl.py:not(.fixture) > dd .gal-region--fields dl.field-list {
+/* ── API shell ──────────────────────────────────────── */
+dl.py:not(.fixture).api-container > dt.api-header {
+  display: block;
+}
+
+dl.py:not(.fixture).api-container > dt.api-header > .api-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+}
+
+dl.py:not(.fixture).api-container > dt.api-header .api-layout-left {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+dl.py:not(.fixture).api-container > dt.api-header .api-layout-right {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-left: auto;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+dl.py:not(.fixture).api-container > dt.api-header .api-layout-right:empty {
+  display: none;
+}
+
+dl.py:not(.fixture).api-container > dt.api-header .api-source-link {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ── Signature row ──────────────────────────────────── */
+dl.py:not(.fixture).api-container > dt.api-header .api-signature {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+dl.py:not(.fixture).api-container > dt.api-header .api-link {
+  margin-left: 0.1rem;
+}
+
+.api-signature-toggle {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  font-family: var(--font-stack--monospace);
+  padding: 0;
+}
+
+.api-signature-toggle .api-signature-preview {
+  color: var(--color-foreground-muted);
+}
+
+.api-signature-toggle:hover .api-signature-preview,
+.api-signature-toggle:focus-visible .api-signature-preview {
+  color: var(--color-link);
+}
+
+.api-signature-toggle[aria-expanded="true"] {
+  display: none;
+}
+
+/* ── Expanded signature panel ───────────────────────── */
+.api-signature-panel {
+  font-family: var(--font-stack--monospace);
+  font-size: 0;
+  margin-top: 0.45rem;
+  width: 100%;
+}
+
+.api-signature-panel[hidden] {
+  display: none;
+}
+
+.api-signature-panel > .sig-paren {
+  display: block;
+  font-size: 1rem;
+}
+
+.api-signature-panel > .sig-paren:first-child {
+  display: none;
+}
+
+.api-signature-panel em.sig-param {
+  display: block;
+  font-size: 1rem;
+  margin-left: 1rem;
+}
+
+.api-signature-panel em.sig-param::after {
+  content: ",";
+}
+
+.api-signature-panel em.sig-param:last-of-type::after {
+  content: "";
+}
+
+/* ── Field-list grid ────────────────────────────────── */
+dl.py:not(.fixture).api-container > dd.api-content .api-parameters dl.field-list {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   gap: 0 1rem;
 }
 
-/* ── Fold (disclosure) ─────────────────────────────── */
+/* ── Fold (block disclosure) ────────────────────────── */
 details.gal-fold {
   margin: 0;
 }
@@ -53,64 +160,18 @@ details.gal-fold > summary.gal-fold-summary:hover {
   color: var(--color-link);
 }
 
-/* ── Signature fold (inline in <dt>) ───────────────── */
-details.gal-sig-fold {
-  display: inline;
-}
+/* ── Mobile adjustments ─────────────────────────────── */
+@media (max-width: 52rem) {
+  dl.py:not(.fixture).api-container > dt.api-header > .api-layout {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 
-details.gal-sig-fold > summary.gal-sig-fold-summary {
-  display: inline;
-  list-style: none;
-  cursor: pointer;
-  font-family: var(--font-stack--monospace);
-}
-
-details.gal-sig-fold > summary.gal-sig-fold-summary::-webkit-details-marker {
-  display: none;
-}
-
-details.gal-sig-fold > summary.gal-sig-fold-summary .gal-sig-preview {
-  color: var(--color-foreground-muted);
-}
-
-details.gal-sig-fold > summary.gal-sig-fold-summary:hover .gal-sig-preview {
-  color: var(--color-link);
-}
-
-/* When open: hide summary, show params as indented block */
-details.gal-sig-fold[open] > summary.gal-sig-fold-summary {
-  display: none;
-}
-
-/* When open: block flex item; font-size 0 hides raw ", " text nodes
-   between params (they are direct children of <details>, not spans). */
-details.gal-sig-fold[open] {
-  display: block;
-  font-size: 0;
-}
-
-/* Restore monospace sizing for visible signature pieces */
-details.gal-sig-fold[open] em.sig-param,
-details.gal-sig-fold[open] .sig-paren {
-  font-size: 1rem;
-}
-
-/* Each param on its own line, slightly indented; trailing comma via ::after */
-details.gal-sig-fold[open] em.sig-param {
-  display: block;
-  margin-left: 1rem;
-}
-
-details.gal-sig-fold[open] em.sig-param::after {
-  content: ",";
-}
-
-details.gal-sig-fold[open] em.sig-param:last-of-type::after {
-  content: "";
-}
-
-/* api-style uses flex + align-items:center on <dt>; when sig-fold is
-   tall, centering floats the name/badge/¶ mid-height — pin to start. */
-dt:has(details.gal-sig-fold[open]) {
-  align-items: flex-start;
+  dl.py:not(.fixture).api-container > dt.api-header .api-layout-right {
+    margin-left: 0;
+    white-space: normal;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
 }
