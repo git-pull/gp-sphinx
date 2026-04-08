@@ -73,6 +73,9 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_config_value(
         "gal_collapsed_threshold", default=10, rebuild="env", types=(int,)
     )
+    app.add_config_value(
+        "gal_signature_show_annotations", default=True, rebuild="env", types=(bool,)
+    )
 
     # Custom nodes with HTML visitors + passthrough for other builders
     _pt = (passthrough_visit, passthrough_depart)

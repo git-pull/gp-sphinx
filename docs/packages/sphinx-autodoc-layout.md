@@ -7,7 +7,8 @@
 Wraps contiguous `desc_content` runs into semantic `gal_region` nodes
 and rebuilds Python autodoc entries into stable `api-*` components.
 Large field-list parameter sections still use native `<details>/<summary>`,
-while inline signature expansion uses a custom disclosure layout.
+while inline signature expansion uses a custom disclosure that reveals
+Sphinx's native multiline parameter-list rendering.
 
 ## Live demo
 
@@ -40,6 +41,7 @@ The class above should render with:
 | `gal_enabled` | `False` | Enables the transform |
 | `gal_fold_parameters` | `True` | Folds large field-list sections |
 | `gal_collapsed_threshold` | `10` | Minimum field count before folding |
+| `gal_signature_show_annotations` | `True` | Shows `name: type` in expanded folded signatures when type data is available |
 
 ## CSS classes
 

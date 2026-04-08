@@ -28,6 +28,9 @@ dl.py:not(.fixture).api-container > dt.api-header > .api-layout {
 
 dl.py:not(.fixture).api-container > dt.api-header .api-layout-left {
   flex: 1 1 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
   min-width: 0;
 }
 
@@ -51,15 +54,14 @@ dl.py:not(.fixture).api-container > dt.api-header .api-source-link {
 
 /* ── Signature row ──────────────────────────────────── */
 dl.py:not(.fixture).api-container > dt.api-header .api-signature {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  flex-wrap: wrap;
+  flex: 1 1 auto;
+  font-family: var(--font-stack--monospace);
   min-width: 0;
 }
 
 dl.py:not(.fixture).api-container > dt.api-header .api-link {
   margin-left: 0.1rem;
+  flex: 0 0 auto;
 }
 
 .api-signature-toggle {
@@ -88,39 +90,44 @@ dl.py:not(.fixture).api-container > dt.api-header .api-link {
   display: none;
 }
 
-/* ── Expanded signature panel ───────────────────────── */
-.api-signature-panel {
-  font-family: var(--font-stack--monospace);
-  font-size: 0;
-  margin-top: 0.45rem;
-  width: 100%;
+/* ── Expanded signature wrapper ─────────────────────── */
+.api-signature-expanded {
+  display: contents;
 }
 
-.api-signature-panel[hidden] {
+.api-signature-expanded[hidden] {
   display: none;
 }
 
-.api-signature-panel > .sig-paren {
-  display: block;
-  font-size: 1rem;
+.api-signature-expanded > dl {
+  margin: 0;
+  padding-inline-start: var(--gal-signature-indent, 1rem);
 }
 
-.api-signature-panel > .sig-paren:first-child {
-  display: none;
+.api-signature-expanded > dl > dd {
+  margin: 0;
+  margin-inline-start: 0 !important;
+  margin-left: 0 !important;
 }
 
-.api-signature-panel em.sig-param {
-  display: block;
-  font-size: 1rem;
-  margin-left: 1rem;
+.api-signature-expanded > .sig-paren:last-of-type {
+  margin-right: 0.35rem;
 }
 
-.api-signature-panel em.sig-param::after {
-  content: ",";
+.gal-sig-collapse {
+  appearance: none;
+  background: none;
+  border: 0;
+  color: var(--color-foreground-muted);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  padding: 0;
 }
 
-.api-signature-panel em.sig-param:last-of-type::after {
-  content: "";
+.gal-sig-collapse:hover,
+.gal-sig-collapse:focus-visible {
+  color: var(--color-link);
 }
 
 /* ── Field-list grid ────────────────────────────────── */

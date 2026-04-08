@@ -109,7 +109,22 @@ _INDEX_RST = textwrap.dedent(
 )
 
 
-def _build_layout_demo(tmp_path: pathlib.Path) -> str:
+def _extract_init_header(html: str) -> str:
+    """Return the ``LayoutDemo.__init__`` header fragment."""
+    init_match = re.search(
+        r'<dt class="[^"]*api-header[^"]*" id="gal_demo_api\.LayoutDemo\.__init__">(.*?)</dt>',
+        html,
+        re.DOTALL,
+    )
+    assert init_match is not None
+    return init_match.group(1).strip()
+
+
+def _build_layout_demo(
+    tmp_path: pathlib.Path,
+    *,
+    extra_conf: str = "",
+) -> str:
     srcdir = tmp_path / "src"
     outdir = tmp_path / "out"
     doctreedir = tmp_path / "doctrees"
@@ -118,7 +133,10 @@ def _build_layout_demo(tmp_path: pathlib.Path) -> str:
     doctreedir.mkdir()
 
     (srcdir / "gal_demo_api.py").write_text(_MODULE_SOURCE, encoding="utf-8")
-    (srcdir / "conf.py").write_text(_CONF_PY, encoding="utf-8")
+    conf_text = _CONF_PY
+    if extra_conf:
+        conf_text = f"{conf_text.rstrip()}\n{extra_conf}\n"
+    (srcdir / "conf.py").write_text(conf_text, encoding="utf-8")
     (srcdir / "index.rst").write_text(_INDEX_RST, encoding="utf-8")
 
     app = Sphinx(
@@ -147,13 +165,7 @@ def test_layout_demo_renders_api_component_contract(tmp_path: pathlib.Path) -> N
     assert '<details class="gal-fold gal-fold--parameters">' in html
     assert 'class="gal-sig-fold"' not in html
 
-    init_match = re.search(
-        r'<dt class="[^"]*api-header[^"]*" id="gal_demo_api\.LayoutDemo\.__init__">(.*?)</dt>',
-        html,
-        re.DOTALL,
-    )
-    assert init_match is not None
-    init_html = init_match.group(1)
+    init_html = _extract_init_header(html)
 
     assert 'class="api-layout"' in init_html
     assert 'class="api-layout-left"' in init_html
@@ -162,13 +174,27 @@ def test_layout_demo_renders_api_component_contract(tmp_path: pathlib.Path) -> N
     assert 'class="headerlink api-link"' in init_html
     assert 'class="api-badge-container"' in init_html
     assert 'class="api-source-link"' in init_html
-    assert 'class="api-signature-panel gal-sig-panel"' in init_html
+    assert 'class="api-signature-expanded gal-sig-expanded"' in init_html
     assert (
-        'aria-controls="gal_demo_api.LayoutDemo.__init__--signature-panel"' in init_html
+        'aria-controls="gal_demo_api.LayoutDemo.__init__--signature-expanded"'
+        in init_html
     )
-    assert 'id="gal_demo_api.LayoutDemo.__init__--signature-panel"' in init_html
-    assert "[source]" in init_html
+    assert 'id="gal_demo_api.LayoutDemo.__init__--signature-expanded"' in init_html
+    assert "<dl>" in init_html
+    assert '<span class="sig-paren">(</span>' in init_html
+    assert '<span class="sig-paren">)</span>' in init_html
+    assert 'class="gal-sig-collapse"' in init_html
+    assert "[collapse]" in init_html
+    assert re.search(
+        r'<span class="sig-paren">\)</span>\s*<button[^>]*class="[^"]*gal-sig-collapse[^"]*"',
+        init_html,
+    )
     assert "host" in init_html
+    assert "port" in init_html
+    assert "str" in init_html
+    assert "int" in init_html
+    assert "[source]" in init_html
+    assert "api-signature-panel" not in init_html
 
 
 @pytest.mark.integration
@@ -181,3 +207,23 @@ def test_layout_demo_members_stay_in_api_footer(tmp_path: pathlib.Path) -> None:
 
     assert "gal_demo_api.LayoutDemo.__init__" in footer_html
     assert "gal_demo_api.LayoutDemo.connect" in footer_html
+
+
+@pytest.mark.integration
+def test_layout_demo_can_hide_folded_signature_annotations(
+    tmp_path: pathlib.Path,
+) -> None:
+    html = _build_layout_demo(
+        tmp_path,
+        extra_conf="gal_signature_show_annotations = False",
+    )
+
+    init_html = _extract_init_header(html)
+
+    assert 'class="api-signature-expanded gal-sig-expanded"' in init_html
+    assert "host" in init_html
+    assert "port" in init_html
+    assert "port</span></span><span" in init_html
+    assert "5432" in init_html
+    assert '<span class="pre">str</span>' not in init_html
+    assert '<span class="pre">int</span>' not in init_html
