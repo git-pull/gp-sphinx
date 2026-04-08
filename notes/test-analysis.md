@@ -14,19 +14,29 @@ The most important correction from earlier drafts is this:
 ## Coverage-preserving benchmark matrix
 
 These measurements were taken from `/home/d/work/python/gp-sphinx` on
-2026-04-08 after the current doctree-first refactor and the latest shared
-Sphinx-scenario fixture cleanup.
+2026-04-08 after the current doctree-first refactor, the shared Sphinx-scenario
+fixture cleanup, and one more audit pass over the remaining synthetic-Sphinx
+tests.
 
 | Command | Result | Meaning |
 | --- | --- | --- |
-| `uv run pytest -s` | `790 passed, 3 skipped in 77.44s` | Conservative full-suite baseline |
-| `uv run pytest -s --durations=60 --durations-min=0.05` | `790 passed, 3 skipped in 86.49s` | Full-suite cost with slow-test evidence |
-| `uv run python -m cProfile -o /tmp/gp_sphinx_full_current.prof -m pytest -s` | `790 passed, 3 skipped in 79.67s` | Full-suite profile source |
-| `uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-abs` | `790 passed, 3 skipped in 4.26s`, wall `5.25s` | Optimized full suite, same coverage |
-| `uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-integration-direct tests -m integration` | `21 passed, 687 deselected in 2.37s`, wall `3.37s` | Optimized integration lane only |
-| `uv run pytest -o "addopts=--tb=short --no-header --showlocals" -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-fast-direct --capture=tee-sys -q tests -m 'not integration'` | `681 passed, 3 skipped, 21 deselected in 1.83s`, wall `2.37s` | Optimized fast local loop only |
-| `just test` | `790 passed, 3 skipped in 4.42s`, wall `5.37s` | Preferred full local command |
-| `just test-fast` | `681 passed, 3 skipped, 21 deselected in 1.92s`, wall `2.52s` | Preferred fast local loop |
+| `/usr/bin/time -p uv run pytest -s` | `790 passed, 3 skipped in 92.15s`, wall `98.83s` | Conservative full-suite baseline |
+| `uv run pytest -s --durations=60 --durations-min=0.05` | `790 passed, 3 skipped in 55.15s` | Full-suite cost with slow-test evidence |
+| `uv run python -m cProfile -o /tmp/gp_sphinx_full_current.prof -m pytest -s` | `790 passed, 3 skipped in 58.42s` | Full-suite profile source |
+| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-abs` | `790 passed, 3 skipped in 5.11s`, wall `6.34s` | Optimized full suite, same coverage |
+| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-integration-direct tests -m integration` | `21 passed, 687 deselected in 3.01s`, wall `4.13s` | Optimized integration lane only |
+| `/usr/bin/time -p uv run pytest -o "addopts=--tb=short --no-header --showlocals" -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-fast-direct --capture=tee-sys -q tests -m 'not integration'` | `681 passed, 3 skipped, 21 deselected in 2.22s`, wall `3.00s` | Optimized fast local loop only |
+| `/usr/bin/time -p just test` | `790 passed, 3 skipped in 5.13s`, wall `6.40s` | Preferred full local command |
+| `/usr/bin/time -p just test-fast` | `681 passed, 3 skipped, 21 deselected in 2.24s`, wall `3.03s` | Preferred fast local loop |
+
+Two things stand out:
+
+- the optimized full-coverage runner is consistently fast at about `5s` pytest
+  time
+- the raw full-suite baseline is materially variable; this note has now seen
+  raw-ish runs between about `55s` and `92s`, which strongly suggests that
+  pytest's default temp-root bookkeeping is sensitive to the existing state of
+  the numbered temp directories
 
 ## Coverage caveat
 
@@ -68,6 +78,8 @@ Concrete examples:
   module-scoped cache root and a shared default dummy-builder result
 - `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py` now
   reuses a module-scoped integration cache root
+- `tests/test_sphinx_scenarios.py` now uses a shared module root and cache root
+  instead of creating extra temp roots for each helper self-test
 
 That means the remaining expensive tests are much more likely to be real
 builder-facing contracts rather than accidental faux-E2E coverage.
@@ -87,15 +99,19 @@ $ uv run python -m cProfile \
 
 | Function | Cumulative time |
 | --- | --- |
-| `posix.lstat` | `37.14s` |
-| `pathlib.Path.resolve` | `35.41s` |
-| `posixpath.realpath` | `35.37s` |
-| `tests._sphinx_scenarios.build_shared_sphinx_result` | `29.25s` |
-| `sphinx.application.Sphinx.build` | `22.20s` |
-| `_pytest.tmpdir.pytest_sessionfinish` / temp cleanup | `20.37s` |
-| `_pytest.tmpdir._mk_tmp` / `tmp_path` / `mktemp` | `20.61s` to `20.79s` |
-| `_pytest.pathlib.cleanup_dead_symlinks` | `20.37s` |
-| `_pytest.pathlib.make_numbered_dir` | `12.64s` |
+| `tests._sphinx_scenarios.build_shared_sphinx_result` | `24.43s` |
+| `posix.lstat` | `20.98s` |
+| `pathlib.Path.resolve` | `19.94s` |
+| `posixpath.realpath` | `19.89s` |
+| `sphinx.application.Sphinx.build` | `18.81s` |
+| `_pytest.tmpdir.mktemp` | `13.41s` |
+| `_pytest.tmpdir.tmp_path` / `_mk_tmp` | `13.28s` to `13.29s` |
+| `_pytest.tmpdir.pytest_sessionfinish` / temp cleanup | `11.52s` |
+| `_pytest.pathlib.cleanup_dead_symlinks` | `11.52s` |
+| `_pytest.pathlib.make_numbered_dir` | `9.80s` |
+| `_pytest.pathlib.find_prefixed` / `extract_suffixes` | `5.27s` each |
+| `_pytest.tmpdir._ensure_relative_to_basetemp` | `3.60s` |
+| `_pytest.pathlib._force_symlink` | `2.61s` |
 
 ### What that means
 
@@ -116,6 +132,27 @@ This also explains why the fixed-`--basetemp` local recipes are such a large
 win: they keep the same assertions while bypassing most of pytest’s numbered
 temp-dir churn.
 
+### Upstream-backed explanation of the runner cost
+
+Local source inspection in `pytest` and CPython matches the profile:
+
+- `_pytest.tmpdir.TempPathFactory.mktemp()` always goes through numbered
+  directory creation
+- `_pytest.tmpdir._ensure_relative_to_basetemp()` calls `Path.resolve()` on the
+  candidate path before creating the directory
+- `_pytest.pathlib.make_numbered_dir()` scans prefixed entries and updates the
+  `current` symlink
+- `_pytest.pathlib.cleanup_dead_symlinks()` resolves symlink targets during
+  session cleanup
+- CPython `pathlib.Path.resolve()` delegates to `os.path.realpath()`, which is
+  why `Path.resolve` and `posixpath.realpath` move together in the profile
+
+So the raw suite is not “stuck” on one mystery function. It is paying for:
+
+1. repeated tmpdir naming and path validation
+2. path resolution and symlink cleanup
+3. a smaller set of honest Sphinx builds
+
 ## Remaining slow tests in the real full suite
 
 These timings come from the full-suite run:
@@ -128,13 +165,13 @@ $ uv run pytest -s --durations=60 --durations-min=0.05
 
 | Test | Duration | Why it is slow |
 | --- | --- | --- |
-| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `4.73s setup` | Real HTML build for final layout contract |
-| `tests/ext/layout/test_snapshots.py::test_layout_demo_init_header_snapshot_annotated` | `4.68s setup` | Real HTML build for final header fragment |
-| `tests/ext/layout/test_snapshots.py::test_layout_demo_init_header_snapshot_annotation_disabled` | `4.67s setup` | Real HTML build for annotation-disabled fragment |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_used_by_link_html_smoke` | `3.22s call` | Cross-document HTML link contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `3.11s call` | Cross-document HTML reference contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `2.88s setup` | Real HTML output smoke |
-| `tests/test_sphinx_scenarios.py::test_shared_sphinx_result_reuses_identical_builds` | `2.00s call` | Intentional shared-build cache smoke |
+| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `3.40s setup` | Real HTML build for final layout contract |
+| `tests/ext/layout/test_snapshots.py::test_layout_demo_init_header_snapshot_annotated` | `2.84s setup` | Real HTML build for final header fragment |
+| `tests/ext/layout/test_snapshots.py::test_layout_demo_init_header_snapshot_annotation_disabled` | `2.82s setup` | Real HTML build for annotation-disabled fragment |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_used_by_link_html_smoke` | `2.43s call` | Cross-document HTML link contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `2.38s call` | Cross-document HTML reference contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `2.33s setup` | Real HTML output smoke |
+| `tests/test_sphinx_scenarios.py::test_shared_sphinx_result_reuses_identical_builds` | `1.49s call` | Intentional shared-build cache smoke |
 
 ### Slowest remaining doctree scenarios
 
@@ -142,11 +179,11 @@ The heaviest doctree-layer tests are now well under a second:
 
 | Test | Duration |
 | --- | --- |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_dependency_rendering_snapshot` | `0.72s` |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_short_name_fixture_reference_resolves` | `0.65s` |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_rst_snapshot` | `0.65s` |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixtures_directive_myst_snapshot` | `0.64s` |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixture_index_table_snapshot` | `0.61s` |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_myst_snapshot` | `0.48s` |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_short_name_fixture_reference_resolves` | `0.46s` |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_warning_and_manual_option_snapshot` | `0.45s` |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixture_index_table_snapshot` | `0.45s` |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixtures_directive_myst_snapshot` | `0.45s` |
 
 That is a strong sign that the current doctree/snapshot split is doing its job:
 the remaining costs above one second are mostly the tests that genuinely need a
@@ -246,6 +283,20 @@ Relative repo-local `--basetemp` is still unstable for some pathless pytest
 invocations. Absolute repo-local basetemps under `.cache/` remain the stable
 choice for local recipes.
 
+### Quiet collect-only / `py.test` likely expose an upstream capture bug
+
+The likely failure path is now much clearer from local source inspection:
+
+- `_pytest.capture.FDCapture.snap()` calls `self.tmpfile.truncate()`
+- both `uv run py.test --reruns 0 -vvv` and `uv run pytest --collect-only -q`
+  tear down after collecting zero items
+- in this environment the temporary capture file is already gone by the time
+  `truncate()` runs, producing `FileNotFoundError`
+
+A quick web pass did not turn up a definitive upstream issue for this exact
+Python 3.14 / pytest combination. The next sensible step would be a tiny
+external reproducer, not more repo-local test deselection.
+
 ### `just` version mismatch
 
 Current shell-visible tools:
@@ -307,6 +358,8 @@ So the next performance work should stay surgical:
 2. keep the full suite as the only honest baseline for coverage discussions
 3. only demote more tests when the contract is clearly helper/doctree/store
    state rather than emitted output
+4. if we want another meaningful speed pass, investigate the pytest runner
+   behavior upstream before shrinking more legitimate builder tests
 
 ## References
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pathlib
 import textwrap
 
 import pytest
@@ -63,22 +64,33 @@ def _make_demo_scenario(
     )
 
 
+@pytest.fixture(scope="module")
+def scenario_test_root(tmp_path_factory: pytest.TempPathFactory) -> pathlib.Path:
+    """Return a shared temp root for scenario cache helper tests."""
+    return tmp_path_factory.mktemp("sphinx-scenario-tests")
+
+
+@pytest.fixture(scope="module")
+def scenario_cache_root(scenario_test_root: pathlib.Path) -> pathlib.Path:
+    """Return a shared cache root for scenario cache helper tests."""
+    return derive_sphinx_scenario_cache_root(scenario_test_root / "cache-root")
+
+
 @pytest.mark.integration
 def test_shared_sphinx_result_reuses_identical_builds(
-    tmp_path_factory: pytest.TempPathFactory,
+    scenario_test_root: pathlib.Path,
+    scenario_cache_root: pathlib.Path,
 ) -> None:
     """Reuse the same completed build for identical scenarios."""
-    tmp_path = tmp_path_factory.mktemp("sphinx-scenario-shared")
-    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
     scenario = _make_demo_scenario()
 
     result_one = build_shared_sphinx_result(
-        cache_root,
+        scenario_cache_root,
         scenario,
         purge_modules=("demo_module",),
     )
     result_two = build_shared_sphinx_result(
-        cache_root,
+        scenario_cache_root,
         scenario,
         purge_modules=("demo_module",),
     )
@@ -96,23 +108,32 @@ def test_sphinx_scenario_key_changes_when_inputs_change() -> None:
 
 
 def test_copy_scenario_tree_keeps_cached_source_pristine(
-    tmp_path_factory: pytest.TempPathFactory,
+    scenario_test_root: pathlib.Path,
+    scenario_cache_root: pathlib.Path,
 ) -> None:
     """Keep the cached source tree unchanged when copied trees are mutated."""
-    tmp_path = tmp_path_factory.mktemp("sphinx-scenario-copy")
-    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
     scenario = _make_demo_scenario()
     digest = scenario.cache_key().digest()
+    copy_root = scenario_test_root / "copy-tree"
+    copy_root.mkdir(parents=True, exist_ok=True)
 
-    first_copy = copy_scenario_tree(cache_root, scenario, tmp_path / "copy-one")
+    first_copy = copy_scenario_tree(
+        scenario_cache_root,
+        scenario,
+        copy_root / "copy-one",
+    )
     mutated_module = first_copy / "demo_module.py"
     mutated_module.write_text(
         mutated_module.read_text(encoding="utf-8") + "\nMUTATED = True\n",
         encoding="utf-8",
     )
 
-    second_copy = copy_scenario_tree(cache_root, scenario, tmp_path / "copy-two")
-    cached_module = cache_root / f"{digest}-source" / "demo_module.py"
+    second_copy = copy_scenario_tree(
+        scenario_cache_root,
+        scenario,
+        copy_root / "copy-two",
+    )
+    cached_module = scenario_cache_root / f"{digest}-source" / "demo_module.py"
 
     assert "MUTATED = True" not in second_copy.joinpath("demo_module.py").read_text(
         encoding="utf-8",
