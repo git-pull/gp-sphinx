@@ -7,24 +7,41 @@ set shell := ["bash", "-uc"]
 py_files := "find . -type f -not -path '*/\\.*' | grep -i '.*[.]py$' 2> /dev/null"
 doc_files := "find . -type f -not -path '*/\\.*' | grep -i '.*[.]rst$\\|.*[.]md$\\|.*[.]css$\\|.*[.]py$\\|mkdocs\\.yml\\|CHANGES\\|TODO\\|.*conf\\.py' 2> /dev/null"
 all_files := "find . -type f -not -path '*/\\.*' | grep -i '.*[.]py$\\|.*[.]rst$\\|.*[.]md$\\|.*[.]css$\\|.*[.]py$\\|mkdocs\\.yml\\|CHANGES\\|TODO\\|.*conf\\.py' 2> /dev/null"
+fast_test_addopts := "--tb=short --no-header --showlocals --ignore=packages/sphinx-argparse-neo --ignore=packages/sphinx-autodoc-pytest-fixtures --ignore=packages/sphinx-autodoc-docutils"
 
 # List all available commands
 default:
     @just --list
 
 # Run tests with pytest
-[group: 'test']
 test *args:
-    uv run py.test {{ args }}
+    uv run pytest {{ args }}
+
+# Run the fast local test lane without doctest-modules or integration tests
+test-fast:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    uv run pytest \
+        -o "addopts={{ fast_test_addopts }}" \
+        -q \
+        --capture=tee-sys \
+        tests \
+        -m "not integration"
 
 # Run tests then start continuous testing with pytest-watcher
-[group: 'test']
 start:
     just test
     uv run ptw .
 
+# Run the fast local test lane continuously with pytest-watcher
+start-fast:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    just test-fast
+    uv run ptw . \
+        --runner "uv run pytest -o \"addopts={{ fast_test_addopts }}\" -q --capture=tee-sys tests -m \"not integration\""
+
 # Watch files and run tests on change (requires entr)
-[group: 'test']
 watch-test:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -36,12 +53,10 @@ watch-test:
     fi
 
 # Build documentation
-[group: 'docs']
 build-docs:
     just -f docs/justfile html
 
 # Watch files and rebuild docs on change
-[group: 'docs']
 watch-docs:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -53,12 +68,10 @@ watch-docs:
     fi
 
 # Serve documentation
-[group: 'docs']
 serve-docs:
     just -f docs/justfile serve
 
 # Watch and serve docs simultaneously
-[group: 'docs']
 dev-docs:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -66,27 +79,22 @@ dev-docs:
     just serve-docs
 
 # Start documentation server with auto-reload
-[group: 'docs']
 start-docs:
     just -f docs/justfile start
 
 # Start documentation design mode (watches static files)
-[group: 'docs']
 design-docs:
     just -f docs/justfile design
 
 # Format code with ruff
-[group: 'lint']
 ruff-format:
     uv run ruff format .
 
 # Run ruff linter
-[group: 'lint']
 ruff:
     uv run ruff check .
 
 # Watch files and run ruff on change
-[group: 'lint']
 watch-ruff:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -98,12 +106,10 @@ watch-ruff:
     fi
 
 # Run mypy type checker
-[group: 'lint']
 mypy:
     uv run mypy $({{ py_files }})
 
 # Watch files and run mypy on change
-[group: 'lint']
 watch-mypy:
     #!/usr/bin/env bash
     set -euo pipefail

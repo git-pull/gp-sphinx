@@ -11,6 +11,8 @@ import sys
 
 import pytest
 
+pytest_plugins = ("tests._snapshots",)
+
 for src_path in sorted(
     (pathlib.Path(__file__).resolve().parents[1] / "packages").glob("*/src"),
 ):

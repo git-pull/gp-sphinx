@@ -21,13 +21,31 @@ $ uv sync --all-packages --all-extras --group dev
 ## Tests
 
 ```console
-$ uv run py.test
+$ uv run pytest
+```
+
+Fast local loop without doctest-modules or integration tests:
+
+```console
+$ just test-fast
+```
+
+Canonical direct pytest command for the same fast lane:
+
+```console
+$ uv run pytest \
+    -o "addopts=--tb=short --no-header --showlocals --ignore=packages/sphinx-argparse-neo --ignore=packages/sphinx-autodoc-pytest-fixtures --ignore=packages/sphinx-autodoc-docutils" \
+    -q \
+    --capture=tee-sys \
+    tests \
+    -m "not integration"
 ```
 
 ### Automatically run tests on file save
 
 1. `just start` (via [pytest-watcher])
-2. `just watch-test` (requires installing [entr(1)])
+2. `just start-fast` for the fast local loop
+3. `just watch-test` (requires installing [entr(1)])
 
 [pytest-watcher]: https://github.com/olzhasar/pytest-watcher
 

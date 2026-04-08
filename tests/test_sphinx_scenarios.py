@@ -5,6 +5,8 @@ from __future__ import annotations
 import pathlib
 import textwrap
 
+import pytest
+
 from tests._sphinx_scenarios import (
     SCENARIO_SRCDIR_TOKEN,
     ScenarioFile,
@@ -62,6 +64,7 @@ def _make_demo_scenario(
     )
 
 
+@pytest.mark.integration
 def test_shared_sphinx_result_reuses_identical_builds(tmp_path: pathlib.Path) -> None:
     """Reuse the same completed build for identical scenarios."""
     cache_root = derive_sphinx_scenario_cache_root(tmp_path)
