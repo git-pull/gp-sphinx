@@ -21,6 +21,15 @@ import pytest
 
 import sphinx_autodoc_pytest_fixtures
 from sphinx_autodoc_pytest_fixtures import _CSS
+from tests._sphinx_scenarios import (
+    SCENARIO_SRCDIR_TOKEN,
+    ScenarioFile,
+    ScenarioInputValue,
+    SharedSphinxResult,
+    SphinxScenario,
+    build_shared_sphinx_result,
+    derive_sphinx_scenario_cache_root,
+)
 
 if t.TYPE_CHECKING:
     import pathlib
@@ -81,7 +90,7 @@ FIXTURE_MOD_SOURCE = textwrap.dedent(
 
 CONF_PY_TEMPLATE = """\
 import sys
-sys.path.insert(0, "{srcdir}")
+sys.path.insert(0, "__SCENARIO_SRCDIR__")
 
 extensions = [
 {extensions}
@@ -105,10 +114,10 @@ def _render_conf_py(
             "sphinx_autodoc_pytest_fixtures",
         ]
     rendered_extensions = ",\n".join(f'    "{ext}"' for ext in extensions)
-    return CONF_PY_TEMPLATE.format(
-        srcdir=str(srcdir),
-        extensions=rendered_extensions,
-    )
+    return CONF_PY_TEMPLATE.replace(
+        SCENARIO_SRCDIR_TOKEN,
+        str(srcdir),
+    ).format(extensions=rendered_extensions)
 
 
 INDEX_RST = textwrap.dedent(
@@ -155,31 +164,20 @@ def _purge_fixture_module(name: str = "fixture_mod") -> None:
 
 
 # ---------------------------------------------------------------------------
-# Shared fixture: build the Sphinx app once per test (no caching — each test
-# gets an isolated tmp_path)
+# Shared scenario builder
 # ---------------------------------------------------------------------------
-
-
-class _SphinxResult(t.NamedTuple):
-    """Lightweight wrapper around a completed Sphinx build."""
-
-    app: t.Any  # sphinx.application.Sphinx
-    srcdir: pathlib.Path
-    outdir: pathlib.Path
-    status: str
-    warnings: str
 
 
 def _build_sphinx_app(
     tmp_path: pathlib.Path,
     *,
-    confoverrides: dict[str, t.Any] | None = None,
+    confoverrides: dict[str, ScenarioInputValue] | None = None,
     fixture_source: str | None = None,
     index_rst: str | None = None,
     index_name: str = "index.rst",
     extensions: list[str] | None = None,
-) -> _SphinxResult:
-    """Write project files and run a full Sphinx HTML build; return results.
+) -> SharedSphinxResult:
+    """Build a cached synthetic Sphinx project and return the result.
 
     Parameters
     ----------
@@ -198,52 +196,35 @@ def _build_sphinx_app(
     extensions :
         Optional extension list for ``conf.py``.
     """
-    from sphinx.application import Sphinx
-
-    srcdir = tmp_path / "src"
-    outdir = tmp_path / "out"
-    doctreedir = tmp_path / ".doctrees"
-
-    srcdir.mkdir()
-    outdir.mkdir()
-    doctreedir.mkdir()
-
-    (srcdir / "fixture_mod.py").write_text(
-        fixture_source if fixture_source is not None else FIXTURE_MOD_SOURCE,
-        encoding="utf-8",
+    rendered_conf = _render_conf_py(
+        tmp_path / "src",
+        extensions=extensions,
+    ).replace(
+        str(tmp_path / "src"),
+        SCENARIO_SRCDIR_TOKEN,
     )
-    (srcdir / "conf.py").write_text(
-        _render_conf_py(srcdir, extensions=extensions),
-        encoding="utf-8",
-    )
-    (srcdir / index_name).write_text(
-        index_rst if index_rst is not None else INDEX_RST,
-        encoding="utf-8",
-    )
-
-    status_buf = io.StringIO()
-    warning_buf = io.StringIO()
-
-    _purge_fixture_module()
-    app = Sphinx(
-        srcdir=str(srcdir),
-        confdir=str(srcdir),
-        outdir=str(outdir),
-        doctreedir=str(doctreedir),
-        buildername="html",
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile(
+                "fixture_mod.py",
+                fixture_source if fixture_source is not None else FIXTURE_MOD_SOURCE,
+            ),
+            ScenarioFile(
+                "conf.py",
+                rendered_conf,
+                substitute_srcdir=True,
+            ),
+            ScenarioFile(
+                index_name,
+                index_rst if index_rst is not None else INDEX_RST,
+            ),
+        ),
         confoverrides=confoverrides,
-        status=status_buf,
-        warning=warning_buf,
-        freshenv=True,
     )
-    app.build()
-
-    return _SphinxResult(
-        app=app,
-        srcdir=srcdir,
-        outdir=outdir,
-        status=status_buf.getvalue(),
-        warnings=warning_buf.getvalue(),
+    return build_shared_sphinx_result(
+        derive_sphinx_scenario_cache_root(tmp_path),
+        scenario,
+        purge_modules=("fixture_mod",),
     )
 
 

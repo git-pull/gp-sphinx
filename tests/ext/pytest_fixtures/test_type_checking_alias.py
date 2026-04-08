@@ -14,6 +14,7 @@ to see all fail first; then implement the feature in _metadata.py.
 
 from __future__ import annotations
 
+import pathlib
 import sys
 import textwrap
 import types
@@ -26,6 +27,13 @@ from sphinx_autodoc_pytest_fixtures._detection import _get_return_annotation
 from sphinx_autodoc_pytest_fixtures._metadata import (
     _is_type_checking_guard,
     _qualify_forward_ref,
+)
+from tests._sphinx_scenarios import (
+    SCENARIO_SRCDIR_TOKEN,
+    ScenarioFile,
+    SphinxScenario,
+    build_shared_sphinx_result,
+    derive_sphinx_scenario_cache_root,
 )
 
 # ---------------------------------------------------------------------------
@@ -519,7 +527,7 @@ def test_get_return_annotation_class_import_alias_resolves_to_class(
 
 @pytest.mark.integration
 def test_type_checking_alias_qualified_in_fixture_meta(
-    tmp_path: pytest.TempPathFactory,
+    tmp_path: pathlib.Path,
 ) -> None:
     """Fixture with TYPE_CHECKING TypeAlias return gets qualified return_display.
 
@@ -527,10 +535,6 @@ def test_type_checking_alias_qualified_in_fixture_meta(
     ``if t.TYPE_CHECKING:``.  After the build, ``meta.return_display`` should
     be ``"fixture_mod.MyAlias"`` (qualified) rather than bare ``"MyAlias"``.
     """
-    import io
-    import sys
-
-    from sphinx.application import Sphinx
 
     fixture_source = textwrap.dedent("""\
         from __future__ import annotations
@@ -561,43 +565,29 @@ def test_type_checking_alias_qualified_in_fixture_meta(
         .. autofixture:: fixture_mod.my_fixture
     """)
 
-    srcdir = tmp_path / "src"  # type: ignore[operator]
-    outdir = tmp_path / "out"  # type: ignore[operator]
-    doctreedir = tmp_path / ".doctrees"  # type: ignore[operator]
-    srcdir.mkdir()
-    outdir.mkdir()
-    doctreedir.mkdir()
-
-    (srcdir / "fixture_mod.py").write_text(fixture_source, encoding="utf-8")
     conf_py = textwrap.dedent(f"""\
         import sys
-        sys.path.insert(0, "{srcdir}")
+        sys.path.insert(0, "{SCENARIO_SRCDIR_TOKEN}")
         extensions = ["sphinx.ext.autodoc", "sphinx_autodoc_pytest_fixtures"]
         master_doc = "index"
         exclude_patterns = ["_build"]
         html_theme = "alabaster"
     """)
-    (srcdir / "conf.py").write_text(conf_py, encoding="utf-8")
-    (srcdir / "index.rst").write_text(index_rst, encoding="utf-8")
-
-    for key in list(sys.modules):
-        if key == "fixture_mod" or key.startswith("fixture_mod."):
-            del sys.modules[key]
-
-    app = Sphinx(
-        srcdir=str(srcdir),
-        confdir=str(srcdir),
-        outdir=str(outdir),
-        doctreedir=str(doctreedir),
-        buildername="html",
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("fixture_mod.py", fixture_source),
+            ScenarioFile("conf.py", conf_py, substitute_srcdir=True),
+            ScenarioFile("index.rst", index_rst),
+        ),
         confoverrides={"pytest_fixture_lint_level": "none"},
-        status=io.StringIO(),
-        warning=io.StringIO(),
-        freshenv=True,
     )
-    app.build()
+    result = build_shared_sphinx_result(
+        derive_sphinx_scenario_cache_root(tmp_path),
+        scenario,
+        purge_modules=("fixture_mod",),
+    )
 
-    store = app.env.domaindata.get("sphinx_autodoc_pytest_fixtures", {})
+    store = result.app.env.domaindata.get("sphinx_autodoc_pytest_fixtures", {})
     meta = store["fixtures"].get("fixture_mod.my_fixture")
     assert meta is not None, "fixture_mod.my_fixture not found in store"
     assert meta.return_display == "fixture_mod.MyAlias", (

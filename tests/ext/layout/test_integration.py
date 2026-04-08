@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
-import io
 import pathlib
 import re
 import textwrap
 
 import pytest
-from sphinx.application import Sphinx
+
+from tests._sphinx_scenarios import (
+    SCENARIO_SRCDIR_TOKEN,
+    ScenarioFile,
+    SphinxScenario,
+    build_shared_sphinx_result,
+    derive_sphinx_scenario_cache_root,
+)
 
 _MODULE_SOURCE = textwrap.dedent(
     """\
@@ -81,7 +87,7 @@ _CONF_PY = textwrap.dedent(
     import pathlib
     import sys
 
-    sys.path.insert(0, str(pathlib.Path(__file__).parent))
+    sys.path.insert(0, r"__SCENARIO_SRCDIR__")
 
     extensions = [
         "sphinx.ext.autodoc",
@@ -126,32 +132,26 @@ def _build_layout_demo(
     *,
     extra_conf: str = "",
 ) -> str:
-    srcdir = tmp_path / "src"
-    outdir = tmp_path / "out"
-    doctreedir = tmp_path / "doctrees"
-    srcdir.mkdir()
-    outdir.mkdir()
-    doctreedir.mkdir()
-
-    (srcdir / "gal_demo_api.py").write_text(_MODULE_SOURCE, encoding="utf-8")
     conf_text = _CONF_PY
     if extra_conf:
         conf_text = f"{conf_text.rstrip()}\n{extra_conf}\n"
-    (srcdir / "conf.py").write_text(conf_text, encoding="utf-8")
-    (srcdir / "index.rst").write_text(_INDEX_RST, encoding="utf-8")
-
-    app = Sphinx(
-        srcdir=str(srcdir),
-        confdir=str(srcdir),
-        outdir=str(outdir),
-        doctreedir=str(doctreedir),
-        buildername="html",
-        status=io.StringIO(),
-        warning=io.StringIO(),
-        freshenv=True,
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("gal_demo_api.py", _MODULE_SOURCE),
+            ScenarioFile(
+                "conf.py",
+                conf_text.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("index.rst", _INDEX_RST),
+        ),
     )
-    app.build()
-    return (outdir / "index.html").read_text(encoding="utf-8")
+    result = build_shared_sphinx_result(
+        derive_sphinx_scenario_cache_root(tmp_path),
+        scenario,
+        purge_modules=("gal_demo_api",),
+    )
+    return (result.outdir / "index.html").read_text(encoding="utf-8")
 
 
 @pytest.mark.integration
