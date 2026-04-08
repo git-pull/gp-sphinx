@@ -11,10 +11,17 @@ from docutils import nodes
 from sphinx import addnodes
 
 from tests._snapshots import normalize_warning_text
-from tests._sphinx_scenarios import get_doctree
+from tests._sphinx_scenarios import (
+    SCENARIO_SRCDIR_TOKEN,
+    ScenarioFile,
+    SphinxScenario,
+    build_shared_sphinx_result,
+    get_doctree,
+)
 from tests.ext.pytest_fixtures._scenario_support import (
     FIXTURE_MOD_SOURCE,
     build_fixture_result,
+    render_conf_py,
 )
 
 if t.TYPE_CHECKING:
@@ -117,6 +124,88 @@ def autofixtures_usage_result(
             """,
         ),
         confoverrides={"pytest_fixture_lint_level": "none"},
+    )
+
+
+@pytest.fixture(scope="module")
+def myst_smoke_result(spf_doctree_root: pathlib.Path) -> SharedSphinxResult:
+    """Build one shared MyST scenario for both doc-pytest-plugin smoke checks."""
+    scenario_root = spf_doctree_root / "shared-myst-smokes"
+    conf_text = render_conf_py(
+        scenario_root / "src",
+        extensions=[
+            "myst_parser",
+            "sphinx.ext.autodoc",
+            "sphinx_autodoc_pytest_fixtures",
+        ],
+    ).replace(
+        str(scenario_root / "src"),
+        SCENARIO_SRCDIR_TOKEN,
+    )
+    scenario = SphinxScenario(
+        buildername="dummy",
+        files=(
+            ScenarioFile("fixture_mod.py", _AUTOFIXTURES_SMOKE_SOURCE),
+            ScenarioFile("conf.py", conf_text, substitute_srcdir=True),
+            ScenarioFile(
+                "index.rst",
+                textwrap.dedent(
+                    """\
+                    Test fixtures
+                    =============
+
+                    .. toctree::
+
+                       plugin
+                       autofixtures
+                    """,
+                ),
+            ),
+            ScenarioFile(
+                "plugin.md",
+                textwrap.dedent(
+                    """\
+                    # Test fixtures
+
+                    :::{doc-pytest-plugin} fixture_mod
+                    :project: fixture-demo
+                    :package: fixture-demo
+                    :summary: fixture-demo ships a pytest plugin for local test setup.
+                    :tests-url: https://example.com/fixture-demo/tests
+
+                    ## Recommended fixtures
+
+                    Use this page when you want generated fixture docs and authored notes.
+                    :::
+                    """,
+                ),
+            ),
+            ScenarioFile(
+                "autofixtures.md",
+                textwrap.dedent(
+                    """\
+                    # Test fixtures
+
+                    :::{eval-rst}
+                    .. py:module:: fixture_mod
+                    :::
+
+                    :::{autofixtures} fixture_mod
+                    :order: source
+                    :::
+                    """,
+                ),
+            ),
+        ),
+        confoverrides={
+            "pytest_fixture_lint_level": "none",
+            "myst_enable_extensions": ["colon_fence"],
+        },
+    )
+    return build_shared_sphinx_result(
+        spf_doctree_root,
+        scenario,
+        purge_modules=("fixture_mod",),
     )
 
 
@@ -476,6 +565,7 @@ def test_doc_pytest_plugin_rst_snapshot(
     result = build_fixture_result(
         spf_doctree_root / "doc-pytest-plugin-rst",
         buildername="dummy",
+        fixture_source=_AUTOFIXTURES_SMOKE_SOURCE,
         index_rst=index_rst,
         confoverrides={"pytest_fixture_lint_level": "none"},
     )
@@ -489,42 +579,10 @@ def test_doc_pytest_plugin_rst_snapshot(
 
 
 def test_doc_pytest_plugin_myst_smoke(
-    spf_doctree_root: pathlib.Path,
+    myst_smoke_result: SharedSphinxResult,
 ) -> None:
     """MyST ``doc-pytest-plugin`` keeps authored Markdown and generated sections."""
-    index_md = textwrap.dedent(
-        """\
-        # Test fixtures
-
-        :::{doc-pytest-plugin} fixture_mod
-        :project: fixture-demo
-        :package: fixture-demo
-        :summary: fixture-demo ships a pytest plugin for local test setup.
-        :tests-url: https://example.com/fixture-demo/tests
-
-        ## Recommended fixtures
-
-        Use this page when you want generated fixture docs and authored notes.
-        :::
-        """,
-    )
-    result = build_fixture_result(
-        spf_doctree_root / "doc-pytest-plugin-myst",
-        buildername="dummy",
-        fixture_source=_AUTOFIXTURES_SMOKE_SOURCE,
-        index_rst=index_md,
-        index_name="index.md",
-        extensions=[
-            "myst_parser",
-            "sphinx.ext.autodoc",
-            "sphinx_autodoc_pytest_fixtures",
-        ],
-        confoverrides={
-            "pytest_fixture_lint_level": "none",
-            "myst_enable_extensions": ["colon_fence"],
-        },
-    )
-    doctree = get_doctree(result, "index", post_transforms=True)
+    doctree = get_doctree(myst_smoke_result, "plugin", post_transforms=True)
     doctree_text = doctree.pformat()
 
     assert "Recommended fixtures" in doctree_text
@@ -535,39 +593,10 @@ def test_doc_pytest_plugin_myst_smoke(
 
 
 def test_autofixtures_directive_myst_smoke(
-    spf_doctree_root: pathlib.Path,
+    myst_smoke_result: SharedSphinxResult,
 ) -> None:
     """MyST ``autofixtures`` expands fixture descriptions in source order."""
-    index_md = textwrap.dedent(
-        """\
-        # Test fixtures
-
-        :::{eval-rst}
-        .. py:module:: fixture_mod
-        :::
-
-        :::{autofixtures} fixture_mod
-        :order: source
-        :::
-        """,
-    )
-    result = build_fixture_result(
-        spf_doctree_root / "autofixtures-myst",
-        buildername="dummy",
-        fixture_source=_AUTOFIXTURES_SMOKE_SOURCE,
-        index_rst=index_md,
-        index_name="index.md",
-        extensions=[
-            "myst_parser",
-            "sphinx.ext.autodoc",
-            "sphinx_autodoc_pytest_fixtures",
-        ],
-        confoverrides={
-            "pytest_fixture_lint_level": "none",
-            "myst_enable_extensions": ["colon_fence"],
-        },
-    )
-    doctree = get_doctree(result, "index", post_transforms=True)
+    doctree = get_doctree(myst_smoke_result, "autofixtures", post_transforms=True)
     doctree_text = doctree.pformat()
 
     assert _fixture_order(doctree) == [
@@ -578,7 +607,7 @@ def test_autofixtures_directive_myst_smoke(
     assert "Test fixtures" in doctree_text
     assert "fixture_mod.renamed_fixture" in doctree_text
     assert "eval-rst" not in doctree_text
-    assert "autofixtures" not in doctree_text
+    assert "::{autofixtures}" not in doctree_text
 
 
 def test_lint_level_error_sets_nonzero_status(

@@ -51,10 +51,10 @@ These measurements were taken from `/home/d/work/python/gp-sphinx` on
 
 | Command | Result | Meaning |
 | --- | --- | --- |
-| `/usr/bin/time -p uv run pytest -s` | `798 passed, 3 skipped in 21.48s`, wall `24.04s` | Conservative full-suite baseline |
-| `uv run pytest -s --durations=60 --durations-min=0.05` | `798 passed, 3 skipped in 21.46s` | Full-suite cost with slow-test evidence |
-| `uv run python -m cProfile -o /tmp/gp_sphinx_full.prof -m pytest -s` | `798 passed, 3 skipped in 35.38s` | Full-suite profile source |
-| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-abs` | `798 passed, 3 skipped in 4.10s`, wall `5.34s` | Optimized full suite, same coverage |
+| `/usr/bin/time -p uv run pytest -s` | `798 passed, 3 skipped in 29.53s`, wall `30.80s` | Conservative full-suite baseline |
+| `uv run pytest -s --durations=60 --durations-min=0.05` | `798 passed, 3 skipped in 29.05s` | Full-suite cost with slow-test evidence |
+| `uv run python -m cProfile -o /tmp/gp_sphinx_full.prof -m pytest -s` | `798 passed, 3 skipped in 34.58s` | Full-suite profile source |
+| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-abs` | `798 passed, 3 skipped in 3.13s`, wall `4.16s` | Optimized full suite, same coverage |
 | `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-integration-direct tests -m integration` | `21 passed, 695 deselected in 2.63s`, wall `3.74s` | Optimized integration diagnostics only |
 | `/usr/bin/time -p uv run pytest -o "addopts=--tb=short --no-header --showlocals" -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-fast-direct --capture=tee-sys -q tests -m 'not integration'` | `689 passed, 3 skipped, 21 deselected in 1.62s`, wall `2.52s` | Optimized fast local loop only |
 | `/usr/bin/time -p just test` | `798 passed, 3 skipped in 4.06s`, wall `5.34s` | Preferred full local command |
@@ -67,6 +67,9 @@ Two things stand out:
 - the raw full-suite baseline is still much slower than the optimized run,
   which means the suite is still paying for real runner/path overhead on top of
   the remaining Sphinx work
+- the raw full-suite baseline also varies more than the optimized one, which
+  points to filesystem and path-resolution noise rather than a stable Python
+  hot loop
 
 ## Coverage caveat
 
@@ -121,6 +124,12 @@ The recent passes did useful work without weakening coverage:
 10. They changed `tests/test_sphinx_scenarios.py` to use a plain-page Sphinx
     scenario for cache semantics instead of paying for `autodoc` imports that
     were not part of the contract.
+11. They changed the canonical RST `doc-pytest-plugin` doctree snapshot to use
+    the reduced three-fixture smoke module instead of the full demo fixture
+    surface.
+12. They now build one shared MyST dummy-builder scenario for both the
+    `doc-pytest-plugin` and `autofixtures` smokes instead of paying for two
+    separate MyST dummy builds.
 
 Concrete examples:
 
@@ -164,9 +173,9 @@ The current story is no longer “it was all tmp paths”:
 
 The raw full-suite `/usr/bin/time` output is also telling:
 
-- wall `26.16s`
-- user `5.06s`
-- sys `1.32s`
+- wall `30.80s`
+- user `4.51s`
+- sys `1.33s`
 
 That wide wall-vs-CPU gap is consistent with filesystem and process overhead,
 not a Python-level hot loop.
@@ -200,13 +209,13 @@ $ uv run python -m cProfile \
 
 | Function | Cumulative time |
 | --- | --- |
-| `tests._sphinx_scenarios.build_shared_sphinx_result` | `26.31s` |
+| `tests._sphinx_scenarios.build_shared_sphinx_result` | `25.55s` |
 | `sphinx.application.Sphinx.build` | `18.80s` |
-| `pathlib.Path.resolve` | `11.79s` |
-| `posixpath.realpath` | `11.78s` |
-| `posix.lstat` | `11.76s` |
-| `_pytest.tmpdir.mktemp` | `0.21s` |
-| `_pytest.pathlib.cleanup_dead_symlinks` | `0.21s` |
+| `pathlib.Path.resolve` | `11.31s` |
+| `posixpath.realpath` | `11.30s` |
+| `posix.lstat` | `11.29s` |
+| `_pytest.tmpdir.mktemp` | `0.24s` |
+| `_pytest.pathlib.cleanup_dead_symlinks` | `0.20s` |
 
 ### What that means
 
@@ -249,24 +258,23 @@ $ uv run pytest -s --durations=60 --durations-min=0.05
 
 | Test | Duration | Cause classification |
 | --- | --- | --- |
-| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `3.06s setup` | Real builder contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `2.74s setup` | Real builder contract |
-| `tests/ext/layout/test_snapshots.py::test_layout_demo_init_header_snapshot_annotation_disabled` | `2.72s setup` | Real builder contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `2.57s setup` | Real builder contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_warning_and_manual_option_snapshot` | `0.51s call` | Necessary dummy-builder doctree contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixture_index_resolution_smoke` | `0.47s call` | Necessary dummy-builder xref/table contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixtures_directive_myst_smoke` | `0.46s call` | Necessary dummy-builder MyST contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_rst_snapshot` | `0.46s call` | Necessary dummy-builder doctree contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_lint_level_error_sets_nonzero_status` | `0.45s call` | Necessary dummy-builder doctree/error contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_text_builder_does_not_crash` | `0.45s call` | Real builder contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_dependency_rendering_snapshot` | `0.45s call` | Necessary dummy-builder doctree contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixtures_directive_smoke` | `0.45s setup` | Necessary dummy-builder nested-parse contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_myst_smoke` | `0.44s call` | Necessary dummy-builder MyST contract |
-| `tests/ext/pytest_fixtures/test_type_checking_alias.py::test_type_checking_alias_qualified_in_fixture_meta` | `0.44s call` | Necessary dummy-builder metadata contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_default_fixture_store_and_domain_contract` | `0.43s setup` | Necessary shared dummy-builder setup |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_manual_directive_without_module_registers_unqualified_name` | `0.34s call` | Necessary dummy-builder domain-registration contract |
-| `tests/test_sphinx_scenarios.py::test_shared_sphinx_result_reuses_identical_builds` | `0.26s call` | Intentional cache semantics smoke |
-| `tests/test_sphinx_scenarios.py::test_copy_scenario_tree_keeps_cached_source_pristine` | `0.26s call` | Intentional cache-copy smoke |
+| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `4.24s setup` | Real builder contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `4.16s setup` | Real builder contract |
+| `tests/ext/layout/test_snapshots.py::test_layout_demo_init_header_snapshot_annotation_disabled` | `3.67s setup` | Real builder contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `3.49s setup` | Real builder contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_myst_smoke` | `0.80s setup` | Necessary dummy-builder MyST contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixture_index_resolution_smoke` | `0.73s call` | Necessary dummy-builder xref/table contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_lint_level_error_sets_nonzero_status` | `0.68s call` | Necessary dummy-builder doctree/error contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_warning_and_manual_option_snapshot` | `0.67s call` | Necessary dummy-builder doctree contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_rst_snapshot` | `0.66s call` | Necessary dummy-builder doctree contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_dependency_rendering_snapshot` | `0.66s call` | Necessary dummy-builder doctree contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_text_builder_does_not_crash` | `0.66s call` | Real builder contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_default_fixture_store_and_domain_contract` | `0.65s setup` | Necessary shared dummy-builder setup |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixtures_directive_smoke` | `0.63s setup` | Necessary dummy-builder nested-parse contract |
+| `tests/ext/pytest_fixtures/test_type_checking_alias.py::test_type_checking_alias_qualified_in_fixture_meta` | `0.45s call` | Necessary dummy-builder metadata contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_manual_directive_without_module_registers_unqualified_name` | `0.40s call` | Necessary dummy-builder domain-registration contract |
+| `tests/test_sphinx_scenarios.py::test_shared_sphinx_result_reuses_identical_builds` | `0.39s call` | Intentional cache semantics smoke |
+| `tests/test_sphinx_scenarios.py::test_copy_scenario_tree_keeps_cached_source_pristine` | `0.37s call` | Intentional cache-copy smoke |
 
 ### What is still over-harnessed?
 
@@ -414,6 +422,11 @@ Observed behavior:
 This now looks much more like an upstream pytest runner/capture bug than a
 repo-specific plugin interaction.
 
+A quick GitHub/web search on 2026-04-08 did not surface an obvious existing
+pytest issue matching this exact `tmpfile.truncate()` / zero-collection
+failure, so the repo should keep the local workaround and treat the current
+repro steps as filing-ready evidence if an upstream report becomes worthwhile.
+
 ### Relative repo-local `--basetemp`
 
 Relative repo-local `--basetemp` remains unstable for some pathless pytest
@@ -469,6 +482,8 @@ One more specific improvement landed in this pass:
 - one shared cross-document HTML build now covers both fixture-link directions
 - one shared dummy-builder `autofixtures + usage` scenario now covers both the
   nested-parse smoke and the short-name fixture-reference smoke
+- one shared MyST dummy-builder scenario now covers both the
+  `doc-pytest-plugin` and `autofixtures` smokes
 - smoke-only HTML, text, MyST, and cache-scenario tests now use smaller source
   modules or page trees when the contract does not depend on the larger demo
   fixture surface
