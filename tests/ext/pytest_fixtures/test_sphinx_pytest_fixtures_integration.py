@@ -23,17 +23,33 @@ from tests.ext.pytest_fixtures._scenario_support import (
 )
 
 
-@pytest.mark.integration
-def test_default_html_outputs_smoke(tmp_path: pathlib.Path) -> None:
-    """The default HTML build emits badge markup, inventory, and genindex entries."""
-    result = build_fixture_result(
-        tmp_path,
+@pytest.fixture(scope="module")
+def fixture_integration_root(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> pathlib.Path:
+    """Return a shared cache root for fixture HTML integration scenarios."""
+    return tmp_path_factory.mktemp("spf-html")
+
+
+@pytest.fixture(scope="module")
+def default_html_result(fixture_integration_root: pathlib.Path):
+    """Build the default fixture HTML scenario once per module."""
+    return build_fixture_result(
+        fixture_integration_root / "default-html",
         buildername="html",
         confoverrides={"pytest_fixture_lint_level": "none"},
     )
-    index_html = read_output(result, "index.html")
-    genindex_html = read_output(result, "genindex.html")
-    inv = InventoryFile.loads((result.outdir / "objects.inv").read_bytes(), uri="")
+
+
+@pytest.mark.integration
+def test_default_html_outputs_smoke(default_html_result) -> None:
+    """The default HTML build emits badge markup, inventory, and genindex entries."""
+    index_html = read_output(default_html_result, "index.html")
+    genindex_html = read_output(default_html_result, "genindex.html")
+    inv = InventoryFile.loads(
+        (default_html_result.outdir / "objects.inv").read_bytes(),
+        uri="",
+    )
 
     assert "py:fixture" in inv.data
     assert any("my_server" in name for name in inv.data["py:fixture"])
@@ -54,10 +70,13 @@ def test_default_html_outputs_smoke(tmp_path: pathlib.Path) -> None:
 
 
 @pytest.mark.integration
-def test_cross_document_fixture_reference_html_resolves(tmp_path: pathlib.Path) -> None:
+def test_cross_document_fixture_reference_html_resolves(
+    fixture_integration_root: pathlib.Path,
+) -> None:
     """Cross-document fixture references resolve to HTML hyperlinks."""
-    conf_text = render_conf_py(tmp_path / "src").replace(
-        str(tmp_path / "src"),
+    scenario_root = fixture_integration_root / "cross-document-reference"
+    conf_text = render_conf_py(scenario_root / "src").replace(
+        str(scenario_root / "src"),
         SCENARIO_SRCDIR_TOKEN,
     )
     scenario = SphinxScenario(
@@ -107,7 +126,7 @@ def test_cross_document_fixture_reference_html_resolves(tmp_path: pathlib.Path) 
         confoverrides={"pytest_fixture_lint_level": "none"},
     )
     result = build_shared_sphinx_result(
-        tmp_path.parent / "sphinx-scenario-cache",
+        fixture_integration_root,
         scenario,
         purge_modules=("fixture_mod",),
     )
@@ -139,10 +158,13 @@ CROSS_DOC_FIXTURE_SOURCE = textwrap.dedent(
 
 
 @pytest.mark.integration
-def test_cross_document_used_by_link_html_smoke(tmp_path: pathlib.Path) -> None:
+def test_cross_document_used_by_link_html_smoke(
+    fixture_integration_root: pathlib.Path,
+) -> None:
     """Used-by metadata links to a consumer in another HTML document."""
-    conf_text = render_conf_py(tmp_path / "src").replace(
-        str(tmp_path / "src"),
+    scenario_root = fixture_integration_root / "cross-document-used-by"
+    conf_text = render_conf_py(scenario_root / "src").replace(
+        str(scenario_root / "src"),
         SCENARIO_SRCDIR_TOKEN,
     )
     scenario = SphinxScenario(
@@ -192,7 +214,7 @@ def test_cross_document_used_by_link_html_smoke(tmp_path: pathlib.Path) -> None:
         confoverrides={"pytest_fixture_lint_level": "none"},
     )
     result = build_shared_sphinx_result(
-        tmp_path.parent / "sphinx-scenario-cache",
+        fixture_integration_root,
         scenario,
         purge_modules=("fixture_mod",),
     )
@@ -203,10 +225,12 @@ def test_cross_document_used_by_link_html_smoke(tmp_path: pathlib.Path) -> None:
 
 
 @pytest.mark.integration
-def test_text_builder_does_not_crash(tmp_path: pathlib.Path) -> None:
+def test_text_builder_does_not_crash(
+    fixture_integration_root: pathlib.Path,
+) -> None:
     """The text builder handles pytest fixture output without crashing."""
     result = build_fixture_result(
-        tmp_path,
+        fixture_integration_root / "text-builder",
         buildername="text",
         confoverrides={"pytest_fixture_lint_level": "none"},
     )

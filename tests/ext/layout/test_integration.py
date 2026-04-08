@@ -2,118 +2,9 @@
 
 from __future__ import annotations
 
-import pathlib
 import re
-import textwrap
 
 import pytest
-
-from tests._sphinx_scenarios import (
-    SCENARIO_SRCDIR_TOKEN,
-    ScenarioFile,
-    SphinxScenario,
-    build_shared_sphinx_result,
-    derive_sphinx_scenario_cache_root,
-    read_output,
-)
-
-_MODULE_SOURCE = textwrap.dedent(
-    """\
-    from __future__ import annotations
-
-
-    class LayoutDemo:
-        \"\"\"A class demonstrating all layout regions.
-
-        Parameters
-        ----------
-        host : str
-            Server hostname.
-        port : int
-            Server port number.
-        username : str
-            Authentication username.
-        password : str
-            Authentication password.
-        database : str
-            Database name.
-        timeout : float
-            Connection timeout in seconds.
-        retries : int
-            Number of connection retries.
-        ssl : bool
-            Enable SSL/TLS.
-        pool_size : int
-            Connection pool size.
-        pool_timeout : float
-            Pool checkout timeout.
-        echo : bool
-            Log all SQL statements.
-        encoding : str
-            Character encoding.
-        isolation_level : str
-            Transaction isolation level.
-        \"\"\"
-
-        def __init__(
-            self,
-            host: str,
-            port: int = 5432,
-            *,
-            username: str = "admin",
-            password: str = "",
-            database: str = "default",
-            timeout: float = 30.0,
-            retries: int = 3,
-            ssl: bool = True,
-            pool_size: int = 5,
-            pool_timeout: float = 10.0,
-            echo: bool = False,
-            encoding: str = "utf-8",
-            isolation_level: str = "READ COMMITTED",
-        ) -> None:
-            self.host = host
-            self.port = port
-
-        def connect(self) -> bool:
-            \"\"\"Open a connection to the server.\"\"\"
-            return True
-    """
-)
-
-_CONF_PY = textwrap.dedent(
-    """\
-    from __future__ import annotations
-
-    import pathlib
-    import sys
-
-    sys.path.insert(0, r"__SCENARIO_SRCDIR__")
-
-    extensions = [
-        "sphinx.ext.autodoc",
-        "sphinx.ext.napoleon",
-        "sphinx.ext.viewcode",
-        "sphinx_autodoc_api_style",
-        "sphinx_autodoc_layout",
-    ]
-
-    gal_enabled = True
-    gal_fold_parameters = True
-    gal_collapsed_threshold = 10
-    """
-)
-
-_INDEX_RST = textwrap.dedent(
-    """\
-    Layout Demo
-    ===========
-
-    .. autoclass:: gal_demo_api.LayoutDemo
-       :members:
-       :special-members: __init__
-    """
-)
 
 
 def _extract_init_header(html: str) -> str:
@@ -128,36 +19,9 @@ def _extract_init_header(html: str) -> str:
     return init_match.group(1).strip()
 
 
-def _build_layout_demo(
-    tmp_path: pathlib.Path,
-    *,
-    extra_conf: str = "",
-) -> str:
-    conf_text = _CONF_PY
-    if extra_conf:
-        conf_text = f"{conf_text.rstrip()}\n{extra_conf}\n"
-    scenario = SphinxScenario(
-        files=(
-            ScenarioFile("gal_demo_api.py", _MODULE_SOURCE),
-            ScenarioFile(
-                "conf.py",
-                conf_text.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN),
-                substitute_srcdir=True,
-            ),
-            ScenarioFile("index.rst", _INDEX_RST),
-        ),
-    )
-    result = build_shared_sphinx_result(
-        derive_sphinx_scenario_cache_root(tmp_path),
-        scenario,
-        purge_modules=("gal_demo_api",),
-    )
-    return read_output(result, "index.html")
-
-
 @pytest.mark.integration
-def test_layout_demo_renders_api_component_contract(tmp_path: pathlib.Path) -> None:
-    html = _build_layout_demo(tmp_path)
+def test_layout_demo_renders_api_component_contract(layout_default_html: str) -> None:
+    html = layout_default_html
 
     assert re.search(r'<dl class="[^"]*api-container[^"]*">', html)
     assert re.search(r'<dd class="[^"]*api-content[^"]*">', html)
