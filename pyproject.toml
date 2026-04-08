@@ -57,6 +57,7 @@ dev = [
   "typing-extensions",
   "types-docutils",
   "types-Pygments",
+  "syrupy>=5.1.0",
 ]
 
 [build-system]
