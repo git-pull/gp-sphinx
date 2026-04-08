@@ -14,6 +14,7 @@ import sphinx_autodoc_pytest_fixtures
 import sphinx_autodoc_pytest_fixtures._directives as spf_directives
 import sphinx_autodoc_pytest_fixtures._index as spf_index
 import sphinx_autodoc_pytest_fixtures._store
+from sphinx_autodoc_pytest_fixtures._models import FixtureMeta
 
 try:
     import libtmux  # noqa: F401
@@ -28,6 +29,38 @@ class Server:
 
     def kill(self) -> None:
         pass
+
+
+def _make_fixture_meta(
+    *,
+    canonical_name: str,
+    public_name: str | None = None,
+    summary: str = "",
+    return_display: str = "",
+    scope: str = "function",
+    kind: str = "resource",
+    autouse: bool = False,
+) -> FixtureMeta:
+    """Return a typed ``FixtureMeta`` for helper-level index tests."""
+    resolved_public_name = (
+        public_name if public_name is not None else canonical_name.rsplit(".", 1)[-1]
+    )
+    return FixtureMeta(
+        docname="index",
+        canonical_name=canonical_name,
+        public_name=resolved_public_name,
+        source_name=resolved_public_name,
+        scope=scope,
+        autouse=autouse,
+        kind=kind,
+        return_display=return_display,
+        return_xref_target=None,
+        deps=(),
+        param_reprs=(),
+        has_teardown=False,
+        is_async=False,
+        summary=summary,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -52,6 +85,174 @@ def test_is_pytest_fixture_negative() -> None:
         return "hello"
 
     assert not sphinx_autodoc_pytest_fixtures._is_pytest_fixture(not_a_fixture)
+
+
+# ---------------------------------------------------------------------------
+# autofixtures and doc-pytest-plugin helper generation
+# ---------------------------------------------------------------------------
+
+
+def test_build_autofixtures_directive_text_preserves_source_order() -> None:
+    """Generated ``autofixtures`` text keeps discovery order by default."""
+    entries: list[tuple[str, str, t.Any]] = [
+        ("z_server", "z_server", object()),
+        ("a_client", "a_client", object()),
+    ]
+
+    rendered = spf_directives._build_autofixtures_directive_text(
+        "fixture_mod",
+        entries,
+    )
+
+    assert rendered.splitlines() == [
+        ".. autofixture:: fixture_mod.z_server",
+        "",
+        ".. autofixture:: fixture_mod.a_client",
+    ]
+
+
+def test_build_autofixtures_directive_text_alpha_sort_and_no_index() -> None:
+    """Alpha ordering and ``:no-index:`` are encoded without Sphinx parsing."""
+    entries: list[tuple[str, str, t.Any]] = [
+        ("z_server", "z_server", object()),
+        ("a_client", "a_client", object()),
+    ]
+
+    rendered = spf_directives._build_autofixtures_directive_text(
+        "fixture_mod",
+        entries,
+        order="alpha",
+        no_index=True,
+    )
+
+    assert rendered.splitlines() == [
+        ".. autofixture:: fixture_mod.a_client",
+        "   :no-index:",
+        "",
+        ".. autofixture:: fixture_mod.z_server",
+        "   :no-index:",
+    ]
+
+
+def test_build_autofixtures_directive_text_wraps_eval_rst_for_myst() -> None:
+    """Native MyST invocation wraps generated RST in an ``eval-rst`` fence."""
+    entries: list[tuple[str, str, t.Any]] = [("server", "server", object())]
+
+    rendered = spf_directives._build_autofixtures_directive_text(
+        "fixture_mod",
+        entries,
+        wrap_eval_rst=True,
+    )
+
+    assert rendered.startswith("```{eval-rst}\n")
+    assert ".. autofixture:: fixture_mod.server" in rendered
+    assert rendered.endswith("\n```")
+
+
+def test_build_doc_pytest_plugin_intro_nodes_include_install_and_link() -> None:
+    """The generated intro includes summary, install block, note, and tests URL."""
+    intro_nodes = spf_directives._build_doc_pytest_plugin_intro_nodes(
+        project="fixture-demo",
+        summary="fixture-demo ships a pytest plugin.",
+        install_command="uv add --dev fixture-demo",
+        tests_url="https://example.com/tests",
+    )
+
+    assert [type(node) for node in intro_nodes] == [
+        nodes.paragraph,
+        nodes.rubric,
+        nodes.literal_block,
+        nodes.note,
+        nodes.paragraph,
+    ]
+    assert intro_nodes[0].astext() == "fixture-demo ships a pytest plugin."
+    assert intro_nodes[1].astext() == "Install"
+    assert intro_nodes[2].astext() == "$ uv add --dev fixture-demo"
+    assert "pytest11" in intro_nodes[3].astext()
+    assert "fixture-demo test suite" in intro_nodes[4].astext()
+
+
+def test_build_doc_pytest_plugin_fixture_section_scaffold_sets_module() -> None:
+    """Fixture-section scaffold carries the target module on the placeholder."""
+    scaffold = spf_directives._build_doc_pytest_plugin_fixture_section_scaffold(
+        "fixture_mod",
+    )
+
+    assert [type(node) for node in scaffold] == [
+        nodes.rubric,
+        spf_directives.autofixture_index_node,
+        nodes.rubric,
+    ]
+    assert scaffold[0].astext() == "Fixture Summary"
+    assert scaffold[1]["module"] == "fixture_mod"
+    assert scaffold[1]["exclude"] == set()
+    assert scaffold[2].astext() == "Fixture Reference"
+
+
+def test_compose_doc_pytest_plugin_nodes_preserves_display_order() -> None:
+    """Intro, authored body, and fixture section nodes stay in display order."""
+    intro_nodes = [nodes.paragraph("", "intro")]
+    body_nodes = [nodes.paragraph("", "body")]
+    fixture_section_nodes = [nodes.paragraph("", "fixtures")]
+
+    composed = spf_directives._compose_doc_pytest_plugin_nodes(
+        intro_nodes=intro_nodes,
+        body_nodes=body_nodes,
+        fixture_section_nodes=fixture_section_nodes,
+    )
+
+    assert [node.astext() for node in composed] == ["intro", "body", "fixtures"]
+
+
+def test_select_fixture_index_fixtures_filters_module_and_exclude() -> None:
+    """Fixture-index row selection stays a pure metadata filter."""
+    store = sphinx_autodoc_pytest_fixtures._store._make_empty_store()
+    store["fixtures"] = {
+        "fixture_mod.alpha": _make_fixture_meta(canonical_name="fixture_mod.alpha"),
+        "fixture_mod.beta": _make_fixture_meta(canonical_name="fixture_mod.beta"),
+        "other_mod.gamma": _make_fixture_meta(canonical_name="other_mod.gamma"),
+    }
+
+    selected = spf_index._select_fixture_index_fixtures(
+        store,
+        "fixture_mod",
+        {"beta"},
+    )
+
+    assert [meta.canonical_name for meta in selected] == ["fixture_mod.alpha"]
+
+
+def test_build_fixture_index_table_structure_populates_plain_shell() -> None:
+    """Fixture-index shell building does not need a Sphinx app."""
+    fixtures = [
+        _make_fixture_meta(
+            canonical_name="fixture_mod.my_server",
+            return_display="Server",
+            summary="Session-scoped test server.",
+            scope="session",
+        ),
+        _make_fixture_meta(
+            canonical_name="fixture_mod.auto_cleanup",
+            summary="Runs automatically.",
+            autouse=True,
+        ),
+    ]
+
+    table, tbody = spf_index._build_fixture_index_table_structure(fixtures)
+
+    assert isinstance(table, nodes.table)
+    assert isinstance(tbody, nodes.tbody)
+    assert len(tbody.children) == 2
+    first_row = t.cast(nodes.row, tbody.children[0])
+    assert len(first_row.children) == 4
+    first_name_entry = t.cast(nodes.entry, first_row.children[0])
+    first_flags_entry = t.cast(nodes.entry, first_row.children[1])
+    first_return_entry = t.cast(nodes.entry, first_row.children[2])
+    first_desc_entry = t.cast(nodes.entry, first_row.children[3])
+    assert "my_server" in first_name_entry.astext()
+    assert "session" in first_flags_entry.astext()
+    assert "Server" in first_return_entry.astext()
+    assert "Session-scoped test server." in first_desc_entry.astext()
 
 
 # ---------------------------------------------------------------------------

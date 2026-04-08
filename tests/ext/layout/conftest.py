@@ -115,7 +115,7 @@ _INDEX_RST = textwrap.dedent(
 )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def layout_cache_root(tmp_path_factory: pytest.TempPathFactory) -> pathlib.Path:
     """Return a shared cache root for layout HTML scenarios."""
     return tmp_path_factory.mktemp("layout-html")
@@ -158,15 +158,15 @@ def _build_layout_demo(
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def layout_default_html(layout_cache_root: pathlib.Path) -> str:
-    """Build the default layout demo HTML once per module."""
+    """Build the default layout demo HTML once per test session."""
     return _build_layout_demo(layout_cache_root / "default")
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def layout_annotation_disabled_html(layout_cache_root: pathlib.Path) -> str:
-    """Build the annotation-disabled layout demo HTML once per module."""
+    """Build the annotation-disabled layout demo HTML once per test session."""
     return _build_layout_demo(
         layout_cache_root / "annotation-disabled",
         extra_conf="gal_signature_show_annotations = False",
