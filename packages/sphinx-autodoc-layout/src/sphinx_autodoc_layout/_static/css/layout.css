@@ -16,12 +16,12 @@
 
 /* ── API shell ──────────────────────────────────────── */
 dl.py:not(.fixture).api-container > dt.api-header {
-  display: block;
+  align-items: center;
 }
 
 dl.py:not(.fixture).api-container > dt.api-header > .api-layout {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 1rem;
   width: 100%;
 }
@@ -29,18 +29,34 @@ dl.py:not(.fixture).api-container > dt.api-header > .api-layout {
 dl.py:not(.fixture).api-container > dt.api-header .api-layout-left {
   flex: 1 1 auto;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.25rem;
   min-width: 0;
 }
 
 dl.py:not(.fixture).api-container > dt.api-header .api-layout-right {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.5rem;
   margin-left: auto;
   white-space: nowrap;
   flex: 0 0 auto;
+}
+
+dl.py:not(.fixture).api-container > dt.api-header[data-signature-expanded="true"] {
+  align-items: flex-start;
+}
+
+dl.py:not(.fixture).api-container > dt.api-header[data-signature-expanded="true"] > .api-layout {
+  align-items: flex-start;
+}
+
+dl.py:not(.fixture).api-container > dt.api-header[data-signature-expanded="true"] .api-layout-left {
+  align-items: flex-start;
+}
+
+dl.py:not(.fixture).api-container > dt.api-header[data-signature-expanded="true"] .api-layout-right {
+  align-items: flex-start;
 }
 
 dl.py:not(.fixture).api-container > dt.api-header .api-layout-right:empty {

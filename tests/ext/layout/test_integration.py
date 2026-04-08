@@ -110,9 +110,10 @@ _INDEX_RST = textwrap.dedent(
 
 
 def _extract_init_header(html: str) -> str:
-    """Return the ``LayoutDemo.__init__`` header fragment."""
+    """Return the full ``LayoutDemo.__init__`` header fragment."""
     init_match = re.search(
-        r'<dt class="[^"]*api-header[^"]*" id="gal_demo_api\.LayoutDemo\.__init__">(.*?)</dt>',
+        r'(<dt (?=[^>]*class="[^"]*api-header[^"]*")'
+        r'(?=[^>]*id="gal_demo_api\.LayoutDemo\.__init__")[^>]*>.*?</dt>)',
         html,
         re.DOTALL,
     )
@@ -167,6 +168,12 @@ def test_layout_demo_renders_api_component_contract(tmp_path: pathlib.Path) -> N
 
     init_html = _extract_init_header(html)
 
+    assert 'data-signature-expanded="false"' in init_html
+    assert '<div class="api-layout" data-signature-expanded=' not in init_html
+    assert re.search(
+        r'<dt [^>]*class="[^"]*api-header[^"]*"[^>]*data-signature-expanded="false"',
+        init_html,
+    )
     assert 'class="api-layout"' in init_html
     assert 'class="api-layout-left"' in init_html
     assert 'class="api-layout-right gas-toolbar"' in init_html

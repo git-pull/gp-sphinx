@@ -17,7 +17,8 @@ if t.TYPE_CHECKING:
 def _extract_init_header_fragment(html: str) -> str:
     """Return the full ``dt.api-header`` fragment for ``LayoutDemo.__init__``."""
     init_match = re.search(
-        r'(<dt class="[^"]*api-header[^"]*" id="gal_demo_api\.LayoutDemo\.__init__">.*?</dt>)',
+        r'(<dt (?=[^>]*class="[^"]*api-header[^"]*")'
+        r'(?=[^>]*id="gal_demo_api\.LayoutDemo\.__init__")[^>]*>.*?</dt>)',
         html,
         re.DOTALL,
     )

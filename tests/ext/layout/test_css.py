@@ -15,6 +15,51 @@ def test_signature_expanded_uses_contents_layout() -> None:
     assert ".api-signature-expanded {\n  display: contents;\n}" in css
 
 
+def test_api_header_defaults_to_center_alignment() -> None:
+    css = _LAYOUT_CSS.read_text(encoding="utf-8")
+
+    assert (
+        "dl.py:not(.fixture).api-container > dt.api-header {\n  align-items: center;\n"
+    ) in css
+    assert "display: block;" not in css
+    assert (
+        "dl.py:not(.fixture).api-container > dt.api-header > .api-layout {\n"
+        "  display: flex;\n"
+        "  align-items: center;\n"
+    ) in css
+    assert (
+        "dl.py:not(.fixture).api-container > dt.api-header .api-layout-left {\n"
+        "  flex: 1 1 auto;\n"
+        "  display: flex;\n"
+        "  align-items: center;\n"
+    ) in css
+    assert (
+        "dl.py:not(.fixture).api-container > dt.api-header .api-layout-right {\n"
+        "  display: flex;\n"
+        "  align-items: center;\n"
+    ) in css
+
+
+def test_expanded_api_header_switches_back_to_top_alignment() -> None:
+    css = _LAYOUT_CSS.read_text(encoding="utf-8")
+
+    assert (
+        'dt.api-header[data-signature-expanded="true"] {\n  align-items: flex-start;\n}'
+    ) in css
+    assert (
+        '> dt.api-header[data-signature-expanded="true"] > .api-layout {\n'
+        "  align-items: flex-start;\n}" in css
+    )
+    assert (
+        'dt.api-header[data-signature-expanded="true"] .api-layout-left {\n'
+        "  align-items: flex-start;\n}" in css
+    )
+    assert (
+        'dt.api-header[data-signature-expanded="true"] .api-layout-right {\n'
+        "  align-items: flex-start;\n}" in css
+    )
+
+
 def test_signature_multiline_list_uses_padding_indent() -> None:
     css = _LAYOUT_CSS.read_text(encoding="utf-8")
 
