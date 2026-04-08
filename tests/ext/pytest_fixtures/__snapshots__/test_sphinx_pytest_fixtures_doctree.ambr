@@ -1,0 +1,1833 @@
+# serializer version: 1
+# name: test_autofixture_index_exclude_snapshot[autofixture_index_exclude]
+  '''
+  <table classes="spf-fixture-index">
+      <tgroup cols="4">
+          <colspec colwidth="20">
+          <colspec colwidth="22">
+          <colspec colwidth="12">
+          <colspec colwidth="46">
+          <thead>
+              <row>
+                  <entry>
+                      <paragraph>
+                          Fixture
+                  <entry>
+                      <paragraph>
+                          Flags
+                  <entry>
+                      <paragraph>
+                          Returns
+                  <entry>
+                      <paragraph>
+                          Description
+          <tbody>
+              <row>
+                  <entry>
+                      <paragraph>
+                          <reference internal="True" refid="fixture_mod.my_server">
+                              <literal>
+                                  my_server
+                  <entry>
+                      <paragraph>
+                          <inline classes="spf-badge-group">
+                              <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
+                                  session
+                               
+                              <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                  fixture
+                  <entry>
+                      <paragraph>
+                          <literal classes="xref py py-class">
+                              Server
+                  <entry>
+                      <paragraph>
+                          Return a fake server for testing.
+  '''
+# ---
+# name: test_autofixture_index_table_snapshot[autofixture_index_table]
+  '''
+  <table classes="spf-fixture-index">
+      <tgroup cols="4">
+          <colspec colwidth="20">
+          <colspec colwidth="22">
+          <colspec colwidth="12">
+          <colspec colwidth="46">
+          <thead>
+              <row>
+                  <entry>
+                      <paragraph>
+                          Fixture
+                  <entry>
+                      <paragraph>
+                          Flags
+                  <entry>
+                      <paragraph>
+                          Returns
+                  <entry>
+                      <paragraph>
+                          Description
+          <tbody>
+              <row>
+                  <entry>
+                      <paragraph>
+                          <reference internal="True" refid="fixture_mod.TestServer">
+                              <literal>
+                                  TestServer
+                  <entry>
+                      <paragraph>
+                          <inline classes="spf-badge-group">
+                              <BadgeNode badge_tooltip="Factory — returns a callable that creates instances" classes="sab-badge spf-badge spf-badge--kind spf-factory" tabindex="0">
+                                  factory
+                               
+                              <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                  fixture
+                  <entry>
+                      <paragraph>
+                          <literal classes="xref py py-class">
+                              type
+                          [
+                          <literal classes="xref py py-class">
+                              Server
+                          ]
+                  <entry>
+                      <paragraph>
+                          Return the Server class for direct instantiation (factory fixture).
+              <row>
+                  <entry>
+                      <paragraph>
+                          <reference internal="True" refid="fixture_mod.auto_cleanup">
+                              <literal>
+                                  auto_cleanup
+                  <entry>
+                      <paragraph>
+                          <inline classes="spf-badge-group">
+                              <BadgeNode badge_tooltip="Runs automatically for every test (autouse=True)" classes="sab-badge spf-badge spf-badge--state spf-autouse" tabindex="0">
+                                  auto
+                               
+                              <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                  fixture
+                  <entry>
+                      <paragraph>
+                          <literal classes="xref py py-class">
+                              None
+                  <entry>
+                      <paragraph>
+                          Runs automatically before every test — no request needed.
+              <row>
+                  <entry>
+                      <paragraph>
+                          <reference internal="True" refid="fixture_mod.my_client">
+                              <literal>
+                                  my_client
+                  <entry>
+                      <paragraph>
+                          <inline classes="spf-badge-group">
+                              <BadgeNode badge_tooltip="Deprecated — see docs for replacement" classes="sab-badge spf-badge spf-badge--state spf-deprecated" tabindex="0">
+                                  deprecated
+                               
+                              <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                  fixture
+                  <entry>
+                      <paragraph>
+                  <entry>
+                      <paragraph>
+              <row>
+                  <entry>
+                      <paragraph>
+                          <reference internal="True" refid="fixture_mod.my_server">
+                              <literal>
+                                  my_server
+                  <entry>
+                      <paragraph>
+                          <inline classes="spf-badge-group">
+                              <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
+                                  session
+                               
+                              <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                  fixture
+                  <entry>
+                      <paragraph>
+                          <literal classes="xref py py-class">
+                              Server
+                  <entry>
+                      <paragraph>
+                          Return a fake server for testing.
+              <row>
+                  <entry>
+                      <paragraph>
+                          <reference internal="True" refid="fixture_mod.plain_fixture">
+                              <literal>
+                                  plain_fixture
+                  <entry>
+                      <paragraph>
+                          <inline classes="spf-badge-group">
+                              <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                  fixture
+                  <entry>
+                      <paragraph>
+                          <literal classes="xref py py-class">
+                              str
+                  <entry>
+                      <paragraph>
+                          A plain function-scope resource fixture.
+  '''
+# ---
+# name: test_autofixtures_directive_myst_snapshot[autofixtures_myst]
+  '''
+  <document source="index.md">
+      <section ids="test-fixtures" names="test\ fixtures">
+          <title>
+              Test fixtures
+          <index entries="('single',\ 'my_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.my_server',\ '',\ None) ('pair',\ 'session-scoped\ fixtures;\ my_server',\ 'fixture_mod.my_server',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="my_server" _toc_parts="('fixture_mod', 'my_server')" class="" classes="sig sig-object py" fullname="my_server" ids="fixture_mod.my_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="fixture_mod.Server" spf_scope="session">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      my_server
+                  <desc_returns xml:space="preserve">
+                      fixture_mod.Server
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
+                          session
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Return a fake server for testing.
+                  <note>
+                      <paragraph>
+                          Created once per test session and shared across all tests. Requesting this fixture does not create a new instance per test.
+                  <paragraph>
+                      Use this when you need a long-lived server across the session.
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Used by
+                          <field_body>
+                              <paragraph>
+                                  <reference internal="True" refid="fixture_mod.my_client">
+                                      <literal>
+                                          my_client
+                                  , 
+                                  <reference internal="True" refid="fixture_mod.yield_server">
+                                      <literal>
+                                          yield_server
+          <index entries="('single',\ 'my_client\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.my_client',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="my_client" _toc_parts="('fixture_mod', 'my_client')" class="" classes="sig sig-object py" fullname="my_client" ids="fixture_mod.my_client" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_client" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      my_client
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Return a fake client connected to 
+                      <emphasis>
+                          my_server
+                      .
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Depends on
+                          <field_body>
+                              <paragraph>
+                                  <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                      <literal classes="xref py py-fixture">
+                                          my_server
+          <index entries="('single',\ 'home_user\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.home_user',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="home_user" _toc_parts="('fixture_mod', 'home_user')" class="" classes="sig sig-object py" fullname="home_user" ids="fixture_mod.home_user" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.home_user" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      home_user
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Override to customise the home directory username.
+          <index entries="('single',\ 'yield_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.yield_server',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="yield_server" _toc_parts="('fixture_mod', 'yield_server')" class="" classes="sig sig-object py" fullname="yield_server" ids="fixture_mod.yield_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.yield_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="fixture_mod.Server" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      yield_server
+                  <desc_returns xml:space="preserve">
+                      fixture_mod.Server
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Yield the server and tear down after the test.
+                  <note>
+                      <paragraph>
+                          This is a yield fixture — it runs setup code before yielding the value to the test, then teardown code after the test completes.
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Depends on
+                          <field_body>
+                              <paragraph>
+                                  <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                      <literal classes="xref py py-fixture">
+                                          my_server
+          <index entries="('single',\ 'auto_cleanup\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.auto_cleanup',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="auto_cleanup" _toc_parts="('fixture_mod', 'auto_cleanup')" class="" classes="sig sig-object py" fullname="auto_cleanup" ids="fixture_mod.auto_cleanup" module="fixture_mod" spf_autouse="True" spf_badges_injected="True" spf_canonical_name="fixture_mod.auto_cleanup" spf_deprecated="False" spf_kind="resource" spf_ret_type="None" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      auto_cleanup
+                  <desc_returns xml:space="preserve">
+                      None
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Runs automatically for every test (autouse=True)" classes="sab-badge spf-badge spf-badge--state spf-autouse" tabindex="0">
+                          auto
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Runs automatically before every test — no request needed.
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Autouse
+                          <field_body>
+                              <paragraph>
+                                  yes — runs automatically for every test
+                  <note>
+                      <paragraph>
+                          No request needed — this fixture runs automatically for every test.
+          <index entries="('single',\ 'TestServer\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.TestServer',\ '',\ None) ('pair',\ 'factory\ fixtures;\ TestServer',\ 'fixture_mod.TestServer',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="TestServer" _toc_parts="('fixture_mod', 'TestServer')" class="" classes="sig sig-object py" fullname="TestServer" ids="fixture_mod.TestServer" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.TestServer" spf_deprecated="False" spf_kind="factory" spf_ret_type="type[fixture_mod.Server]" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      TestServer
+                  <desc_returns xml:space="preserve">
+                      type
+                      <desc_sig_punctuation classes="p">
+                          [
+                      fixture_mod.Server
+                      <desc_sig_punctuation classes="p">
+                          ]
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Factory — returns a callable that creates instances" classes="sab-badge spf-badge spf-badge--kind spf-factory" tabindex="0">
+                          factory
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Return the Server class for direct instantiation (factory fixture).
+                  <literal_block language="python" linenos="False" xml:space="preserve">
+                      def test_example(TestServer: type[fixture_mod.Server]) -> None:
+                          obj = TestServer()
+                          assert obj is not None
+          <index entries="('single',\ 'renamed_fixture\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.renamed_fixture',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="renamed_fixture" _toc_parts="('fixture_mod', 'renamed_fixture')" class="" classes="sig sig-object py" fullname="renamed_fixture" ids="fixture_mod.renamed_fixture" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.renamed_fixture" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      renamed_fixture
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Fixture with a name alias — injected as ‘renamed_fixture’.
+  '''
+# ---
+# name: test_default_fixture_post_transform_snapshot[default_fixture_page]
+  '''
+  <document source="index.rst">
+      <section ids="module-fixture_mod test-fixtures" names="test\ fixtures">
+          <title>
+              Test fixtures
+          <index entries="('pair',\ 'module;\ fixture_mod',\ 'module-fixture_mod',\ '',\ None)">
+          <index entries="('single',\ 'my_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.my_server',\ '',\ None) ('pair',\ 'session-scoped\ fixtures;\ my_server',\ 'fixture_mod.my_server',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="my_server" _toc_parts="('fixture_mod', 'my_server')" class="" classes="sig sig-object py" fullname="my_server" ids="fixture_mod.my_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="fixture_mod.Server" spf_scope="session">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      my_server
+                  <desc_returns xml:space="preserve">
+                      fixture_mod.Server
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
+                          session
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Return a fake server for testing.
+                  <note>
+                      <paragraph>
+                          Created once per test session and shared across all tests. Requesting this fixture does not create a new instance per test.
+                  <paragraph>
+                      Use this when you need a long-lived server across the session.
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Used by
+                          <field_body>
+                              <paragraph>
+                                  <reference internal="True" refid="fixture_mod.my_client">
+                                      <literal>
+                                          my_client
+                                  , 
+                                  <reference internal="True" refid="fixture_mod.yield_server">
+                                      <literal>
+                                          yield_server
+          <index entries="('single',\ 'my_client\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.my_client',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="my_client" _toc_parts="('fixture_mod', 'my_client')" class="" classes="sig sig-object py" fullname="my_client" ids="fixture_mod.my_client" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_client" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      my_client
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Return a fake client connected to 
+                      <emphasis>
+                          my_server
+                      .
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Depends on
+                          <field_body>
+                              <paragraph>
+                                  <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                      <literal classes="xref py py-fixture">
+                                          my_server
+          <index entries="('single',\ 'home_user\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.home_user',\ '',\ None) ('pair',\ 'override\ hooks;\ home_user',\ 'fixture_mod.home_user',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="home_user" _toc_parts="('fixture_mod', 'home_user')" class="" classes="sig sig-object py" fullname="home_user" ids="fixture_mod.home_user" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.home_user" spf_deprecated="False" spf_kind="override_hook" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      home_user
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Override hook — customize in conftest.py" classes="sab-badge spf-badge spf-badge--kind spf-override" tabindex="0">
+                          override
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Override to customise the home directory username.
+                  <tip>
+                      <paragraph>
+                          This is an override hook. Override it in your project’s conftest.py to customise behaviour for your test suite.
+                  <literal_block language="python" linenos="False" xml:space="preserve">
+                      # conftest.py
+                      import pytest
+                      
+                      
+                      @pytest.fixture
+                      def home_user() -> str:
+                          return ...  # your value here
+          <index entries="('single',\ 'yield_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.yield_server',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="yield_server" _toc_parts="('fixture_mod', 'yield_server')" class="" classes="sig sig-object py" fullname="yield_server" ids="fixture_mod.yield_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.yield_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="fixture_mod.Server" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      yield_server
+                  <desc_returns xml:space="preserve">
+                      fixture_mod.Server
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Yield the server and tear down after the test.
+                  <note>
+                      <paragraph>
+                          This is a yield fixture — it runs setup code before yielding the value to the test, then teardown code after the test completes.
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Depends on
+                          <field_body>
+                              <paragraph>
+                                  <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                      <literal classes="xref py py-fixture">
+                                          my_server
+          <index entries="('single',\ 'auto_cleanup\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.auto_cleanup',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="auto_cleanup" _toc_parts="('fixture_mod', 'auto_cleanup')" class="" classes="sig sig-object py" fullname="auto_cleanup" ids="fixture_mod.auto_cleanup" module="fixture_mod" spf_autouse="True" spf_badges_injected="True" spf_canonical_name="fixture_mod.auto_cleanup" spf_deprecated="False" spf_kind="resource" spf_ret_type="None" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      auto_cleanup
+                  <desc_returns xml:space="preserve">
+                      None
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Runs automatically for every test (autouse=True)" classes="sab-badge spf-badge spf-badge--state spf-autouse" tabindex="0">
+                          auto
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Runs automatically before every test — no request needed.
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Autouse
+                          <field_body>
+                              <paragraph>
+                                  yes — runs automatically for every test
+                  <note>
+                      <paragraph>
+                          No request needed — this fixture runs automatically for every test.
+          <index entries="('single',\ 'TestServer\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.TestServer',\ '',\ None) ('pair',\ 'factory\ fixtures;\ TestServer',\ 'fixture_mod.TestServer',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="TestServer" _toc_parts="('fixture_mod', 'TestServer')" class="" classes="sig sig-object py" fullname="TestServer" ids="fixture_mod.TestServer" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.TestServer" spf_deprecated="False" spf_kind="factory" spf_ret_type="type[fixture_mod.Server]" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      TestServer
+                  <desc_returns xml:space="preserve">
+                      type
+                      <desc_sig_punctuation classes="p">
+                          [
+                      fixture_mod.Server
+                      <desc_sig_punctuation classes="p">
+                          ]
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Factory — returns a callable that creates instances" classes="sab-badge spf-badge spf-badge--kind spf-factory" tabindex="0">
+                          factory
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Return the Server class for direct instantiation (factory fixture).
+                  <literal_block language="python" linenos="False" xml:space="preserve">
+                      def test_example(TestServer: type[fixture_mod.Server]) -> None:
+                          obj = TestServer()
+                          assert obj is not None
+          <index entries="('single',\ 'renamed_fixture\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.renamed_fixture',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="renamed_fixture" _toc_parts="('fixture_mod', 'renamed_fixture')" class="" classes="sig sig-object py" fullname="renamed_fixture" ids="fixture_mod.renamed_fixture" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.renamed_fixture" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      renamed_fixture
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Fixture with a name alias — injected as ‘renamed_fixture’.
+  '''
+# ---
+# name: test_dependency_rendering_snapshot[builtin_dependency_link]
+  '''
+  <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+      <desc_signature _toc_name="needs_tmp" _toc_parts="('fixture_mod', 'needs_tmp')" class="" classes="sig sig-object py" fullname="needs_tmp" ids="fixture_mod.needs_tmp" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.needs_tmp" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+          <desc_annotation xml:space="preserve">
+              <desc_sig_keyword classes="k">
+                  fixture
+              <desc_sig_space classes="w">
+                   
+          <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+              fixture_mod.
+          <desc_name classes="sig-name descname" xml:space="preserve">
+              needs_tmp
+          <desc_returns xml:space="preserve">
+              str
+          <inline classes="spf-badge-group">
+              <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                  fixture
+      <desc_content>
+          <paragraph>
+              Uses tmp_path internally.
+          <field_list>
+              <field>
+                  <field_name>
+                      Depends on
+                  <field_body>
+                      <paragraph>
+                          <reference refuri="https://docs.pytest.org/en/stable/reference/fixtures.html#tmp_path">
+                              <literal>
+                                  tmp_path
+  '''
+# ---
+# name: test_dependency_rendering_snapshot[external_dependency_link]
+  '''
+  <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+      <desc_signature _toc_name="my_widget" _toc_parts="('fixture_mod', 'my_widget')" class="" classes="sig sig-object py" fullname="my_widget" ids="fixture_mod.my_widget" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_widget" spf_deprecated="False" spf_kind="resource" spf_ret_type="" spf_scope="function">
+          <desc_annotation xml:space="preserve">
+              <desc_sig_keyword classes="k">
+                  fixture
+              <desc_sig_space classes="w">
+                   
+          <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+              fixture_mod.
+          <desc_name classes="sig-name descname" xml:space="preserve">
+              my_widget
+          <inline classes="spf-badge-group">
+              <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                  fixture
+      <desc_content>
+          <field_list>
+              <field>
+                  <field_name>
+                      Depends on
+                  <field_body>
+                      <paragraph>
+                          <reference refuri="https://example.com/fixtures/special_dep">
+                              <literal>
+                                  special_dep
+  '''
+# ---
+# name: test_dependency_rendering_snapshot[hidden_dependencies]
+  '''
+  <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+      <desc_signature _toc_name="my_client" _toc_parts="('fixture_mod', 'my_client')" class="" classes="sig sig-object py" fullname="my_client" ids="fixture_mod.my_client" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_client" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+          <desc_annotation xml:space="preserve">
+              <desc_sig_keyword classes="k">
+                  fixture
+              <desc_sig_space classes="w">
+                   
+          <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+              fixture_mod.
+          <desc_name classes="sig-name descname" xml:space="preserve">
+              my_client
+          <desc_returns xml:space="preserve">
+              str
+          <inline classes="spf-badge-group">
+              <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                  fixture
+      <desc_content>
+          <paragraph>
+              Return a fake client connected to 
+              <emphasis>
+                  my_server
+              .
+  '''
+# ---
+# name: test_doc_pytest_plugin_myst_snapshot[doc_pytest_plugin_myst]
+  '''
+  <document source="index.md">
+      <section ids="test-fixtures" names="test\ fixtures">
+          <title>
+              Test fixtures
+          <section ids="recommended-fixtures" names="recommended\ fixtures">
+              <title>
+                  Recommended fixtures
+              <paragraph>
+                  Use this page when you want generated fixture docs and authored notes.
+          <section ids="bootstrapping-in-conftest-py" names="bootstrapping\ in\ conftest.py">
+              <title>
+                  Bootstrapping in 
+                  <literal>
+                      conftest.py
+              <literal_block language="python" linenos="False" xml:space="preserve">
+                  import pytest
+                  
+                  
+                  @pytest.fixture(autouse=True)
+                  def setup(my_server: str) -> None:
+                      pass
+          <paragraph>
+              fixture-demo ships a pytest plugin for local test setup.
+          <rubric>
+              Install
+          <literal_block language="console" linenos="False" xml:space="preserve">
+              $ pip install fixture-demo
+          <note>
+              <paragraph>
+                  pytest auto-detects this plugin through the 
+                  <literal>
+                      pytest11
+                   entry point. Its fixtures are available without extra 
+                  <literal>
+                      conftest.py
+                   imports.
+          <paragraph>
+              For real-world usage examples, see the 
+              <reference refuri="https://example.com/fixture-demo/tests">
+                  fixture-demo test suite
+              .
+          <rubric>
+              Fixture Summary
+          <container classes="spf-table-scroll">
+              <table classes="spf-fixture-index">
+                  <tgroup cols="4">
+                      <colspec colwidth="20">
+                      <colspec colwidth="22">
+                      <colspec colwidth="12">
+                      <colspec colwidth="46">
+                      <thead>
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      Fixture
+                              <entry>
+                                  <paragraph>
+                                      Flags
+                              <entry>
+                                  <paragraph>
+                                      Returns
+                              <entry>
+                                  <paragraph>
+                                      Description
+                      <tbody>
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.TestServer">
+                                          <literal>
+                                              TestServer
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="Factory — returns a callable that creates instances" classes="sab-badge spf-badge spf-badge--kind spf-factory" tabindex="0">
+                                              factory
+                                           
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          type
+                                      [
+                                      <literal classes="xref py py-class">
+                                          Server
+                                      ]
+                              <entry>
+                                  <paragraph>
+                                      Return the Server class for direct instantiation (factory fixture).
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.auto_cleanup">
+                                          <literal>
+                                              auto_cleanup
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="Runs automatically for every test (autouse=True)" classes="sab-badge spf-badge spf-badge--state spf-autouse" tabindex="0">
+                                              auto
+                                           
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          None
+                              <entry>
+                                  <paragraph>
+                                      Runs automatically before every test — no request needed.
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.home_user">
+                                          <literal>
+                                              home_user
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          str
+                              <entry>
+                                  <paragraph>
+                                      Override to customise the home directory username.
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.my_client">
+                                          <literal>
+                                              my_client
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          str
+                              <entry>
+                                  <paragraph>
+                                      Return a fake client connected to *my_server*.
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.my_server">
+                                          <literal>
+                                              my_server
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
+                                              session
+                                           
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          Server
+                              <entry>
+                                  <paragraph>
+                                      Return a fake server for testing.
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.renamed_fixture">
+                                          <literal>
+                                              renamed_fixture
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          str
+                              <entry>
+                                  <paragraph>
+                                      Fixture with a name alias — injected as 'renamed_fixture'.
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.yield_server">
+                                          <literal>
+                                              yield_server
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          Server
+                              <entry>
+                                  <paragraph>
+                                      Yield the server and tear down after the test.
+          <rubric>
+              Fixture Reference
+          <index entries="('single',\ 'my_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.my_server',\ '',\ None) ('pair',\ 'session-scoped\ fixtures;\ my_server',\ 'fixture_mod.my_server',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="my_server" _toc_parts="('fixture_mod', 'my_server')" class="" classes="sig sig-object py" fullname="my_server" ids="fixture_mod.my_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="fixture_mod.Server" spf_scope="session">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      my_server
+                  <desc_returns xml:space="preserve">
+                      fixture_mod.Server
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
+                          session
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Return a fake server for testing.
+                  <note>
+                      <paragraph>
+                          Created once per test session and shared across all tests. Requesting this fixture does not create a new instance per test.
+                  <paragraph>
+                      Use this when you need a long-lived server across the session.
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Used by
+                          <field_body>
+                              <paragraph>
+                                  <reference internal="True" refid="fixture_mod.my_client">
+                                      <literal>
+                                          my_client
+                                  , 
+                                  <reference internal="True" refid="fixture_mod.yield_server">
+                                      <literal>
+                                          yield_server
+          <index entries="('single',\ 'my_client\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.my_client',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="my_client" _toc_parts="('fixture_mod', 'my_client')" class="" classes="sig sig-object py" fullname="my_client" ids="fixture_mod.my_client" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_client" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      my_client
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Return a fake client connected to 
+                      <emphasis>
+                          my_server
+                      .
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Depends on
+                          <field_body>
+                              <paragraph>
+                                  <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                      <literal classes="xref py py-fixture">
+                                          my_server
+          <index entries="('single',\ 'home_user\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.home_user',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="home_user" _toc_parts="('fixture_mod', 'home_user')" class="" classes="sig sig-object py" fullname="home_user" ids="fixture_mod.home_user" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.home_user" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      home_user
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Override to customise the home directory username.
+          <index entries="('single',\ 'yield_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.yield_server',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="yield_server" _toc_parts="('fixture_mod', 'yield_server')" class="" classes="sig sig-object py" fullname="yield_server" ids="fixture_mod.yield_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.yield_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="fixture_mod.Server" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      yield_server
+                  <desc_returns xml:space="preserve">
+                      fixture_mod.Server
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Yield the server and tear down after the test.
+                  <note>
+                      <paragraph>
+                          This is a yield fixture — it runs setup code before yielding the value to the test, then teardown code after the test completes.
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Depends on
+                          <field_body>
+                              <paragraph>
+                                  <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                      <literal classes="xref py py-fixture">
+                                          my_server
+          <index entries="('single',\ 'auto_cleanup\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.auto_cleanup',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="auto_cleanup" _toc_parts="('fixture_mod', 'auto_cleanup')" class="" classes="sig sig-object py" fullname="auto_cleanup" ids="fixture_mod.auto_cleanup" module="fixture_mod" spf_autouse="True" spf_badges_injected="True" spf_canonical_name="fixture_mod.auto_cleanup" spf_deprecated="False" spf_kind="resource" spf_ret_type="None" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      auto_cleanup
+                  <desc_returns xml:space="preserve">
+                      None
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Runs automatically for every test (autouse=True)" classes="sab-badge spf-badge spf-badge--state spf-autouse" tabindex="0">
+                          auto
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Runs automatically before every test — no request needed.
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Autouse
+                          <field_body>
+                              <paragraph>
+                                  yes — runs automatically for every test
+                  <note>
+                      <paragraph>
+                          No request needed — this fixture runs automatically for every test.
+          <index entries="('single',\ 'TestServer\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.TestServer',\ '',\ None) ('pair',\ 'factory\ fixtures;\ TestServer',\ 'fixture_mod.TestServer',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="TestServer" _toc_parts="('fixture_mod', 'TestServer')" class="" classes="sig sig-object py" fullname="TestServer" ids="fixture_mod.TestServer" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.TestServer" spf_deprecated="False" spf_kind="factory" spf_ret_type="type[fixture_mod.Server]" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      TestServer
+                  <desc_returns xml:space="preserve">
+                      type
+                      <desc_sig_punctuation classes="p">
+                          [
+                      fixture_mod.Server
+                      <desc_sig_punctuation classes="p">
+                          ]
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Factory — returns a callable that creates instances" classes="sab-badge spf-badge spf-badge--kind spf-factory" tabindex="0">
+                          factory
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Return the Server class for direct instantiation (factory fixture).
+                  <literal_block language="python" linenos="False" xml:space="preserve">
+                      def test_example(TestServer: type[fixture_mod.Server]) -> None:
+                          obj = TestServer()
+                          assert obj is not None
+          <index entries="('single',\ 'renamed_fixture\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.renamed_fixture',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="renamed_fixture" _toc_parts="('fixture_mod', 'renamed_fixture')" class="" classes="sig sig-object py" fullname="renamed_fixture" ids="fixture_mod.renamed_fixture" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.renamed_fixture" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      renamed_fixture
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Fixture with a name alias — injected as ‘renamed_fixture’.
+  '''
+# ---
+# name: test_doc_pytest_plugin_rst_snapshot[doc_pytest_plugin_rst]
+  '''
+  <document source="index.rst">
+      <section ids="test-fixtures" names="test\ fixtures">
+          <title>
+              Test fixtures
+          <paragraph>
+              fixture-demo ships a pytest plugin for local test setup.
+          <rubric>
+              Install
+          <literal_block language="console" linenos="False" xml:space="preserve">
+              $ uv add --dev fixture-demo
+          <note>
+              <paragraph>
+                  pytest auto-detects this plugin through the 
+                  <literal>
+                      pytest11
+                   entry point. Its fixtures are available without extra 
+                  <literal>
+                      conftest.py
+                   imports.
+          <paragraph>
+              For real-world usage examples, see the 
+              <reference refuri="https://example.com/fixture-demo/tests">
+                  fixture-demo test suite
+              .
+          <paragraph>
+              Use the plugin when you want isolated test resources with minimal
+              conftest boilerplate.
+          <rubric>
+              Fixture Summary
+          <container classes="spf-table-scroll">
+              <table classes="spf-fixture-index">
+                  <tgroup cols="4">
+                      <colspec colwidth="20">
+                      <colspec colwidth="22">
+                      <colspec colwidth="12">
+                      <colspec colwidth="46">
+                      <thead>
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      Fixture
+                              <entry>
+                                  <paragraph>
+                                      Flags
+                              <entry>
+                                  <paragraph>
+                                      Returns
+                              <entry>
+                                  <paragraph>
+                                      Description
+                      <tbody>
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.TestServer">
+                                          <literal>
+                                              TestServer
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="Factory — returns a callable that creates instances" classes="sab-badge spf-badge spf-badge--kind spf-factory" tabindex="0">
+                                              factory
+                                           
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          type
+                                      [
+                                      <literal classes="xref py py-class">
+                                          Server
+                                      ]
+                              <entry>
+                                  <paragraph>
+                                      Return the Server class for direct instantiation (factory fixture).
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.auto_cleanup">
+                                          <literal>
+                                              auto_cleanup
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="Runs automatically for every test (autouse=True)" classes="sab-badge spf-badge spf-badge--state spf-autouse" tabindex="0">
+                                              auto
+                                           
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          None
+                              <entry>
+                                  <paragraph>
+                                      Runs automatically before every test — no request needed.
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.home_user">
+                                          <literal>
+                                              home_user
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          str
+                              <entry>
+                                  <paragraph>
+                                      Override to customise the home directory username.
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.my_client">
+                                          <literal>
+                                              my_client
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          str
+                              <entry>
+                                  <paragraph>
+                                      Return a fake client connected to *my_server*.
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.my_server">
+                                          <literal>
+                                              my_server
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
+                                              session
+                                           
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          Server
+                              <entry>
+                                  <paragraph>
+                                      Return a fake server for testing.
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.renamed_fixture">
+                                          <literal>
+                                              renamed_fixture
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          str
+                              <entry>
+                                  <paragraph>
+                                      Fixture with a name alias — injected as 'renamed_fixture'.
+                          <row>
+                              <entry>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.yield_server">
+                                          <literal>
+                                              yield_server
+                              <entry>
+                                  <paragraph>
+                                      <inline classes="spf-badge-group">
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                              fixture
+                              <entry>
+                                  <paragraph>
+                                      <literal classes="xref py py-class">
+                                          Server
+                              <entry>
+                                  <paragraph>
+                                      Yield the server and tear down after the test.
+          <rubric>
+              Fixture Reference
+          <index entries="('single',\ 'my_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.my_server',\ '',\ None) ('pair',\ 'session-scoped\ fixtures;\ my_server',\ 'fixture_mod.my_server',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="my_server" _toc_parts="('fixture_mod', 'my_server')" class="" classes="sig sig-object py" fullname="my_server" ids="fixture_mod.my_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="fixture_mod.Server" spf_scope="session">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      my_server
+                  <desc_returns xml:space="preserve">
+                      fixture_mod.Server
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
+                          session
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Return a fake server for testing.
+                  <note>
+                      <paragraph>
+                          Created once per test session and shared across all tests. Requesting this fixture does not create a new instance per test.
+                  <paragraph>
+                      Use this when you need a long-lived server across the session.
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Used by
+                          <field_body>
+                              <paragraph>
+                                  <reference internal="True" refid="fixture_mod.my_client">
+                                      <literal>
+                                          my_client
+                                  , 
+                                  <reference internal="True" refid="fixture_mod.yield_server">
+                                      <literal>
+                                          yield_server
+          <index entries="('single',\ 'my_client\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.my_client',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="my_client" _toc_parts="('fixture_mod', 'my_client')" class="" classes="sig sig-object py" fullname="my_client" ids="fixture_mod.my_client" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_client" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      my_client
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Return a fake client connected to 
+                      <emphasis>
+                          my_server
+                      .
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Depends on
+                          <field_body>
+                              <paragraph>
+                                  <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                      <literal classes="xref py py-fixture">
+                                          my_server
+          <index entries="('single',\ 'home_user\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.home_user',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="home_user" _toc_parts="('fixture_mod', 'home_user')" class="" classes="sig sig-object py" fullname="home_user" ids="fixture_mod.home_user" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.home_user" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      home_user
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Override to customise the home directory username.
+          <index entries="('single',\ 'yield_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.yield_server',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="yield_server" _toc_parts="('fixture_mod', 'yield_server')" class="" classes="sig sig-object py" fullname="yield_server" ids="fixture_mod.yield_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.yield_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="fixture_mod.Server" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      yield_server
+                  <desc_returns xml:space="preserve">
+                      fixture_mod.Server
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Yield the server and tear down after the test.
+                  <note>
+                      <paragraph>
+                          This is a yield fixture — it runs setup code before yielding the value to the test, then teardown code after the test completes.
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Depends on
+                          <field_body>
+                              <paragraph>
+                                  <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                      <literal classes="xref py py-fixture">
+                                          my_server
+          <index entries="('single',\ 'auto_cleanup\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.auto_cleanup',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="auto_cleanup" _toc_parts="('fixture_mod', 'auto_cleanup')" class="" classes="sig sig-object py" fullname="auto_cleanup" ids="fixture_mod.auto_cleanup" module="fixture_mod" spf_autouse="True" spf_badges_injected="True" spf_canonical_name="fixture_mod.auto_cleanup" spf_deprecated="False" spf_kind="resource" spf_ret_type="None" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      auto_cleanup
+                  <desc_returns xml:space="preserve">
+                      None
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Runs automatically for every test (autouse=True)" classes="sab-badge spf-badge spf-badge--state spf-autouse" tabindex="0">
+                          auto
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Runs automatically before every test — no request needed.
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Autouse
+                          <field_body>
+                              <paragraph>
+                                  yes — runs automatically for every test
+                  <note>
+                      <paragraph>
+                          No request needed — this fixture runs automatically for every test.
+          <index entries="('single',\ 'TestServer\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.TestServer',\ '',\ None) ('pair',\ 'factory\ fixtures;\ TestServer',\ 'fixture_mod.TestServer',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="TestServer" _toc_parts="('fixture_mod', 'TestServer')" class="" classes="sig sig-object py" fullname="TestServer" ids="fixture_mod.TestServer" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.TestServer" spf_deprecated="False" spf_kind="factory" spf_ret_type="type[fixture_mod.Server]" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      TestServer
+                  <desc_returns xml:space="preserve">
+                      type
+                      <desc_sig_punctuation classes="p">
+                          [
+                      fixture_mod.Server
+                      <desc_sig_punctuation classes="p">
+                          ]
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Factory — returns a callable that creates instances" classes="sab-badge spf-badge spf-badge--kind spf-factory" tabindex="0">
+                          factory
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Return the Server class for direct instantiation (factory fixture).
+                  <literal_block language="python" linenos="False" xml:space="preserve">
+                      def test_example(TestServer: type[fixture_mod.Server]) -> None:
+                          obj = TestServer()
+                          assert obj is not None
+          <index entries="('single',\ 'renamed_fixture\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.renamed_fixture',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="renamed_fixture" _toc_parts="('fixture_mod', 'renamed_fixture')" class="" classes="sig sig-object py" fullname="renamed_fixture" ids="fixture_mod.renamed_fixture" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.renamed_fixture" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      renamed_fixture
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Fixture with a name alias — injected as ‘renamed_fixture’.
+  '''
+# ---
+# name: test_warning_and_manual_option_snapshot[warning_and_manual_options_doctree]
+  '''
+  <document source="index.rst">
+      <section ids="module-fixture_mod test" names="test">
+          <title>
+              Test
+          <index entries="('pair',\ 'module;\ fixture_mod',\ 'module-fixture_mod',\ '',\ None)">
+          <index entries="('single',\ 'my_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.my_server',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="my_server" _toc_parts="('fixture_mod', 'my_server')" class="" classes="sig sig-object py" fullname="my_server" ids="fixture_mod.my_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      my_server
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+          <index entries="('single',\ 'async_resource\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.async_resource',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="async_resource" _toc_parts="('fixture_mod', 'async_resource')" class="" classes="sig sig-object py" fullname="async_resource" ids="fixture_mod.async_resource" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.async_resource" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      async_resource
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      An async fixture.
+                  <note>
+                      <paragraph>
+                          This is an async fixture. Use it in async test functions.
+          <index entries="('single',\ 'simple_yield\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.simple_yield',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="simple_yield" _toc_parts="('fixture_mod', 'simple_yield')" class="" classes="sig sig-object py" fullname="simple_yield" ids="fixture_mod.simple_yield" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.simple_yield" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      simple_yield
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      A yield fixture with no teardown documentation.
+                  <note>
+                      <paragraph>
+                          This is a yield fixture — it runs setup code before yielding the value to the test, then teardown code after the test completes.
+          <index entries="('single',\ 'documented_yield\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.documented_yield',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="documented_yield" _toc_parts="('fixture_mod', 'documented_yield')" class="" classes="sig sig-object py" fullname="documented_yield" ids="fixture_mod.documented_yield" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.documented_yield" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      documented_yield
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      A yield fixture with documented teardown.
+                  <note>
+                      <paragraph>
+                          This is a yield fixture — it runs setup code before yielding the value to the test, then teardown code after the test completes.
+                      <paragraph>
+                          <strong>
+                              Teardown: 
+                          Releases the resource after the test completes.
+                  <section ids="teardown" names="teardown">
+                      <title>
+                          Teardown
+                      <paragraph>
+                          Releases the resource after the test completes.
+          <index entries="('single',\ 'yield_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.yield_server',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="yield_server" _toc_parts="('fixture_mod', 'yield_server')" class="" classes="sig sig-object py" fullname="yield_server" ids="fixture_mod.yield_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.yield_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      yield_server
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <note>
+                      <paragraph>
+                          This is a yield fixture — it runs setup code before yielding the value to the test, then teardown code after the test completes.
+                      <paragraph>
+                          <strong>
+                              Teardown: 
+                          Shuts down the server and cleans socket files.
+          <index entries="('single',\ 'old_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.old_server',\ '',\ None)">
+          <desc classes="py fixture spf-deprecated" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="old_server" _toc_parts="('fixture_mod', 'old_server')" class="" classes="sig sig-object py" fullname="old_server" ids="fixture_mod.old_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.old_server" spf_deprecated="True" spf_kind="resource" spf_ret_type="" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      old_server
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Deprecated — see docs for replacement" classes="sab-badge spf-badge spf-badge--state spf-deprecated" tabindex="0">
+                          deprecated
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      An old server fixture.
+                  <warning>
+                      <paragraph>
+                          Deprecated since version 2.0.
+                           Use 
+                          <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                              <literal classes="xref py py-fixture">
+                                  my_server
+                           instead.
+          <index entries="('single',\ 'old_thing\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.old_thing',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="old_thing" _toc_parts="('fixture_mod', 'old_thing')" class="" classes="sig sig-object py" fullname="old_thing" ids="fixture_mod.old_thing" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.old_thing" spf_deprecated="True" spf_kind="resource" spf_ret_type="" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      old_thing
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="Deprecated — see docs for replacement" classes="sab-badge spf-badge spf-badge--state spf-deprecated" tabindex="0">
+                          deprecated
+                       
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      An old fixture.
+                  <warning>
+                      <paragraph>
+                          Deprecated since version 1.5.
+          <index entries="('single',\ 'async_thing\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.async_thing',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="async_thing" _toc_parts="('fixture_mod', 'async_thing')" class="" classes="sig sig-object py" fullname="async_thing" ids="fixture_mod.async_thing" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.async_thing" spf_deprecated="False" spf_kind="resource" spf_ret_type="" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      async_thing
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      An async fixture.
+                  <note>
+                      <paragraph>
+                          This is an async fixture. Use it in async test functions.
+          <index entries="('single',\ 'shell\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.shell',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="shell" _toc_parts="('fixture_mod', 'shell')" class="" classes="sig sig-object py" fullname="shell" ids="fixture_mod.shell" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.shell" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      shell
+                  <desc_returns xml:space="preserve">
+                      str
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <paragraph>
+                      Fixture parametrized over shell interpreters.
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Depends on
+                          <field_body>
+                              <paragraph>
+                                  <reference refuri="https://docs.pytest.org/en/stable/reference/fixtures.html#request">
+                                      <literal>
+                                          request
+                      <field>
+                          <field_name>
+                              Parametrized
+                          <field_body>
+                              <enumerated_list enumtype="arabic">
+                                  <list_item>
+                                      <paragraph>
+                                          <literal>
+                                              'bash'
+                                  <list_item>
+                                      <paragraph>
+                                          <literal>
+                                              'zsh'
+                                  <list_item>
+                                      <paragraph>
+                                          <literal>
+                                              'fish'
+                                  <list_item>
+                                      <paragraph>
+                                          <literal>
+                                              'nushell'
+          <index entries="('single',\ 'shell_manual\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.shell_manual',\ '',\ None)">
+          <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+              <desc_signature _toc_name="shell_manual" _toc_parts="('fixture_mod', 'shell_manual')" class="" classes="sig sig-object py" fullname="shell_manual" ids="fixture_mod.shell_manual" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.shell_manual" spf_deprecated="False" spf_kind="resource" spf_ret_type="" spf_scope="function">
+                  <desc_annotation xml:space="preserve">
+                      <desc_sig_keyword classes="k">
+                          fixture
+                      <desc_sig_space classes="w">
+                           
+                  <desc_addname classes="sig-prename descclassname" xml:space="preserve">
+                      fixture_mod.
+                  <desc_name classes="sig-name descname" xml:space="preserve">
+                      shell_manual
+                  <inline classes="spf-badge-group">
+                      <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          fixture
+              <desc_content>
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Parametrized
+                          <field_body>
+                              <paragraph>
+                                  <literal>
+                                      'bash'
+                                  , 
+                                  <literal>
+                                      'zsh'
+  '''
+# ---
+# name: test_warning_and_manual_option_snapshot[warning_and_manual_options_warnings]
+  '''
+  WARNING: fixture 'my_server' has no docstring
+  WARNING: fixture 'my_server' has no return annotation
+  WARNING: yield fixture 'simple_yield' has no teardown documentation
+  WARNING: fixture 'yield_server' has no docstring
+  WARNING: fixture 'yield_server' has no return annotation
+  WARNING: fixture 'old_server' has no docstring
+  WARNING: fixture 'old_server' has no return annotation
+  WARNING: fixture 'old_thing' has no docstring
+  WARNING: fixture 'old_thing' has no return annotation
+  WARNING: deprecated fixture 'old_thing' has no replacement specified
+  WARNING: fixture 'async_thing' has no docstring
+  WARNING: fixture 'async_thing' has no return annotation
+  WARNING: fixture 'shell_manual' has no docstring
+  WARNING: fixture 'shell_manual' has no return annotation
+  '''
+# ---

@@ -140,7 +140,8 @@ def visit_desc_signature_html(self: HTML5Translator, node: nodes.Element) -> Non
         return
 
     attrs = _html_attrs(node)
-    self.body.append(self.starttag(node, "dt", **attrs))
+    starttag = t.cast(t.Any, self).starttag
+    self.body.append(starttag(node, "dt", **attrs))
     self.protect_literal_text += 1
 
 

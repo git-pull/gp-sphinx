@@ -10,9 +10,6 @@ import pytest
 
 from tests.ext.layout.test_integration import _build_layout_demo
 
-if t.TYPE_CHECKING:
-    from syrupy.assertion import SnapshotAssertion
-
 
 def _extract_init_header_fragment(html: str) -> str:
     """Return the full ``dt.api-header`` fragment for ``LayoutDemo.__init__``."""
@@ -29,21 +26,24 @@ def _extract_init_header_fragment(html: str) -> str:
 @pytest.mark.integration
 def test_layout_demo_init_header_snapshot_annotated(
     tmp_path: pathlib.Path,
-    snapshot: SnapshotAssertion,
+    snapshot_html_fragment: t.Callable[..., None],
 ) -> None:
     html = _build_layout_demo(tmp_path)
 
-    assert _extract_init_header_fragment(html) == snapshot(name="annotated")
+    snapshot_html_fragment(_extract_init_header_fragment(html), name="annotated")
 
 
 @pytest.mark.integration
 def test_layout_demo_init_header_snapshot_annotation_disabled(
     tmp_path: pathlib.Path,
-    snapshot: SnapshotAssertion,
+    snapshot_html_fragment: t.Callable[..., None],
 ) -> None:
     html = _build_layout_demo(
         tmp_path,
         extra_conf="gal_signature_show_annotations = False",
     )
 
-    assert _extract_init_header_fragment(html) == snapshot(name="annotation_disabled")
+    snapshot_html_fragment(
+        _extract_init_header_fragment(html),
+        name="annotation_disabled",
+    )

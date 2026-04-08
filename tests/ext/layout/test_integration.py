@@ -14,6 +14,7 @@ from tests._sphinx_scenarios import (
     SphinxScenario,
     build_shared_sphinx_result,
     derive_sphinx_scenario_cache_root,
+    read_output,
 )
 
 _MODULE_SOURCE = textwrap.dedent(
@@ -151,7 +152,7 @@ def _build_layout_demo(
         scenario,
         purge_modules=("gal_demo_api",),
     )
-    return (result.outdir / "index.html").read_text(encoding="utf-8")
+    return read_output(result, "index.html")
 
 
 @pytest.mark.integration
@@ -202,35 +203,3 @@ def test_layout_demo_renders_api_component_contract(tmp_path: pathlib.Path) -> N
     assert "int" in init_html
     assert "[source]" in init_html
     assert "api-signature-panel" not in init_html
-
-
-@pytest.mark.integration
-def test_layout_demo_members_stay_in_api_footer(tmp_path: pathlib.Path) -> None:
-    html = _build_layout_demo(tmp_path)
-
-    footer_start = html.find('class="api-footer gal-region gal-region--members"')
-    assert footer_start != -1
-    footer_html = html[footer_start:]
-
-    assert "gal_demo_api.LayoutDemo.__init__" in footer_html
-    assert "gal_demo_api.LayoutDemo.connect" in footer_html
-
-
-@pytest.mark.integration
-def test_layout_demo_can_hide_folded_signature_annotations(
-    tmp_path: pathlib.Path,
-) -> None:
-    html = _build_layout_demo(
-        tmp_path,
-        extra_conf="gal_signature_show_annotations = False",
-    )
-
-    init_html = _extract_init_header(html)
-
-    assert 'class="api-signature-expanded gal-sig-expanded"' in init_html
-    assert "host" in init_html
-    assert "port" in init_html
-    assert "port</span></span><span" in init_html
-    assert "5432" in init_html
-    assert '<span class="pre">str</span>' not in init_html
-    assert '<span class="pre">int</span>' not in init_html

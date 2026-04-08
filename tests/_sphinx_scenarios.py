@@ -24,6 +24,7 @@ import shutil
 import sys
 import typing as t
 
+from docutils import nodes
 from sphinx.application import Sphinx
 
 SCENARIO_SRCDIR_TOKEN = "__SCENARIO_SRCDIR__"
@@ -254,6 +255,59 @@ def build_isolated_sphinx_result(
         status=status_buf.getvalue(),
         warnings=warning_buf.getvalue(),
     )
+
+
+def get_doctree(
+    result: SharedSphinxResult,
+    docname: str,
+    *,
+    post_transforms: bool = False,
+) -> nodes.document:
+    """Return a detached doctree for ``docname`` from ``result``.
+
+    Parameters
+    ----------
+    result :
+        Completed Sphinx scenario result.
+    docname :
+        Document name to fetch from the built environment.
+    post_transforms :
+        Whether to apply post-transforms to a detached doctree copy.
+
+    Returns
+    -------
+    nodes.document
+        Deep-copied doctree safe for test assertions and mutation.
+    """
+    doctree = result.app.env.get_doctree(docname).deepcopy()
+    if post_transforms:
+        result.app.env.apply_post_transforms(doctree, docname)
+    return doctree
+
+
+def read_output(
+    result: SharedSphinxResult,
+    filename: str,
+    *,
+    encoding: str = "utf-8",
+) -> str:
+    """Read a builder output file from ``result.outdir``.
+
+    Parameters
+    ----------
+    result :
+        Completed Sphinx scenario result.
+    filename :
+        Output filename relative to the builder output directory.
+    encoding :
+        Text encoding used when reading the file.
+
+    Returns
+    -------
+    str
+        File contents.
+    """
+    return (result.outdir / filename).read_text(encoding=encoding)
 
 
 def _ensure_cached_source_tree(

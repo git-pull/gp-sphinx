@@ -252,6 +252,32 @@ def test_nest_python_members_moves_siblings_into_class_content() -> None:
     assert list(class_content.children) == [method_desc]
 
 
+def test_wrap_places_nested_members_in_api_footer() -> None:
+    section = nodes.section()
+    class_desc = _make_desc(
+        nodes.paragraph("", "intro"),
+        objtype="class",
+        ids=("demo.LayoutDemo",),
+    )
+    method_desc = _make_desc(objtype="method", ids=("demo.LayoutDemo.connect",))
+    section += class_desc
+    section += method_desc
+
+    _nest_python_members(section)
+    _wrap_content_runs(class_desc)
+
+    class_content = class_desc.children[-1]
+    assert isinstance(class_content, addnodes.desc_content)
+    assert _child_component_names(class_content) == [
+        "api-description",
+        "api-footer",
+    ]
+    footer = class_content.children[1]
+    assert isinstance(footer, api_component)
+    assert footer.get("name") == "api-footer"
+    assert list(footer.children) == [method_desc]
+
+
 def test_count_individual_fields() -> None:
     fl = _make_field_list(5)
     assert _count_field_entries(fl) == 5
@@ -464,6 +490,8 @@ def test_rebuild_signature_layout_strips_annotations_when_disabled() -> None:
     expanded = _find_component(signature, "api-signature-expanded")
     expanded_plist = expanded.children[0]
     assert isinstance(expanded_plist, addnodes.desc_parameterlist)
+    assert expanded_plist.get("multi_line_parameter_list") is True
+    assert expanded_plist.get("multi_line_trailing_comma") is False
     params = list(expanded_plist.findall(addnodes.desc_parameter))
 
     assert params[0].astext() == "host"

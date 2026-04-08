@@ -574,6 +574,7 @@ def test_type_checking_alias_qualified_in_fixture_meta(
         html_theme = "alabaster"
     """)
     scenario = SphinxScenario(
+        buildername="dummy",
         files=(
             ScenarioFile("fixture_mod.py", fixture_source),
             ScenarioFile("conf.py", conf_py, substitute_srcdir=True),
