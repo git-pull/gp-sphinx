@@ -94,9 +94,10 @@ def test_sphinx_scenario_key_changes_when_inputs_change() -> None:
 
 
 def test_copy_scenario_tree_keeps_cached_source_pristine(
-    tmp_path: pathlib.Path,
+    tmp_path_factory: pytest.TempPathFactory,
 ) -> None:
     """Keep the cached source tree unchanged when copied trees are mutated."""
+    tmp_path = tmp_path_factory.mktemp("sphinx-scenario-copy")
     cache_root = derive_sphinx_scenario_cache_root(tmp_path)
     scenario = _make_demo_scenario()
     digest = scenario.cache_key().digest()

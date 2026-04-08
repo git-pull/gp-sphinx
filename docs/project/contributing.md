@@ -20,9 +20,19 @@ $ uv sync --all-packages --all-extras --group dev
 
 ## Tests
 
+Preferred local commands use a fixed pytest temp root under `.cache/` and disable
+tmp-path retention for speed:
+
+```console
+$ just test
+```
+
 ```console
 $ uv run pytest
 ```
+
+Use raw `uv run pytest` when you want the conservative direct runner without the
+local temp-dir optimization.
 
 Fast local loop without doctest-modules or integration tests:
 
@@ -35,6 +45,8 @@ Canonical direct pytest command for the same fast lane:
 ```console
 $ uv run pytest \
     -o "addopts=--tb=short --no-header --showlocals --ignore=packages/sphinx-argparse-neo --ignore=packages/sphinx-autodoc-pytest-fixtures --ignore=packages/sphinx-autodoc-docutils" \
+    -o tmp_path_retention_policy=none \
+    --basetemp=.cache/pytest-fast-direct \
     -q \
     --capture=tee-sys \
     tests \
@@ -43,7 +55,7 @@ $ uv run pytest \
 
 ### Automatically run tests on file save
 
-1. `just start` (via [pytest-watcher])
+1. `just start` (via [pytest-watcher], full local lane)
 2. `just start-fast` for the fast local loop
 3. `just watch-test` (requires installing [entr(1)])
 
