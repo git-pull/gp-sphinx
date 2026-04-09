@@ -335,38 +335,6 @@ Examples
 'description'
 """
 
-DEFAULT_NAPOLEON_GOOGLE_DOCSTRING: bool = True
-"""Enable Google-style docstring parsing in napoleon."""
-
-DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC: bool = False
-"""Include __init__ docstring in class documentation.
-
-Default is ``False`` to match napoleon's built-in default. Most downstream
-projects never set this explicitly, so ``True`` would change rendered output.
-"""
-
-DEFAULT_NAPOLEON_USE_RTYPE: bool = True
-"""Emit a separate ``:rtype:`` field for return-type documentation.
-
-``sphinx_typehints_gp`` hooks ``object-description-transform`` at priority
-499 (before Sphinx's built-in ``_merge_typehints`` at 500) so it can insert
-cross-referenced ``:type:`` / ``:rtype:`` field nodes first.  When Napoleon
-has already emitted a plain-text ``:rtype:`` field (because
-``napoleon_use_rtype`` is ``True``), ``_enhance_existing_type_field`` in
-``sphinx_typehints_gp`` upgrades that field in-place to ``pending_xref``
-nodes rather than inserting a duplicate.
-
-Keep this ``True`` so Napoleon always emits explicit ``:rtype:`` fields that
-``sphinx_typehints_gp`` can then enhance.  Setting it to ``False`` makes
-Napoleon embed the type inline in ``:returns:`` (e.g. ``bool -- description``)
-where enhancement is harder and less useful.
-
-Examples
---------
->>> DEFAULT_NAPOLEON_USE_RTYPE
-True
-"""
-
 DEFAULT_COPYBUTTON_LINE_CONTINUATION_CHARACTER: str = "\\"
 """Line continuation character for sphinx-copybutton."""
 
