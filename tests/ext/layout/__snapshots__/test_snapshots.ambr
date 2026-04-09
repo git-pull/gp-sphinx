@@ -1,51 +1,670 @@
 # serializer version: 1
-# name: test_layout_demo_init_header_snapshot_annotated[annotated]
+# name: test_large_signature_snapshot_annotated[large_signature_annotated]
   '''
-  <dt class="sig sig-object py api-header" data-signature-expanded="false" id="gal_demo_api.LayoutDemo.__init__">
-  <div class="api-layout"><div class="api-layout-left"><div class="api-signature"><span class="sig-name descname"><span class="pre">__init__</span></span><button aria-controls="gal_demo_api.LayoutDemo.__init__--signature-expanded" aria-expanded="false" class="api-signature-toggle gal-sig-toggle" type="button"><span class="sig-paren">(</span><span class="api-signature-preview gal-sig-preview">host, [...]</span><span class="sig-paren">)</span></button><div aria-hidden="true" class="api-signature-expanded gal-sig-expanded" data-expanded="false" hidden="hidden" id="gal_demo_api.LayoutDemo.__init__--signature-expanded"><span class="sig-paren">(</span>
-  
-  <dl>
-  <dd><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5432</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'admin'</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'default'</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30.0</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">retries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">ssl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">pool_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">pool_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">echo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf-8'</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">isolation_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'READ</span> <span class="pre">COMMITTED'</span></span></em></dd>
-  </dl>
-  
-  <span class="sig-paren">)</span><button aria-controls="gal_demo_api.LayoutDemo.__init__--signature-expanded" aria-expanded="true" class="gal-sig-collapse" type="button"><span class="pre">[collapse]</span></button></div> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></div><a class="headerlink api-link" href="#gal_demo_api.LayoutDemo.__init__" title="Link to this definition">¶</a></div><div class="api-layout-right gas-toolbar"><span class="api-badge-container"><span class="gas-badge-group"><span aria-label="Instance method" class="sab-badge gas-badge gas-badge--type gas-type-method" role="note" tabindex="0" title="Instance method"><span class="pre">method</span></span></span></span><span class="api-source-link"><a class="reference internal" href="_modules/gal_demo_api.html#LayoutDemo.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></span></div></div></dt>
+  <desc classes="api-container" domain="py" objtype="method">
+      <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="demo.Session.__init__">
+          <api_component classes="api-layout" name="api-layout" tag="div">
+              <api_component classes="api-layout-left" name="api-layout-left" tag="div">
+                  <api_component classes="api-signature" name="api-signature" tag="div">
+                      <desc_name classes="sig-name descname" xml:space="preserve">
+                          __init__
+                      <gal_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded" param_count="13">
+                      <api_component classes="api-signature-expanded gal-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded'}" name="api-signature-expanded" tag="div">
+                          <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      session_name
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      window_name
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "main"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      start_directory
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "/tmp"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      attach
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          bool
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      True
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      kill_session
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          bool
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      False
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      environment
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          dict[str, str] | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      x
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          int
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      80
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      y
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          int
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      24
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      command
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "bash"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      shell
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "zsh"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      socket_name
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "default"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      socket_path
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      config_file
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                          <api_inline_component classes="gal-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gal-sig-collapse" tag="button">
+                              [collapse]
+                  <api_permalink classes="headerlink api-link" href="#demo.Session.__init__" title="Link to this definition">
+              <api_component classes="api-layout-right gas-toolbar" name="api-layout-right" tag="div">
+                  <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
+                      <inline classes="gas-badge-group">
+                          <inline classes="gas-badge">
+                              method
+                  <api_inline_component classes="api-source-link" name="api-source-link" tag="span">
+                      <reference internal="False">
+                          <inline classes="viewcode-link">
+                              [source]
+      <desc_content classes="api-content">
+          <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
+              <paragraph>
+                  Create a richly configurable session.
+          <api_component classes="api-parameters gal-region gal-region--fields" name="api-parameters" tag="div">
+              <gal_fold kind="parameters" summary="Parameters (13)">
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Parameters
+                          <field_body>
+                              <bullet_list>
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              session_name
+                                           (
+                                          <emphasis>
+                                              str
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              window_name
+                                           (
+                                          <emphasis>
+                                              str
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              start_directory
+                                           (
+                                          <emphasis>
+                                              str
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              attach
+                                           (
+                                          <emphasis>
+                                              bool
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              kill_session
+                                           (
+                                          <emphasis>
+                                              bool
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              environment
+                                           (
+                                          <emphasis>
+                                              dict[str, str] | None
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              x
+                                           (
+                                          <emphasis>
+                                              int
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              y
+                                           (
+                                          <emphasis>
+                                              int
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              command
+                                           (
+                                          <emphasis>
+                                              str
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              shell
+                                           (
+                                          <emphasis>
+                                              str
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              socket_name
+                                           (
+                                          <emphasis>
+                                              str
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              socket_path
+                                           (
+                                          <emphasis>
+                                              str | None
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              config_file
+                                           (
+                                          <emphasis>
+                                              str | None
+                                          )
   '''
 # ---
-# name: test_layout_demo_init_header_snapshot_annotation_disabled[annotation_disabled]
+# name: test_large_signature_snapshot_annotation_disabled[large_signature_annotation_disabled]
   '''
-  <dt class="sig sig-object py api-header" data-signature-expanded="false" id="gal_demo_api.LayoutDemo.__init__">
-  <div class="api-layout"><div class="api-layout-left"><div class="api-signature"><span class="sig-name descname"><span class="pre">__init__</span></span><button aria-controls="gal_demo_api.LayoutDemo.__init__--signature-expanded" aria-expanded="false" class="api-signature-toggle gal-sig-toggle" type="button"><span class="sig-paren">(</span><span class="api-signature-preview gal-sig-preview">host, [...]</span><span class="sig-paren">)</span></button><div aria-hidden="true" class="api-signature-expanded gal-sig-expanded" data-expanded="false" hidden="hidden" id="gal_demo_api.LayoutDemo.__init__--signature-expanded"><span class="sig-paren">(</span>
-  
-  <dl>
-  <dd><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5432</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'admin'</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">retries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">ssl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">pool_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">pool_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">echo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'utf-8'</span></span></em>,</dd>
-  <dd><em class="sig-param"><span class="n"><span class="pre">isolation_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'READ</span> <span class="pre">COMMITTED'</span></span></em></dd>
-  </dl>
-  
-  <span class="sig-paren">)</span><button aria-controls="gal_demo_api.LayoutDemo.__init__--signature-expanded" aria-expanded="true" class="gal-sig-collapse" type="button"><span class="pre">[collapse]</span></button></div> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></div><a class="headerlink api-link" href="#gal_demo_api.LayoutDemo.__init__" title="Link to this definition">¶</a></div><div class="api-layout-right gas-toolbar"><span class="api-badge-container"><span class="gas-badge-group"><span aria-label="Instance method" class="sab-badge gas-badge gas-badge--type gas-type-method" role="note" tabindex="0" title="Instance method"><span class="pre">method</span></span></span></span><span class="api-source-link"><a class="reference internal" href="_modules/gal_demo_api.html#LayoutDemo.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></span></div></div></dt>
+  <desc classes="api-container" domain="py" objtype="method">
+      <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="demo.Session.__init__">
+          <api_component classes="api-layout" name="api-layout" tag="div">
+              <api_component classes="api-layout-left" name="api-layout-left" tag="div">
+                  <api_component classes="api-signature" name="api-signature" tag="div">
+                      <desc_name classes="sig-name descname" xml:space="preserve">
+                          __init__
+                      <gal_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded" param_count="13">
+                      <api_component classes="api-signature-expanded gal-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded'}" name="api-signature-expanded" tag="div">
+                          <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      session_name
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      window_name
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "main"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      start_directory
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "/tmp"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      attach
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      True
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      kill_session
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      False
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      environment
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      x
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      80
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      y
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      24
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      command
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "bash"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      shell
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "zsh"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      socket_name
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "default"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      socket_path
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      config_file
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                          <api_inline_component classes="gal-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gal-sig-collapse" tag="button">
+                              [collapse]
+                  <api_permalink classes="headerlink api-link" href="#demo.Session.__init__" title="Link to this definition">
+              <api_component classes="api-layout-right gas-toolbar" name="api-layout-right" tag="div">
+                  <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
+                      <inline classes="gas-badge-group">
+                          <inline classes="gas-badge">
+                              method
+                  <api_inline_component classes="api-source-link" name="api-source-link" tag="span">
+                      <reference internal="False">
+                          <inline classes="viewcode-link">
+                              [source]
+      <desc_content classes="api-content">
+          <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
+              <paragraph>
+                  Create a richly configurable session.
+          <api_component classes="api-parameters gal-region gal-region--fields" name="api-parameters" tag="div">
+              <gal_fold kind="parameters" summary="Parameters (13)">
+                  <field_list>
+                      <field>
+                          <field_name>
+                              Parameters
+                          <field_body>
+                              <bullet_list>
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              session_name
+                                           (
+                                          <emphasis>
+                                              str
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              window_name
+                                           (
+                                          <emphasis>
+                                              str
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              start_directory
+                                           (
+                                          <emphasis>
+                                              str
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              attach
+                                           (
+                                          <emphasis>
+                                              bool
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              kill_session
+                                           (
+                                          <emphasis>
+                                              bool
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              environment
+                                           (
+                                          <emphasis>
+                                              dict[str, str] | None
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              x
+                                           (
+                                          <emphasis>
+                                              int
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              y
+                                           (
+                                          <emphasis>
+                                              int
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              command
+                                           (
+                                          <emphasis>
+                                              str
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              shell
+                                           (
+                                          <emphasis>
+                                              str
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              socket_name
+                                           (
+                                          <emphasis>
+                                              str
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              socket_path
+                                           (
+                                          <emphasis>
+                                              str | None
+                                          )
+                                  <list_item>
+                                      <paragraph>
+                                          <literal_strong>
+                                              config_file
+                                           (
+                                          <emphasis>
+                                              str | None
+                                          )
   '''
 # ---

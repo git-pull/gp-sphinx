@@ -191,27 +191,8 @@ body[data-theme="dark"] {
   --gas-deprecated-border: #c06060;
 }
 
-/* ── Signature flex layout ─────────────────────────────── */
-dl.py:not(.fixture) > dt {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  flex-wrap: wrap;
-}
-
-/* ── Toolbar: badges + [source] ────────────────────────── */
-dl.py:not(.fixture) > dt .gas-toolbar {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  flex-shrink: 0;
-  margin-left: auto;
-  white-space: nowrap;
-  text-indent: 0;
-  order: 99;
-}
-
-dl.py:not(.fixture) > dt .gas-badge-group {
+/* ── Badge group layout ────────────────────────────────── */
+.gas-badge-group {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;

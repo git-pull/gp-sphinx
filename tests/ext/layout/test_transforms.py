@@ -11,6 +11,8 @@ from sphinx_autodoc_layout._nodes import (
     api_component,
     api_inline_component,
     api_permalink,
+    api_slot,
+    build_api_slot,
     gal_fold,
     gal_sig_fold,
 )
@@ -99,16 +101,17 @@ def _make_parameter_list(
     return plist
 
 
-def _make_toolbar() -> nodes.inline:
-    toolbar = nodes.inline(classes=["gas-toolbar"])
+def _make_badge_slot() -> api_slot:
     badge_group = nodes.inline(classes=["gas-badge-group"])
     badge_group += nodes.inline("", "method", classes=["gas-badge"])
+    return build_api_slot("badges", badge_group)
+
+
+def _make_source_slot() -> api_slot:
     source_span = nodes.inline(classes=["viewcode-link"])
     source_span += nodes.Text("[source]")
     source_ref = nodes.reference("", "", source_span, internal=False)
-    toolbar += badge_group
-    toolbar += source_ref
-    return toolbar
+    return build_api_slot("source-link", source_ref)
 
 
 def _child_component_names(node: nodes.Element) -> list[str]:
@@ -343,13 +346,14 @@ def test_fold_skips_non_parameter_sections() -> None:
     assert isinstance(section.children[0], nodes.paragraph)
 
 
-def test_rebuild_signature_layout_splits_toolbar_and_permalink() -> None:
+def test_rebuild_signature_layout_splits_slots_and_permalink() -> None:
     desc = _make_desc(ids=("demo.func",))
     sig = desc.children[0]
     assert isinstance(sig, addnodes.desc_signature)
     sig += addnodes.desc_name("", "func")
     sig += _make_parameter_list(2)
-    sig += _make_toolbar()
+    sig += _make_badge_slot()
+    sig += _make_source_slot()
 
     _rebuild_signature_layout(
         desc,
@@ -388,7 +392,8 @@ def test_rebuild_signature_layout_uses_expanded_wrapper_for_large_signature() ->
     assert isinstance(sig, addnodes.desc_signature)
     sig += addnodes.desc_name("", "__init__")
     sig += _make_parameter_list(13)
-    sig += _make_toolbar()
+    sig += _make_badge_slot()
+    sig += _make_source_slot()
 
     _rebuild_signature_layout(
         desc,
@@ -542,3 +547,35 @@ def test_on_doctree_resolved_marks_managed_headers_with_initial_state() -> None:
     on_doctree_resolved(app, doctree, "index")
 
     assert sig.get("html_attrs") == {"data-signature-expanded": "false"}
+
+
+def test_on_doctree_resolved_manages_slot_backed_headers_without_gal_enabled() -> None:
+    desc = _make_desc(ids=("demo.func",))
+    sig = desc.children[0]
+    assert isinstance(sig, addnodes.desc_signature)
+    sig += addnodes.desc_name("", "func")
+    sig += _make_badge_slot()
+
+    app = t.cast(
+        t.Any,
+        types.SimpleNamespace(
+            config=types.SimpleNamespace(
+                gal_enabled=False,
+                gal_collapsed_threshold=10,
+                gal_fold_parameters=True,
+                gal_signature_show_annotations=True,
+                html_permalinks=True,
+            ),
+            builder=types.SimpleNamespace(format="html", add_permalinks=True),
+        ),
+    )
+    doctree = t.cast(nodes.document, nodes.section("", desc))
+
+    on_doctree_resolved(app, doctree, "index")
+
+    assert "api-container" in desc.get("classes", [])
+    layout = sig.children[0]
+    assert isinstance(layout, api_component)
+    right = layout.children[1]
+    assert isinstance(right, api_component)
+    assert _child_component_names(right) == ["api-badge-container"]

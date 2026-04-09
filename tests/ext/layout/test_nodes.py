@@ -7,6 +7,8 @@ from sphinx_autodoc_layout._nodes import (
     api_component,
     api_inline_component,
     api_permalink,
+    api_slot,
+    build_api_slot,
     gal_fold,
     gal_region,
     gal_sig_fold,
@@ -58,6 +60,17 @@ def test_api_inline_component_stores_name_and_tag() -> None:
     node = api_inline_component(name="api-source-link", tag="span")
     assert node.get("name") == "api-source-link"
     assert node.get("tag") == "span"
+
+
+def test_api_slot_stores_slot_name() -> None:
+    slot = api_slot(slot="badges")
+    assert slot.get("slot") == "badges"
+
+
+def test_build_api_slot_adds_slot_classes() -> None:
+    slot = build_api_slot("source-link", nodes.inline("", "[source]"))
+    assert slot.get("classes") == ["api-slot", "api-slot--source-link"]
+    assert slot.astext() == "[source]"
 
 
 def test_gal_sig_fold_stores_panel_id() -> None:

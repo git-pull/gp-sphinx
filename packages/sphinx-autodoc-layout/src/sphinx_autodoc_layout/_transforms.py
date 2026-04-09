@@ -26,6 +26,7 @@ from sphinx_autodoc_layout._nodes import (
     api_component,
     api_inline_component,
     api_permalink,
+    api_slot,
     gal_fold,
     gal_region,
     gal_sig_fold,
@@ -676,6 +677,31 @@ def _extract_toolbar_content(
     return badge_children, source_ref
 
 
+def _pop_slot_children(slot_node: api_slot) -> list[nodes.Node]:
+    """Detach and return all children from *slot_node* in source order."""
+    slot_children: list[nodes.Node] = []
+    for child in list(slot_node.children):
+        slot_node.remove(child)
+        slot_children.append(child)
+    return slot_children
+
+
+def _extract_slot_content(
+    desc_sig: addnodes.desc_signature,
+) -> dict[str, list[nodes.Node]]:
+    """Return detached slot payloads keyed by slot name."""
+    slot_children: dict[str, list[nodes.Node]] = {}
+    for child in list(desc_sig.children):
+        if not isinstance(child, api_slot):
+            continue
+        desc_sig.remove(child)
+        slot_name = str(child.get("slot", ""))
+        if not slot_name:
+            continue
+        slot_children.setdefault(slot_name, []).extend(_pop_slot_children(child))
+    return slot_children
+
+
 def _rebuild_signature_layout(
     desc_node: addnodes.desc,
     desc_sig: addnodes.desc_signature,
@@ -688,6 +714,7 @@ def _rebuild_signature_layout(
     if desc_sig.get("is_multiline"):
         return
 
+    slot_children = _extract_slot_content(desc_sig)
     original = list(desc_sig.children)
     desc_sig.children = []
 
@@ -711,9 +738,13 @@ def _rebuild_signature_layout(
             continue
         row_children.append(child)
 
-    badge_children, source_ref = _extract_toolbar_content(toolbar)
-    if source_ref is None:
-        source_ref = fallback_source_ref
+    fallback_badge_children, source_ref = _extract_toolbar_content(toolbar)
+    badge_children = slot_children.get("badges", fallback_badge_children)
+    source_children = slot_children.get("source-link", [])
+    if not source_children and source_ref is not None:
+        source_children = [source_ref]
+    if not source_children and fallback_source_ref is not None:
+        source_children = [fallback_source_ref]
 
     layout = _make_api_component("api-layout")
     left = _make_api_component("api-layout-left")
@@ -776,9 +807,10 @@ def _rebuild_signature_layout(
             badge_container += child
         right += badge_container
 
-    if source_ref is not None:
+    if source_children:
         source_container = _make_api_inline_component("api-source-link")
-        source_container += source_ref
+        for child in source_children:
+            source_container += child
         right += source_container
 
     layout += left
@@ -802,9 +834,10 @@ def on_doctree_resolved(
     docname : str
         The document name.
     """
-    if not app.config.gal_enabled:
-        return
     if getattr(app.builder, "format", "") != "html":
+        return
+    gal_enabled = bool(app.config.gal_enabled)
+    if not gal_enabled and next(doctree.findall(api_slot), None) is None:
         return
 
     threshold: int = app.config.gal_collapsed_threshold
@@ -824,7 +857,9 @@ def on_doctree_resolved(
         _wrap_content_runs(desc_node)
 
         objtype = desc_node.get("objtype", "")
-        allow_signature_fold = fold_params and objtype not in _SKIP_FOLD_OBJTYPES
+        allow_signature_fold = (
+            gal_enabled and fold_params and objtype not in _SKIP_FOLD_OBJTYPES
+        )
 
         for child in desc_node.children:
             if not isinstance(child, addnodes.desc_signature):

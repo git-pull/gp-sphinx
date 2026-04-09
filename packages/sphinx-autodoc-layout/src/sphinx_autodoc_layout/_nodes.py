@@ -17,7 +17,12 @@ Examples
 
 from __future__ import annotations
 
+import typing as t
+
 from docutils import nodes
+
+APISlotName = t.Literal["badges", "source-link"]
+"""Stable slot names used to hand structured header content to layout."""
 
 
 class gal_region(nodes.General, nodes.Element):
@@ -98,6 +103,22 @@ class api_inline_component(nodes.General, nodes.Inline, nodes.TextElement):
     """
 
 
+class api_slot(nodes.General, nodes.Element):
+    """Structural slot marker consumed by the layout transform.
+
+    Parameters
+    ----------
+    slot : APISlotName
+        Slot name such as ``"badges"`` or ``"source-link"``.
+
+    Examples
+    --------
+    >>> slot = api_slot(slot="badges")
+    >>> slot.get("slot")
+    'badges'
+    """
+
+
 class api_permalink(nodes.General, nodes.Element):
     """Permalink anchor rendered inside ``api-layout-left``.
 
@@ -142,3 +163,39 @@ class gal_sig_fold(nodes.General, nodes.Element):
     >>> sf.get("panel_id")
     'sig-panel'
     """
+
+
+def build_api_slot(
+    slot_name: APISlotName,
+    *children: nodes.Node,
+    classes: tuple[str, ...] = (),
+) -> api_slot:
+    """Create an ``api_slot`` with a stable slot-specific class name.
+
+    Parameters
+    ----------
+    slot_name : APISlotName
+        Slot name for the contained content.
+    *children : nodes.Node
+        Child nodes to place in the slot.
+    classes : tuple[str, ...]
+        Additional compatibility classes.
+
+    Returns
+    -------
+    api_slot
+        A configured slot marker node.
+
+    Examples
+    --------
+    >>> slot = build_api_slot("badges", nodes.inline("", "demo"))
+    >>> slot.get("classes")
+    ['api-slot', 'api-slot--badges']
+    >>> slot.astext()
+    'demo'
+    """
+    slot = api_slot(slot=slot_name)
+    slot["classes"] = ["api-slot", f"api-slot--{slot_name}", *classes]
+    for child in children:
+        slot += child
+    return slot

@@ -79,6 +79,7 @@ def setup(app: Sphinx) -> _SetupDict:
     """
     app.setup_extension("sphinx.ext.autodoc")
     app.setup_extension("sphinx_autodoc_badges")
+    app.setup_extension("sphinx_autodoc_layout")
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
 

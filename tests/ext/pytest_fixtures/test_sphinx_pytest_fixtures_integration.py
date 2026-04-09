@@ -188,6 +188,11 @@ def test_default_html_outputs_smoke(default_html_result) -> None:
     ):
         assert css_class in index_html
     assert 'tabindex="0"' in index_html
+    assert 'class="api-layout"' in index_html
+    assert 'class="api-layout-left"' in index_html
+    assert 'class="api-layout-right gas-toolbar"' in index_html
+    assert 'class="api-signature"' in index_html
+    assert 'class="api-badge-container"' in index_html
     assert "session-scoped fixtures" in genindex_html
     assert 'href="index.html#fixture_mod.my_server"' in genindex_html
 

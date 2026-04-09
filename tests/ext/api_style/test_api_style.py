@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import types
 import typing as t
 
 from docutils import nodes
 from sphinx import addnodes
 from sphinx_autodoc_badges import BadgeNode
+from sphinx_autodoc_layout._nodes import api_slot
 
+import sphinx_autodoc_api_style
 from sphinx_autodoc_api_style._badges import (
     _MOD_ORDER,
     _MOD_TOOLTIPS,
@@ -306,18 +309,16 @@ def test_inject_badges_idempotent() -> None:
     assert badge_count_1 == badge_count_2
 
 
-def test_inject_badges_adds_toolbar_with_badge_group() -> None:
-    """Toolbar containing badge group is added to the signature."""
+def test_inject_badges_adds_badge_slot_with_badge_group() -> None:
+    """A badge slot containing the badge group is added to the signature."""
     sig = addnodes.desc_signature()
     sig += addnodes.desc_name("", "my_func")
     _inject_badges(sig, "function")
-    toolbars = [
-        c
-        for c in sig.children
-        if isinstance(c, nodes.inline) and _CSS.TOOLBAR in c.get("classes", [])
+    slots = [
+        c for c in sig.children if isinstance(c, api_slot) and c.get("slot") == "badges"
     ]
-    assert len(toolbars) == 1
-    groups = list(toolbars[0].findall(nodes.inline))
+    assert len(slots) == 1
+    groups = list(slots[0].findall(nodes.inline))
     badge_groups = [g for g in groups if _CSS.BADGE_GROUP in g.get("classes", [])]
     assert len(badge_groups) == 1
 
@@ -341,8 +342,8 @@ def test_inject_badges_detects_deprecated_parent() -> None:
     assert "deprecated" in labels
 
 
-def test_inject_badges_toolbar_contains_viewcode() -> None:
-    """Viewcode [source] link is inside the toolbar, after badge group."""
+def test_inject_badges_adds_source_slot_for_viewcode() -> None:
+    """Viewcode [source] link moves into a dedicated source-link slot."""
     sig = addnodes.desc_signature()
     sig += addnodes.desc_name("", "my_func")
     viewcode_span = nodes.inline(classes=["viewcode-link"])
@@ -352,31 +353,20 @@ def test_inject_badges_toolbar_contains_viewcode() -> None:
 
     _inject_badges(sig, "function")
 
-    toolbars = [
-        c
-        for c in sig.children
-        if isinstance(c, nodes.inline) and _CSS.TOOLBAR in c.get("classes", [])
-    ]
-    assert len(toolbars) == 1
-    toolbar = toolbars[0]
-
-    toolbar_items: list[str] = []
-    for c in toolbar.children:
-        if isinstance(c, nodes.inline) and _CSS.BADGE_GROUP in c.get("classes", []):
-            toolbar_items.append("badge_group")
-        elif isinstance(c, nodes.reference):
-            toolbar_items.append("viewcode")
-    assert toolbar_items == ["badge_group", "viewcode"]
+    slots = [c for c in sig.children if isinstance(c, api_slot)]
+    assert [slot.get("slot") for slot in slots] == ["badges", "source-link"]
+    source_slot = slots[1]
+    assert isinstance(source_slot.children[0], nodes.reference)
 
 
-def test_inject_badges_headerlink_not_in_toolbar() -> None:
-    """Headerlink stays as a direct child of sig, never inside the toolbar.
+def test_inject_badges_headerlink_not_moved_into_slots() -> None:
+    """Headerlink stays as a direct child of sig, never inside a layout slot.
 
     Sphinx's HTML writer adds the headerlink as raw HTML during
     ``depart_desc_signature``, so it's not a doctree node during our
     transform. But if a theme or extension adds one as a node, we must
-    leave it alone — it belongs next to the signature name, not grouped
-    with badges and [source] in the toolbar.
+    leave it alone — layout owns its final position separately from the
+    badge and source slots.
     """
     sig = addnodes.desc_signature()
     sig += addnodes.desc_name("", "Server")
@@ -393,18 +383,13 @@ def test_inject_badges_headerlink_not_in_toolbar() -> None:
 
     _inject_badges(sig, "class")
 
-    toolbar = None
-    for c in sig.children:
-        if isinstance(c, nodes.inline) and _CSS.TOOLBAR in c.get("classes", []):
-            toolbar = c
-            break
-    assert toolbar is not None
-
-    toolbar_refs = list(toolbar.findall(nodes.reference))
-    for ref in toolbar_refs:
-        assert "headerlink" not in ref.get("classes", []), (
-            "headerlink must not be inside the toolbar"
-        )
+    slots = [c for c in sig.children if isinstance(c, api_slot)]
+    for slot in slots:
+        slot_refs = list(slot.findall(nodes.reference))
+        for ref in slot_refs:
+            assert "headerlink" not in ref.get("classes", []), (
+                "headerlink must not be inside an api_slot"
+            )
 
     sig_direct_refs = [
         c
@@ -524,6 +509,29 @@ def test_on_doctree_resolved_skips_non_py() -> None:
     on_doctree_resolved(app, doc, "index")
 
     assert sig.get("gas_badges_injected") is None
+
+
+def test_setup_auto_loads_layout() -> None:
+    """setup() loads layout alongside autodoc and badges."""
+    setup_extensions: list[str] = []
+
+    app = t.cast(
+        t.Any,
+        types.SimpleNamespace(
+            setup_extension=setup_extensions.append,
+            connect=lambda *args, **kwargs: None,
+            add_css_file=lambda *args, **kwargs: None,
+            config=types.SimpleNamespace(html_static_path=[]),
+        ),
+    )
+
+    sphinx_autodoc_api_style.setup(app)
+
+    assert setup_extensions == [
+        "sphinx.ext.autodoc",
+        "sphinx_autodoc_badges",
+        "sphinx_autodoc_layout",
+    ]
 
 
 def test_on_doctree_resolved_handles_multiple() -> None:
