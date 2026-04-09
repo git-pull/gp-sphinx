@@ -73,6 +73,9 @@ class SAB:
     LG = f"{PREFIX}-lg"
     XL = f"{PREFIX}-xl"
 
+    # Dense variant (compact, always-bordered, dotted-underline)
+    DENSE = f"{PREFIX}-dense"
+
     # ── Python API type badges (filled) ──────────────────
     TYPE_FUNCTION = f"{PREFIX}-type-function"
     TYPE_CLASS = f"{PREFIX}-type-class"

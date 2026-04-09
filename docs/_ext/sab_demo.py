@@ -165,6 +165,17 @@ class BadgeDemoDirective(SphinxDirective):
             type_row += nodes.Text(" ")
         result.append(type_row)
 
+        result.append(_section("Python API types — dense variant (sab-dense)"))
+        type_dense_row = nodes.paragraph()
+        for label, css_class, tooltip in py_types:
+            type_dense_row += build_badge(
+                label,
+                tooltip=tooltip,
+                classes=[SAB.BADGE, SAB.DENSE, SAB.BADGE_TYPE, css_class],
+            )
+            type_dense_row += nodes.Text(" ")
+        result.append(type_dense_row)
+
         result.append(_section("Python API modifiers (sab-mod-*, outlined)"))
         py_mods = [
             ("async", SAB.MOD_ASYNC, "Asynchronous"),
@@ -184,6 +195,18 @@ class BadgeDemoDirective(SphinxDirective):
             mod_row += nodes.Text(" ")
         result.append(mod_row)
 
+        result.append(_section("Python API modifiers — dense variant"))
+        mod_dense_row = nodes.paragraph()
+        for label, css_class, tooltip in py_mods:
+            mod_dense_row += build_badge(
+                label,
+                tooltip=tooltip,
+                classes=[SAB.BADGE, SAB.DENSE, SAB.BADGE_MOD, css_class],
+                fill="outline",
+            )
+            mod_dense_row += nodes.Text(" ")
+        result.append(mod_dense_row)
+
         # ── pytest fixture palette ───────────────────────────────
 
         result.append(_section("pytest fixture types (sab-type-fixture)"))
@@ -194,12 +217,23 @@ class BadgeDemoDirective(SphinxDirective):
                     tooltip="pytest fixture",
                     classes=[SAB.BADGE, SAB.BADGE_FIXTURE, SAB.TYPE_FIXTURE],
                 ),
-                label="SAB.TYPE_FIXTURE — green filled",
+                label="SAB.TYPE_FIXTURE — standard",
+            )
+        )
+        result.append(
+            _row(
+                build_badge(
+                    "fixture",
+                    tooltip="pytest fixture",
+                    classes=[SAB.BADGE, SAB.DENSE, SAB.BADGE_FIXTURE, SAB.TYPE_FIXTURE],
+                ),
+                label="SAB.TYPE_FIXTURE — dense",
             )
         )
 
         result.append(_section("pytest fixture scopes (sab-scope-*)"))
         scope_row = nodes.paragraph()
+        scope_dense_row = nodes.paragraph()
         for scope in ("session", "module", "class"):
             scope_row += build_badge(
                 scope,
@@ -207,10 +241,18 @@ class BadgeDemoDirective(SphinxDirective):
                 classes=[SAB.BADGE, SAB.BADGE_SCOPE, SAB.scope(scope)],
             )
             scope_row += nodes.Text(" ")
+            scope_dense_row += build_badge(
+                scope,
+                tooltip=f"Scope: {scope}",
+                classes=[SAB.BADGE, SAB.DENSE, SAB.BADGE_SCOPE, SAB.scope(scope)],
+            )
+            scope_dense_row += nodes.Text(" ")
         result.append(scope_row)
+        result.append(scope_dense_row)
 
         result.append(_section("pytest fixture kinds / states (outlined)"))
         state_row = nodes.paragraph()
+        state_dense_row = nodes.paragraph()
         states = [
             ("factory", SAB.STATE_FACTORY, "Factory"),
             ("override", SAB.STATE_OVERRIDE, "Override hook"),
@@ -226,7 +268,15 @@ class BadgeDemoDirective(SphinxDirective):
                 fill=fill,
             )
             state_row += nodes.Text(" ")
+            state_dense_row += build_badge(
+                label,
+                tooltip=tooltip,
+                classes=[SAB.BADGE, SAB.DENSE, SAB.BADGE_STATE, css_class],
+                fill=fill,
+            )
+            state_dense_row += nodes.Text(" ")
         result.append(state_row)
+        result.append(state_dense_row)
 
         # ── Sphinx config palette ────────────────────────────────
 
@@ -250,7 +300,29 @@ class BadgeDemoDirective(SphinxDirective):
                     classes=[SAB.MOD_REBUILD],
                     fill="outline",
                 ),
-                label="SAB.TYPE_CONFIG + SAB.MOD_REBUILD (outline)",
+                label="standard",
+            )
+        )
+        result.append(
+            _row(
+                build_badge(
+                    "config",
+                    tooltip="Sphinx config value",
+                    classes=[SAB.BADGE, SAB.DENSE, SAB.TYPE_CONFIG],
+                ),
+                build_badge(
+                    "env",
+                    tooltip="Rebuild mode: env",
+                    classes=[SAB.BADGE, SAB.DENSE, SAB.MOD_REBUILD],
+                    fill="outline",
+                ),
+                build_badge(
+                    "html",
+                    tooltip="Rebuild mode: html",
+                    classes=[SAB.BADGE, SAB.DENSE, SAB.MOD_REBUILD],
+                    fill="outline",
+                ),
+                label="dense",
             )
         )
 
@@ -274,7 +346,27 @@ class BadgeDemoDirective(SphinxDirective):
                     tooltip="Docutils option",
                     classes=[SAB.TYPE_OPTION],
                 ),
-                label="SAB.TYPE_DIRECTIVE / TYPE_ROLE / TYPE_OPTION — violet",
+                label="standard",
+            )
+        )
+        result.append(
+            _row(
+                build_badge(
+                    "directive",
+                    tooltip="Docutils directive",
+                    classes=[SAB.BADGE, SAB.DENSE, SAB.TYPE_DIRECTIVE],
+                ),
+                build_badge(
+                    "role",
+                    tooltip="Docutils role",
+                    classes=[SAB.BADGE, SAB.DENSE, SAB.TYPE_ROLE],
+                ),
+                build_badge(
+                    "option",
+                    tooltip="Docutils option",
+                    classes=[SAB.BADGE, SAB.DENSE, SAB.TYPE_OPTION],
+                ),
+                label="dense",
             )
         )
 
