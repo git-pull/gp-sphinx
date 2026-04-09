@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sphinx-typehints-gp"
+version = "0.0.1a6"
+description = "Cross-referenced type annotations for Sphinx autodoc"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+  {name = "Tony Narlock", email = "tony@git-pull.com"}
+]
+dependencies = [
+  "sphinx>=7.2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sphinx_typehints_gp"]

@@ -19,4 +19,5 @@ sphinx-autodoc-pytest-fixtures
 sphinx-fonts
 sphinx-gptheme
 sphinx-argparse-neo
+sphinx-typehints-gp
 ```
