@@ -18,21 +18,21 @@ def test_signature_expanded_uses_contents_layout() -> None:
 def test_api_header_defaults_to_center_alignment() -> None:
     css = _LAYOUT_CSS.read_text(encoding="utf-8")
 
-    assert "dl.py.api-container > dt.api-header {\n  align-items: center;\n" in css
+    assert "dl.api-container > dt.api-header {\n  align-items: center;\n" in css
     assert "display: block;" not in css
     assert (
-        "dl.py.api-container > dt.api-header > .api-layout {\n"
+        "dl.api-container > dt.api-header > .api-layout {\n"
         "  display: flex;\n"
         "  align-items: center;\n"
     ) in css
     assert (
-        "dl.py.api-container > dt.api-header .api-layout-left {\n"
+        "dl.api-container > dt.api-header .api-layout-left {\n"
         "  flex: 1 1 auto;\n"
         "  display: flex;\n"
         "  align-items: center;\n"
     ) in css
     assert (
-        "dl.py.api-container > dt.api-header .api-layout-right {\n"
+        "dl.api-container > dt.api-header .api-layout-right {\n"
         "  display: flex;\n"
         "  align-items: center;\n"
     ) in css

@@ -1,0 +1,47 @@
+"""Badge helpers for sphinx_autodoc_sphinx config-value entries."""
+
+from __future__ import annotations
+
+import typing as t
+
+from docutils import nodes
+from sphinx_autodoc_badges import build_badge, build_badge_group
+
+if t.TYPE_CHECKING:
+    from sphinx_autodoc_sphinx._directives import SphinxConfigValue
+
+_GROUP_CLASS = "sas-badge-group"
+_TYPE_CLASS = "sas-badge--type"
+_REBUILD_CLASS = "sas-badge--rebuild"
+
+
+def build_config_badge_group(value: SphinxConfigValue) -> nodes.inline:
+    """Return header badges for one documented config value.
+
+    Parameters
+    ----------
+    value : SphinxConfigValue
+        Config value metadata captured from the extension ``setup()`` hook.
+
+    Returns
+    -------
+    nodes.inline
+        Badge group containing the config kind and rebuild mode badges.
+    """
+    rebuild = value.rebuild or "none"
+    return build_badge_group(
+        [
+            build_badge(
+                "config",
+                tooltip="Sphinx config value",
+                classes=[_TYPE_CLASS],
+            ),
+            build_badge(
+                rebuild,
+                tooltip=f"Rebuild mode: {rebuild}",
+                classes=[_REBUILD_CLASS],
+                fill="outline",
+            ),
+        ],
+        classes=[_GROUP_CLASS],
+    )

@@ -102,6 +102,17 @@ def _rendered_desc(
     show_annotations: bool,
 ) -> addnodes.desc:
     desc = _make_large_signature_desc()
+    return _rendered_managed_desc(
+        desc,
+        show_annotations=show_annotations,
+    )
+
+
+def _rendered_managed_desc(
+    desc: addnodes.desc,
+    *,
+    show_annotations: bool,
+) -> addnodes.desc:
     app = t.cast(
         t.Any,
         types.SimpleNamespace(
@@ -117,6 +128,55 @@ def _rendered_desc(
     )
     doctree = t.cast(nodes.document, nodes.section("", desc))
     on_doctree_resolved(app, doctree, "index")
+    return desc
+
+
+def _make_confval_desc() -> addnodes.desc:
+    desc = addnodes.desc(domain="std", objtype="confval")
+    signature = addnodes.desc_signature(ids=["confval.demo_option"])
+    signature += addnodes.desc_name("", "demo_option")
+    badge_group = nodes.inline(classes=["sas-badge-group"])
+    badge_group += nodes.inline("", "config", classes=["sas-badge--type"])
+    badge_group += nodes.inline("", " ")
+    badge_group += nodes.inline("", "env", classes=["sas-badge--rebuild"])
+    signature += build_api_slot("badges", badge_group)
+    desc += signature
+    content = addnodes.desc_content()
+    content += nodes.field_list(
+        "",
+        nodes.field(
+            "",
+            nodes.field_name("", "Type"),
+            nodes.field_body("", nodes.paragraph("", "bool")),
+        ),
+    )
+    content += nodes.paragraph("", "A demo option.")
+    desc += content
+    return desc
+
+
+def _make_rst_directive_desc() -> addnodes.desc:
+    desc = addnodes.desc(domain="rst", objtype="directive")
+    signature = addnodes.desc_signature(ids=["directive-demo-directive"])
+    signature += addnodes.desc_name("", "demo-directive")
+    badge_group = nodes.inline(classes=["sadoc-badge-group"])
+    badge_group += nodes.inline("", "directive", classes=["sadoc-badge--type"])
+    signature += build_api_slot("badges", badge_group)
+    desc += signature
+    content = addnodes.desc_content()
+    content += nodes.paragraph("", "A demo directive.")
+    option_desc = addnodes.desc(domain="rst", objtype="directive:option")
+    option_sig = addnodes.desc_signature(ids=["directive-option-demo-opt"])
+    option_sig += addnodes.desc_name("", "demo-opt")
+    option_badges = nodes.inline(classes=["sadoc-badge-group"])
+    option_badges += nodes.inline("", "option", classes=["sadoc-badge--type"])
+    option_sig += build_api_slot("badges", option_badges)
+    option_desc += option_sig
+    option_content = addnodes.desc_content()
+    option_content += nodes.paragraph("", "A demo option.")
+    option_desc += option_content
+    content += option_desc
+    desc += content
     return desc
 
 
@@ -137,4 +197,20 @@ def test_large_signature_snapshot_annotation_disabled(
     snapshot_doctree(
         _rendered_desc(show_annotations=False),
         name="large_signature_annotation_disabled",
+    )
+
+
+def test_confval_snapshot(snapshot_doctree: t.Callable[..., None]) -> None:
+    """Confval entries snapshot their shared header/body decomposition."""
+    snapshot_doctree(
+        _rendered_managed_desc(_make_confval_desc(), show_annotations=True),
+        name="confval_entry",
+    )
+
+
+def test_rst_directive_snapshot(snapshot_doctree: t.Callable[..., None]) -> None:
+    """RST directive entries snapshot their shared header/body decomposition."""
+    snapshot_doctree(
+        _rendered_managed_desc(_make_rst_directive_desc(), show_annotations=True),
+        name="rst_directive_entry",
     )

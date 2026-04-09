@@ -1,7 +1,7 @@
 # Test And Autodoc Analysis
 
-This note records the post-refactor state of the autodoc rendering pipeline and
-the current runtime profile of the test suite.
+This note records the current post-consolidation state of the autodoc rendering
+pipeline and the runtime profile of the test suite.
 
 The two non-negotiable baselines remain unchanged:
 
@@ -11,72 +11,113 @@ The two non-negotiable baselines remain unchanged:
 
 Current suite status on 2026-04-09:
 
-- `805` tests collected
-- `802` passed
+- `818` tests collected
+- `815` passed
 - `3` skipped
 
 ## Test categories and harnesses
 
-The suite is already mostly surgical. The remaining expensive work is
-concentrated in a small number of builder-facing scenarios.
+The suite is still mostly surgical. The honest runtime remains concentrated in a
+small number of cached builder-backed scenarios.
 
 | Category | Main locations | Harness | Current verdict |
 | --- | --- | --- | --- |
-| Pure helper and parser tests | `tests/ext/api_style`, most of `tests/ext/pytest_fixtures`, `tests/ext/autodoc_sphinx`, `tests/ext/autodoc_docutils`, `tests/ext/argparse_neo`, workspace-root tests | Direct unit tests, parser helpers, store helpers, pure transforms | Already light-weight |
-| Doctree and dummy-builder tests | `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py`, parts of `tests/ext/layout/test_transforms.py` | Synthetic Sphinx scenarios with `buildername="dummy"` plus doctree snapshots | Good balance; keep as the default for structure and metadata coverage |
-| Translator and render-node tests | `tests/ext/layout/test_visitors.py`, `tests/ext/layout/test_snapshots.py` | Direct node construction plus layout transform / visitor assertions | Expanded in this pass to replace slower HTML snapshots |
-| Cached full-build HTML and text tests | `tests/ext/layout/test_integration.py`, `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py`, selected scenario-cache tests | Shared `build_shared_sphinx_result()` scenarios with session cache roots | Still required for emitted HTML, inventory, and cross-document behavior |
-| Cross-document and inventory tests | `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py` | Real HTML builds with multiple source pages and `objects.inv` checks | Honest expensive coverage; keep |
+| Pure helper and parser tests | `tests/ext/api_style`, most of `tests/ext/autodoc_sphinx`, most of `tests/ext/autodoc_docutils`, `tests/ext/fastmcp`, workspace-root tests | Direct unit tests, parser helpers, badge builders, store helpers | Already light-weight |
+| Doctree and transform tests | `tests/ext/layout/test_transforms.py`, `tests/ext/layout/test_render.py`, `tests/ext/fastmcp/test_transforms.py`, fixture doctree tests | Synthetic nodes, transform calls, targeted dummy-builder scenarios | Good balance; keep as default for structure coverage |
+| Translator and render-node tests | `tests/ext/layout/test_visitors.py` | Direct visitor assertions with tiny translator stubs | Light and precise |
+| Doctree snapshot tests | `tests/ext/layout/test_snapshots.py`, fixture doctree snapshots | Synthetic `desc` trees plus `on_doctree_resolved()` and snapshot normalization | Expanded in this pass; preferred over duplicate HTML snapshots |
+| Cached emitted-HTML integration tests | `tests/ext/layout/test_integration.py`, `tests/ext/autodoc_sphinx/test_autodoc_sphinx_integration.py`, `tests/ext/autodoc_docutils/test_autodoc_docutils_integration.py`, `tests/ext/fastmcp/test_fastmcp_integration.py` | Shared `build_shared_sphinx_result()` scenarios | Required for emitted HTML contracts |
+| Cross-document, inventory, and text-builder tests | `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py` | Real HTML and text builds plus `objects.inv` checks | Honest expensive coverage; keep |
 | Doctests | `docs/_ext/*.py`, selected package modules | `--doctest-modules` | Already light-weight |
 
-## Autodoc rendering path and hook points
+## Current autodoc rendering pipeline
 
-The current Python-domain rendering path is now intentionally split into
-producer extensions and one structural owner.
+The repo now has two shared layers:
+
+- `sphinx_autodoc_badges` is the only badge primitive package
+- `sphinx_autodoc_layout` is the shared structural compositor for managed object
+  descriptions
 
 ### Upstream hook points
 
-1. Sphinx directive-time parsing creates `desc`, `desc_signature`, and
-   `desc_content` nodes inside `ObjectDescription.run()`.
-2. Package-specific directive code can still shape body content before the late
-   layout pass. The main example is
-   `sphinx_autodoc_pytest_fixtures.PyFixtureDirective.transform_content()`,
-   which injects authored fixture metadata fields early.
-3. `sphinx.ext.linkcode` and `sphinx.ext.viewcode` attach source-link material
-   later than directive time, which is why final header composition cannot live
-   only in the directive layer.
+1. Sphinx directive-time parsing creates semantic `desc`, `desc_signature`, and
+   `desc_content` nodes.
+2. Producer packages can still shape body content before final layout.
+3. `viewcode`, `linkcode`, and Sphinx permalink injection still happen late
+   enough that final header composition belongs in `doctree-resolved`, not only
+   in directive code.
 
-### Producer extensions
+### Shared layout owner
 
-- `sphinx_autodoc_api_style` now computes badges and extracts `[source]`, then
-  emits explicit `api_slot` markers instead of a raw `.gas-toolbar` inline.
-- `sphinx_autodoc_pytest_fixtures` now does the same for fixture badges and
-  `[source]`, then separately strips redundant `Rtype` fields and injects
-  fixture-only metadata such as `Used by` and `Parametrized`.
+`sphinx_autodoc_layout` is now profile-driven instead of Python-only. Its late
+  pass owns final composition for:
 
-### Structural owner
+- Python API entries already managed before this refactor
+- `py:fixture`
+- `std:confval`
+- `rst:directive`
+- `rst:role`
+- `rst:directive:option`
 
-`sphinx_autodoc_layout` is now the sole owner of final Python `desc` header and
-body composition in HTML builds.
+Its responsibilities are:
 
-Its `doctree-resolved` pass is responsible for:
-
-- nesting Python members under their owning class or exception
-- wrapping `desc_content` runs into explicit body regions
-- consuming `api_slot(slot="badges")` and
-  `api_slot(slot="source-link")`
-- rebuilding each managed signature into stable `api-*` regions
+- nested Python member ownership for class/exception trees
+- wrapping `desc_content` into explicit body regions
+- consuming `api_slot(slot="badges")` and `api_slot(slot="source-link")`
+- rebuilding signatures into explicit `api-*` header regions
 - inserting the managed permalink node
-- optionally folding large signatures and large parameter field lists when
-  `gal_enabled` is on
+- optionally folding large Python signatures and parameter sections
 
-Its HTML visitors then render those nodes without any Jinja template override.
+### Producer packages
 
-## Chosen autodoc component architecture
+- `sphinx_autodoc_api_style` remains a Python metadata producer only. It emits
+  badge and source-link slots and leaves all final HTML composition to layout.
+- `sphinx_autodoc_pytest_fixtures` remains a fixture metadata producer only. It
+  emits slot markers, strips redundant `Rtype` fields, and injects fixture
+  fields such as `Used by` and `Parametrized`.
+- `sphinx_autodoc_sphinx` now parses semantic `confval` markup through the new
+  shared `parse_generated_markup()` helper, then injects a type badge
+  (`config`) plus a rebuild-mode badge before layout runs.
+- `sphinx_autodoc_docutils` now uses the same shared parse helper, then injects
+  type badges for `directive`, `role`, and `option` entries before layout runs.
+- `sphinx_autodoc_fastmcp` stays on the shipping section-card path for v1. It
+  now uses shared badge primitives plus shared `api-entry` / `api-header` /
+  `api-content` component builders inside the existing `nodes.section` wrapper.
 
-The HTML contract is now deliberately componentized.
+## Chosen shared architecture
 
-### Header and body structure
+### Profile-driven `desc` composition
+
+The structural contract now flows through a typed internal
+`DescLayoutProfile` registry keyed by `(domain, objtype)`.
+
+Stable profile classes now include:
+
+- `api-profile--py-function`
+- `api-profile--py-method`
+- `api-profile--py-fixture`
+- `api-profile--confval`
+- `api-profile--rst-directive`
+- `api-profile--rst-role`
+- `api-profile--rst-directive-option`
+
+### Stable slot contract
+
+The cross-package handoff stays intentionally small:
+
+- `api_slot(slot="badges")`
+- `api_slot(slot="source-link")`
+
+That contract is now shared by:
+
+- `sphinx_autodoc_api_style`
+- `sphinx_autodoc_pytest_fixtures`
+- `sphinx_autodoc_sphinx`
+- `sphinx_autodoc_docutils`
+
+### Generic DOM contract
+
+Managed `desc` entries now share one generic layout shell:
 
 - `api-container`
 - `api-header`
@@ -92,105 +133,67 @@ The HTML contract is now deliberately componentized.
 - `api-parameters`
 - `api-footer`
 
-### New shared slot contract
+The corresponding CSS selectors were generalized from `dl.py.api-container` to
+`dl.api-container`, so non-Python `desc` entries now reuse the same layout
+primitives without HTML-string post-processing.
 
-The cross-extension handoff is now:
+### FastMCP split-path evaluation
 
-- `api_slot(slot="badges")`
-- `api_slot(slot="source-link")`
+Two consolidation paths were considered for FastMCP:
 
-That contract lives in `sphinx_autodoc_layout` so producer extensions can stay
-typed and explicit without coupling themselves to layout-specific HTML strings.
+- shipping path: keep the section-card model and rebuild the visible card using
+  shared `api-*` components
+- deferred path: migrate tools to a true `desc` / domain-backed representation
 
-### Large-signature policy
+The shipping path won for now because it preserves the current section ids, ToC
+labels, `{ref}` targets, and role resolution with minimal risk. The desc-based
+prototype is still a valid future follow-up, but it is not necessary to share
+layout and badge primitives today.
 
-Large signatures are still semantically represented by the canonical
-`desc_parameterlist` and related Sphinx signature nodes.
+## Harness reductions completed
 
-This pass did not split parameters out of the signature text and did not try to
-infer body sections from signature parsing. Instead it:
+This pass widened structural coverage while keeping full builds to the places
+that actually need builder output.
 
-- keeps the real signature nodes intact
-- folds only the rendered presentation when the configured threshold is crossed
-- uses parameter field lists only to enrich the expanded multiline rendering
-  with annotations when those annotations are already authored in the docs
+### Moved to lighter harnesses
 
-The new synthetic stress snapshot in `tests/ext/layout/test_snapshots.py`
-models the libtmux-style "large kwargs-heavy constructor" problem directly
-without depending on libtmux as a build-time fixture.
-
-## Why this architecture won
-
-Three alternatives were considered and rejected for the first pass:
-
-### Raw inline toolbar mutation
-
-This was the old `gas-toolbar` approach. It was easy to inject but too implicit:
-
-- badge and source ownership was mixed with layout ownership
-- the right side of the header was effectively a flattened blob
-- fixture and non-fixture pipelines could not share a clear contract
-
-### Template-only overrides
-
-Rejected because the problem is not just HTML string formatting. The renderer
-needs access to real docutils and Sphinx nodes after `linkcode` and `viewcode`
-have finished their own work.
-
-### Parsing signatures into synthetic body sections
-
-Rejected for v1 because it would risk changing semantics and duplicating
-information already present in doc fields. The body remains driven by authored
-content, not inferred signature structure.
-
-## Harness reductions completed in this pass
-
-The most important test-runtime change was to narrow the layout snapshot layer
-without weakening coverage.
-
-### Moved from slower builds to lighter harnesses
-
-- `tests/ext/layout/test_snapshots.py` no longer snapshots full HTML fragments
-  from shared HTML builds
-- those snapshot assertions now build a synthetic large-signature `desc`
-  directly, run `sphinx_autodoc_layout.on_doctree_resolved()`, and snapshot the
-  transformed doctree
-- this keeps the structural contract under snapshot coverage while removing one
-  extra HTML-build scenario from the session
+- layout snapshots already covered the large-signature Python path
+- new doctree snapshots now also cover `confval` and `rst:directive` /
+  `rst:directive:option` decomposition directly
+- the duplicated `_render_blocks()` logic from `autodoc-sphinx` and
+  `autodoc-docutils` is gone; the shared parse helper is covered by unit tests
+- FastMCP now has a direct transform test proving that later sibling content is
+  re-parented into the shared `api-content` wrapper
 
 ### Full builds intentionally retained
 
-These tests still need real builders:
+These still need real builders:
 
 - `tests/ext/layout/test_integration.py`
-  because it validates the emitted HTML contract end to end
+  for the final emitted Python API HTML contract
+- `tests/ext/autodoc_sphinx/test_autodoc_sphinx_integration.py`
+  for real emitted `confval` HTML
+- `tests/ext/autodoc_docutils/test_autodoc_docutils_integration.py`
+  for emitted `rst:*` HTML including nested directive options
+- `tests/ext/fastmcp/test_fastmcp_integration.py`
+  for shared-card HTML and same-page tool references
 - `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py`
-  because it validates `objects.inv`, genindex output, text-builder output, and
-  cross-document HTML links
-
-### Current demotion guidance
-
-The remaining builder-backed tests do not look over-harnessed:
-
-- layout integration is down to one real emitted-HTML contract
-- fixture integration keeps only the inventory, cross-document, and text
-  builder contracts that really need a builder
-- doctree snapshots already cover most fixture metadata and structure
+  for inventory output, genindex output, text builder output, and cross-document
+  fixture links
 
 ## Benchmark matrix
 
-These measurements were taken after the slot-node refactor and the snapshot
-demotion described above.
+These measurements were taken after the profile-registry/layout consolidation
+and the new integration tests landed.
 
 ### Full suite
 
 | Command | Result | What it shows |
 | --- | --- | --- |
-| `/usr/bin/time -p uv run pytest -s --durations=100 --durations-min=0.02` | `802 passed, 3 skipped in 26.08s`, wall `27.00s` | Current conservative baseline with slow-test evidence |
-| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-post` | `802 passed, 3 skipped in 2.82s`, wall `3.91s` | Same coverage with runner-path overhead mostly removed |
-| `uv run py.test --reruns 0 -vvv out` | see validation section below | Required validator path still runs the real suite |
+| `/usr/bin/time -p uv run pytest -s --durations=100 --durations-min=0.02` | `815 passed, 3 skipped in 37.91s`, wall `37.29s` | Current conservative baseline with slow-test evidence |
+| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-consolidated` | `815 passed, 3 skipped in 3.49s`, wall `4.63s` | Same coverage with runner tempdir overhead mostly removed |
 
-### Autodoc-heavy slice
+### Expanded autodoc slice
 
 This slice is:
 
@@ -199,107 +202,60 @@ This slice is:
 - `tests/ext/autodoc_sphinx`
 - `tests/ext/autodoc_docutils`
 - `tests/ext/pytest_fixtures`
+- `tests/ext/fastmcp`
 
 | Command | Result | What it shows |
 | --- | --- | --- |
-| `/usr/bin/time -p uv run pytest -s --durations=80 --durations-min=0.02 tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures` | `234 passed, 3 skipped in 19.48s`, wall `20.45s` | Honest cost of the autodoc-focused surface in raw mode |
-| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-autodoc-post tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures` | `234 passed, 3 skipped in 1.58s`, wall `1.51s` | Same slice with runner overhead mostly removed |
-| `uv run python -m cProfile -o /tmp/gp_sphinx_autodoc_post.prof -m pytest -s tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures` | `234 passed, 3 skipped in 22.12s` | Profile source for the slice |
+| `/usr/bin/time -p uv run pytest -s --durations=80 --durations-min=0.02 tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp` | `257 passed, 3 skipped in 33.74s`, wall `33.87s` | Honest cost of the expanded autodoc surface in raw mode |
+| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-autodoc-consolidated tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp` | `257 passed, 3 skipped in 2.11s`, wall `3.22s` | Same slice with runner overhead mostly removed |
+| `uv run python -m cProfile -o /tmp/gp_sphinx_autodoc_consolidated.prof -m pytest -s tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp` | `257 passed, 3 skipped in 35.80s` | Profile source for the expanded autodoc slice |
 
 ## Long-running tests and causes
 
-The current slow tests are still mostly honest builder or scenario costs.
-
-### Slowest autodoc-heavy tests in the raw slice
+The slow tail is still mostly honest builder or scenario work.
 
 | Test | Measured runtime | Cause | Verdict |
 | --- | --- | --- | --- |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `4.28s setup` | Real multi-page HTML build with cross-document links | Keep |
-| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `4.13s setup` | Real HTML build for final emitted layout contract | Keep |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `3.56s setup` | Real HTML build for badge markup, genindex, and inventory output | Keep |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_myst_smoke` | `1.14s setup` | Shared MyST dummy-builder scenario | Already cached; acceptable |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixture_index_resolution_smoke` | `0.68s call` | Distinct synthetic scenario and final table resolution | Acceptable |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_warning_and_manual_option_snapshot` | `0.67s call` | Dense fixture metadata scenario, still dummy-builder only | Acceptable |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_rst_snapshot` | `0.65s call` | Distinct generated-page scenario | Acceptable |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_text_builder_does_not_crash` | `0.63s call` | Real text-builder smoke | Keep |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_lint_level_error_sets_nonzero_status` | `0.61s call` | Real failing-lint scenario | Keep |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_dependency_rendering_snapshot` | `0.61s call` | Distinct dependency-link scenario | Keep |
-
-### Full-suite top tail
-
-The full suite shows the same pattern. The slow tail is dominated by:
-
-- the two real fixture HTML scenarios
-- the one real layout HTML scenario
-- a handful of distinct dummy-builder fixture scenarios
-- two `tests/test_sphinx_scenarios.py` cache semantics tests at about `0.43s`
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `5.43s setup` | Real multi-page HTML build with cross-document links | Keep |
+| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `5.36s setup` | Real HTML build for final Python emitted layout contract | Keep |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `4.78s setup` | Real HTML build for badge markup, genindex, and inventory output | Keep |
+| `tests/ext/fastmcp/test_fastmcp_integration.py::test_fastmcp_tool_cards_use_shared_layout` | `3.22s setup` | Real FastMCP HTML build with section refs and shared card wrappers | Keep |
+| `tests/ext/autodoc_sphinx/test_autodoc_sphinx_integration.py::test_autodoc_sphinx_confvals_use_shared_layout` | `2.89s setup` | Real `confval` HTML build | Keep |
+| `tests/ext/autodoc_docutils/test_autodoc_docutils_integration.py::test_autodoc_docutils_entries_use_shared_layout` | `2.84s setup` | Real `rst:*` HTML build with nested directive options | Keep |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_myst_smoke` | `1.25s setup` | Shared MyST dummy-builder scenario | Already cached; acceptable |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixtures_directive_smoke` | `0.91s setup` | Distinct dummy-builder scenario | Acceptable |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_warning_and_manual_option_snapshot` | `0.80s call` | Dense fixture metadata scenario | Acceptable |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_text_builder_does_not_crash` | `0.77s call` | Real text-builder smoke | Keep |
 
 No currently slow test looks like a hidden infinite loop or a falsely passing
 timeout.
 
 ## Profiling findings
 
-### Full-suite cProfile
-
-The full-suite profile was taken with:
-
-```console
-$ uv run python -m cProfile \
-    -o /tmp/gp_sphinx_full_post.prof \
-    -m pytest \
-    -s
-```
+### Expanded autodoc slice cProfile
 
 Top cumulative costs:
 
 | Function | Cumulative time |
 | --- | --- |
-| `tests._sphinx_scenarios.build_shared_sphinx_result` | `20.12s` |
-| `pathlib.Path.resolve` | `8.95s` |
-| `posixpath.realpath` | `8.94s` |
-| `posix.lstat` | `8.93s` |
-| `_pytest.tmpdir.mktemp` | `0.22s` |
-| `_pytest.pathlib.cleanup_dead_symlinks` | `0.15s` |
-
-### Autodoc-heavy slice cProfile
-
-The autodoc-heavy slice profile was taken with:
-
-```console
-$ uv run python -m cProfile \
-    -o /tmp/gp_sphinx_autodoc_post.prof \
-    -m pytest \
-    -s \
-    tests/ext/layout \
-    tests/ext/api_style \
-    tests/ext/autodoc_sphinx \
-    tests/ext/autodoc_docutils \
-    tests/ext/pytest_fixtures
-```
-
-Top cumulative costs:
-
-| Function | Cumulative time |
-| --- | --- |
-| `tests._sphinx_scenarios.build_shared_sphinx_result` | `20.69s` |
-| `pathlib.Path.resolve` | `9.07s` |
-| `posixpath.realpath` | `9.06s` |
-| `posix.lstat` | `9.04s` |
-| `_pytest.tmpdir.mktemp` | `0.13s` |
-| `_pytest.pathlib.cleanup_dead_symlinks` | `0.15s` |
+| `tests._sphinx_scenarios.build_shared_sphinx_result` | `33.89s` |
+| `pathlib.Path.resolve` | `14.93s` |
+| `posixpath.realpath` | `14.92s` |
+| `_pytest.pathlib.cleanup_dead_symlinks` | `0.29s` |
+| `_pytest.tmpdir.mktemp` | `0.26s` |
 | `sphinx_autodoc_layout._transforms.on_doctree_resolved` | `0.01s` |
-| `sphinx_autodoc_api_style._transforms.on_doctree_resolved` | `0.00s` to `0.01s` |
-| `sphinx_autodoc_layout._visitors.visit_api_component` | `0.001s` |
+| `sphinx_autodoc_api_style._transforms.on_doctree_resolved` | `0.00s` |
+| `sphinx_autodoc_layout._visitors.visit_api_component` | `0.00s` |
 
 ### What that means
 
 - the dominant repo-owned runtime is still the small set of cached synthetic
   Sphinx builds
-- the dominant raw-runner overhead is still path resolution and filesystem
-  probing
-- the new slot-node layout machinery is not a hotspot
-- the refactor improved maintainability and enabled lighter tests without
-  introducing a meaningful new runtime cost
+- the dominant raw-runner overhead is still path resolution and tempdir churn
+- the new profile registry, shared parse helper, and shared card wrappers are
+  not hotspots
+- the new integration tests are honest builder costs, not accidental harness
+  inflation caused by redundant assertions
 
 ## Where execution appears to stall
 
@@ -307,46 +263,57 @@ There is no evidence of a true hang in the current suite.
 
 The apparent "stall" points are:
 
-- front-loaded setup for the remaining shared HTML Sphinx scenarios
-- raw-runner path resolution during temporary-path and package-path handling
+- front-loaded setup for the remaining shared HTML scenarios
+- raw pytest tempdir/path resolution before test logic starts
 
-The profile does not show a hot loop in the new layout visitors or slot-node
-logic.
+The profile does not show a hot loop in:
 
-## Suspected bugs, caching failures, and missing caching
+- layout profile resolution
+- layout visitors
+- FastMCP shared-card composition
+- the new parse helper
 
-### Real bugs
+## Real bugs, caching failures, and missing caching
 
-No new functional bug was uncovered by the runtime work itself. The refactor
-did briefly surface a stale layout CSS selector test during implementation, and
-that was fixed as part of the change.
+### Real bugs fixed during this pass
 
-### Runner-side bugs and oddities
+- `rst:directive:option` entries were initially inheriting the parent
+  `directive` badge because the new badge injector walked descendant
+  signatures. The fix was to scope badge injection to direct signature
+  children only.
+- the new `setup_extension()` calls in `autodoc-sphinx` and
+  `autodoc-docutils` exposed stale doctest fakes that did not implement
+  `setup_extension()`. The doctests were updated so the examples remain
+  executable.
 
-- The earlier zero-collection capture-teardown problem is still an upstream
-  pytest behavior worth remembering, but the repo-local validator path is
-  already configured so `uv run py.test --reruns 0 -vvv out` runs the real
-  suite instead of falling into that crash.
+### Test-scenario pitfall uncovered
+
+- the first FastMCP integration scenario used a locally defined function in a
+  `register(mcp)` closure, which made `app.env.fastmcp_tools` unpicklable in the
+  cached scenario helper. The test now uses `introspect` mode with a top-level
+  function and explicit `__fastmcp__` metadata, which preserves the real
+  coverage and keeps the build cache compatible with Sphinx environment
+  pickling.
 
 ### Fixture caching status
 
-The current synthetic Sphinx caching strategy is effective:
+The current caching strategy is still effective:
 
-- shared build results still come through `tests/_sphinx_scenarios.py`
-- session-scoped roots in `tests/ext/layout/conftest.py` and
-  `tests/ext/pytest_fixtures/conftest.py` are still doing useful work
-- the remaining slow scenarios are mostly distinct scenario graphs, not missed
+- shared build results still flow through `tests/_sphinx_scenarios.py`
+- the new autodoc-sphinx, autodoc-docutils, and FastMCP integration tests each
+  build exactly one cached scenario
+- the expensive scenarios are still mostly distinct scenario graphs, not missed
   cache hits
 
 ### Missing caching
 
-No repo-owned missing cache stands out as the next big win.
+No repo-owned missing cache stands out as the next big runtime win.
 
-The biggest unresolved overhead is still outside the scenario helpers:
+The biggest unresolved overhead remains outside the scenario helpers:
 
 - pytest path resolution
 - `realpath()`
-- `lstat()`
+- tempdir bookkeeping
 
 ## Doctree or snapshot fixtures versus full builds
 
@@ -355,24 +322,21 @@ doctree or snapshot harness could replace a full build.
 
 ### Good candidates that were moved
 
-- layout header snapshots moved from shared HTML builds to transform-level
-  doctree snapshots
+- large-signature layout snapshots already run at the doctree level
+- `confval` and `rst:*` structural decomposition now snapshot at the doctree
+  level instead of requiring extra emitted-HTML assertions
+- shared parse-helper behavior and FastMCP content-wrapping behavior now have
+  direct unit coverage
 
 ### Remaining cases that should stay builder-backed
 
-- final emitted layout HTML
-- fixture HTML inventory and genindex output
-- cross-document fixture links
+- final emitted Python API layout HTML
+- emitted `confval` and `rst:*` HTML
+- FastMCP section refs plus emitted shared-card HTML
+- fixture inventory, genindex, and cross-document HTML links
 - text-builder smoke
 - any contract that depends on `viewcode`, `linkcode`, inventory generation, or
   real app lifecycle hooks
-
-### Remaining cases that are already narrow enough
-
-- fixture metadata rendering snapshots
-- fixture dependency-link doctree assertions
-- `doc-pytest-plugin` generated-page snapshots
-- `autofixtures` MyST smoke and source-order checks
 
 ## Additional upstream API study
 
@@ -386,13 +350,16 @@ This pass re-checked the local study trees under:
 - `~/study/python/pytest-asyncio`
 - `~/study/python/syrupy`
 
-The useful upstream confirmations were:
+The useful confirmations were:
 
-- `ObjectDescription.run()` and `DocFieldTransformer` make directive time too
-  early for final source-link and permalink placement
-- `viewcode` and `linkcode` both reinforce the need for a late structural pass
-- the current layout approach belongs in node transforms and visitors, not in a
-  template-only override
+- `ObjectDescription.run()` and `DocFieldTransformer` still make directive time
+  too early for final source-link and permalink placement
+- `viewcode` and `linkcode` still reinforce the need for a late structural pass
+  for managed `desc` entries
+- `rst` and `std` description entries are good candidates for shared layout
+  composition because their semantics already live in real Sphinx nodes
+- the current FastMCP section-card path is the least risky shipping path while
+  `:tool:` / `:toolref:` behavior depends on section labels
 
 ## Syrupy custom-extension audit
 
@@ -401,37 +368,39 @@ No custom Syrupy extension is warranted in the first pass.
 Reasons:
 
 - snapshot serialization is not a measurable hotspot in the profile
-- the existing helpers in `tests/_snapshots.py` already normalize the unstable
-  parts we care about: roots, warning text, and doctree metadata
-- the new slot-node snapshots fit cleanly into the existing
+- `tests/_snapshots.py` already normalizes the unstable bits that matter:
+  filesystem roots, warning text, and doctree metadata
+- the new `confval` / `rst:*` snapshots fit cleanly into the existing
   `snapshot.with_defaults()` flow
 
-If snapshot content ever becomes too noisy, a serializer or matcher can be
-revisited later. It is not the current performance lever.
+If snapshot content ever becomes noisy enough to justify a serializer or
+matcher, that should be revisited later. It is not the current runtime lever.
 
 ## Recommendations and follow-up
 
 ### Keep
 
-- `api_slot` as the only cross-extension handoff for header-side content
-- `sphinx_autodoc_layout` as the sole HTML compositor for Python `desc` entries
+- `api_slot` as the only cross-package handoff for desc-header metadata
+- `sphinx_autodoc_layout` as the sole compositor for managed `desc` entries
+- the FastMCP shared-card shipping path for now
 - shared scenario caching in `tests/_sphinx_scenarios.py`
 
 ### Defer
 
-- any attempt to infer parameter body sections from signature parsing
-- template-only API entry overrides
-- custom Syrupy serializers
+- any attempt to infer body sections from signature parsing
+- Jinja template overrides for base API entries
+- a custom Syrupy serializer
+- a FastMCP desc/domain migration until a bounded prototype proves it preserves
+  labels, refs, and runtime behavior
 
 ### Good future follow-up
 
-- add a tiny shared helper for "render one managed signature subtree to HTML" if
-  future packages need more translator-level tests without a full builder
+- add a tiny shared helper for "render one managed subtree to HTML" if more
+  packages need translator-level tests without a full builder
 - continue auditing builder-backed tests with the same rule used here:
   keep the build only when the contract truly depends on builder output
-- investigate whether any remaining distinct fixture scenarios can be merged
-  without blurring their contracts, but do not collapse them just to shave a
-  few tenths of a second
+- evaluate a bounded FastMCP desc prototype later against the explicit criteria
+  from the implementation plan rather than migrating piecemeal
 
 ## Validation checklist
 

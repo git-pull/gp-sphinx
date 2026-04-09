@@ -1,10 +1,14 @@
 # sphinx-autodoc-fastmcp
 
-Sphinx extension that documents **FastMCP** tools with card-style `desc` layouts (aligned with `sphinx-autodoc-api-style`), safety badges, parameter tables, and cross-reference roles.
+Sphinx extension that documents **FastMCP** tools with card-style section
+entries built from the shared `api-*` layout regions, plus safety badges,
+parameter tables, and cross-reference roles.
 
 ## Features
 
-- **`fastmcp-tool`**: Renders a tool entry as an `mcp` domain `desc` (definition list card) plus a section for ToC and `{ref}` labels.
+- **`fastmcp-tool`**: Renders a tool entry as a section card with shared
+  `api-header` / `api-content` regions plus a section target for ToC and
+  `{ref}` labels.
 - **`fastmcp-tool-input`**: Parameter table for a tool (place after prose in MyST).
 - **`fastmcp-toolsummary`**: Summary tables grouped by safety tier.
 - **Roles**: `:tool:`, `:toolref:`, `:toolicon` / `:tooliconl` / `:tooliconr` / `:tooliconil` / `:tooliconir:`, `:badge:`

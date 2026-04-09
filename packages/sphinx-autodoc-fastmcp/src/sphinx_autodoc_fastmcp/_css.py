@@ -30,6 +30,9 @@ class _CSS:
     TOOLBAR = f"{PREFIX}-toolbar"
     SECTION_TITLE_HIDDEN = f"{PREFIX}-visually-hidden"
     TYPE_TOOL = f"{PREFIX}-type-tool"
+    TOOL_ENTRY = f"{PREFIX}-tool-entry"
+    TOOL_SIGNATURE = f"{PREFIX}-tool-signature"
+    BODY_SECTION = f"{PREFIX}-body-section"
 
     SAFETY_READONLY = f"{PREFIX}-safety-readonly"
     SAFETY_MUTATING = f"{PREFIX}-safety-mutating"

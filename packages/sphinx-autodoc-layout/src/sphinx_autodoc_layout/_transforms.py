@@ -1,7 +1,7 @@
 """Doctree transforms for componentized autodoc layout.
 
 Runs as a ``doctree-resolved`` event handler after
-``sphinx-autodoc-api-style``. It rebuilds Python autodoc entries into
+``sphinx-autodoc-api-style``. It rebuilds managed Sphinx object entries into
 stable ``api-*`` wrappers while preserving Sphinx's outer ``dl / dt / dd``
 structure.
 
@@ -17,6 +17,7 @@ Examples
 
 from __future__ import annotations
 
+import dataclasses
 import typing as t
 
 from docutils import nodes
@@ -24,9 +25,10 @@ from sphinx import addnodes
 
 from sphinx_autodoc_layout._nodes import (
     api_component,
-    api_inline_component,
     api_permalink,
     api_slot,
+    build_api_component,
+    build_api_inline_component,
     gal_fold,
     gal_region,
     gal_sig_fold,
@@ -53,6 +55,69 @@ _SKIP_FOLD_OBJTYPES: frozenset[str] = frozenset(
 
 _MEMBER_CONTAINER_OBJTYPES: frozenset[str] = frozenset({"class", "exception"})
 
+_MANAGED_PYTHON_OBJTYPES: tuple[str, ...] = (
+    "attribute",
+    "class",
+    "classmethod",
+    "data",
+    "exception",
+    "fixture",
+    "function",
+    "method",
+    "module",
+    "property",
+    "staticmethod",
+    "type",
+)
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
+class DescLayoutProfile:
+    """Typed layout policy for a managed ``addnodes.desc`` entry."""
+
+    domain: str
+    objtype: str
+    slug: str
+    allow_signature_fold: bool = False
+
+    @property
+    def class_name(self) -> str:
+        """Return the stable CSS class for the profile."""
+        return f"api-profile--{self.slug}"
+
+
+_PROFILE_REGISTRY: dict[tuple[str, str], DescLayoutProfile] = {
+    **{
+        ("py", objtype): DescLayoutProfile(
+            domain="py",
+            objtype=objtype,
+            slug=f"py-{objtype.replace(':', '-')}",
+            allow_signature_fold=objtype not in _SKIP_FOLD_OBJTYPES,
+        )
+        for objtype in _MANAGED_PYTHON_OBJTYPES
+    },
+    ("std", "confval"): DescLayoutProfile(
+        domain="std",
+        objtype="confval",
+        slug="confval",
+    ),
+    ("rst", "directive"): DescLayoutProfile(
+        domain="rst",
+        objtype="directive",
+        slug="rst-directive",
+    ),
+    ("rst", "role"): DescLayoutProfile(
+        domain="rst",
+        objtype="role",
+        slug="rst-role",
+    ),
+    ("rst", "directive:option"): DescLayoutProfile(
+        domain="rst",
+        objtype="directive:option",
+        slug="rst-directive-option",
+    ),
+}
+
 
 def _append_class(node: nodes.Element, class_name: str) -> None:
     """Append *class_name* to ``node['classes']`` if needed."""
@@ -62,57 +127,11 @@ def _append_class(node: nodes.Element, class_name: str) -> None:
     node["classes"] = classes
 
 
-def _make_api_component(
-    name: str,
-    *,
-    tag: str = "div",
-    classes: tuple[str, ...] = (),
-    html_attrs: dict[str, str] | None = None,
-) -> api_component:
-    """Create an ``api_component`` node with stable DOM classes.
-
-    Parameters
-    ----------
-    name : str
-        Public component class name.
-    tag : str
-        HTML tag emitted by the visitor.
-    classes : tuple[str, ...]
-        Extra compatibility classes.
-    html_attrs : dict[str, str] | None
-        Extra HTML attributes for the rendered tag.
-
-    Returns
-    -------
-    api_component
-        A configured component wrapper.
-
-    Examples
-    --------
-    >>> wrapper = _make_api_component("api-content", classes=("legacy",))
-    >>> wrapper.get("classes")
-    ['api-content', 'legacy']
-    """
-    component = api_component(name=name, tag=tag)
-    component["classes"] = [name, *classes]
-    if html_attrs:
-        component["html_attrs"] = html_attrs
-    return component
-
-
-def _make_api_inline_component(
-    name: str,
-    *,
-    tag: str = "span",
-    classes: tuple[str, ...] = (),
-    html_attrs: dict[str, str] | None = None,
-) -> api_inline_component:
-    """Create an inline API wrapper for text-compatible header content."""
-    component = api_inline_component(name=name, tag=tag)
-    component["classes"] = [name, *classes]
-    if html_attrs:
-        component["html_attrs"] = html_attrs
-    return component
+def _desc_layout_profile(desc_node: addnodes.desc) -> DescLayoutProfile | None:
+    """Return the layout profile for a managed description node."""
+    domain = str(desc_node.get("domain", ""))
+    objtype = str(desc_node.get("objtype", ""))
+    return _PROFILE_REGISTRY.get((domain, objtype))
 
 
 def _make_api_permalink(desc_sig: addnodes.desc_signature) -> api_permalink | None:
@@ -222,7 +241,7 @@ def _wrap_content_runs(desc_node: addnodes.desc) -> None:
         if kind != current_kind:
             if current_section is not None:
                 content += current_section
-            current_section = _make_api_component(
+            current_section = build_api_component(
                 _component_name_for_kind(kind),
                 classes=("gal-region", f"gal-region--{kind}"),
             )
@@ -746,10 +765,10 @@ def _rebuild_signature_layout(
     if not source_children and fallback_source_ref is not None:
         source_children = [fallback_source_ref]
 
-    layout = _make_api_component("api-layout")
-    left = _make_api_component("api-layout-left")
-    signature = _make_api_component("api-signature")
-    right = _make_api_component("api-layout-right", classes=("gas-toolbar",))
+    layout = build_api_component("api-layout")
+    left = build_api_component("api-layout-left")
+    signature = build_api_component("api-signature")
+    right = build_api_component("api-layout-right", classes=("gas-toolbar",))
     parameter_types = _extract_parameter_types(desc_node)
     folded = False
 
@@ -768,7 +787,7 @@ def _rebuild_signature_layout(
                     parameter_types=parameter_types,
                     show_annotations=show_annotations,
                 )
-                expanded = _make_api_component(
+                expanded = build_api_component(
                     "api-signature-expanded",
                     classes=("gal-sig-expanded",),
                     html_attrs={
@@ -779,7 +798,7 @@ def _rebuild_signature_layout(
                     },
                 )
                 expanded += child
-                collapse = _make_api_inline_component(
+                collapse = build_api_inline_component(
                     "gal-sig-collapse",
                     tag="button",
                     html_attrs={
@@ -802,13 +821,13 @@ def _rebuild_signature_layout(
             left += permalink
 
     if badge_children:
-        badge_container = _make_api_inline_component("api-badge-container")
+        badge_container = build_api_inline_component("api-badge-container")
         for child in badge_children:
             badge_container += child
         right += badge_container
 
     if source_children:
-        source_container = _make_api_inline_component("api-source-link")
+        source_container = build_api_inline_component("api-source-link")
         for child in source_children:
             source_container += child
         right += source_container
@@ -823,7 +842,7 @@ def on_doctree_resolved(
     doctree: nodes.document,
     docname: str,
 ) -> None:
-    """Restructure Python autodoc output into stable API components.
+    """Restructure managed Sphinx object entries into stable API components.
 
     Parameters
     ----------
@@ -850,15 +869,16 @@ def on_doctree_resolved(
     _nest_python_members(doctree)
 
     for desc_node in doctree.findall(addnodes.desc):
-        if desc_node.get("domain") != "py":
+        profile = _desc_layout_profile(desc_node)
+        if profile is None:
             continue
 
         _append_class(desc_node, "api-container")
+        _append_class(desc_node, profile.class_name)
         _wrap_content_runs(desc_node)
 
-        objtype = desc_node.get("objtype", "")
         allow_signature_fold = (
-            gal_enabled and fold_params and objtype not in _SKIP_FOLD_OBJTYPES
+            gal_enabled and fold_params and profile.allow_signature_fold
         )
 
         for child in desc_node.children:

@@ -4,8 +4,13 @@ from __future__ import annotations
 
 from docutils import nodes
 from sphinx.util.docutils import SphinxDirective
+from sphinx_autodoc_layout import (
+    api_permalink,
+    build_api_component,
+    build_api_inline_component,
+)
 
-from sphinx_autodoc_fastmcp._badges import build_toolbar
+from sphinx_autodoc_fastmcp._badges import build_tool_badge_group
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._models import ParamInfo, ToolInfo
 from sphinx_autodoc_fastmcp._parsing import (
@@ -47,7 +52,7 @@ class FastMCPToolDirective(SphinxDirective):
         return self._build_tool_section(tool)
 
     def _build_tool_section(self, tool: ToolInfo) -> list[nodes.Node]:
-        """Build section card: title (literal + badges) + summary + returns."""
+        """Build section card with shared API layout regions."""
         document = self.state.document
         section_id = tool.name.replace("_", "-")
 
@@ -58,13 +63,49 @@ class FastMCPToolDirective(SphinxDirective):
 
         title_node = nodes.title("", "")
         title_node["classes"].append(f"{_CSS.PREFIX}-tool-title")
+        title_node["classes"].append(_CSS.SECTION_TITLE_HIDDEN)
         title_node += nodes.literal("", tool.name)
-        title_node += nodes.Text(" ")
-        title_node += build_toolbar(tool.safety)
         section += title_node
 
+        entry = build_api_component(
+            "api-entry",
+            classes=(_CSS.TOOL_ENTRY, "api-profile--fastmcp-tool"),
+        )
+        header = build_api_component("api-header")
+        layout = build_api_component("api-layout")
+        left = build_api_component("api-layout-left")
+        right = build_api_component("api-layout-right", classes=("gas-toolbar",))
+        signature = build_api_component(
+            "api-signature",
+            classes=(_CSS.TOOL_SIGNATURE,),
+        )
+        signature += nodes.literal("", tool.name)
+        left += signature
+
+        link = api_permalink(
+            href=f"#{section_id}",
+            title="Link to this tool",
+        )
+        link["classes"] = ["headerlink", "api-link"]
+        left += link
+
+        badge_container = build_api_inline_component("api-badge-container")
+        badge_container += build_tool_badge_group(tool.safety)
+        right += badge_container
+
+        layout += left
+        layout += right
+        header += layout
+        entry += header
+
+        content = build_api_component("api-content")
         first_para = first_paragraph(tool.docstring)
-        section += parse_rst_inline(first_para, self.state, self.lineno)
+        description = build_api_component(
+            "api-description",
+            classes=(_CSS.BODY_SECTION,),
+        )
+        description += parse_rst_inline(first_para, self.state, self.lineno)
+        content += description
 
         if tool.return_annotation:
             returns_para = nodes.paragraph("")
@@ -76,7 +117,15 @@ class FastMCPToolDirective(SphinxDirective):
             )
             for child in type_para.children:
                 returns_para += child.deepcopy()
-            section += returns_para
+            footer = build_api_component(
+                "api-footer",
+                classes=(_CSS.BODY_SECTION,),
+            )
+            footer += returns_para
+            content += footer
+
+        entry += content
+        section += entry
 
         return [section]
 

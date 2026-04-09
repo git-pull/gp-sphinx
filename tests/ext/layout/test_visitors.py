@@ -5,7 +5,11 @@ from __future__ import annotations
 import typing as t
 
 from sphinx import addnodes
-from sphinx_autodoc_layout._visitors import visit_desc_signature_html
+from sphinx_autodoc_layout._nodes import build_api_component
+from sphinx_autodoc_layout._visitors import (
+    visit_api_component,
+    visit_desc_signature_html,
+)
 
 
 class _DummyTranslator:
@@ -40,3 +44,17 @@ def test_visit_desc_signature_html_emits_managed_header_attrs() -> None:
     assert translator.calls == [("dt", {"data-signature-expanded": "false"})]
     assert translator.body == ["<dt>\n"]
     assert translator.protect_literal_text == 1
+
+
+def test_visit_api_component_emits_generic_header_attrs() -> None:
+    header = build_api_component(
+        "api-header",
+        html_attrs={"data-profile": "confval"},
+    )
+
+    translator = _DummyTranslator()
+
+    visit_api_component(t.cast(t.Any, translator), header)
+
+    assert translator.calls == [("div", {"ids": [], "data-profile": "confval"})]
+    assert translator.body == ["<div>"]

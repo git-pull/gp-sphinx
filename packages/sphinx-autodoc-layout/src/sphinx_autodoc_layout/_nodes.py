@@ -1,14 +1,22 @@
-"""Custom docutils nodes for autodoc layout components.
+"""Custom docutils nodes and builders for autodoc layout components.
 
 The extension keeps Sphinx's outer ``dl / dt / dd`` structure but
 builds an explicit API component tree within those nodes.
 
 Examples
 --------
->>> from sphinx_autodoc_layout._nodes import api_component, gal_fold
+>>> from sphinx_autodoc_layout._nodes import (
+...     api_component,
+...     build_api_component,
+...     gal_fold,
+... )
 >>> comp = api_component(name="api-layout", tag="div")
 >>> comp.get("name")
 'api-layout'
+
+>>> built = build_api_component("api-content", classes=("demo",))
+>>> built.get("classes")
+['api-content', 'demo']
 
 >>> fold = gal_fold(kind="parameters", summary="Parameters (5)")
 >>> fold.get("summary")
@@ -163,6 +171,76 @@ class gal_sig_fold(nodes.General, nodes.Element):
     >>> sf.get("panel_id")
     'sig-panel'
     """
+
+
+def build_api_component(
+    name: str,
+    *,
+    tag: str = "div",
+    classes: tuple[str, ...] = (),
+    html_attrs: dict[str, str] | None = None,
+) -> api_component:
+    """Create an ``api_component`` with stable DOM classes.
+
+    Parameters
+    ----------
+    name : str
+        Stable DOM contract name such as ``"api-layout"``.
+    tag : str
+        HTML tag emitted by the visitor.
+    classes : tuple[str, ...]
+        Additional compatibility classes.
+    html_attrs : dict[str, str] | None
+        Extra HTML attributes for the rendered tag.
+
+    Returns
+    -------
+    api_component
+        A configured component wrapper.
+
+    Examples
+    --------
+    >>> wrapper = build_api_component("api-content", classes=("legacy",))
+    >>> wrapper.get("classes")
+    ['api-content', 'legacy']
+    """
+    component = api_component(name=name, tag=tag)
+    component["classes"] = [name, *classes]
+    if html_attrs:
+        component["html_attrs"] = html_attrs
+    return component
+
+
+def build_api_inline_component(
+    name: str,
+    *,
+    tag: str = "span",
+    classes: tuple[str, ...] = (),
+    html_attrs: dict[str, str] | None = None,
+) -> api_inline_component:
+    """Create an inline API wrapper for text-compatible header content.
+
+    Parameters
+    ----------
+    name : str
+        Stable DOM contract name such as ``"api-source-link"``.
+    tag : str
+        HTML tag emitted by the visitor.
+    classes : tuple[str, ...]
+        Additional compatibility classes.
+    html_attrs : dict[str, str] | None
+        Extra HTML attributes for the rendered tag.
+
+    Returns
+    -------
+    api_inline_component
+        A configured inline component wrapper.
+    """
+    component = api_inline_component(name=name, tag=tag)
+    component["classes"] = [name, *classes]
+    if html_attrs:
+        component["html_attrs"] = html_attrs
+    return component
 
 
 def build_api_slot(

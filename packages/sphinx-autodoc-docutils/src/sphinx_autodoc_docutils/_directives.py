@@ -8,8 +8,15 @@ import typing as t
 
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
-from docutils.statemachine import StringList
+from sphinx import addnodes
 from sphinx.util.docutils import SphinxDirective
+from sphinx_autodoc_layout import (
+    build_api_slot,
+    iter_desc_nodes,
+    parse_generated_markup,
+)
+
+from sphinx_autodoc_docutils._badges import build_kind_badge_group
 
 if t.TYPE_CHECKING:
     from sphinx.util.typing import OptionSpec
@@ -132,43 +139,37 @@ def _option_rows(option_spec: OptionSpec | None) -> list[str]:
     return rows
 
 
-# NOTE: This function is byte-for-byte identical to
-# sphinx_autodoc_sphinx._directives._render_blocks.  Both packages depend only
-# on sphinx (not on each other), so a shared location would require a new
-# dependency.  If a third caller emerges, extract to gp_sphinx._render.
-def _render_blocks(directive: SphinxDirective, markup: str) -> list[nodes.Node]:
-    """Parse generated markup through Sphinx when available.
+def _entry_kind(desc_node: addnodes.desc) -> str:
+    """Return the badge label for one parsed ``rst`` description node."""
+    objtype = str(desc_node.get("objtype", ""))
+    if objtype == "directive:option":
+        return "option"
+    return objtype
 
-    Examples
-    --------
-    >>> class DummyState:
-    ...     def nested_parse(
-    ...         self,
-    ...         view_list: StringList,
-    ...         offset: int,
-    ...         node: nodes.Element,
-    ...     ) -> None:
-    ...         for line in view_list:
-    ...             node += nodes.paragraph("", line)
-    >>> class DummyDirective:
-    ...     state = DummyState()
-    ...     content_offset = 0
-    ...     def get_source_info(self) -> tuple[str, int]:
-    ...         return ("demo.md", 1)
-    >>> rendered = _render_blocks(DummyDirective(), "demo")  # type: ignore[arg-type]
-    >>> rendered[0].astext()
-    'demo'
-    """
-    if hasattr(directive, "parse_text_to_nodes"):
-        return directive.parse_text_to_nodes(markup)
 
-    source, _line = directive.get_source_info()
-    view_list: StringList = StringList()
-    for line in markup.splitlines():
-        view_list.append(line, source)
-    container = nodes.container()
-    directive.state.nested_parse(view_list, directive.content_offset, container)
-    return [container] if container.children else []
+def _inject_docutils_badges(node_list: list[nodes.Node]) -> None:
+    """Attach shared badge-slot metadata to parsed ``rst:*`` entries."""
+    for desc_node in iter_desc_nodes(node_list):
+        if desc_node.get("domain") != "rst":
+            continue
+        badge_group = build_kind_badge_group(_entry_kind(desc_node))
+        for sig_node in desc_node.children:
+            if not isinstance(sig_node, addnodes.desc_signature):
+                continue
+            if sig_node.get("sadoc_badges_injected"):
+                continue
+            sig_node["sadoc_badges_injected"] = True
+            sig_node += build_api_slot("badges", badge_group.deepcopy())
+
+
+def _render_markup_nodes(
+    directive: SphinxDirective,
+    markup: str,
+) -> list[nodes.Node]:
+    """Parse markup and attach layout metadata for docutils entries."""
+    node_list = parse_generated_markup(directive, markup)
+    _inject_docutils_badges(node_list)
+    return node_list
 
 
 def _directive_markup(
@@ -304,7 +305,7 @@ class AutoDirective(SphinxDirective):
         path = self.arguments[0]
         module_name, _, attr_name = path.rpartition(".")
         directive_cls = getattr(importlib.import_module(module_name), attr_name)
-        return _render_blocks(
+        return _render_markup_nodes(
             self,
             _directive_markup(
                 path,
@@ -333,7 +334,7 @@ class AutoDirectives(SphinxDirective):
             )
             for name, directive_cls in _directive_classes(module_name)
         )
-        return _render_blocks(self, markup) if markup else []
+        return _render_markup_nodes(self, markup) if markup else []
 
 
 class AutoDirectiveIndex(SphinxDirective):
@@ -349,7 +350,7 @@ class AutoDirectiveIndex(SphinxDirective):
             for name, directive_cls in _directive_classes(module_name)
         ]
         markup = _index_markup("Directive Index", rows)
-        return _render_blocks(self, markup) if markup else []
+        return parse_generated_markup(self, markup) if markup else []
 
 
 class AutoRole(SphinxDirective):
@@ -364,7 +365,7 @@ class AutoRole(SphinxDirective):
         module_name, _, attr_name = path.rpartition(".")
         role_fn = getattr(importlib.import_module(module_name), attr_name)
         role_name = _registered_name(attr_name)
-        return _render_blocks(
+        return _render_markup_nodes(
             self,
             _role_markup(
                 path,
@@ -393,7 +394,7 @@ class AutoRoles(SphinxDirective):
             )
             for name, role_fn in _role_callables(module_name)
         )
-        return _render_blocks(self, markup) if markup else []
+        return _render_markup_nodes(self, markup) if markup else []
 
 
 class AutoRoleIndex(SphinxDirective):
@@ -413,4 +414,4 @@ class AutoRoleIndex(SphinxDirective):
             for name, role_fn in _role_callables(module_name)
         ]
         markup = _index_markup("Role Index", rows)
-        return _render_blocks(self, markup) if markup else []
+        return parse_generated_markup(self, markup) if markup else []

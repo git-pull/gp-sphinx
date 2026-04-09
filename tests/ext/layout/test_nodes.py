@@ -8,6 +8,8 @@ from sphinx_autodoc_layout._nodes import (
     api_inline_component,
     api_permalink,
     api_slot,
+    build_api_component,
+    build_api_inline_component,
     build_api_slot,
     gal_fold,
     gal_region,
@@ -50,6 +52,11 @@ def test_api_component_stores_name_and_tag() -> None:
     assert node.get("tag") == "div"
 
 
+def test_build_api_component_adds_classes() -> None:
+    node = build_api_component("api-layout", classes=("legacy",))
+    assert node.get("classes") == ["api-layout", "legacy"]
+
+
 def test_api_permalink_stores_href() -> None:
     link = api_permalink(href="#demo.func", title="Link to this definition")
     assert link.get("href") == "#demo.func"
@@ -60,6 +67,11 @@ def test_api_inline_component_stores_name_and_tag() -> None:
     node = api_inline_component(name="api-source-link", tag="span")
     assert node.get("name") == "api-source-link"
     assert node.get("tag") == "span"
+
+
+def test_build_api_inline_component_adds_classes() -> None:
+    node = build_api_inline_component("api-source-link", classes=("legacy",))
+    assert node.get("classes") == ["api-source-link", "legacy"]
 
 
 def test_api_slot_stores_slot_name() -> None:

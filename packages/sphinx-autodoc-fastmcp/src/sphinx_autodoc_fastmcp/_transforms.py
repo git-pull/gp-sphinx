@@ -8,6 +8,7 @@ import typing as t
 
 from docutils import nodes
 from sphinx.application import Sphinx
+from sphinx_autodoc_layout._nodes import api_component
 
 from sphinx_autodoc_fastmcp._badges import build_safety_badge
 from sphinx_autodoc_fastmcp._css import _CSS
@@ -18,6 +19,19 @@ if t.TYPE_CHECKING:
     from sphinx.domains.std import StandardDomain
 
 logger = logging.getLogger(__name__)
+
+
+def _tool_content_container(section: nodes.section) -> nodes.Element:
+    """Return the shared content wrapper for a FastMCP tool section."""
+    for child in section.children:
+        if not isinstance(child, api_component) or child.get("name") != "api-entry":
+            continue
+        for grandchild in child.children:
+            if isinstance(grandchild, api_component) and grandchild.get("name") == (
+                "api-content"
+            ):
+                return grandchild
+    return section
 
 
 def collect_tool_section_content(app: Sphinx, doctree: nodes.document) -> None:
@@ -35,6 +49,7 @@ def collect_tool_section_content(app: Sphinx, doctree: nodes.document) -> None:
         parent = section.parent
         if parent is None:
             continue
+        content = _tool_content_container(section)
         idx = parent.index(section)
         while idx + 1 < len(parent.children):
             sibling = parent.children[idx + 1]
@@ -44,7 +59,7 @@ def collect_tool_section_content(app: Sphinx, doctree: nodes.document) -> None:
             if isinstance(sibling, nodes.section):
                 break
             parent.remove(sibling)
-            section.append(sibling)
+            content.append(sibling)
 
 
 def register_tool_labels(app: Sphinx, doctree: nodes.document) -> None:

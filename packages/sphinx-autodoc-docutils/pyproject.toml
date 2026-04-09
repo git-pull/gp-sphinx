@@ -27,6 +27,8 @@ readme = "README.md"
 keywords = ["sphinx", "docutils", "directives", "roles", "documentation", "autodoc"]
 dependencies = [
   "sphinx",
+  "sphinx-autodoc-badges==0.0.1a6",
+  "sphinx-autodoc-layout==0.0.1a6",
 ]
 
 [project.urls]
