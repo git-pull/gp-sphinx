@@ -2,7 +2,19 @@
 
 from __future__ import annotations
 
+import typing as t
+
+import pytest
+from sphinx_typehints_gp._numpy_docstring import (
+    _escape_args_and_kwargs,
+    _partition_on_colon,
+    process_numpy_docstring,
+)
 from sphinx_typehints_gp.extension import get_module_imports, resolve_annotation_string
+
+# ---------------------------------------------------------------------------
+# get_module_imports / resolve_annotation_string  (individual — not fixture-based)
+# ---------------------------------------------------------------------------
 
 
 def test_get_module_imports_finds_typing_aliases() -> None:
@@ -29,28 +41,588 @@ def test_get_module_imports_missing_module_returns_empty() -> None:
     assert result == {}
 
 
-def test_resolve_annotation_string_qualified_names() -> None:
-    """resolve_annotation_string replaces aliases with qualified paths."""
-    aliases = {"List": "typing.List", "MyClass": "other.MyClass"}
-    resolved = resolve_annotation_string("List[MyClass]", "my_module", aliases)
-    assert resolved == "~typing.List[~other.MyClass]"
+def test_numpy_empty_docstring() -> None:
+    """Empty docstring produces empty output."""
+    assert process_numpy_docstring([]) == []
 
 
-def test_resolve_annotation_string_local_class() -> None:
-    """resolve_annotation_string qualifies an unknown local class."""
-    aliases = {"List": "typing.List"}
-    resolved = resolve_annotation_string("List[LocalClass]", "my_module", aliases)
-    assert resolved == "~typing.List[~my_module.LocalClass]"
+def test_numpy_no_sections() -> None:
+    """Docstring without NumPy sections passes through unchanged."""
+    lines = ["Just a summary.", "", "Extended description."]
+    assert process_numpy_docstring(lines) == lines
 
 
-def test_resolve_annotation_string_builtin_unchanged() -> None:
-    """resolve_annotation_string leaves builtin names unqualified."""
-    aliases = {"List": "typing.List"}
-    resolved = resolve_annotation_string("List[str]", "my_module", aliases)
-    assert resolved == "~typing.List[str]"
+def test_numpy_full_docstring() -> None:
+    """Complete multi-section docstring parses all sections correctly."""
+    lines = [
+        "Do something important.",
+        "",
+        "Extended description goes here.",
+        "",
+        "Parameters",
+        "----------",
+        "name : str",
+        "    The name.",
+        "count : int",
+        "    The count.",
+        "",
+        "Returns",
+        "-------",
+        "bool",
+        "    True if successful.",
+        "",
+        "Raises",
+        "------",
+        "ValueError",
+        "    If name is empty.",
+        "",
+        "Examples",
+        "--------",
+        ">>> do_something('foo', 3)",
+        "True",
+    ]
+    result = process_numpy_docstring(lines)
+    joined = "\n".join(result)
+    assert "Do something important." in joined
+    assert "Extended description goes here." in joined
+    assert ":param name: The name." in joined
+    assert ":type name: str" in joined
+    assert ":param count: The count." in joined
+    assert ":type count: int" in joined
+    assert ":returns: True if successful." in joined
+    assert ":rtype: bool" in joined
+    assert ":raises ValueError:" in joined
+    assert ".. rubric:: Examples" in joined
+    assert ">>> do_something('foo', 3)" in joined
 
 
-def test_resolve_annotation_string_syntax_error_returns_original() -> None:
-    """resolve_annotation_string returns the original string on SyntaxError."""
-    result = resolve_annotation_string("not valid[python]syntax!!!", "mod", {})
-    assert result == "not valid[python]syntax!!!"
+# ---------------------------------------------------------------------------
+# resolve_annotation_string — parametrized
+# ---------------------------------------------------------------------------
+
+
+class ResolveAnnotationFixture(t.NamedTuple):
+    """Fixture for resolve_annotation_string cases."""
+
+    test_id: str
+    ann_str: str
+    module_name: str
+    aliases: dict[str, str]
+    expected: str
+
+
+_RESOLVE_FIXTURES: list[ResolveAnnotationFixture] = [
+    ResolveAnnotationFixture(
+        test_id="qualified_names",
+        ann_str="List[MyClass]",
+        module_name="my_module",
+        aliases={"List": "typing.List", "MyClass": "other.MyClass"},
+        expected="~typing.List[~other.MyClass]",
+    ),
+    ResolveAnnotationFixture(
+        test_id="local_class",
+        ann_str="List[LocalClass]",
+        module_name="my_module",
+        aliases={"List": "typing.List"},
+        expected="~typing.List[~my_module.LocalClass]",
+    ),
+    ResolveAnnotationFixture(
+        test_id="builtin_unchanged",
+        ann_str="List[str]",
+        module_name="my_module",
+        aliases={"List": "typing.List"},
+        expected="~typing.List[str]",
+    ),
+    ResolveAnnotationFixture(
+        test_id="syntax_error_returns_original",
+        ann_str="not valid[python]syntax!!!",
+        module_name="mod",
+        aliases={},
+        expected="not valid[python]syntax!!!",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(ResolveAnnotationFixture._fields),
+    _RESOLVE_FIXTURES,
+    ids=[f.test_id for f in _RESOLVE_FIXTURES],
+)
+def test_resolve_annotation_string(
+    test_id: str,
+    ann_str: str,
+    module_name: str,
+    aliases: dict[str, str],
+    expected: str,
+) -> None:
+    """resolve_annotation_string converts annotation strings correctly."""
+    assert resolve_annotation_string(ann_str, module_name, aliases) == expected
+
+
+# ---------------------------------------------------------------------------
+# _partition_on_colon — parametrized
+# ---------------------------------------------------------------------------
+
+
+class PartitionFixture(t.NamedTuple):
+    """Fixture for _partition_on_colon cases."""
+
+    test_id: str
+    line: str
+    expected: tuple[str, str, str]
+
+
+_PARTITION_FIXTURES: list[PartitionFixture] = [
+    PartitionFixture(
+        test_id="basic_name_type",
+        line="name : int",
+        expected=("name", ":", "int"),
+    ),
+    PartitionFixture(
+        test_id="no_colon",
+        line="name",
+        expected=("name", "", ""),
+    ),
+    PartitionFixture(
+        test_id="xref_colon_preserved",
+        line=":class:`Foo` : bar",
+        expected=(":class:`Foo`", ":", "bar"),
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(PartitionFixture._fields),
+    _PARTITION_FIXTURES,
+    ids=[f.test_id for f in _PARTITION_FIXTURES],
+)
+def test_partition_on_colon(
+    test_id: str,
+    line: str,
+    expected: tuple[str, str, str],
+) -> None:
+    """_partition_on_colon splits on the first bare colon outside xrefs."""
+    assert _partition_on_colon(line) == expected
+
+
+# ---------------------------------------------------------------------------
+# _escape_args_and_kwargs — parametrized
+# ---------------------------------------------------------------------------
+
+
+class EscapeFixture(t.NamedTuple):
+    """Fixture for _escape_args_and_kwargs cases."""
+
+    test_id: str
+    name: str
+    expected: str
+
+
+_ESCAPE_FIXTURES: list[EscapeFixture] = [
+    EscapeFixture(test_id="plain_name", name="x", expected="x"),
+    EscapeFixture(test_id="single_star", name="*args", expected=r"\*args"),
+    EscapeFixture(test_id="double_star", name="**kwargs", expected=r"\*\*kwargs"),
+]
+
+
+@pytest.mark.parametrize(
+    list(EscapeFixture._fields),
+    _ESCAPE_FIXTURES,
+    ids=[f.test_id for f in _ESCAPE_FIXTURES],
+)
+def test_escape_args_and_kwargs(
+    test_id: str,
+    name: str,
+    expected: str,
+) -> None:
+    """_escape_args_and_kwargs escapes RST special prefixes."""
+    assert _escape_args_and_kwargs(name) == expected
+
+
+# ---------------------------------------------------------------------------
+# Parameters section — parametrized
+# ---------------------------------------------------------------------------
+
+
+class ParamSectionFixture(t.NamedTuple):
+    """Fixture for Parameters section parsing cases."""
+
+    test_id: str
+    input_lines: list[str]
+    expected_in_output: list[str]
+    absent_from_output: list[str]
+
+
+_PARAM_FIXTURES: list[ParamSectionFixture] = [
+    ParamSectionFixture(
+        test_id="basic_typed_params",
+        input_lines=[
+            "Summary.",
+            "",
+            "Parameters",
+            "----------",
+            "x : int",
+            "    The x value.",
+            "y : str",
+            "    The y value.",
+        ],
+        expected_in_output=[
+            ":param x: The x value.",
+            ":type x: int",
+            ":param y: The y value.",
+            ":type y: str",
+        ],
+        absent_from_output=[],
+    ),
+    ParamSectionFixture(
+        test_id="param_no_type",
+        input_lines=[
+            "Summary.",
+            "",
+            "Parameters",
+            "----------",
+            "x",
+            "    The x value.",
+        ],
+        expected_in_output=[":param x: The x value."],
+        absent_from_output=[":type x:"],
+    ),
+    ParamSectionFixture(
+        test_id="star_args_escaped",
+        input_lines=[
+            "Summary.",
+            "",
+            "Parameters",
+            "----------",
+            "*args : str",
+            "    Positional args.",
+            "**kwargs : int",
+            "    Keyword args.",
+        ],
+        expected_in_output=[r":param \*args:", r":param \*\*kwargs:"],
+        absent_from_output=[],
+    ),
+    ParamSectionFixture(
+        test_id="multiline_desc_indented",
+        input_lines=[
+            "Summary.",
+            "",
+            "Parameters",
+            "----------",
+            "x : int",
+            "    Line one.",
+            "    Line two.",
+        ],
+        expected_in_output=[":param x: Line one.", "          Line two."],
+        absent_from_output=[],
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(ParamSectionFixture._fields),
+    _PARAM_FIXTURES,
+    ids=[f.test_id for f in _PARAM_FIXTURES],
+)
+def test_numpy_parameters_section(
+    test_id: str,
+    input_lines: list[str],
+    expected_in_output: list[str],
+    absent_from_output: list[str],
+) -> None:
+    """Parameters section produces correct :param: and :type: fields."""
+    result = process_numpy_docstring(input_lines)
+    joined = "\n".join(result)
+    for fragment in expected_in_output:
+        assert fragment in joined, f"[{test_id}] Missing: {fragment!r}"
+    for fragment in absent_from_output:
+        assert fragment not in joined, f"[{test_id}] Unexpected: {fragment!r}"
+
+
+# ---------------------------------------------------------------------------
+# Returns section — parametrized
+# ---------------------------------------------------------------------------
+
+
+class ReturnSectionFixture(t.NamedTuple):
+    """Fixture for Returns section parsing cases."""
+
+    test_id: str
+    input_lines: list[str]
+    expected_in_output: list[str]
+
+
+_RETURN_FIXTURES: list[ReturnSectionFixture] = [
+    ReturnSectionFixture(
+        test_id="single_typed_return",
+        input_lines=[
+            "Summary.",
+            "",
+            "Returns",
+            "-------",
+            "bool",
+            "    True if ok.",
+        ],
+        expected_in_output=[":returns: True if ok.", ":rtype: bool"],
+    ),
+    ReturnSectionFixture(
+        test_id="named_typed_return",
+        input_lines=[
+            "Summary.",
+            "",
+            "Returns",
+            "-------",
+            "result : bool",
+            "    True if ok.",
+        ],
+        expected_in_output=[":returns:", ":rtype: bool"],
+    ),
+    ReturnSectionFixture(
+        test_id="multiple_returns_bullet_format",
+        input_lines=[
+            "Summary.",
+            "",
+            "Returns",
+            "-------",
+            "x : int",
+            "    X val.",
+            "y : str",
+            "    Y val.",
+        ],
+        expected_in_output=[":returns: *"],
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(ReturnSectionFixture._fields),
+    _RETURN_FIXTURES,
+    ids=[f.test_id for f in _RETURN_FIXTURES],
+)
+def test_numpy_returns_section(
+    test_id: str,
+    input_lines: list[str],
+    expected_in_output: list[str],
+) -> None:
+    """Returns section produces correct :returns: and :rtype: fields."""
+    result = process_numpy_docstring(input_lines)
+    joined = "\n".join(result)
+    for fragment in expected_in_output:
+        assert fragment in joined, f"[{test_id}] Missing: {fragment!r}"
+
+
+# ---------------------------------------------------------------------------
+# Raises section — parametrized
+# ---------------------------------------------------------------------------
+
+
+class RaisesSectionFixture(t.NamedTuple):
+    """Fixture for Raises section parsing cases."""
+
+    test_id: str
+    input_lines: list[str]
+    expected_in_output: list[str]
+
+
+_RAISES_FIXTURES: list[RaisesSectionFixture] = [
+    RaisesSectionFixture(
+        test_id="basic_raises",
+        input_lines=[
+            "Summary.",
+            "",
+            "Raises",
+            "------",
+            "ValueError",
+            "    If x is negative.",
+        ],
+        expected_in_output=[":raises ValueError:", "If x is negative."],
+    ),
+    RaisesSectionFixture(
+        test_id="raises_without_desc",
+        input_lines=[
+            "Summary.",
+            "",
+            "Raises",
+            "------",
+            "TypeError",
+            "",
+        ],
+        expected_in_output=[":raises TypeError:"],
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(RaisesSectionFixture._fields),
+    _RAISES_FIXTURES,
+    ids=[f.test_id for f in _RAISES_FIXTURES],
+)
+def test_numpy_raises_section(
+    test_id: str,
+    input_lines: list[str],
+    expected_in_output: list[str],
+) -> None:
+    """Raises section produces correct :raises Type: fields."""
+    result = process_numpy_docstring(input_lines)
+    joined = "\n".join(result)
+    for fragment in expected_in_output:
+        assert fragment in joined, f"[{test_id}] Missing: {fragment!r}"
+
+
+# ---------------------------------------------------------------------------
+# Generic sections (Examples, Notes, Yields, References) — parametrized
+# ---------------------------------------------------------------------------
+
+
+class GenericSectionFixture(t.NamedTuple):
+    """Fixture for generic section parsing cases."""
+
+    test_id: str
+    input_lines: list[str]
+    expected_in_output: list[str]
+
+
+_GENERIC_SECTION_FIXTURES: list[GenericSectionFixture] = [
+    GenericSectionFixture(
+        test_id="examples_rubric",
+        input_lines=[
+            "Summary.",
+            "",
+            "Examples",
+            "--------",
+            ">>> func(1)",
+            "True",
+        ],
+        expected_in_output=[".. rubric:: Examples", ">>> func(1)"],
+    ),
+    GenericSectionFixture(
+        test_id="notes_rubric",
+        input_lines=[
+            "Summary.",
+            "",
+            "Notes",
+            "-----",
+            "Some notes here.",
+        ],
+        expected_in_output=[".. rubric:: Notes", "Some notes here."],
+    ),
+    GenericSectionFixture(
+        test_id="references_rubric",
+        input_lines=[
+            "Summary.",
+            "",
+            "References",
+            "----------",
+            ".. [1] Author, Title.",
+        ],
+        expected_in_output=[".. rubric:: References"],
+    ),
+    GenericSectionFixture(
+        test_id="yields_section",
+        input_lines=[
+            "Summary.",
+            "",
+            "Yields",
+            "------",
+            "int",
+            "    Next value.",
+        ],
+        expected_in_output=[":Yields:", "int"],
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(GenericSectionFixture._fields),
+    _GENERIC_SECTION_FIXTURES,
+    ids=[f.test_id for f in _GENERIC_SECTION_FIXTURES],
+)
+def test_numpy_generic_section(
+    test_id: str,
+    input_lines: list[str],
+    expected_in_output: list[str],
+) -> None:
+    """Generic sections (Examples, Notes, Yields, References) render correctly."""
+    result = process_numpy_docstring(input_lines)
+    joined = "\n".join(result)
+    for fragment in expected_in_output:
+        assert fragment in joined, f"[{test_id}] Missing: {fragment!r}"
+
+
+# ---------------------------------------------------------------------------
+# Special sections (See Also, Attributes, Admonitions) — parametrized
+# ---------------------------------------------------------------------------
+
+
+class SpecialSectionFixture(t.NamedTuple):
+    """Fixture for special section parsing cases."""
+
+    test_id: str
+    input_lines: list[str]
+    expected_in_output: list[str]
+
+
+_SPECIAL_SECTION_FIXTURES: list[SpecialSectionFixture] = [
+    SpecialSectionFixture(
+        test_id="see_also_with_desc",
+        input_lines=[
+            "Summary.",
+            "",
+            "See Also",
+            "--------",
+            "other_func : Related function.",
+        ],
+        expected_in_output=[".. seealso::", ":py:obj:`other_func`"],
+    ),
+    SpecialSectionFixture(
+        test_id="attributes_section",
+        input_lines=[
+            "Summary.",
+            "",
+            "Attributes",
+            "----------",
+            "x : int",
+            "    The x value.",
+        ],
+        expected_in_output=[".. attribute:: x", ":type: int"],
+    ),
+    SpecialSectionFixture(
+        test_id="warning_admonition",
+        input_lines=[
+            "Summary.",
+            "",
+            "Warning",
+            "-------",
+            "Be careful.",
+        ],
+        expected_in_output=[".. warning::", "Be careful."],
+    ),
+    SpecialSectionFixture(
+        test_id="note_admonition",
+        input_lines=[
+            "Summary.",
+            "",
+            "Note",
+            "----",
+            "This is a note.",
+        ],
+        expected_in_output=[".. note::"],
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(SpecialSectionFixture._fields),
+    _SPECIAL_SECTION_FIXTURES,
+    ids=[f.test_id for f in _SPECIAL_SECTION_FIXTURES],
+)
+def test_numpy_special_section(
+    test_id: str,
+    input_lines: list[str],
+    expected_in_output: list[str],
+) -> None:
+    """Special sections (See Also, Attributes, Admonitions) render correctly."""
+    result = process_numpy_docstring(input_lines)
+    joined = "\n".join(result)
+    for fragment in expected_in_output:
+        assert fragment in joined, f"[{test_id}] Missing: {fragment!r}"

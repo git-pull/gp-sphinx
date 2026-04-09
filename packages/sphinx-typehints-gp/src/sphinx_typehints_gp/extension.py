@@ -1,13 +1,17 @@
-"""Type annotation enhancement for Sphinx autodoc.
+"""Type annotation enhancement and NumPy docstring parsing for Sphinx autodoc.
 
-Hooks ``object-description-transform`` at priority 499 — before Sphinx's
-built-in ``_merge_typehints`` at 500 — to insert or upgrade ``:type:`` and
-``:rtype:`` field nodes with cross-referenced ``pending_xref`` content.
+Replaces both ``sphinx-autodoc-typehints`` and ``sphinx.ext.napoleon`` with a
+single self-contained extension.  Two independent pipelines run in sequence:
 
-Works with ``sphinx.ext.napoleon`` without ordering constraints: Napoleon
-converts NumPy / Google docstrings to RST fields during
-``autodoc-process-docstring``; by the time ``object-description-transform``
-fires those fields are already in the doctree as nodes.
+1. **NumPy docstring parsing** — ``process_docstring`` hooks
+   ``autodoc-process-docstring`` to convert NumPy section-based docstrings
+   (Parameters, Returns, Raises, Yields, …) into RST field lists.  Implemented
+   in :mod:`sphinx_typehints_gp._numpy_docstring`.
+
+2. **Type cross-referencing** — ``merge_typehints`` hooks
+   ``object-description-transform`` at priority 499 (before Sphinx's built-in
+   ``_merge_typehints`` at 500) to insert or upgrade ``:type:`` and ``:rtype:``
+   field nodes with cross-referenced ``pending_xref`` content.
 
 Does **not** use ``exec()``, ``typing.get_type_hints()``, or any
 monkeypatches.  Type annotations are resolved statically via AST analysis.
@@ -235,6 +239,45 @@ def _enhance_existing_type_field(
         return
     para.clear()
     para.extend(_annotation_to_nodes(text, env))
+
+
+def process_docstring(
+    app: Sphinx,
+    what: str,
+    name: str,
+    obj: t.Any,
+    options: Options,
+    lines: list[str],
+) -> None:
+    """Convert NumPy-style docstring sections to RST field lists.
+
+    Hooks ``autodoc-process-docstring`` to replace ``sphinx.ext.napoleon``
+    for NumPy-style docstrings.  Delegates to
+    :func:`sphinx_typehints_gp._numpy_docstring.process_numpy_docstring`.
+
+    Parameters
+    ----------
+    app : Sphinx
+        The Sphinx application instance.
+    what : str
+        The type of the object being documented.
+    name : str
+        The fully qualified name of the object.
+    obj : t.Any
+        The object being documented.
+    options : Options
+        The options given to the autodoc directive.
+    lines : list[str]
+        The docstring lines, modified in place.
+
+    Examples
+    --------
+    >>> process_docstring  # doctest: +ELLIPSIS
+    <function process_docstring at 0x...>
+    """
+    from sphinx_typehints_gp._numpy_docstring import process_numpy_docstring
+
+    lines[:] = process_numpy_docstring(lines)
 
 
 def record_typehints(
@@ -479,6 +522,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     >>> setup  # doctest: +ELLIPSIS
     <function setup at 0x...>
     """
+    app.connect("autodoc-process-docstring", process_docstring)
     app.connect("autodoc-process-signature", record_typehints)
     # Priority 499: run before Sphinx's _merge_typehints at 500 so our
     # cross-referenced fields are seen first and the plain-text duplicates
