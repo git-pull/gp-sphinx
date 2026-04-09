@@ -5,8 +5,10 @@ from __future__ import annotations
 from docutils import nodes
 from sphinx.util.docutils import SphinxDirective
 from sphinx_autodoc_layout import (
+    ApiFactRow,
     api_permalink,
     build_api_component,
+    build_api_facts_section,
     build_api_inline_component,
 )
 
@@ -108,21 +110,19 @@ class FastMCPToolDirective(SphinxDirective):
         content += description
 
         if tool.return_annotation:
-            returns_para = nodes.paragraph("")
-            returns_para += nodes.strong("", "Returns: ")
-            type_para = make_type_xref(
-                tool.return_annotation,
-                model_module=str(self.config.fastmcp_model_module),
-                model_classes=frozenset(self.config.fastmcp_model_classes),
-            )
-            for child in type_para.children:
-                returns_para += child.deepcopy()
-            footer = build_api_component(
-                "api-footer",
+            content += build_api_facts_section(
+                [
+                    ApiFactRow(
+                        "Returns",
+                        make_type_xref(
+                            tool.return_annotation,
+                            model_module=str(self.config.fastmcp_model_module),
+                            model_classes=frozenset(self.config.fastmcp_model_classes),
+                        ),
+                    )
+                ],
                 classes=(_CSS.BODY_SECTION,),
             )
-            footer += returns_para
-            content += footer
 
         entry += content
         section += entry

@@ -16,6 +16,7 @@ from sphinx_autodoc_layout._nodes import (
     gal_fold,
     gal_sig_fold,
 )
+from sphinx_autodoc_layout._sections import ApiFactRow, build_api_facts_section
 from sphinx_autodoc_layout._transforms import (
     DescLayoutProfile,
     _classify_child,
@@ -231,6 +232,25 @@ def test_wrap_groups_narrative() -> None:
     assert isinstance(section, api_component)
     assert "gal-region" in section.get("classes", [])
     assert len(section.children) == 2
+
+
+def test_wrap_preserves_prebuilt_fact_sections() -> None:
+    desc = _make_desc(
+        nodes.paragraph("", "intro"),
+    )
+    content = t.cast(addnodes.desc_content, desc.children[-1])
+    content += build_api_facts_section(
+        [
+            ApiFactRow(
+                "Type",
+                nodes.paragraph("", "", nodes.literal("", "bool")),
+            )
+        ]
+    )
+
+    _wrap_content_runs(desc)
+
+    assert _child_component_names(content) == ["api-description", "api-facts"]
 
 
 def test_wrap_groups_contiguous_types() -> None:

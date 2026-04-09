@@ -109,8 +109,10 @@ def test_autodoc_docutils_entries_use_shared_layout(
     assert "api-profile--rst-directive" in html
     assert "api-profile--rst-directive-option" in html
     assert "api-profile--rst-role" in html
+    assert 'class="api-facts gal-region gal-region--facts"' in html
+    assert 'class="api-options gal-region gal-region--options"' in html
     assert 'class="api-badge-container"' in html
     assert ">directive<" in html
     assert ">option<" in html
     assert ">role<" in html
-    assert "Validator" in html
+    assert "Python path" in html

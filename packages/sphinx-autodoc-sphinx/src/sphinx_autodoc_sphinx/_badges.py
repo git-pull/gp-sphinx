@@ -5,7 +5,7 @@ from __future__ import annotations
 import typing as t
 
 from docutils import nodes
-from sphinx_autodoc_badges import build_badge, build_badge_group
+from sphinx_autodoc_badges import BadgeSpec, build_badge_group_from_specs
 
 if t.TYPE_CHECKING:
     from sphinx_autodoc_sphinx._directives import SphinxConfigValue
@@ -29,17 +29,17 @@ def build_config_badge_group(value: SphinxConfigValue) -> nodes.inline:
         Badge group containing the config kind and rebuild mode badges.
     """
     rebuild = value.rebuild or "none"
-    return build_badge_group(
+    return build_badge_group_from_specs(
         [
-            build_badge(
+            BadgeSpec(
                 "config",
                 tooltip="Sphinx config value",
-                classes=[_TYPE_CLASS],
+                classes=(_TYPE_CLASS,),
             ),
-            build_badge(
+            BadgeSpec(
                 rebuild,
                 tooltip=f"Rebuild mode: {rebuild}",
-                classes=[_REBUILD_CLASS],
+                classes=(_REBUILD_CLASS,),
                 fill="outline",
             ),
         ],

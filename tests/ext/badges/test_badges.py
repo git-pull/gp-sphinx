@@ -6,8 +6,11 @@ import pytest
 from docutils import nodes
 from sphinx_autodoc_badges import (
     BadgeNode,
+    BadgeSpec,
     build_badge,
+    build_badge_from_spec,
     build_badge_group,
+    build_badge_group_from_specs,
     build_toolbar,
 )
 from sphinx_autodoc_badges._css import SAB
@@ -83,6 +86,20 @@ def test_build_badge_basic() -> None:
     assert b["badge_tooltip"] == "Read-only"
 
 
+def test_build_badge_from_spec() -> None:
+    """Typed badge specs render through the shared builder."""
+    spec = BadgeSpec(
+        "config",
+        tooltip="Sphinx config value",
+        classes=("sas-badge--type",),
+    )
+    badge = build_badge_from_spec(spec)
+
+    assert isinstance(badge, BadgeNode)
+    assert badge.astext() == "config"
+    assert "sas-badge--type" in badge["classes"]
+
+
 def test_build_badge_icon_only() -> None:
     """build_badge with icon-only style."""
     b = build_badge("", style="icon-only", classes=["smf-safety-readonly"])
@@ -125,6 +142,21 @@ def test_build_badge_group() -> None:
     assert "smf-badge-group" in g["classes"]
     badges = list(g.findall(BadgeNode))
     assert len(badges) == 2
+
+
+def test_build_badge_group_from_specs() -> None:
+    """Typed badge groups keep the shared sab-badge-group wrapper."""
+    group = build_badge_group_from_specs(
+        [
+            BadgeSpec("config", classes=("sas-badge--type",)),
+            BadgeSpec("env", classes=("sas-badge--rebuild",), fill="outline"),
+        ],
+        classes=["sas-badge-group"],
+    )
+
+    assert SAB.BADGE_GROUP in group["classes"]
+    assert "sas-badge-group" in group["classes"]
+    assert [badge.astext() for badge in group.findall(BadgeNode)] == ["config", "env"]
 
 
 def test_build_toolbar() -> None:

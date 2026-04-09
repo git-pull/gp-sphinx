@@ -13,10 +13,51 @@ True
 from __future__ import annotations
 
 import typing as t
+from dataclasses import dataclass, field
 
 from docutils import nodes
 
 from sphinx_autodoc_badges._nodes import BadgeNode
+
+
+@dataclass(frozen=True, slots=True)
+class BadgeSpec:
+    """Typed badge descriptor used by producer extensions.
+
+    Parameters
+    ----------
+    text : str
+        Visible badge label.
+    tooltip : str
+        Tooltip and aria label for the badge.
+    icon : str
+        Optional icon rendered via ``::before``.
+    classes : tuple[str, ...]
+        Additional CSS classes for package-specific color and role styling.
+    style : str
+        Structural variant: ``"full"``, ``"icon-only"``, or ``"inline-icon"``.
+    fill : str
+        Visual fill variant: ``"filled"`` or ``"outline"``.
+    size : str
+        Optional size token such as ``"sm"`` or ``"lg"``.
+    tabindex : str
+        Focus behavior token forwarded to :class:`BadgeNode`.
+
+    Examples
+    --------
+    >>> spec = BadgeSpec("config", tooltip="Sphinx config value")
+    >>> spec.text
+    'config'
+    """
+
+    text: str
+    tooltip: str = ""
+    icon: str = ""
+    classes: tuple[str, ...] = field(default_factory=tuple)
+    style: str = "full"
+    fill: str = "filled"
+    size: str = ""
+    tabindex: str = "0"
 
 
 def build_badge(
@@ -84,6 +125,31 @@ def build_badge(
     )
 
 
+def build_badge_from_spec(spec: BadgeSpec) -> BadgeNode:
+    """Build a :class:`BadgeNode` from a typed :class:`BadgeSpec`.
+
+    Parameters
+    ----------
+    spec : BadgeSpec
+        Structured badge description from a producer extension.
+
+    Returns
+    -------
+    BadgeNode
+        Renderable badge node.
+    """
+    return build_badge(
+        spec.text,
+        tooltip=spec.tooltip,
+        icon=spec.icon,
+        classes=spec.classes,
+        style=spec.style,
+        fill=spec.fill,
+        size=spec.size,
+        tabindex=spec.tabindex,
+    )
+
+
 def build_badge_group(
     badges: t.Sequence[BadgeNode],
     *,
@@ -115,6 +181,31 @@ def build_badge_group(
             group += nodes.Text(" ")
         group += badge
     return group
+
+
+def build_badge_group_from_specs(
+    badges: t.Sequence[BadgeSpec],
+    *,
+    classes: t.Sequence[str] = (),
+) -> nodes.inline:
+    """Wrap typed badge specs in a shared badge-group container.
+
+    Parameters
+    ----------
+    badges : Sequence[BadgeSpec]
+        Typed badge descriptors to render.
+    classes : Sequence[str]
+        Extra CSS classes for the group container.
+
+    Returns
+    -------
+    nodes.inline
+        Inline group containing rendered badge nodes.
+    """
+    return build_badge_group(
+        [build_badge_from_spec(spec) for spec in badges],
+        classes=classes,
+    )
 
 
 def build_toolbar(

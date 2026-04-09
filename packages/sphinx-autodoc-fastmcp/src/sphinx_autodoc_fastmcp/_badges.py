@@ -5,8 +5,9 @@ from __future__ import annotations
 from docutils import nodes
 from sphinx_autodoc_badges import (
     BadgeNode,
+    BadgeSpec,
     build_badge,
-    build_badge_group,
+    build_badge_group_from_specs,
     build_toolbar as _sab_build_toolbar,
 )
 
@@ -100,8 +101,20 @@ def build_tool_badge_group(safety: str) -> nodes.inline:
     >>> "sab-badge-group" in g["classes"]
     True
     """
-    return build_badge_group(
-        [build_safety_badge(safety), build_type_tool_badge()],
+    return build_badge_group_from_specs(
+        [
+            BadgeSpec(
+                safety if safety in _SAFETY_LABELS else safety,
+                tooltip=_SAFETY_TOOLTIPS.get(safety, f"Safety: {safety}"),
+                icon=_SAFETY_ICONS.get(safety, ""),
+                classes=(_CSS.BADGE_SAFETY, _CSS.safety_class(safety)),
+            ),
+            BadgeSpec(
+                "tool",
+                tooltip=_TYPE_TOOLTIP,
+                classes=(_CSS.BADGE_TYPE, _CSS.TYPE_TOOL),
+            ),
+        ],
         classes=[_CSS.BADGE_GROUP],
     )
 

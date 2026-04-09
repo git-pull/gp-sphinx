@@ -33,7 +33,7 @@ def test_role_callables_discovers_public_roles() -> None:
 
 
 def test_directive_markup_contains_path_and_summary() -> None:
-    """Rendered directive markup includes the import path and summary."""
+    """Rendered directive markup carries the signature and summary prose."""
     directive_cls = dict(_directive_classes("sphinx_autodoc_docutils._directives"))[
         "AutoDirectiveIndex"
     ]
@@ -42,7 +42,7 @@ def test_directive_markup_contains_path_and_summary() -> None:
         directive_cls,
         directive_name="autodirective-index",
     )
-    assert "sphinx_autodoc_docutils._directives.AutoDirectiveIndex" in markup
+    assert ".. rst:directive:: autodirective-index" in markup
     assert "Generate a summary index for all directives in a module." in markup
 
 
@@ -61,10 +61,10 @@ def test_role_callables_empty_for_module_with_no_roles() -> None:
 
 
 def test_role_markup_contains_role_name_and_path() -> None:
-    """Rendered role markup includes the displayed role name and path."""
+    """Rendered role markup includes the displayed role name and summary."""
     role_fn = dict(_role_callables("sphinx_argparse_neo.roles"))["cli_option_role"]
     markup = _role_markup(
         "sphinx_argparse_neo.roles.cli_option_role", "cli-option", role_fn
     )
     assert "cli-option" in markup
-    assert "sphinx_argparse_neo.roles.cli_option_role" in markup
+    assert "Role for CLI options like --foo or -h." in markup

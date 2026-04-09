@@ -30,6 +30,12 @@ from sphinx_autodoc_layout._nodes import (
     gal_sig_fold,
 )
 from sphinx_autodoc_layout._render import iter_desc_nodes, parse_generated_markup
+from sphinx_autodoc_layout._sections import (
+    ApiFactRow,
+    build_api_facts_section,
+    build_api_section,
+    build_api_table_section,
+)
 from sphinx_autodoc_layout._transforms import on_doctree_resolved
 from sphinx_autodoc_layout._visitors import (
     depart_api_component,
@@ -52,13 +58,17 @@ if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
 __all__ = [
+    "ApiFactRow",
     "api_component",
     "api_inline_component",
     "api_permalink",
     "api_slot",
     "build_api_component",
+    "build_api_facts_section",
     "build_api_inline_component",
+    "build_api_section",
     "build_api_slot",
+    "build_api_table_section",
     "gal_fold",
     "gal_region",
     "gal_sig_fold",

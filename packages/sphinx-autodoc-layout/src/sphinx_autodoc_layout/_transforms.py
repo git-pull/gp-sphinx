@@ -40,9 +40,13 @@ if t.TYPE_CHECKING:
 
 _SECTION_COMPONENTS: dict[str, str] = {
     "narrative": "api-description",
+    "facts": "api-facts",
     "fields": "api-parameters",
+    "options": "api-options",
     "members": "api-footer",
 }
+
+_STRUCTURED_SECTION_NAMES: frozenset[str] = frozenset(_SECTION_COMPONENTS.values())
 
 _SKIP_FOLD_OBJTYPES: frozenset[str] = frozenset(
     {
@@ -244,6 +248,16 @@ def _wrap_content_runs(desc_node: addnodes.desc) -> None:
     current_section: api_component | None = None
 
     for child in original:
+        if (
+            isinstance(child, api_component)
+            and str(child.get("name", "")) in _STRUCTURED_SECTION_NAMES
+        ):
+            if current_section is not None:
+                content += current_section
+                current_section = None
+                current_kind = None
+            content += child
+            continue
         kind = _classify_child(child)
         if kind != current_kind:
             if current_section is not None:

@@ -1,7 +1,7 @@
 # Test And Autodoc Analysis
 
-This note records the current post-second-wave state of the autodoc rendering
-pipeline and the measured runtime profile of the suite.
+This note records the current post-alignment-wave state of the autodoc
+rendering pipeline and the measured runtime profile of the suite.
 
 Two baselines remain non-negotiable:
 
@@ -11,8 +11,8 @@ Two baselines remain non-negotiable:
 
 Current suite status on 2026-04-09:
 
-- `828` tests collected
-- `825` passed
+- `845` tests collected
+- `842` passed
 - `3` skipped
 
 ## Test categories and harnesses
@@ -78,19 +78,23 @@ Its responsibilities are:
 - `sphinx_autodoc_api_style` is still a Python metadata producer only. It now
   delegates slot injection to the shared helper and leaves all final HTML
   composition to layout.
-- `sphinx_autodoc_pytest_fixtures` is still a fixture metadata producer only.
-  It now uses the same shared slot helper for badge/source-link insertion and
-  keeps fixture-only responsibilities such as metadata fields, store updates,
-  and reference repair.
+- `sphinx_autodoc_pytest_fixtures` is now closer to `api-style`: it emits
+  shared badge specs, still owns fixture metadata/reference repair, and now
+  wraps top-level metadata field lists into shared `api-facts` /
+  `api-parameters` sections before layout composes the final entry.
 - `sphinx_autodoc_sphinx` still generates real `confval` markup, parses it via
-  `parse_generated_markup()`, and injects only package-owned badge slots.
+  `parse_generated_markup()`, and now appends shared `api-facts` sections
+  instead of leaving config metadata as loose paragraphs.
 - `sphinx_autodoc_docutils` still generates real `rst:*` markup, parses it via
-  `parse_generated_markup()`, and injects only package-owned badge slots.
+  `parse_generated_markup()`, and now appends shared `api-facts` /
+  `api-options` sections instead of package-authored loose metadata prose.
 - `sphinx_autodoc_fastmcp` still ships on the section-card path. Its runtime
   output is unchanged in principle: shared `api-*` regions inside `nodes.section`
-  wrappers, same labels, same `:tool:` / `:toolref:` behavior.
+  wrappers, same labels, same `:tool:` / `:toolref:` behavior. The shipping
+  card path now uses shared badge specs and a shared facts section for return
+  metadata.
 
-## Chosen architecture and second-wave changes
+## Chosen architecture and alignment-wave changes
 
 ### Stable shared contracts
 
@@ -112,29 +116,44 @@ The public structural DOM contract stays:
 - `api-source-link`
 - `api-content`
 - `api-description`
+- `api-facts`
 - `api-parameters`
+- `api-options`
 - `api-footer`
 
 `.gas-toolbar` remains on `api-layout-right` as a compatibility shim only.
 Layout ownership is still with the `api-*` regions.
 
-### Shared slot-injection helper
+### Shared badge and slot helpers
 
-The main second-wave consolidation change is the new internal helper in
-`sphinx_autodoc_layout._slots`:
+This wave added a second shared producer layer:
+
+- `sphinx_autodoc_badges.BadgeSpec`
+- `build_badge_from_spec()` / `build_badge_group_from_specs()`
+
+Together with the existing shared slot helper in `sphinx_autodoc_layout._slots`
+this removed the remaining duplicated badge DOM and slot-injection logic from
+the package-owned producers.
+
+The shared slot helper still owns:
 
 - shared viewcode/source-link extraction
 - shared slot append order
 - shared idempotence guard on `desc_signature`
 
-This removed the remaining duplicated slot-injection logic from:
-
-- `sphinx_autodoc_api_style`
-- `sphinx_autodoc_pytest_fixtures`
-- `sphinx_autodoc_sphinx`
-- `sphinx_autodoc_docutils`
-
 The layout transform itself is still the only compositor.
+
+### Shared body schema
+
+This alignment wave also added a shared body vocabulary in
+`sphinx_autodoc_layout._sections`:
+
+- `ApiFactRow`
+- `build_api_facts_section()`
+- `build_api_table_section()`
+
+Those builders are now the common way to express metadata, facts, and options
+across `confval`, `rst:*`, fixtures, and shared-card FastMCP entries.
 
 ### Profile-driven desc composition
 
@@ -183,6 +202,8 @@ This pass widened structural coverage without paying for extra full builds.
 ### Moved to lighter harnesses
 
 - shared slot-injection behavior now has direct unit coverage
+- shared badge-spec rendering now has direct unit coverage
+- shared fact/body section preservation now has direct layout transform coverage
 - FastMCP desc-prototype feasibility now has doctree/transform coverage instead
   of a shipping integration scenario
 - large non-Python header cases now snapshot at the doctree level:
@@ -212,8 +233,8 @@ prototype coverage landed.
 
 | Command | Result | What it shows |
 | --- | --- | --- |
-| `/usr/bin/time -p uv run pytest -s --durations=100 --durations-min=0.02` | `825 passed, 3 skipped in 24.06s`, wall `24.08s` | Current conservative baseline with slow-test evidence |
-| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-wave2` | `825 passed, 3 skipped in 4.42s`, wall `5.63s` | Same coverage with runner tempdir overhead mostly removed |
+| `/usr/bin/time -p uv run pytest -q` | `842 passed, 3 skipped in 31.92s`, wall `32.22s` | Current conservative baseline after the shared body-schema alignment landed |
+| `/usr/bin/time -p uv run pytest -q -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-wave3` | `842 passed, 3 skipped in 3.64s`, wall `4.64s` | Same coverage with runner tempdir overhead mostly removed |
 
 ### Expanded autodoc slice
 
@@ -228,9 +249,9 @@ This slice is:
 
 | Command | Result | What it shows |
 | --- | --- | --- |
-| `/usr/bin/time -p uv run pytest -s --durations=80 --durations-min=0.02 tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp` | `266 passed, 3 skipped in 20.51s`, wall `21.63s` | Honest cost of the expanded autodoc surface in raw mode |
-| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-autodoc-wave2 tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp` | `266 passed, 3 skipped in 2.73s`, wall `4.05s` | Same slice with runner overhead mostly removed |
-| `uv run python -m cProfile -o /tmp/gp_sphinx_wave2_autodoc.prof -m pytest -s tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp` | `266 passed, 3 skipped in 34.97s` | Profile source for the expanded autodoc slice |
+| `/usr/bin/time -p uv run pytest -q tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp` | `268 passed, 3 skipped in 25.17s`, wall `25.75s` | Honest cost of the expanded autodoc surface in raw mode |
+| `/usr/bin/time -p uv run pytest -q -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-autodoc-wave3 tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp` | `268 passed, 3 skipped in 2.00s`, wall `2.89s` | Same slice with runner overhead mostly removed |
+| `uv run python -m cProfile -o /tmp/gp_sphinx_wave3_autodoc.prof -m pytest -q tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp` | `268 passed, 3 skipped in 27.51s` | Profile source for the expanded autodoc slice |
 
 ## Long-running tests and causes
 
@@ -238,16 +259,16 @@ The slow tail is still dominated by honest builder-backed scenarios.
 
 | Test | Measured runtime | Cause | Verdict |
 | --- | --- | --- | --- |
-| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `3.66s setup` | Real HTML build for the final emitted Python layout contract | Keep |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `3.25s setup` | Real multi-page HTML build with cross-document links | Keep |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `2.74s setup` | Real HTML build for badge markup, genindex, and inventory output | Keep |
-| `tests/ext/autodoc_docutils/test_autodoc_docutils_integration.py::test_autodoc_docutils_entries_use_shared_layout` | `2.15s setup` | Real `rst:*` HTML build with nested directive options | Keep |
-| `tests/ext/fastmcp/test_fastmcp_integration.py::test_fastmcp_tool_cards_use_shared_layout` | `1.67s setup` | Real FastMCP HTML build with section refs and shared-card wrappers | Keep |
-| `tests/ext/autodoc_sphinx/test_autodoc_sphinx_integration.py::test_autodoc_sphinx_confvals_use_shared_layout` | `1.58s setup` | Real `confval` HTML build | Keep |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_myst_smoke` | `0.54s setup` | Shared MyST dummy-builder scenario | Already cached; acceptable |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_warning_and_manual_option_snapshot` | `0.53s call` | Dense fixture metadata scenario | Acceptable |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_default_fixture_store_and_domain_contract` | `0.49s setup` | Distinct dummy-builder scenario | Acceptable |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_text_builder_does_not_crash` | `0.47s call` | Real text-builder smoke | Keep |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `3.93s setup` | Real multi-page HTML build with cross-document links | Keep |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `3.46s setup` | Real HTML build for badge markup, genindex, and inventory output | Keep |
+| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `3.23s setup` | Real HTML build for the final emitted Python layout contract | Keep |
+| `tests/test_docs_package_pages.py::test_fastmcp_docs_page_renders_live_demo_output` | `2.90s setup` | Focused docs build smoke for the FastMCP rendered demo page | Keep |
+| `tests/ext/autodoc_docutils/test_autodoc_docutils_integration.py::test_autodoc_docutils_entries_use_shared_layout` | `2.59s setup` | Real `rst:*` HTML build with nested directive options | Keep |
+| `tests/ext/fastmcp/test_fastmcp_integration.py::test_fastmcp_tool_cards_use_shared_layout` | `2.02s setup` | Real FastMCP HTML build with section refs and shared-card wrappers | Keep |
+| `tests/ext/autodoc_sphinx/test_autodoc_sphinx_integration.py::test_autodoc_sphinx_confvals_use_shared_layout` | `1.95s setup` | Real `confval` HTML build | Keep |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_myst_smoke` | `0.77s setup` | Shared MyST dummy-builder scenario | Already cached; acceptable |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixture_index_resolution_smoke` | `0.67s call` | Dense fixture index scenario with real reference resolution | Acceptable |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_text_builder_does_not_crash` | `0.56s call` | Real text-builder smoke | Keep |
 
 No currently slow test looks like a hidden infinite loop or a falsely passing
 timeout.
@@ -260,15 +281,14 @@ Top cumulative costs:
 
 | Function | Cumulative time |
 | --- | --- |
-| `tests._sphinx_scenarios.build_shared_sphinx_result` | `32.89s` |
-| `pathlib.Path.resolve` | `14.41s` |
-| `posixpath.realpath` | `14.40s` |
-| `_pytest.pathlib.cleanup_dead_symlinks` | `0.32s` |
-| `_pytest.tmpdir.mktemp` | `0.28s` |
+| `tests._sphinx_scenarios.build_shared_sphinx_result` | `25.75s` |
+| `pathlib.Path.resolve` | `10.81s` |
+| `posixpath.realpath` | `10.80s` |
+| `_pytest.pathlib.cleanup_dead_symlinks` | `0.28s` |
+| `_pytest.tmpdir.mktemp` | `0.18s` |
 | `sphinx_autodoc_layout._transforms.on_doctree_resolved` | `0.02s` |
 | `sphinx_autodoc_layout._transforms._rebuild_signature_layout` | `0.01s` |
 | `sphinx_autodoc_layout._slots.inject_signature_slots` | `0.00s` |
-| `sphinx_autodoc_layout._visitors.visit_api_component` | `0.00s` |
 
 ### What that means
 
