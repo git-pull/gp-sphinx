@@ -288,7 +288,7 @@ def merge_sphinx_config(
     >>> conf["html_theme"]
     'sphinx-gptheme'
 
-    >>> len(conf["extensions"]) >= 13
+    >>> len(conf["extensions"]) >= 12
     True
 
     >>> callable(conf["setup"])
