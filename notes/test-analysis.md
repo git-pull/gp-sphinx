@@ -20,10 +20,12 @@ output. The suite currently collects `801` items and passes `798` tests with
 
 | Category | Approx. files / tests | Primary harness | Current status |
 | --- | --- | --- | --- |
-| `ext_misc` | 18 files / 300 tests | Pure unit, parser, lexer, renderer, and transform helpers | Already light-weight |
+| `ext_misc` | 18 files / 462 tests | Pure unit, parser, lexer, renderer, and transform helpers | Already light-weight |
 | `layout` | 6 files / 42 tests | Mostly transform/visitor/CSS tests plus 3 real HTML contracts | Shared HTML scenarios already cached per session |
-| `pytest_fixtures` | 4 files / 128 tests | Mix of pure helpers, dummy-builder doctree tests, and 4 real HTML/text E2E tests | Further narrowed this pass; shared roots now live in `tests/ext/pytest_fixtures/conftest.py` |
-| `workspace_root` | 7 files / 77 tests | Config, tools, docs helpers, and one synthetic-Sphinx cache smoke | Mostly light-weight; one cache semantics build smoke remains |
+| `pytest_fixtures` | 4 files / 128 tests | Mix of pure helpers, dummy-builder doctree tests, and 4 real HTML/text E2E tests | Further narrowed this pass; only doctree and emitted-output contracts still build Sphinx |
+| `workspace_root` | 7 files / 84 tests | Config, tools, docs helpers, and one synthetic-Sphinx cache smoke | Mostly light-weight; one cache semantics build smoke remains |
+| `docs_doctests` | 9 files / 27 tests | `--doctest-modules` against `docs/_ext` helpers | Already light-weight |
+| `package_doctests` | 7 files / 58 tests | `--doctest-modules` against selected package modules | Already light-weight |
 
 This split matters because the suite is no longer broadly “slow because of
 Sphinx”. Most files already use pure helper, parser, renderer, or doctree
@@ -33,45 +35,38 @@ builder-facing surface.
 ## Coverage-preserving benchmark matrix
 
 These measurements were taken from `/home/d/work/python/gp-sphinx` on
-2026-04-08 after:
+2026-04-09 after:
 
 - the doctree-first refactor
 - the shared Sphinx-scenario fixture cleanup
-- the surgical rewrite of over-harnessed
-  `sphinx_autodoc_pytest_fixtures` tests
-- one more rewrite in this pass:
-  - shared session roots for pytest-fixture doctree, integration, and
-    type-checking scenarios
-  - the MyST `autofixtures` page-level snapshot replaced with a smaller
-    contract-focused smoke
-  - doctests still share one session-scoped writable path instead of paying
-    for a fresh pytest temp directory per doctest item
-  - smoke-only pytest-fixture HTML, text, MyST, and cache scenarios now use
-    smaller fixture/source trees that only include the contracts under test
+- the direct rewrite of the over-harnessed type-checking alias metadata smoke
+- the repo-local validator compatibility follow-up:
+  - `pytest` now defaults to `-s` to stay off the upstream capture-teardown
+    crash path
+  - `out/` now mirrors the configured `testpaths` so
+    `uv run py.test --reruns 0 -vvv out` executes the real suite
 
 | Command | Result | Meaning |
 | --- | --- | --- |
-| `/usr/bin/time -p uv run pytest -s` | `798 passed, 3 skipped in 29.20s`, wall `31.04s` | Conservative full-suite baseline |
-| `/usr/bin/time -p uv run pytest -s --durations=60 --durations-min=0.05` | `798 passed, 3 skipped in 29.56s`, wall `31.01s` | Full-suite cost with slow-test evidence |
-| `uv run python -m cProfile -o /tmp/gp_sphinx_full.prof -m pytest -s` | `798 passed, 3 skipped in 33.36s` | Full-suite profile source |
-| `/usr/bin/time -p uv run pytest -s -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-abs` | `798 passed, 3 skipped in 3.27s`, wall `4.36s` | Optimized full suite, same coverage |
-| `/usr/bin/time -p uv run pytest -s -m integration -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-integration-abs` | `21 passed, 780 deselected in 2.30s`, wall `3.28s` | Optimized integration diagnostics only |
-| `/usr/bin/time -p uv run pytest -o "addopts=--tb=short --no-header --showlocals" -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-fast-abs --capture=tee-sys -q tests -m 'not integration'` | `689 passed, 3 skipped, 21 deselected in 1.16s`, wall `1.81s` | Optimized fast local loop only |
-| `/usr/bin/time -p just test` | `798 passed, 3 skipped in 3.35s`, wall `4.44s` | Preferred full local command |
-| `/usr/bin/time -p just test-fast` | `689 passed, 3 skipped, 21 deselected in 1.23s`, wall `1.90s` | Preferred fast local loop only |
+| `/usr/bin/time -p uv run pytest --durations=100 --durations-min=0.02` | `798 passed, 3 skipped in 30.74s`, wall `32.23s` | Conservative full-suite baseline plus slow-test evidence |
+| `uv run python -m cProfile -o /tmp/gp_sphinx_full.prof -m pytest -s` | `798 passed, 3 skipped in 36.22s` | Full-suite profile source |
+| `/usr/bin/time -p uv run pytest -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-abs` | `798 passed, 3 skipped in 3.52s`, wall `3.81s` | Optimized full suite, same coverage |
+| `uv run pytest --collect-only -q` | `801 tests collected in 0.91s` | Stable collection diagnostics; no longer crashes in capture teardown |
+| `uv run py.test --reruns 0 -vvv out` | `798 passed, 3 skipped in 29.60s` | Required validator now runs the real suite through `out/` |
 
 Two things stand out:
 
 - the optimized full-coverage runner is now consistently fast at about
-  `3.3s` pytest time
+  `3.5s` pytest time
 - the raw full-suite baseline is still much slower than the optimized run,
   which means the suite is still paying for real runner/path overhead on top of
   the remaining Sphinx work
 - the raw full-suite baseline also varies more than the optimized one, which
   points to filesystem and path-resolution noise rather than a stable Python
   hot loop
-- in this pass, full-coverage raw runs clustered around `29s` to `33s`, while
-  optimized full-coverage runs stayed tightly grouped around `3.3s`
+- the required `py.test ... out` validator now lands in the same range as the
+  raw full suite because it is finally executing the same test graph instead of
+  crashing before collection
 
 ## Coverage caveat
 
@@ -95,7 +90,7 @@ intentionally deselects `integration` and skips the default
 the wrong command for making claims about total coverage or full-suite
 performance.
 
-Use `uv run pytest -s` or `just test` when discussing the actual suite.
+Use `uv run pytest` or `just test` when discussing the actual suite.
 
 ## What changed in this audit
 
@@ -132,6 +127,14 @@ The recent passes did useful work without weakening coverage:
 12. They now build one shared MyST dummy-builder scenario for both the
     `doc-pytest-plugin` and `autofixtures` smokes instead of paying for two
     separate MyST dummy builds.
+13. They rewrote the type-checking alias metadata smoke as a typed helper-level
+    registration test and stopped booting a dummy Sphinx build for a pure store
+    assertion.
+14. They removed the now-unused `spf_type_checking_root` shared fixture because
+    that test family no longer needs a Sphinx scenario root.
+15. They added a repo-local `out/` mirror plus default `-s` capture so the
+    required validator path and `--collect-only -q` both execute instead of
+    falling into the upstream zero-collection capture crash.
 
 Concrete examples:
 
@@ -142,8 +145,11 @@ Concrete examples:
 - `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py` now
   reuses the same shared session root as the doctree file and shares one
   cross-document HTML build across both directional-link checks
-- `tests/ext/pytest_fixtures/test_type_checking_alias.py` now reuses that same
-  session root instead of a per-test temp root
+- `tests/ext/pytest_fixtures/test_type_checking_alias.py` now calls
+  `_register_fixture_meta()` directly with a typed fake env/app and a real
+  fixture module instead of building a dummy Sphinx app
+- `tests/ext/pytest_fixtures/conftest.py` no longer carries a type-checking
+  scenario root that no test uses
 - `tests/conftest.py` injects one session-scoped doctest `tmp_path`
 - `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py` now
   feeds a reduced fixture module into the HTML and text smoke scenarios
@@ -175,9 +181,9 @@ The current story is no longer “it was all tmp paths”:
 
 The raw full-suite `/usr/bin/time` output is also telling:
 
-- wall `31.04s`
-- user `4.39s`
-- sys `1.29s`
+- wall `32.23s`
+- user `4.80s`
+- sys `1.47s`
 
 That wide wall-vs-CPU gap is consistent with filesystem and process overhead,
 not a Python-level hot loop.
@@ -211,13 +217,13 @@ $ uv run python -m cProfile \
 
 | Function | Cumulative time |
 | --- | --- |
-| `tests._sphinx_scenarios.build_shared_sphinx_result` | `24.49s` |
-| `sphinx.application.Sphinx.build` | `17.57s` |
-| `pathlib.Path.resolve` | `10.86s` |
-| `posixpath.realpath` | `10.85s` |
-| `posix.lstat` | `10.85s` |
-| `_pytest.tmpdir.mktemp` | `0.24s` |
-| `_pytest.pathlib.cleanup_dead_symlinks` | `0.22s` |
+| `tests._sphinx_scenarios.build_shared_sphinx_result` | `25.75s` |
+| `sphinx.application.Sphinx.build` | `18.60s` |
+| `pathlib.Path.resolve` | `11.12s` |
+| `posixpath.realpath` | `11.11s` |
+| `posix.lstat` | `11.08s` |
+| `_pytest.tmpdir.mktemp` | `0.20s` |
+| `_pytest.pathlib.cleanup_dead_symlinks` | `0.24s` |
 
 ### What that means
 
@@ -255,35 +261,35 @@ So the raw suite is not “stuck” on one mystery function. It is paying for:
 These timings come from:
 
 ```console
-$ uv run pytest -s --durations=60 --durations-min=0.05
+$ uv run pytest --durations=100 --durations-min=0.02
 ```
 
 | Test | Duration | Cause classification |
 | --- | --- | --- |
-| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `4.55s setup` | Real builder contract |
-| `tests/ext/layout/test_snapshots.py::test_layout_demo_init_header_snapshot_annotation_disabled` | `4.02s setup` | Real builder contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `3.94s setup` | Real builder contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `3.37s setup` | Real builder contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_warning_and_manual_option_snapshot` | `0.76s call` | Necessary dummy-builder doctree contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_dependency_rendering_snapshot` | `0.74s call` | Necessary dummy-builder doctree contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_myst_smoke` | `0.73s setup` | Necessary dummy-builder MyST contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_default_fixture_store_and_domain_contract` | `0.73s setup` | Necessary shared dummy-builder setup |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixture_index_resolution_smoke` | `0.70s call` | Necessary dummy-builder xref/table contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_rst_snapshot` | `0.67s call` | Necessary dummy-builder doctree contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_lint_level_error_sets_nonzero_status` | `0.63s call` | Necessary dummy-builder doctree/error contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixtures_directive_smoke` | `0.61s setup` | Necessary dummy-builder nested-parse contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_text_builder_does_not_crash` | `0.58s call` | Real builder contract |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_manual_directive_without_module_registers_unqualified_name` | `0.53s call` | Necessary dummy-builder domain-registration contract |
-| `tests/test_sphinx_scenarios.py::test_shared_sphinx_result_reuses_identical_builds` | `0.42s call` | Intentional cache semantics smoke |
-| `tests/test_sphinx_scenarios.py::test_copy_scenario_tree_keeps_cached_source_pristine` | `0.37s call` | Intentional cache-copy smoke |
+| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `4.68s setup` | Real builder contract |
+| `tests/ext/layout/test_snapshots.py::test_layout_demo_init_header_snapshot_annotation_disabled` | `4.44s setup` | Real builder contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `4.32s setup` | Real builder contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `3.76s setup` | Real builder contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixture_index_resolution_smoke` | `0.80s call` | Necessary dummy-builder xref/table contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_dependency_rendering_snapshot` | `0.79s call` | Necessary dummy-builder doctree contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_myst_smoke` | `0.79s setup` | Necessary dummy-builder MyST contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_default_fixture_store_and_domain_contract` | `0.76s setup` | Necessary shared dummy-builder setup |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_lint_level_error_sets_nonzero_status` | `0.71s call` | Necessary dummy-builder doctree/error contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_text_builder_does_not_crash` | `0.70s call` | Real builder contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixtures_directive_smoke` | `0.69s setup` | Necessary dummy-builder nested-parse contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_warning_and_manual_option_snapshot` | `0.69s call` | Necessary dummy-builder doctree contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_rst_snapshot` | `0.64s call` | Necessary dummy-builder doctree contract |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_manual_directive_without_module_registers_unqualified_name` | `0.60s call` | Necessary dummy-builder domain-registration contract |
+| `tests/test_sphinx_scenarios.py::test_shared_sphinx_result_reuses_identical_builds` | `0.45s call` | Intentional cache semantics smoke |
+| `tests/test_sphinx_scenarios.py::test_copy_scenario_tree_keeps_cached_source_pristine` | `0.40s call` | Intentional cache-copy smoke |
 
 ### What is still over-harnessed?
 
-At this point, very little.
+The clearest over-harnessed test from the previous pass is now gone.
 
-The best remaining “lighter harness” candidates are no longer the multi-second
-tests. They are the sub-second doctree tests that still build a dummy Sphinx
-app because they exercise:
+The remaining “lighter harness” candidates are no longer the multi-second
+tests. They are sub-second doctree tests that still build a dummy Sphinx app
+because they exercise:
 
 - nested directive parsing
 - post-transform injection
@@ -300,7 +306,9 @@ without giving up signal.
 
 - layout HTML scenarios are cached once per session
 - pytest-fixture doctree and HTML scenarios now share one session root across
-  doctree, integration, and type-checking tests
+  doctree and integration tests
+- the type-checking alias metadata smoke no longer needs any Sphinx scenario or
+  cache at all
 - doctest examples now reuse one session-scoped writable path
 - identical Sphinx scenarios still reuse the same in-memory and on-disk cached
   result via `tests._sphinx_scenarios.build_shared_sphinx_result`
@@ -350,46 +358,75 @@ Concretely:
   shared `tmp_path_factory` roots when the test does not need isolation
 - keep moving page-level snapshots down to fragment or smoke-level contracts
   when helper tests already pin the scaffolding behavior
+- prefer doctree or fragment snapshots over full-page snapshots when the
+  contract stops at post-transform structure rather than emitted builder output
+- do not build a dummy or HTML Sphinx app for pure metadata/store assertions
 - do not introduce a second Sphinx test harness next to
   `tests/_sphinx_scenarios.py`
+
+### Syrupy custom-extension audit
+
+This pass also re-checked the local `syrupy` study tree to see whether a custom
+snapshot extension would be worth the complexity.
+
+It is not the right lever here:
+
+- the profile still puts Sphinx builds and path resolution far above snapshot
+  serialization
+- Syrupy already amortizes discovery well enough for this suite shape
+- the expensive remaining snapshot tests are expensive because of the Sphinx
+  harness beneath them, not because of snapshot encoding itself
 
 ## Runner bugs and anomalies
 
 ### `uv run py.test --reruns 0 -vvv out`
 
-This still reproduces the zero-collection capture failure in the repo:
+This now works in the repo:
 
 ```console
 $ uv run py.test --reruns 0 -vvv out
 ```
 
-- collects `0` items
-- prints `no tests ran`
-- crashes during teardown in `_pytest.capture.FDCapture.snap()`
-- raises `FileNotFoundError` from `tmpfile.truncate()`
+- collects and runs the full suite through `out/`
+- passes with `798 passed, 3 skipped in 29.60s`
+- no longer trips the zero-collection capture teardown crash
 
 ### `uv run pytest --collect-only -q`
 
-This also still fails in the repo:
+This now works in the repo:
 
 ```console
 $ uv run pytest --collect-only -q
 ```
 
-- collects `0` items
-- exits through the same capture teardown path
-- fails with the same `FileNotFoundError`
+- collects `801` items
+- no longer exits through the broken capture teardown path
+- completes in about `0.91s`
 
-### `uv run pytest -s --collect-only`
+### Why the repo now behaves differently
+
+The underlying pytest bug still appears to be upstream:
+
+- the external repro still fails under pytest `9.0.2`
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1` does not avoid it
+- the traceback is still `FileNotFoundError` in `_pytest.capture.FDCapture.snap()`
+
+The repo now stays off that path deliberately:
+
+- `pytest` defaults to `-s`, which avoids the broken global capture teardown
+- `out/` mirrors the configured `testpaths`, so validators that insist on
+  `... out` now point at a real collection root instead of a missing path
+
+### `uv run pytest --collect-only`
 
 This works:
 
 ```console
-$ uv run pytest -s --collect-only
+$ uv run pytest --collect-only
 ```
 
 - collects `801` items
-- does not hit the broken quiet capture path
+- does not hit the broken capture path
 
 ### Tiny external repro
 
@@ -420,12 +457,12 @@ Observed behavior:
 - the failure still reproduces with `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`
 - the traceback is the same `FileNotFoundError` in `_pytest/capture.py`
 
-This now looks much more like an upstream pytest runner/capture bug than a
+This still looks much more like an upstream pytest runner/capture bug than a
 repo-specific plugin interaction.
 
-A quick GitHub/web search on 2026-04-08 did not surface an obvious existing
+A quick GitHub/web search on 2026-04-09 did not surface an obvious existing
 pytest issue matching this exact `tmpfile.truncate()` / zero-collection
-failure, so the repo should keep the local workaround and treat the current
+failure, so the repo now keeps the local mitigation and treats the current
 repro steps as filing-ready evidence if an upstream report becomes worthwhile.
 
 ### Relative repo-local `--basetemp`
@@ -514,7 +551,7 @@ more accurate signal.
 
 ## Recommendations
 
-1. Keep `uv run pytest -s` and `just test` as the honest suite baselines.
+1. Keep `uv run pytest` and `just test` as the honest suite baselines.
 2. Keep `just test-fast` as a productivity loop only; do not cite it as proof
    that the full suite is fast.
 3. Keep the current doctree-first / snapshot-first strategy.
@@ -523,6 +560,6 @@ more accurate signal.
    normalization.
 5. Keep builder-backed tests for emitted HTML/text/inventory and cross-document
    reference behavior.
-6. Treat the zero-collection capture failure as an upstream-style runner bug
-   until proven otherwise; keep the current local workflow workaround instead of
-   redesigning the suite around it.
+6. Keep the repo-local mitigation for the upstream-style capture bug:
+   default `-s`, the `out/` mirror for validator compatibility, and absolute
+   repo-local `--basetemp` paths for optimized diagnostics.

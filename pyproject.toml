@@ -167,7 +167,7 @@ convention = "numpy"
 "tests/ext/docutils/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 
 [tool.pytest.ini_options]
-addopts = "--tb=short --no-header --showlocals --doctest-modules"
+addopts = "-s --tb=short --no-header --showlocals --doctest-modules"
 doctest_optionflags = "ELLIPSIS NORMALIZE_WHITESPACE"
 markers = [
   "integration: sphinx integration tests (require full sphinx build)",

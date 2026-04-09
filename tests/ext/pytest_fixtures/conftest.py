@@ -36,11 +36,3 @@ def spf_html_root(
 ) -> pathlib.Path:
     """Return the shared HTML integration scenario root."""
     return _ensure_named_dir(spf_suite_root, "html")
-
-
-@pytest.fixture(scope="session")
-def spf_type_checking_root(
-    spf_suite_root: pathlib.Path,
-) -> pathlib.Path:
-    """Return the shared type-checking scenario root."""
-    return _ensure_named_dir(spf_suite_root, "type-checking")
