@@ -1,37 +1,3 @@
-/* sphinx_autodoc_docutils — badge color tokens.
- *
- * Defines --sab-* custom properties for sadoc-badge--type, which is used
- * for directive, role, and option entry badges (filled violet).
- * Uses the same light/dark pattern as api_style.css.
+/* sphinx_autodoc_docutils — badge colours moved to sab_palettes.css.
+ * This file is intentionally empty; retained as a placeholder.
  */
-
-/* ── Light mode tokens ──────────────────────────────── */
-:root {
-  /* directive / role / option type badge — violet */
-  --sadoc-type-bg:     #f5f3ff;
-  --sadoc-type-fg:     #6d28d9;
-  --sadoc-type-border: #8b5cf6;
-}
-
-/* ── Dark mode (OS-level) ───────────────────────────── */
-@media (prefers-color-scheme: dark) {
-  body:not([data-theme="light"]) {
-    --sadoc-type-bg:     #2e1065;
-    --sadoc-type-fg:     #c4b5fd;
-    --sadoc-type-border: #a78bfa;
-  }
-}
-
-/* ── Dark mode (explicit theme toggle) ─────────────── */
-body[data-theme="dark"] {
-  --sadoc-type-bg:     #2e1065;
-  --sadoc-type-fg:     #c4b5fd;
-  --sadoc-type-border: #a78bfa;
-}
-
-/* ── Badge color class ──────────────────────────────── */
-.sadoc-badge--type {
-  --sab-bg:     var(--sadoc-type-bg);
-  --sab-fg:     var(--sadoc-type-fg);
-  --sab-border: var(--sadoc-type-border);
-}

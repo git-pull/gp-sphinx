@@ -76,7 +76,7 @@ class FastMCPToolDirective(SphinxDirective):
         header = build_api_component("api-header")
         layout = build_api_component("api-layout")
         left = build_api_component("api-layout-left")
-        right = build_api_component("api-layout-right", classes=("gas-toolbar",))
+        right = build_api_component("api-layout-right", classes=("sab-toolbar",))
         signature = build_api_component(
             "api-signature",
             classes=(_CSS.TOOL_SIGNATURE,),

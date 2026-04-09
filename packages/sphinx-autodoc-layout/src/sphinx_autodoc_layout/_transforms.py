@@ -803,7 +803,7 @@ def _rebuild_signature_layout(
     fallback_source_ref: nodes.reference | None = None
 
     for child in original:
-        if isinstance(child, nodes.inline) and "gas-toolbar" in child.get(
+        if isinstance(child, nodes.inline) and "sab-toolbar" in child.get(
             "classes", []
         ):
             toolbar = child
@@ -829,7 +829,7 @@ def _rebuild_signature_layout(
     layout = build_api_component("api-layout")
     left = build_api_component("api-layout-left")
     signature = build_api_component("api-signature")
-    right = build_api_component("api-layout-right", classes=("gas-toolbar",))
+    right = build_api_component("api-layout-right", classes=("sab-toolbar",))
     parameter_types = _extract_parameter_types(desc_node)
     folded = False
 

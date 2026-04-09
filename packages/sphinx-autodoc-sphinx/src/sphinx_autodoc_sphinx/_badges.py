@@ -5,14 +5,12 @@ from __future__ import annotations
 import typing as t
 
 from docutils import nodes
-from sphinx_autodoc_badges import BadgeSpec, build_badge_group_from_specs
+from sphinx_autodoc_badges import SAB, BadgeSpec, build_badge_group_from_specs
 
 if t.TYPE_CHECKING:
     from sphinx_autodoc_sphinx._directives import SphinxConfigValue
 
-_GROUP_CLASS = "sas-badge-group"
-_TYPE_CLASS = "sas-badge--type"
-_REBUILD_CLASS = "sas-badge--rebuild"
+_GROUP_CLASS = SAB.BADGE_GROUP
 
 
 def build_config_badge_group(value: SphinxConfigValue) -> nodes.inline:
@@ -34,12 +32,12 @@ def build_config_badge_group(value: SphinxConfigValue) -> nodes.inline:
             BadgeSpec(
                 "config",
                 tooltip="Sphinx config value",
-                classes=(_TYPE_CLASS,),
+                classes=(SAB.TYPE_CONFIG,),
             ),
             BadgeSpec(
                 rebuild,
                 tooltip=f"Rebuild mode: {rebuild}",
-                classes=(_REBUILD_CLASS,),
+                classes=(SAB.MOD_REBUILD,),
                 fill="outline",
             ),
         ],

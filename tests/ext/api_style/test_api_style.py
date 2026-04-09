@@ -36,20 +36,20 @@ from sphinx_autodoc_api_style._transforms import (
 
 
 def test_css_prefix() -> None:
-    """CSS prefix is 'gas'."""
-    assert _CSS.PREFIX == "gas"
+    """CSS prefix is now 'sab' (unified palette)."""
+    assert _CSS.PREFIX == "sab"
 
 
 def test_css_badge_group_class() -> None:
-    """Badge group class includes prefix."""
-    assert _CSS.BADGE_GROUP == "gas-badge-group"
+    """Badge group class uses the shared sab- prefix."""
+    assert _CSS.BADGE_GROUP == "sab-badge-group"
 
 
 def test_css_obj_type_class() -> None:
-    """obj_type() returns prefixed type-specific class."""
-    assert _CSS.obj_type("function") == "gas-type-function"
-    assert _CSS.obj_type("class") == "gas-type-class"
-    assert _CSS.obj_type("method") == "gas-type-method"
+    """obj_type() returns sab-type-* class (unified palette)."""
+    assert _CSS.obj_type("function") == "sab-type-function"
+    assert _CSS.obj_type("class") == "sab-type-class"
+    assert _CSS.obj_type("method") == "sab-type-method"
 
 
 # ---------------------------------------------------------------------------

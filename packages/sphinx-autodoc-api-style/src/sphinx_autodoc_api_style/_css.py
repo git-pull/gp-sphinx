@@ -1,63 +1,66 @@
 """CSS class name constants for sphinx_autodoc_api_style.
 
-Centralises every ``gas-*`` class name so the extension and stylesheet
-stay in sync.  Tests import this class to assert on rendered output.
+Re-exports ``SAB`` constants that replaced the old ``gas-*`` prefix.
+Retained for backward compatibility; prefer importing from
+``sphinx_autodoc_badges`` directly.
 
 Examples
 --------
 >>> _CSS.BADGE_GROUP
-'gas-badge-group'
+'sab-badge-group'
 
 >>> _CSS.BADGE
-'gas-badge'
+'sab-badge'
 
 >>> _CSS.obj_type("function")
-'gas-type-function'
+'sab-type-function'
+
+>>> _CSS.TOOLBAR
+'sab-toolbar'
 """
 
 from __future__ import annotations
 
+from sphinx_autodoc_badges import SAB
+
 
 class _CSS:
-    """CSS class name constants for API style badges.
-
-    All class names use the ``gas-`` prefix (gp-sphinx api style) to avoid
-    collision with ``spf-`` (sphinx pytest fixtures) or other extensions.
+    """CSS class name constants (re-exports from SAB).
 
     Examples
     --------
     >>> _CSS.PREFIX
-    'gas'
+    'sab'
 
     >>> _CSS.BADGE_GROUP
-    'gas-badge-group'
+    'sab-badge-group'
 
     >>> _CSS.TOOLBAR
-    'gas-toolbar'
+    'sab-toolbar'
 
     >>> _CSS.obj_type("class")
-    'gas-type-class'
+    'sab-type-class'
     """
 
-    PREFIX = "gas"
-    BADGE_GROUP = f"{PREFIX}-badge-group"
-    BADGE = f"{PREFIX}-badge"
+    PREFIX = SAB.PREFIX
+    BADGE_GROUP = SAB.BADGE_GROUP
+    BADGE = SAB.BADGE
 
-    BADGE_TYPE = f"{PREFIX}-badge--type"
-    BADGE_MOD = f"{PREFIX}-badge--mod"
+    BADGE_TYPE = SAB.BADGE_TYPE
+    BADGE_MOD = SAB.BADGE_MOD
 
-    MOD_ASYNC = f"{PREFIX}-mod-async"
-    MOD_CLASSMETHOD = f"{PREFIX}-mod-classmethod"
-    MOD_STATICMETHOD = f"{PREFIX}-mod-staticmethod"
-    MOD_ABSTRACT = f"{PREFIX}-mod-abstract"
-    MOD_FINAL = f"{PREFIX}-mod-final"
-    DEPRECATED = f"{PREFIX}-deprecated"
+    MOD_ASYNC = SAB.MOD_ASYNC
+    MOD_CLASSMETHOD = SAB.MOD_CLASSMETHOD
+    MOD_STATICMETHOD = SAB.MOD_STATICMETHOD
+    MOD_ABSTRACT = SAB.MOD_ABSTRACT
+    MOD_FINAL = SAB.MOD_FINAL
+    DEPRECATED = SAB.STATE_DEPRECATED
 
-    TOOLBAR = f"{PREFIX}-toolbar"
+    TOOLBAR = SAB.TOOLBAR
 
     @staticmethod
     def obj_type(name: str) -> str:
-        """Return the type-specific CSS class, e.g. ``gas-type-function``.
+        """Return the type-specific CSS class, e.g. ``sab-type-function``.
 
         Parameters
         ----------
@@ -72,9 +75,9 @@ class _CSS:
         Examples
         --------
         >>> _CSS.obj_type("method")
-        'gas-type-method'
+        'sab-type-method'
 
         >>> _CSS.obj_type("exception")
-        'gas-type-exception'
+        'sab-type-exception'
         """
-        return f"{_CSS.PREFIX}-type-{name}"
+        return SAB.obj_type(name)

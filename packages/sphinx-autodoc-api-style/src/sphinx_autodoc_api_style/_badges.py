@@ -6,16 +6,14 @@ Uses shared ``BadgeNode`` from ``sphinx_autodoc_badges`` instead of
 Examples
 --------
 >>> group = build_badge_group("function", modifiers=frozenset())
->>> "gas-badge-group" in group["classes"]
+>>> "sab-badge-group" in group["classes"]
 True
 """
 
 from __future__ import annotations
 
 from docutils import nodes
-from sphinx_autodoc_badges import BadgeNode, build_badge
-
-from sphinx_autodoc_api_style._css import _CSS
+from sphinx_autodoc_badges import SAB, build_badge
 
 _TYPE_TOOLTIPS: dict[str, str] = {
     "function": "Python function",
@@ -55,12 +53,12 @@ _MOD_TOOLTIPS: dict[str, str] = {
 }
 
 _MOD_CSS: dict[str, str] = {
-    "async": _CSS.MOD_ASYNC,
-    "classmethod": _CSS.MOD_CLASSMETHOD,
-    "staticmethod": _CSS.MOD_STATICMETHOD,
-    "abstract": _CSS.MOD_ABSTRACT,
-    "final": _CSS.MOD_FINAL,
-    "deprecated": _CSS.DEPRECATED,
+    "async": SAB.MOD_ASYNC,
+    "classmethod": SAB.MOD_CLASSMETHOD,
+    "staticmethod": SAB.MOD_STATICMETHOD,
+    "abstract": SAB.MOD_ABSTRACT,
+    "final": SAB.MOD_FINAL,
+    "deprecated": SAB.STATE_DEPRECATED,
 }
 
 _MOD_LABELS: dict[str, str] = {
@@ -113,10 +111,11 @@ def build_badge_group(
     Examples
     --------
     >>> group = build_badge_group("function", modifiers=frozenset())
-    >>> "gas-badge-group" in group["classes"]
+    >>> "sab-badge-group" in group["classes"]
     True
 
     >>> group = build_badge_group("method", modifiers=frozenset({"async"}))
+    >>> from sphinx_autodoc_badges import BadgeNode
     >>> len(list(group.findall(BadgeNode))) == 2
     True
 
@@ -124,22 +123,24 @@ def build_badge_group(
     ...     "class",
     ...     modifiers=frozenset({"abstract", "deprecated"}),
     ... )
+    >>> from sphinx_autodoc_badges import BadgeNode
     >>> labels = [n.astext() for n in group.findall(BadgeNode)]
     >>> "deprecated" in labels and "abstract" in labels and "class" in labels
     True
     """
-    group = nodes.inline(classes=[_CSS.BADGE_GROUP])
-    badges: list[BadgeNode] = []
+    group = nodes.inline(classes=[SAB.BADGE_GROUP])
+    badges = []
 
     for mod in _MOD_ORDER:
         if mod not in modifiers:
             continue
+        fill = "filled" if mod == "deprecated" else "outline"
         badges.append(
             build_badge(
                 _MOD_LABELS[mod],
                 tooltip=_MOD_TOOLTIPS[mod],
-                classes=[_CSS.BADGE, _CSS.BADGE_MOD, _MOD_CSS[mod]],
-                fill="outline",
+                classes=[SAB.BADGE, SAB.BADGE_MOD, _MOD_CSS[mod]],
+                fill=fill,
             ),
         )
 
@@ -150,7 +151,7 @@ def build_badge_group(
             build_badge(
                 label,
                 tooltip=tooltip,
-                classes=[_CSS.BADGE, _CSS.BADGE_TYPE, _CSS.obj_type(objtype)],
+                classes=[SAB.BADGE, SAB.BADGE_TYPE, SAB.obj_type(objtype)],
             ),
         )
 

@@ -9,7 +9,7 @@
                       <desc_name classes="sig-name descname" xml:space="preserve">
                           demo_option
                   <api_permalink classes="headerlink api-link" href="#confval.demo_option" title="Link to this definition">
-              <api_component classes="api-layout-right gas-toolbar" name="api-layout-right" tag="div">
+              <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
                   <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
                       <inline classes="sas-badge-group">
                           <inline classes="sas-badge--type">
@@ -253,7 +253,7 @@
                           <api_inline_component classes="gal-sig-collapse" html_attrs="{'aria-controls': 'list-sessions--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gal-sig-collapse" tag="button">
                               [collapse]
                   <api_permalink classes="headerlink api-link" href="#list-sessions" title="Link to this definition">
-              <api_component classes="api-layout-right gas-toolbar" name="api-layout-right" tag="div">
+              <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
                   <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
                       <inline classes="sab-badge-group smf-badge-group">
                           <BadgeNode badge_icon="🔍" badge_tooltip="Read-only — does not modify external state" classes="sab-badge smf-badge--safety smf-safety-readonly" tabindex="0">
@@ -822,7 +822,7 @@
                           <api_inline_component classes="gal-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gal-sig-collapse" tag="button">
                               [collapse]
                   <api_permalink classes="headerlink api-link" href="#demo.Session.__init__" title="Link to this definition">
-              <api_component classes="api-layout-right gas-toolbar" name="api-layout-right" tag="div">
+              <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
                   <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
                       <inline classes="gas-badge-group">
                           <inline classes="gas-badge">
@@ -1099,7 +1099,7 @@
                           <api_inline_component classes="gal-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gal-sig-collapse" tag="button">
                               [collapse]
                   <api_permalink classes="headerlink api-link" href="#demo.Session.__init__" title="Link to this definition">
-              <api_component classes="api-layout-right gas-toolbar" name="api-layout-right" tag="div">
+              <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
                   <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
                       <inline classes="gas-badge-group">
                           <inline classes="gas-badge">
@@ -1236,7 +1236,7 @@
                       <desc_name classes="sig-name descname" xml:space="preserve">
                           demo-directive
                   <api_permalink classes="headerlink api-link" href="#directive-demo-directive" title="Link to this definition">
-              <api_component classes="api-layout-right gas-toolbar" name="api-layout-right" tag="div">
+              <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
                   <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
                       <inline classes="sadoc-badge-group">
                           <inline classes="sadoc-badge--type">
@@ -1254,7 +1254,7 @@
                                   <desc_name classes="sig-name descname" xml:space="preserve">
                                       demo-opt
                               <api_permalink classes="headerlink api-link" href="#directive-option-demo-opt" title="Link to this definition">
-                          <api_component classes="api-layout-right gas-toolbar" name="api-layout-right" tag="div">
+                          <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
                               <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
                                   <inline classes="sadoc-badge-group">
                                       <inline classes="sadoc-badge--type">

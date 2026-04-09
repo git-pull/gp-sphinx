@@ -103,7 +103,7 @@ def test_build_tool_desc_prototype_reflows_under_shared_layout() -> None:
     assert isinstance(body, addnodes.desc_content)
 
     assert _find_component(left, "api-signature")
-    assert "gas-toolbar" in right.get("classes", [])
+    assert "sab-toolbar" in right.get("classes", [])
     assert any(
         isinstance(node, gal_sig_fold) for node in signature.findall(gal_sig_fold)
     )
