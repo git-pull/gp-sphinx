@@ -25,6 +25,10 @@ sys.path.insert(
 )
 sys.path.insert(
     0,
+    str(project_root / "packages" / "sphinx-autodoc-fastmcp" / "src"),
+)
+sys.path.insert(
+    0,
     str(project_root / "packages" / "sphinx-autodoc-layout" / "src"),
 )
 sys.path.insert(0, str(cwd / "_ext"))  # docs demo modules
@@ -51,10 +55,14 @@ conf = merge_sphinx_config(
         "sphinx_autodoc_api_style",
         "sphinx_autodoc_pytest_fixtures",
         "sphinx_autodoc_docutils",
+        "sphinx_autodoc_fastmcp",
         "sphinx_autodoc_sphinx",
         "sphinx_argparse_neo.exemplar",
         "sphinx_autodoc_layout",
     ],
+    fastmcp_tool_modules=["fastmcp_demo_tools"],
+    fastmcp_area_map={"fastmcp_demo_tools": "packages/sphinx-autodoc-fastmcp"},
+    fastmcp_collector_mode="introspect",
     gal_enabled=True,
     gal_collapsed_threshold=10,
     pytest_fixture_lint_level="none",

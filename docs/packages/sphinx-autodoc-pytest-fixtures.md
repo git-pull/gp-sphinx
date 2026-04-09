@@ -36,6 +36,23 @@ pytest_external_fixture_links = {
 .. autorole-index:: sphinx_autodoc_pytest_fixtures
 ```
 
+## Working usage examples
+
+Render one fixture index:
+
+````myst
+```{autofixture-index} my_project.pytest_plugin
+```
+````
+
+Render a standard pytest plugin page:
+
+````myst
+:::{doc-pytest-plugin} my_project.pytest_plugin
+:package: my-project
+:::
+````
+
 ## Live demos
 
 ```{py:module} spf_demo_fixtures

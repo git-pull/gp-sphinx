@@ -2,7 +2,7 @@
 
 # sphinx-autodoc-layout
 
-{bdg-warning-line}`Alpha`
+{bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-layout>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-autodoc-layout/>`
 
 Wraps contiguous `desc_content` runs into semantic `gal_region` nodes
 and rebuilds Python autodoc entries into stable `api-*` components.
@@ -10,7 +10,44 @@ Large field-list parameter sections still use native `<details>/<summary>`,
 while inline signature expansion uses a custom disclosure that reveals
 Sphinx's native multiline parameter-list rendering.
 
-## Live demo
+```console
+$ pip install sphinx-autodoc-layout
+```
+
+## Downstream `conf.py`
+
+```python
+conf = merge_sphinx_config(
+    project="my-project",
+    version="1.0.0",
+    copyright="2026, Your Name",
+    source_repository="https://github.com/your-org/my-project/",
+    extra_extensions=["sphinx_autodoc_layout"],
+    gal_enabled=True,
+    gal_collapsed_threshold=10,
+)
+```
+
+## Working usage examples
+
+Render one compact function:
+
+````myst
+```{eval-rst}
+.. autofunction:: my_project.api.compact_function
+```
+````
+
+Render a class with grouped content regions and member entries:
+
+````myst
+```{eval-rst}
+.. autoclass:: my_project.api.LayoutDemo
+   :members:
+```
+````
+
+## Live demos
 
 ```{py:module} gal_demo_api
 ```
