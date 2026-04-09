@@ -42,6 +42,30 @@ _HTML_SMOKE_FIXTURE_SOURCE = textwrap.dedent(
     """,
 )
 
+_HTML_SMOKE_INDEX_RST = textwrap.dedent(
+    """\
+    Test fixtures
+    =============
+
+    .. py:module:: fixture_mod
+
+    .. autofixture:: fixture_mod.my_server
+
+    .. autofixture:: fixture_mod.TestServer
+    """,
+)
+
+_TEXT_SMOKE_INDEX_RST = textwrap.dedent(
+    """\
+    Test fixtures
+    =============
+
+    .. py:module:: fixture_mod
+
+    .. autofixture:: fixture_mod.my_server
+    """,
+)
+
 _CROSS_DOC_FIXTURE_SOURCE = textwrap.dedent(
     """\
     from __future__ import annotations
@@ -70,6 +94,7 @@ def default_html_result(spf_html_root: pathlib.Path) -> SharedSphinxResult:
         spf_html_root / "default-html",
         buildername="html",
         fixture_source=_HTML_SMOKE_FIXTURE_SOURCE,
+        index_rst=_HTML_SMOKE_INDEX_RST,
         confoverrides={"pytest_fixture_lint_level": "none"},
     )
 
@@ -196,6 +221,7 @@ def test_text_builder_does_not_crash(
         spf_html_root / "text-builder",
         buildername="text",
         fixture_source=_HTML_SMOKE_FIXTURE_SOURCE,
+        index_rst=_TEXT_SMOKE_INDEX_RST,
         confoverrides={"pytest_fixture_lint_level": "none"},
     )
 
