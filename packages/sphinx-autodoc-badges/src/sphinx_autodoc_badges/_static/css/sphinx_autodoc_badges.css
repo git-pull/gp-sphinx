@@ -38,26 +38,14 @@
   box-sizing: border-box;
 }
 
-/* ── Size variants (explicit; compose with outline / icon-only / color classes) ─ */
-.sab-badge.sab-xs {
-  font-size: 0.58em;
-  padding: 0.2em 0.42em;
-}
-
-.sab-badge.sab-sm {
-  font-size: 0.65em;
-  padding: 0.28em 0.52em;
-}
-
-.sab-badge.sab-lg {
-  font-size: 0.88em;
-  padding: 0.4em 0.75em;
-}
-
-.sab-badge.sab-xl {
-  font-size: 1.05em;
-  padding: 0.45em 0.85em;
-}
+/* ── Size variants (rem-absolute; compose with outline / icon-only / color classes) ─
+ * Both standard and dense use rem so they scale proportionally (standard:dense ≈ 1.12x).
+ * Steps mirror Tailwind's text-xs→text-sm cadence (~10–18% per tier). */
+.sab-badge.sab-xxs { font-size: 0.55rem; padding: 0.10rem 0.28rem; }
+.sab-badge.sab-xs  { font-size: 0.62rem; padding: 0.15rem 0.35rem; }
+.sab-badge.sab-sm  { font-size: 0.69rem; padding: 0.22rem 0.48rem; }
+.sab-badge.sab-lg  { font-size: 0.85rem; padding: 0.40rem 0.75rem; }
+.sab-badge.sab-xl  { font-size: 1.00rem; padding: 0.45rem 0.85rem; }
 
 /* ── Dense variant: compact metrics + always-visible 1px border ── */
 /* Recreates the pre-unification gas-badge / spf-badge look.
@@ -78,12 +66,17 @@
 }
 
 /* ── Dense + size compositions ──────────────────────────── */
-/* Three-class specificity (0,3,0) beats both sab-dense and sab-size (0,2,0). */
-.sab-badge.sab-dense.sab-xs { font-size: 0.54rem; padding: 0.09rem 0.36rem; }
-.sab-badge.sab-dense.sab-sm { font-size: 0.61rem; padding: 0.12rem 0.44rem; }
+/* Three-class specificity (0,3,0) beats both sab-dense and sab-size (0,2,0).
+ * Font-sizes match the standard pill exactly so the same size name produces
+ * the same visual tier; only padding is kept "dense" (tighter than standard).
+ * The dense default (0.67rem) is intentionally compact — size variants
+ * override it upward to align with standard when explicitly requested. */
+.sab-badge.sab-dense.sab-xxs { font-size: 0.55rem; padding: 0.10rem 0.34rem; }
+.sab-badge.sab-dense.sab-xs  { font-size: 0.62rem; padding: 0.12rem 0.38rem; }
+.sab-badge.sab-dense.sab-sm  { font-size: 0.69rem; padding: 0.14rem 0.44rem; }
 /* default dense: 0.67rem — no extra rule needed */
-.sab-badge.sab-dense.sab-lg { font-size: 0.75rem; padding: 0.19rem 0.58rem; }
-.sab-badge.sab-dense.sab-xl { font-size: 0.86rem; padding: 0.23rem 0.66rem; }
+.sab-badge.sab-dense.sab-lg  { font-size: 0.85rem; padding: 0.20rem 0.58rem; }
+.sab-badge.sab-dense.sab-xl  { font-size: 1.00rem; padding: 0.24rem 0.68rem; }
 
 .sab-badge:not(.sab-outline):not(.sab-inline-icon) {
   box-shadow: var(--sab-buff-shadow);

@@ -12,8 +12,8 @@ Examples
 >>> "sab-badge" in node["classes"]
 True
 
->>> n2 = BadgeNode("sm", badge_size="sm")
->>> "sab-sm" in n2["classes"]
+>>> n2 = BadgeNode("xxs", badge_size="xxs")
+>>> "sab-xxs" in n2["classes"]
 True
 """
 
@@ -23,7 +23,7 @@ import typing as t
 
 from docutils import nodes
 
-_BADGE_SIZES = frozenset({"xs", "sm", "lg", "xl"})
+_BADGE_SIZES = frozenset({"xxs", "xs", "sm", "lg", "xl"})
 
 
 class BadgeNode(nodes.inline):
