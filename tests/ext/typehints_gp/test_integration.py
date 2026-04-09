@@ -74,7 +74,6 @@ _CONF_PY = textwrap.dedent(
 
     extensions = [
         "sphinx.ext.autodoc",
-        "sphinx.ext.napoleon",
         "sphinx_typehints_gp",
     ]
 

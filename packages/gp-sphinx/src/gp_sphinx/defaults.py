@@ -80,7 +80,6 @@ DEFAULT_EXTENSIONS: list[str] = [
     "sphinx.ext.autodoc",
     "sphinx_fonts",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.napoleon",
     "sphinx_typehints_gp",
     "sphinx.ext.todo",
     "sphinx_inline_tabs",
@@ -96,7 +95,7 @@ DEFAULT_EXTENSIONS: list[str] = [
 Examples
 --------
 >>> len(DEFAULT_EXTENSIONS)
-13
+12
 
 >>> DEFAULT_EXTENSIONS[0]
 'sphinx.ext.autodoc'
