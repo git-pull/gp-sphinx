@@ -14,11 +14,11 @@ to see all fail first; then implement the feature in _metadata.py.
 
 from __future__ import annotations
 
-import pathlib
 import sys
 import textwrap
 import types
 import typing as t
+from dataclasses import dataclass, field
 
 import pytest
 
@@ -28,13 +28,7 @@ from sphinx_autodoc_pytest_fixtures._metadata import (
     _is_type_checking_guard,
     _qualify_forward_ref,
 )
-from tests._sphinx_scenarios import (
-    SCENARIO_SRCDIR_TOKEN,
-    ScenarioFile,
-    SphinxScenario,
-    build_shared_sphinx_result,
-    derive_sphinx_scenario_cache_root,
-)
+from sphinx_autodoc_pytest_fixtures._store import _get_spf_store
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -59,6 +53,37 @@ def _register_fake_module(
     sys.modules[name] = mod
     monkeypatch.setattr(spf_meta.inspect, "getsource", lambda _: source)
     return mod
+
+
+def _register_exec_module(
+    name: str, source: str, monkeypatch: pytest.MonkeyPatch
+) -> types.ModuleType:
+    """Register a fake module, execute *source*, and patch getsource."""
+    mod = types.ModuleType(name)
+    mod.__file__ = f"<{name}>"
+    sys.modules[name] = mod
+    exec(compile(source, mod.__file__, "exec"), mod.__dict__)
+    monkeypatch.setattr(spf_meta.inspect, "getsource", lambda _: source)
+    return mod
+
+
+@dataclass
+class _FakeConfig:
+    pytest_fixture_hidden_dependencies: frozenset[str] = field(
+        default_factory=frozenset
+    )
+    pytest_fixture_builtin_links: dict[str, str] = field(default_factory=dict)
+    pytest_external_fixture_links: dict[str, str] = field(default_factory=dict)
+
+
+@dataclass
+class _FakeApp:
+    config: _FakeConfig = field(default_factory=_FakeConfig)
+
+
+@dataclass
+class _FakeEnv:
+    domaindata: dict[str, t.Any] = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
@@ -521,18 +546,17 @@ def test_get_return_annotation_class_import_alias_resolves_to_class(
 
 
 # ---------------------------------------------------------------------------
-# Integration: meta.return_display is qualified for TYPE_CHECKING alias return
+# Registration: meta.return_display is qualified for TYPE_CHECKING alias return
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.integration
 def test_type_checking_alias_qualified_in_fixture_meta(
-    spf_type_checking_root: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Fixture with TYPE_CHECKING TypeAlias return gets qualified return_display.
+    """Registration qualifies TYPE_CHECKING aliases without a Sphinx build.
 
     The fixture module defines ``MyAlias: TypeAlias = MyBase | None`` inside
-    ``if t.TYPE_CHECKING:``.  After the build, ``meta.return_display`` should
+    ``if t.TYPE_CHECKING:``. After registration, ``meta.return_display`` should
     be ``"fixture_mod.MyAlias"`` (qualified) rather than bare ``"MyAlias"``.
     """
 
@@ -553,45 +577,31 @@ def test_type_checking_alias_qualified_in_fixture_meta(
             \"\"\"Return a MyAlias instance.\"\"\"
             return MyBase()
     """)
+    module_name = "fixture_mod"
+    module = _register_exec_module(module_name, fixture_source, monkeypatch)
+    fixture_obj = module.__dict__["my_fixture"]
+    env = _FakeEnv()
+    app = _FakeApp()
 
-    index_rst = textwrap.dedent("""\
-        Test
-        ====
+    try:
+        meta = spf_meta._register_fixture_meta(
+            env=env,
+            docname="index",
+            obj=fixture_obj,
+            public_name="my_fixture",
+            source_name="my_fixture",
+            modname=module_name,
+            kind="",
+            app=app,
+        )
+    finally:
+        sys.modules.pop(module_name, None)
 
-        .. py:module:: fixture_mod
-
-        .. autofixture-index:: fixture_mod
-
-        .. autofixture:: fixture_mod.my_fixture
-    """)
-
-    conf_py = textwrap.dedent(f"""\
-        import sys
-        sys.path.insert(0, "{SCENARIO_SRCDIR_TOKEN}")
-        extensions = ["sphinx.ext.autodoc", "sphinx_autodoc_pytest_fixtures"]
-        master_doc = "index"
-        exclude_patterns = ["_build"]
-        html_theme = "alabaster"
-    """)
-    scenario = SphinxScenario(
-        buildername="dummy",
-        files=(
-            ScenarioFile("fixture_mod.py", fixture_source),
-            ScenarioFile("conf.py", conf_py, substitute_srcdir=True),
-            ScenarioFile("index.rst", index_rst),
-        ),
-        confoverrides={"pytest_fixture_lint_level": "none"},
-    )
-    result = build_shared_sphinx_result(
-        derive_sphinx_scenario_cache_root(spf_type_checking_root),
-        scenario,
-        purge_modules=("fixture_mod",),
-    )
-
-    store = result.app.env.domaindata.get("sphinx_autodoc_pytest_fixtures", {})
-    meta = store["fixtures"].get("fixture_mod.my_fixture")
-    assert meta is not None, "fixture_mod.my_fixture not found in store"
+    store = _get_spf_store(env)
     assert meta.return_display == "fixture_mod.MyAlias", (
         f"Expected 'fixture_mod.MyAlias' but got {meta.return_display!r}. "
         "TYPE_CHECKING TypeAlias was not qualified — check _qualify_forward_ref."
     )
+    assert meta.return_xref_target == "fixture_mod.MyAlias"
+    assert store["fixtures"]["fixture_mod.my_fixture"] == meta
+    assert store["public_to_canon"]["my_fixture"] == "fixture_mod.my_fixture"
