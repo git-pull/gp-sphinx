@@ -13,6 +13,12 @@ if t.TYPE_CHECKING:
 def visit_badge_html(self: HTML5Translator, node: BadgeNode) -> None:
     """Emit opening ``<span>`` with ARIA, tooltip, icon data attribute.
 
+    The icon (``data-icon`` → ``::before`` CSS) sits on the outer badge span so
+    that ``text-decoration`` on the inner ``.sab-badge-label`` span cannot reach
+    it.  This prevents emoji icons from inheriting any underline decoration,
+    since CSS ``text-decoration`` cannot be suppressed on pseudo-elements from a
+    parent element — but it can be scoped to a sibling span.
+
     Uses ``self.starttag()`` which auto-emits ``class="..."`` from
     ``node["classes"]``.
 
@@ -39,8 +45,11 @@ def visit_badge_html(self: HTML5Translator, node: BadgeNode) -> None:
         attrs["tabindex"] = tabindex
 
     self.body.append(self.starttag(node, "span", "", role="note", **attrs))  # type: ignore[arg-type]
+    # Inner label span: text-decoration is scoped here so icons (::before on
+    # the outer span) are never underlined.
+    self.body.append('<span class="sab-badge-label">')
 
 
 def depart_badge_html(self: HTML5Translator, node: BadgeNode) -> None:
-    """Close the ``<span>``."""
-    self.body.append("</span>")
+    """Close the inner label ``<span>`` then the outer badge ``<span>``."""
+    self.body.append("</span></span>")

@@ -63,8 +63,14 @@
   border-radius: 0.22rem;
   border: 1px solid;
   border-color: var(--sab-border, currentColor);
-  text-decoration: underline dotted;
   box-shadow: none;
+}
+
+/* text-decoration is on the inner label span so the ::before icon is never
+ * decorated — CSS text-decoration propagates through ::before pseudo-elements
+ * on the same element but does not cross into a sibling span. */
+.sab-badge.sab-dense .sab-badge-label {
+  text-decoration: underline dotted;
 }
 
 /* ── Dense + size compositions ──────────────────────────── */
@@ -106,13 +112,14 @@ body[data-theme="dark"] .sab-badge:not(.sab-outline):not(.sab-inline-icon) {
 }
 
 /* ── Underline control modifiers ────────────────────────── */
-/* Compose with sab-dense to override its default underline-dotted,
- * or add to any badge for an explicit underline style.
- * Declared after sab-dense so same-specificity (0,2,0) rules win via order. */
-.sab-badge.sab-no-underline     { text-decoration: none; }
-.sab-badge.sab-underline        { text-decoration: underline; }
-.sab-badge.sab-underline-dotted { text-decoration: underline dotted; }
-.sab-badge.sab-underline-solid  { text-decoration: underline solid; }
+/* Target .sab-badge-label (the inner text span) so text-decoration is scoped
+ * to the text content only — icons on the outer badge ::before are never
+ * decorated.  This also prevents the "button underline" effect where
+ * text-decoration on an inline-flex outer span draws below the whole badge. */
+.sab-badge.sab-no-underline     .sab-badge-label { text-decoration: none; }
+.sab-badge.sab-underline        .sab-badge-label { text-decoration: underline; }
+.sab-badge.sab-underline-dotted .sab-badge-label { text-decoration: underline dotted; }
+.sab-badge.sab-underline-solid  .sab-badge-label { text-decoration: underline solid; }
 
 /* ── Icon system (::before / ::after pseudo-elements) ───── */
 /* Icons can sit at ::before (default, or right via flex reversal) or ::after
