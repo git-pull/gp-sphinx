@@ -16,6 +16,7 @@
 
 /* ── API shell ──────────────────────────────────────── */
 dl.api-container > dt.api-header {
+  display: flex;
   align-items: center;
 }
 
@@ -44,6 +45,7 @@ dl.api-container > dt.api-header .api-layout-right {
 }
 
 dl.api-container > dt.api-header[data-signature-expanded="true"] {
+  display: flex;
   align-items: flex-start;
 }
 
@@ -78,6 +80,12 @@ dl.api-container > dt.api-header .api-signature {
 dl.api-container > dt.api-header .api-link {
   margin-left: 0.1rem;
   flex: 0 0 auto;
+  visibility: hidden;
+}
+
+dl.api-container > dt.api-header:hover .api-link,
+dl.api-container > dt.api-header .api-link:focus-visible {
+  visibility: visible;
 }
 
 .api-signature-toggle {
