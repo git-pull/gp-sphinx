@@ -14,7 +14,7 @@ independently.
 $ pip install sphinx-autodoc-badges
 ```
 
-## How it works
+## Working usage examples
 
 `setup()` registers the extension with Sphinx:
 
@@ -35,7 +35,29 @@ def setup(app: Sphinx) -> dict[str, Any]:
 builders (text, LaTeX, man) fall back to `visit_inline` via Sphinx's
 MRO-based dispatch — no special handling needed.
 
-## Live badge demos
+Build a grouped toolbar in your own directive or transform:
+
+```python
+from sphinx_autodoc_badges import build_badge, build_badge_group, build_toolbar
+
+badge_group = build_badge_group(
+    [
+        build_badge(
+            "readonly",
+            tooltip="Read-only operation",
+            classes=["smf-safety-readonly"],
+        ),
+        build_badge(
+            "tool",
+            tooltip="FastMCP tool entry",
+            classes=["smf-type-tool"],
+        ),
+    ],
+)
+toolbar = build_toolbar(badge_group, classes=["my-extension-toolbar"])
+```
+
+## Live demos
 
 Every variant rendered by the real `build_badge` / `build_badge_group` /
 `build_toolbar` API:

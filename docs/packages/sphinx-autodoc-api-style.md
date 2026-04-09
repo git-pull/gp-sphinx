@@ -25,7 +25,7 @@ $ pip install sphinx-autodoc-api-style
 - **Accessibility**: keyboard-focusable badges with tooltip popups
 - **Non-invasive**: hooks into `doctree-resolved` without replacing directives
 
-## How it works
+## Downstream `conf.py`
 
 Add `sphinx_autodoc_api_style` to your Sphinx extensions. With `gp-sphinx`,
 use `extra_extensions`:
@@ -46,10 +46,29 @@ Or without `merge_sphinx_config`:
 extensions = ["sphinx_autodoc_api_style"]
 ```
 
+## Working usage examples
+
 No special directives are needed — existing `.. autofunction::`,
 `.. autoclass::`, `.. automodule::` directives automatically receive badges.
 
-## Live demo
+Render one function:
+
+````myst
+```{eval-rst}
+.. autofunction:: my_project.api.demo_function
+```
+````
+
+Render one class and its members:
+
+````myst
+```{eval-rst}
+.. autoclass:: my_project.api.DemoClass
+   :members:
+```
+````
+
+## Live demos
 
 ```{py:module} gas_demo_api
 ```
