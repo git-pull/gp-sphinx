@@ -12,7 +12,7 @@ import typing as t
 from docutils import nodes
 from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
-from sphinx_autodoc_layout._nodes import build_api_slot
+from sphinx_autodoc_layout._slots import inject_signature_slots
 
 from sphinx_autodoc_api_style._badges import build_badge_group
 
@@ -152,34 +152,17 @@ def _inject_badges(sig_node: addnodes.desc_signature, objtype: str) -> None:
     >>> sig.get("gas_badges_injected")
     True
     """
-    if sig_node.get("gas_badges_injected"):
-        return
-    sig_node["gas_badges_injected"] = True
-
     mods = _detect_modifiers(sig_node)
     parent = sig_node.parent
     if isinstance(parent, addnodes.desc) and _detect_deprecated(parent):
         mods = mods | {"deprecated"}
 
     badge_group = build_badge_group(objtype, modifiers=mods)
-
-    viewcode_ref = None
-    for child in list(sig_node.children):
-        if (
-            isinstance(child, nodes.reference)
-            and child.get("internal") is not True
-            and any(
-                "viewcode-link" in getattr(gc, "get", lambda *_: "")("classes", [])
-                for gc in child.children
-                if isinstance(gc, nodes.inline)
-            )
-        ):
-            viewcode_ref = child
-            sig_node.remove(child)
-
-    sig_node += build_api_slot("badges", badge_group)
-    if viewcode_ref is not None:
-        sig_node += build_api_slot("source-link", viewcode_ref)
+    inject_signature_slots(
+        sig_node,
+        marker_attr="gas_badges_injected",
+        badge_node=badge_group,
+    )
 
 
 def _prune_empty_desc_content(desc_node: addnodes.desc) -> None:

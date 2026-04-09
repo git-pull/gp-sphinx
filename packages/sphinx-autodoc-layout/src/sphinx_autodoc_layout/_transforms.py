@@ -33,6 +33,7 @@ from sphinx_autodoc_layout._nodes import (
     gal_region,
     gal_sig_fold,
 )
+from sphinx_autodoc_layout._slots import is_viewcode_ref
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -115,6 +116,12 @@ _PROFILE_REGISTRY: dict[tuple[str, str], DescLayoutProfile] = {
         domain="rst",
         objtype="directive:option",
         slug="rst-directive-option",
+    ),
+    ("mcp", "tool"): DescLayoutProfile(
+        domain="mcp",
+        objtype="tool",
+        slug="mcp-tool",
+        allow_signature_fold=True,
     ),
 }
 
@@ -403,15 +410,6 @@ def _fold_large_field_regions(
             section.insert(idx, fold)
 
 
-def _is_viewcode_ref(node: nodes.Node) -> bool:
-    """Return ``True`` when *node* is a viewcode/source reference."""
-    return isinstance(node, nodes.reference) and any(
-        "viewcode-link" in getattr(child, "get", lambda *_: [])("classes", [])
-        for child in node.children
-        if isinstance(child, nodes.inline)
-    )
-
-
 def _parameter_key(text: str) -> str:
     """Return a normalized parameter key for preview and type lookup.
 
@@ -687,7 +685,7 @@ def _extract_toolbar_content(
         return badge_children, source_ref
 
     for child in list(toolbar.children):
-        if source_ref is None and _is_viewcode_ref(child):
+        if source_ref is None and is_viewcode_ref(child):
             assert isinstance(child, nodes.reference)
             source_ref = child
             continue
@@ -751,7 +749,7 @@ def _rebuild_signature_layout(
             "classes", []
         ):
             continue
-        if fallback_source_ref is None and _is_viewcode_ref(child):
+        if fallback_source_ref is None and is_viewcode_ref(child):
             assert isinstance(child, nodes.reference)
             fallback_source_ref = child
             continue

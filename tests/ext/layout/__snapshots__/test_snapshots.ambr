@@ -18,6 +18,10 @@
                                
                           <inline classes="sas-badge--rebuild">
                               env
+                          <inline>
+                               
+                          <inline classes="sas-badge--status">
+                              stable
       <desc_content classes="api-content">
           <api_component classes="api-parameters gal-region gal-region--fields" name="api-parameters" tag="div">
               <field_list>
@@ -27,9 +31,530 @@
                       <field_body>
                           <paragraph>
                               bool
+                  <field>
+                      <field_name>
+                          Default
+                      <field_body>
+                          <literal_block xml:space="preserve">
+                              {'accent': 'teal', 'surface': 'paper', 'ink': 'charcoal'}
           <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
               <paragraph>
                   A demo option.
+  '''
+# ---
+# name: test_fastmcp_tool_prototype_snapshot[fastmcp_tool_prototype]
+  '''
+  <desc classes="api-container api-profile--mcp-tool" domain="mcp" objtype="tool">
+      <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="list-sessions" smf_prototype_slots="True">
+          <api_component classes="api-layout" name="api-layout" tag="div">
+              <api_component classes="api-layout-left" name="api-layout-left" tag="div">
+                  <api_component classes="api-signature" name="api-signature" tag="div">
+                      <desc_name classes="sig-name descname" xml:space="preserve">
+                          list_sessions
+                      <gal_sig_fold first_param="server" panel_id="list-sessions--signature-expanded" param_count="12">
+                      <api_component classes="api-signature-expanded gal-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'list-sessions--signature-expanded'}" name="api-signature-expanded" tag="div">
+                          <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      server
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      limit
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      int
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      20
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      cursor
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      project
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      status
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      'open' | 'closed'
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      'open'
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      owner
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      region
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      updated_after
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      updated_before
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      include_archived
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      bool
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      False
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      expand
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      request_id
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                          <api_inline_component classes="gal-sig-collapse" html_attrs="{'aria-controls': 'list-sessions--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gal-sig-collapse" tag="button">
+                              [collapse]
+                  <api_permalink classes="headerlink api-link" href="#list-sessions" title="Link to this definition">
+              <api_component classes="api-layout-right gas-toolbar" name="api-layout-right" tag="div">
+                  <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
+                      <inline classes="sab-badge-group smf-badge-group">
+                          <BadgeNode badge_icon="🔍" badge_tooltip="Read-only — does not modify external state" classes="sab-badge smf-badge--safety smf-safety-readonly" tabindex="0">
+                              readonly
+                           
+                          <BadgeNode badge_tooltip="MCP tool" classes="sab-badge smf-badge--type smf-type-tool" tabindex="0">
+                              tool
+      <desc_content classes="api-content">
+          <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
+              <paragraph>
+                  List sessions for one server.
+          <api_component classes="api-parameters gal-region gal-region--fields" name="api-parameters" tag="div">
+              <field_list>
+                  <field>
+                      <field_name>
+                          Parameters
+                      <field_body>
+                          <table>
+                              <tgroup cols="5">
+                                  <colspec colwidth="15">
+                                  <colspec colwidth="15">
+                                  <colspec colwidth="8">
+                                  <colspec colwidth="10">
+                                  <colspec colwidth="52">
+                                  <thead>
+                                      <row>
+                                          <entry>
+                                              <paragraph>
+                                                  Parameter
+                                          <entry>
+                                              <paragraph>
+                                                  Type
+                                          <entry>
+                                              <paragraph>
+                                                  Required
+                                          <entry>
+                                              <paragraph>
+                                                  Default
+                                          <entry>
+                                              <paragraph>
+                                                  Description
+                                  <tbody>
+                                      <row>
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      server
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      str
+                                          <entry>
+                                              <paragraph>
+                                                  yes
+                                          <entry>
+                                              <paragraph>
+                                                  —
+                                          <entry>
+                                              <paragraph>
+                                                  Server name.
+                                      <row>
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      limit
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      int
+                                          <entry>
+                                              <paragraph>
+                                                  no
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      20
+                                          <entry>
+                                              <paragraph>
+                                                  Maximum number to return.
+                                      <row>
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      cursor
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      str
+                                                  , 
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  no
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  Pagination cursor.
+                                      <row>
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      project
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      str
+                                                  , 
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  no
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  Project filter.
+                                      <row>
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      status
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      enum
+                                          <entry>
+                                              <paragraph>
+                                                  no
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      'open'
+                                          <entry>
+                                              <paragraph>
+                                                  Status filter.
+                                      <row>
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      owner
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      str
+                                                  , 
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  no
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  Owner filter.
+                                      <row>
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      region
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      str
+                                                  , 
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  no
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  Region filter.
+                                      <row>
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      updated_after
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      str
+                                                  , 
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  no
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  Updated filter.
+                                      <row>
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      updated_before
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      str
+                                                  , 
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  no
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  Updated filter.
+                                      <row>
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      include_archived
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      bool
+                                          <entry>
+                                              <paragraph>
+                                                  no
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      False
+                                          <entry>
+                                              <paragraph>
+                                                  Archive filter.
+                                      <row>
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      expand
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      str
+                                                  , 
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  no
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  Expansion options.
+                                      <row>
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      request_id
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      str
+                                                  , 
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  no
+                                          <entry>
+                                              <paragraph>
+                                                  <literal>
+                                                      None
+                                          <entry>
+                                              <paragraph>
+                                                  Request id.
+                  <field>
+                      <field_name>
+                          Returns
+                      <field_body>
+                          <paragraph>
+                              <pending_xref refdomain="py" reftarget="str" reftype="class">
+                                  <literal>
+                                      str
   '''
 # ---
 # name: test_large_signature_snapshot_annotated[large_signature_annotated]
@@ -738,5 +1263,7 @@
                       <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
                           <paragraph>
                               A demo option.
+                          <literal_block xml:space="preserve">
+                              option = directives.class_option
   '''
 # ---
