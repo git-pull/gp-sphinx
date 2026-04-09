@@ -52,7 +52,11 @@
 /* ── Dense variant: compact metrics + always-visible 1px border ── */
 /* Recreates the pre-unification gas-badge / spf-badge look.
  * Fixed 0.67 rem font, tight padding, squarer corners, always-visible
- * 1 px solid border, and the distinctive underline-dotted treatment.
+ * 1 px solid border, and the distinctive dotted-bottom-border treatment.
+ * The dotted "underline" is implemented via border-bottom-style rather than
+ * text-decoration so that icon pseudo-elements (::before / ::after) are
+ * never decorated — text-decoration cannot be suppressed on pseudo-elements
+ * in inline-block formatting contexts across browsers.
  * Compose with colour classes (sab-type-*, sab-scope-*, …) just like
  * the default variant.  The border colour comes from the same
  * --sab-border custom property that palette classes already set. */
@@ -62,8 +66,8 @@
   padding: 0.16rem 0.5rem;
   border-radius: 0.22rem;
   border: 1px solid;
+  border-bottom-style: dotted;
   border-color: var(--sab-border, currentColor);
-  text-decoration: underline dotted;
   box-shadow: none;
 }
 
@@ -106,13 +110,14 @@ body[data-theme="dark"] .sab-badge:not(.sab-outline):not(.sab-inline-icon) {
 }
 
 /* ── Underline control modifiers ────────────────────────── */
-/* Compose with sab-dense to override its default underline-dotted,
- * or add to any badge for an explicit underline style.
+/* Controls both text-decoration (standard badges) and border-bottom-style
+ * (dense badges, which use border-bottom instead of text-decoration so that
+ * icon pseudo-elements are never decorated).
  * Declared after sab-dense so same-specificity (0,2,0) rules win via order. */
-.sab-badge.sab-no-underline     { text-decoration: none; }
-.sab-badge.sab-underline        { text-decoration: underline; }
-.sab-badge.sab-underline-dotted { text-decoration: underline dotted; }
-.sab-badge.sab-underline-solid  { text-decoration: underline solid; }
+.sab-badge.sab-no-underline     { text-decoration: none;           border-bottom-style: solid; }
+.sab-badge.sab-underline        { text-decoration: underline;      border-bottom-style: solid; }
+.sab-badge.sab-underline-dotted { text-decoration: underline dotted; border-bottom-style: dotted; }
+.sab-badge.sab-underline-solid  { text-decoration: underline solid; border-bottom-style: solid; }
 
 /* ── Icon system (::before / ::after pseudo-elements) ───── */
 /* Icons can sit at ::before (default, or right via flex reversal) or ::after
