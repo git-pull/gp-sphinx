@@ -9,10 +9,10 @@ Two baselines remain non-negotiable:
 - timing claims below are based on the full suite or on an explicitly named
   slice, not on a reduced-signal fast lane
 
-Current suite status on 2026-04-09:
+Current suite status on 2026-04-09 (after wave 4):
 
-- `845` tests collected
-- `842` passed
+- `865` tests collected
+- `862` passed
 - `3` skipped
 
 ## Test categories and harnesses
@@ -420,6 +420,64 @@ matcher, that should be revisited later. It is not the current runtime lever.
 - if the FastMCP desc path becomes a real migration candidate, add a dedicated
   tool domain rather than overloading the current section-label approach
 
+## Wave 4: visual containerization and producer-level tests
+
+This wave landed immediately after wave 3.
+
+### CSS gap diagnosis
+
+All managed `rst:directive`, `rst:role`, and `std:confval` entries had the correct
+`api-container` HTML structure after wave 3, but were missing the visual card box (border,
+border-radius, header background). The root cause: `api_style.css` only styles
+`dl.py:not(.fixture)`, and Furo's base styles only card `dl.py.*` entries. Non-Python domain
+entries (`dl.rst.*`, `dl.std.*`) do not inherit Furo's card treatment.
+
+### Fix applied
+
+Added `dl.api-container:not(.py)` card rules to
+`packages/sphinx-autodoc-layout/src/sphinx_autodoc_layout/_static/css/layout.css`. This
+mirrors the `dl.py:not(.fixture)` block from `api_style.css` (same border, border-radius,
+box-shadow, header background, hover state) and applies to all non-Python managed entries.
+Nested entries (e.g. `rst:directive:option` inside `rst:directive`) get the lighter
+transparent-background treatment.
+
+CSS variables used — all confirmed available from Furo's base stylesheet:
+
+- `--color-background-border`
+- `--color-background-secondary`
+- `--color-api-background-hover` (Furo alias for `--color-background-hover`)
+
+The CSS lives in `layout.css` (not `api_style.css`) so downstream projects using
+`sphinx-autodoc-docutils` without `sphinx-autodoc-api-style` still get card styling.
+
+### Docs rebuild note
+
+A full rebuild with `sphinx -E -a` was required AND the doctrees cache (`docs/_build/.doctrees/`)
+had to be cleared separately before the wave 3 `_normalize_directive_nodes` code was picked up.
+The `-E` flag resets the environment but may not invalidate all doctrees when only Python
+extension code (not RST source) changed.
+
+### Producer-level tests added
+
+Two new test files cover the producer behavior independently from the layout transform:
+
+- `tests/ext/autodoc_docutils/test_doctree.py` — 9 unit tests for `_normalize_directive_nodes`
+  and `_normalize_role_nodes`; verifies api-facts labels, fact values, option extraction, and
+  cross-domain isolation without a Sphinx app
+- `tests/ext/autodoc_sphinx/test_doctree.py` — 11 unit tests for `_config_fact_rows`;
+  verifies Type/Default/Registered-by rows, complex-default literal_block path, and
+  simple-default paragraph path
+
+### Wave 4 benchmark
+
+The suite grew from 842 to 862 passing tests (+20 new producer tests):
+
+| Command | Result |
+| --- | --- |
+| `uv run pytest -q` | `862 passed, 3 skipped in 3.75s` wall |
+
+No regression in runtime. All 20 new tests are pure unit tests without Sphinx app overhead.
+
 ## Validation checklist
 
 The required validation commands for this change are:
@@ -437,5 +495,9 @@ $ uv run mypy
 ```
 
 ```console
-$ uv run py.test --reruns 0 -vvv out
+$ uv run pytest -q
+```
+
+```console
+$ uv run python -m sphinx -E -a -b html docs docs/_build
 ```

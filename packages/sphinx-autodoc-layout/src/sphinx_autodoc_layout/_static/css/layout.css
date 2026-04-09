@@ -201,6 +201,53 @@ details.gal-fold > summary.gal-fold-summary:hover {
   color: var(--color-link);
 }
 
+/* ── Card box for non-Python managed entries ────────── */
+/* rst:directive, rst:role, std:confval — Furo only cards dl.py.*  */
+dl.api-container:not(.py) {
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.5rem;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  overflow: visible;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+dl.api-container:not(.py) > dt.api-header {
+  background: var(--color-background-secondary);
+  border-bottom: 1px solid var(--color-background-border);
+  padding: 0.5rem 0.75rem 0.5rem 1rem;
+  text-indent: 0;
+  margin: 0;
+  min-height: 2rem;
+  transition: background 100ms ease-out;
+}
+
+dl.api-container:not(.py) > dt.api-header:hover {
+  background: var(--color-api-background-hover);
+}
+
+dl.api-container:not(.py) > dd.api-content {
+  padding: 0.75rem 1rem;
+  margin-left: 0 !important;
+}
+
+/* Nested entries — lighter (e.g. rst:directive:option inside rst:directive) */
+dl.api-container:not(.py) .api-footer dl.api-container:not(.py) {
+  border-color: var(--color-background-border);
+  box-shadow: none;
+  margin-bottom: 1rem;
+}
+
+dl.api-container:not(.py) .api-footer dl.api-container:not(.py) > dt.api-header {
+  background: transparent;
+  border-bottom-color: var(--color-background-border);
+  padding-left: 0.75rem;
+}
+
+dl.api-container:not(.py) .api-footer dl.api-container:not(.py) > dt.api-header:hover {
+  background: var(--color-api-background-hover);
+}
+
 /* ── Mobile adjustments ─────────────────────────────── */
 @media (max-width: 52rem) {
   dl.api-container > dt.api-header > .api-layout {
