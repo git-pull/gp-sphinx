@@ -189,6 +189,34 @@ def test_desc_layout_profile_matches_rst_directive_option_entries() -> None:
     )
 
 
+def test_desc_layout_profile_matches_mcp_tool_entries() -> None:
+    profile = _desc_layout_profile(
+        _make_desc(domain="mcp", objtype="tool"),
+    )
+    assert profile == DescLayoutProfile(
+        domain="mcp",
+        objtype="tool",
+        slug="mcp-tool",
+        allow_signature_fold=True,
+    )
+
+
+def test_desc_layout_profile_covers_all_managed_non_python_entries() -> None:
+    expected = {
+        ("py", "fixture"): "api-profile--py-fixture",
+        ("std", "confval"): "api-profile--confval",
+        ("rst", "directive"): "api-profile--rst-directive",
+        ("rst", "role"): "api-profile--rst-role",
+        ("rst", "directive:option"): "api-profile--rst-directive-option",
+        ("mcp", "tool"): "api-profile--mcp-tool",
+    }
+
+    for (domain, objtype), class_name in expected.items():
+        profile = _desc_layout_profile(_make_desc(domain=domain, objtype=objtype))
+        assert profile is not None
+        assert profile.class_name == class_name
+
+
 def test_wrap_groups_narrative() -> None:
     desc = _make_desc(
         nodes.paragraph("", "hello"),

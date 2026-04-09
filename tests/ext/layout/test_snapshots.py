@@ -10,6 +10,9 @@ from sphinx import addnodes
 from sphinx_autodoc_layout._nodes import build_api_slot
 from sphinx_autodoc_layout._transforms import on_doctree_resolved
 
+from sphinx_autodoc_fastmcp._models import ParamInfo, ToolInfo
+from sphinx_autodoc_fastmcp._prototype import build_tool_desc_prototype
+
 
 def _make_parameter(
     name: str,
@@ -139,6 +142,8 @@ def _make_confval_desc() -> addnodes.desc:
     badge_group += nodes.inline("", "config", classes=["sas-badge--type"])
     badge_group += nodes.inline("", " ")
     badge_group += nodes.inline("", "env", classes=["sas-badge--rebuild"])
+    badge_group += nodes.inline("", " ")
+    badge_group += nodes.inline("", "stable", classes=["sas-badge--status"])
     signature += build_api_slot("badges", badge_group)
     desc += signature
     content = addnodes.desc_content()
@@ -148,6 +153,17 @@ def _make_confval_desc() -> addnodes.desc:
             "",
             nodes.field_name("", "Type"),
             nodes.field_body("", nodes.paragraph("", "bool")),
+        ),
+        nodes.field(
+            "",
+            nodes.field_name("", "Default"),
+            nodes.field_body(
+                "",
+                nodes.literal_block(
+                    "",
+                    "{'accent': 'teal', 'surface': 'paper', 'ink': 'charcoal'}",
+                ),
+            ),
         ),
     )
     content += nodes.paragraph("", "A demo option.")
@@ -174,10 +190,76 @@ def _make_rst_directive_desc() -> addnodes.desc:
     option_desc += option_sig
     option_content = addnodes.desc_content()
     option_content += nodes.paragraph("", "A demo option.")
+    option_content += nodes.literal_block("", "option = directives.class_option")
     option_desc += option_content
     content += option_desc
     desc += content
     return desc
+
+
+def _make_fastmcp_tool_desc() -> addnodes.desc:
+    return build_tool_desc_prototype(
+        ToolInfo(
+            name="list_sessions",
+            title="List Sessions",
+            module_name="demo_tools",
+            area="api",
+            safety="readonly",
+            annotations={},
+            func=lambda server: "[]",
+            docstring=(
+                "List sessions for one server.\n\n"
+                "Use the filters to narrow the returned sessions."
+            ),
+            params=[
+                ParamInfo("server", "str", True, "", "Server name."),
+                ParamInfo("limit", "int", False, "20", "Maximum number to return."),
+                ParamInfo("cursor", "str | None", False, "None", "Pagination cursor."),
+                ParamInfo("project", "str | None", False, "None", "Project filter."),
+                ParamInfo(
+                    "status", "'open' | 'closed'", False, "'open'", "Status filter."
+                ),
+                ParamInfo("owner", "str | None", False, "None", "Owner filter."),
+                ParamInfo("region", "str | None", False, "None", "Region filter."),
+                ParamInfo(
+                    "updated_after",
+                    "str | None",
+                    False,
+                    "None",
+                    "Updated filter.",
+                ),
+                ParamInfo(
+                    "updated_before",
+                    "str | None",
+                    False,
+                    "None",
+                    "Updated filter.",
+                ),
+                ParamInfo(
+                    "include_archived",
+                    "bool",
+                    False,
+                    "False",
+                    "Archive filter.",
+                ),
+                ParamInfo(
+                    "expand",
+                    "str | None",
+                    False,
+                    "None",
+                    "Expansion options.",
+                ),
+                ParamInfo(
+                    "request_id",
+                    "str | None",
+                    False,
+                    "None",
+                    "Request id.",
+                ),
+            ],
+            return_annotation="str",
+        )
+    )
 
 
 def test_large_signature_snapshot_annotated(
@@ -213,4 +295,14 @@ def test_rst_directive_snapshot(snapshot_doctree: t.Callable[..., None]) -> None
     snapshot_doctree(
         _rendered_managed_desc(_make_rst_directive_desc(), show_annotations=True),
         name="rst_directive_entry",
+    )
+
+
+def test_fastmcp_tool_prototype_snapshot(
+    snapshot_doctree: t.Callable[..., None],
+) -> None:
+    """FastMCP prototype entries snapshot the shared desc layout contract."""
+    snapshot_doctree(
+        _rendered_managed_desc(_make_fastmcp_tool_desc(), show_annotations=True),
+        name="fastmcp_tool_prototype",
     )

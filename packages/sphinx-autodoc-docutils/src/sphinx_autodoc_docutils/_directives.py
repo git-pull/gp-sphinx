@@ -11,10 +11,10 @@ from docutils.parsers.rst import Directive, directives
 from sphinx import addnodes
 from sphinx.util.docutils import SphinxDirective
 from sphinx_autodoc_layout import (
-    build_api_slot,
     iter_desc_nodes,
     parse_generated_markup,
 )
+from sphinx_autodoc_layout._slots import inject_signature_slots
 
 from sphinx_autodoc_docutils._badges import build_kind_badge_group
 
@@ -156,10 +156,12 @@ def _inject_docutils_badges(node_list: list[nodes.Node]) -> None:
         for sig_node in desc_node.children:
             if not isinstance(sig_node, addnodes.desc_signature):
                 continue
-            if sig_node.get("sadoc_badges_injected"):
-                continue
-            sig_node["sadoc_badges_injected"] = True
-            sig_node += build_api_slot("badges", badge_group.deepcopy())
+            inject_signature_slots(
+                sig_node,
+                marker_attr="sadoc_badges_injected",
+                badge_node=badge_group.deepcopy(),
+                extract_source_link=False,
+            )
 
 
 def _render_markup_nodes(

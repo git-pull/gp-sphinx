@@ -8,7 +8,7 @@ from docutils import nodes
 from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
 from sphinx.util.nodes import make_refnode
-from sphinx_autodoc_layout._nodes import build_api_slot
+from sphinx_autodoc_layout._slots import inject_signature_slots
 
 from sphinx_autodoc_pytest_fixtures._badges import _build_badge_group_node
 from sphinx_autodoc_pytest_fixtures._constants import _FIELD_LABELS
@@ -110,34 +110,17 @@ def _inject_badges_and_reorder(sig_node: addnodes.desc_signature) -> None:
 
     Guarded by the ``spf_badges_injected`` flag \u2014 safe to call multiple times.
     """
-    if sig_node.get("spf_badges_injected"):
-        return
-    sig_node["spf_badges_injected"] = True
-
     scope = sig_node.get("spf_scope", "function")
     kind = sig_node.get("spf_kind", "resource")
     autouse = sig_node.get("spf_autouse", False)
     deprecated = sig_node.get("spf_deprecated", False)
 
     badge_group = _build_badge_group_node(scope, kind, autouse, deprecated=deprecated)
-
-    viewcode_ref = None
-    for child in list(sig_node.children):
-        if (
-            isinstance(child, nodes.reference)
-            and child.get("internal") is not True
-            and any(
-                "viewcode-link" in getattr(gc, "get", lambda *_: "")("classes", [])
-                for gc in child.children
-                if isinstance(gc, nodes.inline)
-            )
-        ):
-            viewcode_ref = child
-            sig_node.remove(child)
-
-    sig_node += build_api_slot("badges", badge_group)
-    if viewcode_ref is not None:
-        sig_node += build_api_slot("source-link", viewcode_ref)
+    inject_signature_slots(
+        sig_node,
+        marker_attr="spf_badges_injected",
+        badge_node=badge_group,
+    )
 
 
 def _strip_rtype_fields(desc_node: addnodes.desc) -> None:
