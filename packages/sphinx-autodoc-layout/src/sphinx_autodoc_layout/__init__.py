@@ -1,7 +1,7 @@
-"""Componentized layout for Sphinx autodoc output.
+"""Componentized layout for Sphinx object-description output.
 
 Preserves Sphinx's outer ``dl / dt / dd`` structure while rebuilding
-managed Python autodoc entries into stable ``api-*`` components.
+managed Sphinx object entries into stable ``api-*`` components.
 
 Examples
 --------
@@ -22,11 +22,14 @@ from sphinx_autodoc_layout._nodes import (
     api_inline_component,
     api_permalink,
     api_slot,
+    build_api_component,
+    build_api_inline_component,
     build_api_slot,
     gal_fold,
     gal_region,
     gal_sig_fold,
 )
+from sphinx_autodoc_layout._render import iter_desc_nodes, parse_generated_markup
 from sphinx_autodoc_layout._transforms import on_doctree_resolved
 from sphinx_autodoc_layout._visitors import (
     depart_api_component,
@@ -47,6 +50,23 @@ from sphinx_autodoc_layout._visitors import (
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
+
+__all__ = [
+    "api_component",
+    "api_inline_component",
+    "api_permalink",
+    "api_slot",
+    "build_api_component",
+    "build_api_inline_component",
+    "build_api_slot",
+    "gal_fold",
+    "gal_region",
+    "gal_sig_fold",
+    "iter_desc_nodes",
+    "on_doctree_resolved",
+    "parse_generated_markup",
+    "setup",
+]
 
 
 def setup(app: Sphinx) -> dict[str, t.Any]:

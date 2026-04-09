@@ -15,18 +15,18 @@
 }
 
 /* ── API shell ──────────────────────────────────────── */
-dl.py.api-container > dt.api-header {
+dl.api-container > dt.api-header {
   align-items: center;
 }
 
-dl.py.api-container > dt.api-header > .api-layout {
+dl.api-container > dt.api-header > .api-layout {
   display: flex;
   align-items: center;
   gap: 1rem;
   width: 100%;
 }
 
-dl.py.api-container > dt.api-header .api-layout-left {
+dl.api-container > dt.api-header .api-layout-left {
   flex: 1 1 auto;
   display: flex;
   align-items: center;
@@ -34,7 +34,7 @@ dl.py.api-container > dt.api-header .api-layout-left {
   min-width: 0;
 }
 
-dl.py.api-container > dt.api-header .api-layout-right {
+dl.api-container > dt.api-header .api-layout-right {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -43,39 +43,39 @@ dl.py.api-container > dt.api-header .api-layout-right {
   flex: 0 0 auto;
 }
 
-dl.py.api-container > dt.api-header[data-signature-expanded="true"] {
+dl.api-container > dt.api-header[data-signature-expanded="true"] {
   align-items: flex-start;
 }
 
-dl.py.api-container > dt.api-header[data-signature-expanded="true"] > .api-layout {
+dl.api-container > dt.api-header[data-signature-expanded="true"] > .api-layout {
   align-items: flex-start;
 }
 
-dl.py.api-container > dt.api-header[data-signature-expanded="true"] .api-layout-left {
+dl.api-container > dt.api-header[data-signature-expanded="true"] .api-layout-left {
   align-items: flex-start;
 }
 
-dl.py.api-container > dt.api-header[data-signature-expanded="true"] .api-layout-right {
+dl.api-container > dt.api-header[data-signature-expanded="true"] .api-layout-right {
   align-items: flex-start;
 }
 
-dl.py.api-container > dt.api-header .api-layout-right:empty {
+dl.api-container > dt.api-header .api-layout-right:empty {
   display: none;
 }
 
-dl.py.api-container > dt.api-header .api-source-link {
+dl.api-container > dt.api-header .api-source-link {
   display: inline-flex;
   align-items: center;
 }
 
 /* ── Signature row ──────────────────────────────────── */
-dl.py.api-container > dt.api-header .api-signature {
+dl.api-container > dt.api-header .api-signature {
   flex: 1 1 auto;
   font-family: var(--font-stack--monospace);
   min-width: 0;
 }
 
-dl.py.api-container > dt.api-header .api-link {
+dl.api-container > dt.api-header .api-link {
   margin-left: 0.1rem;
   flex: 0 0 auto;
 }
@@ -147,7 +147,7 @@ dl.py.api-container > dt.api-header .api-link {
 }
 
 /* ── Field-list grid ────────────────────────────────── */
-dl.py.api-container > dd.api-content .api-parameters dl.field-list {
+dl.api-container > dd.api-content .api-parameters dl.field-list {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   gap: 0 1rem;
@@ -185,12 +185,12 @@ details.gal-fold > summary.gal-fold-summary:hover {
 
 /* ── Mobile adjustments ─────────────────────────────── */
 @media (max-width: 52rem) {
-  dl.py.api-container > dt.api-header > .api-layout {
+  dl.api-container > dt.api-header > .api-layout {
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  dl.py.api-container > dt.api-header .api-layout-right {
+  dl.api-container > dt.api-header .api-layout-right {
     margin-left: 0;
     white-space: normal;
     width: 100%;

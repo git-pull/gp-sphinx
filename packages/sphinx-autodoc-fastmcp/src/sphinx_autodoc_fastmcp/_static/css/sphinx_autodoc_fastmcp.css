@@ -167,52 +167,72 @@ section.smf-tool-section {
   margin-bottom: 1.5rem;
   overflow: visible;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: clip;
 }
 
-section.smf-tool-section > h1,
-section.smf-tool-section > h2,
-section.smf-tool-section > h3,
-section.smf-tool-section > h4,
-section.smf-tool-section > h5,
-section.smf-tool-section > h6 {
-  margin: 0;
-}
-
-/* Match custom.css h2/h3:has(> .sd-badge[...]) gap between code and badges */
-section.smf-tool-section > .smf-tool-title {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.45rem;
+section.smf-tool-section > .smf-tool-entry > .api-header {
   background: var(--color-background-secondary);
   border-bottom: 1px solid var(--color-background-border);
   padding: 0.5rem 0.75rem 0.5rem 1rem;
-  min-height: 2rem;
-  text-indent: 0;
   transition: background 100ms ease-out;
 }
 
-section.smf-tool-section > .smf-tool-title:hover {
+section.smf-tool-section > .smf-tool-entry > .api-header:hover {
   background: var(--color-api-background-hover);
 }
 
-section.smf-tool-section > .smf-tool-title .sab-toolbar {
-  order: 99;
+section.smf-tool-section > .smf-tool-entry > .api-header > .api-layout {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
 }
 
-section.smf-tool-section > .smf-tool-title ~ * {
-  padding-left: 1rem;
-  padding-right: 1rem;
-  margin-left: 0;
-  margin-right: 0;
+section.smf-tool-section > .smf-tool-entry > .api-header .api-layout-left {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
-section.smf-tool-section > .smf-tool-title + * {
-  padding-top: 0.75rem;
+section.smf-tool-section > .smf-tool-entry > .api-header .api-signature {
+  min-width: 0;
+  font-family: var(--font-stack--monospace);
 }
 
-section.smf-tool-section > .smf-tool-title ~ *:last-child {
-  padding-bottom: 0.75rem;
+section.smf-tool-section > .smf-tool-entry > .api-header .api-layout-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+section.smf-tool-section > .smf-tool-entry > .api-content {
+  padding: 0.75rem 1rem;
+}
+
+section.smf-tool-section > .smf-tool-entry > .api-content > .smf-body-section + .smf-body-section {
+  margin-top: 0.75rem;
+}
+
+section.smf-tool-section > .smf-tool-entry > .api-content > * + * {
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 52rem) {
+  section.smf-tool-section > .smf-tool-entry > .api-header > .api-layout {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  section.smf-tool-section > .smf-tool-entry > .api-header .api-layout-right {
+    margin-left: 0;
+    white-space: normal;
+    width: 100%;
+    flex-wrap: wrap;
+  }
 }
 
 .toc-tree .smf-badge--type {

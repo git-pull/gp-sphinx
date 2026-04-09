@@ -17,8 +17,10 @@ from sphinx_autodoc_layout._nodes import (
     gal_sig_fold,
 )
 from sphinx_autodoc_layout._transforms import (
+    DescLayoutProfile,
     _classify_child,
     _count_field_entries,
+    _desc_layout_profile,
     _fold_large_field_regions,
     _nest_python_members,
     _rebuild_signature_layout,
@@ -162,6 +164,29 @@ def test_classify_desc_as_members() -> None:
 
 def test_classify_note_as_narrative() -> None:
     assert _classify_child(nodes.note()) == "narrative"
+
+
+def test_desc_layout_profile_matches_confval_entries() -> None:
+    profile = _desc_layout_profile(_make_desc(domain="std", objtype="confval"))
+    assert profile == DescLayoutProfile(
+        domain="std",
+        objtype="confval",
+        slug="confval",
+        allow_signature_fold=False,
+    )
+    assert profile.class_name == "api-profile--confval"
+
+
+def test_desc_layout_profile_matches_rst_directive_option_entries() -> None:
+    profile = _desc_layout_profile(
+        _make_desc(domain="rst", objtype="directive:option"),
+    )
+    assert profile == DescLayoutProfile(
+        domain="rst",
+        objtype="directive:option",
+        slug="rst-directive-option",
+        allow_signature_fold=False,
+    )
 
 
 def test_wrap_groups_narrative() -> None:
@@ -574,6 +599,39 @@ def test_on_doctree_resolved_manages_slot_backed_headers_without_gal_enabled() -
     on_doctree_resolved(app, doctree, "index")
 
     assert "api-container" in desc.get("classes", [])
+    layout = sig.children[0]
+    assert isinstance(layout, api_component)
+    right = layout.children[1]
+    assert isinstance(right, api_component)
+    assert _child_component_names(right) == ["api-badge-container"]
+
+
+def test_on_doctree_resolved_manages_confval_entries_with_profile_classes() -> None:
+    desc = _make_desc(domain="std", objtype="confval", ids=("confval.demo_option",))
+    sig = desc.children[0]
+    assert isinstance(sig, addnodes.desc_signature)
+    sig += addnodes.desc_name("", "demo_option")
+    sig += _make_badge_slot()
+
+    app = t.cast(
+        t.Any,
+        types.SimpleNamespace(
+            config=types.SimpleNamespace(
+                gal_enabled=False,
+                gal_collapsed_threshold=10,
+                gal_fold_parameters=True,
+                gal_signature_show_annotations=True,
+                html_permalinks=True,
+            ),
+            builder=types.SimpleNamespace(format="html", add_permalinks=True),
+        ),
+    )
+    doctree = t.cast(nodes.document, nodes.section("", desc))
+
+    on_doctree_resolved(app, doctree, "index")
+
+    assert "api-container" in desc.get("classes", [])
+    assert "api-profile--confval" in desc.get("classes", [])
     layout = sig.children[0]
     assert isinstance(layout, api_component)
     right = layout.children[1]

@@ -29,15 +29,21 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     >>> class FakeApp:
     ...     def __init__(self) -> None:
     ...         self.calls: list[tuple[str, str]] = []
+    ...     def setup_extension(self, name: str) -> None:
+    ...         self.calls.append(("setup_extension", name))
     ...     def add_directive(self, name: str, directive: object) -> None:
     ...         self.calls.append(("add_directive", name))
     >>> fake = FakeApp()
     >>> metadata = setup(fake)  # type: ignore[arg-type]
     >>> ("add_directive", "autodirective") in fake.calls
     True
+    >>> ("setup_extension", "sphinx_autodoc_layout") in fake.calls
+    True
     >>> metadata["parallel_read_safe"]
     True
     """
+    app.setup_extension("sphinx_autodoc_badges")
+    app.setup_extension("sphinx_autodoc_layout")
     app.add_directive("autodirective", AutoDirective)
     app.add_directive("autodirectives", AutoDirectives)
     app.add_directive("autodirective-index", AutoDirectiveIndex)

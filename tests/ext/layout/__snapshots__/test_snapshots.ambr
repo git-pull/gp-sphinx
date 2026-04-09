@@ -1,7 +1,40 @@
 # serializer version: 1
+# name: test_confval_snapshot[confval_entry]
+  '''
+  <desc classes="api-container api-profile--confval" domain="std" objtype="confval">
+      <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="confval.demo_option">
+          <api_component classes="api-layout" name="api-layout" tag="div">
+              <api_component classes="api-layout-left" name="api-layout-left" tag="div">
+                  <api_component classes="api-signature" name="api-signature" tag="div">
+                      <desc_name classes="sig-name descname" xml:space="preserve">
+                          demo_option
+                  <api_permalink classes="headerlink api-link" href="#confval.demo_option" title="Link to this definition">
+              <api_component classes="api-layout-right gas-toolbar" name="api-layout-right" tag="div">
+                  <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
+                      <inline classes="sas-badge-group">
+                          <inline classes="sas-badge--type">
+                              config
+                          <inline>
+                               
+                          <inline classes="sas-badge--rebuild">
+                              env
+      <desc_content classes="api-content">
+          <api_component classes="api-parameters gal-region gal-region--fields" name="api-parameters" tag="div">
+              <field_list>
+                  <field>
+                      <field_name>
+                          Type
+                      <field_body>
+                          <paragraph>
+                              bool
+          <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
+              <paragraph>
+                  A demo option.
+  '''
+# ---
 # name: test_large_signature_snapshot_annotated[large_signature_annotated]
   '''
-  <desc classes="api-container" domain="py" objtype="method">
+  <desc classes="api-container api-profile--py-method" domain="py" objtype="method">
       <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="demo.Session.__init__">
           <api_component classes="api-layout" name="api-layout" tag="div">
               <api_component classes="api-layout-left" name="api-layout-left" tag="div">
@@ -393,7 +426,7 @@
 # ---
 # name: test_large_signature_snapshot_annotation_disabled[large_signature_annotation_disabled]
   '''
-  <desc classes="api-container" domain="py" objtype="method">
+  <desc classes="api-container api-profile--py-method" domain="py" objtype="method">
       <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="demo.Session.__init__">
           <api_component classes="api-layout" name="api-layout" tag="div">
               <api_component classes="api-layout-left" name="api-layout-left" tag="div">
@@ -666,5 +699,44 @@
                                           <emphasis>
                                               str | None
                                           )
+  '''
+# ---
+# name: test_rst_directive_snapshot[rst_directive_entry]
+  '''
+  <desc classes="api-container api-profile--rst-directive" domain="rst" objtype="directive">
+      <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="directive-demo-directive">
+          <api_component classes="api-layout" name="api-layout" tag="div">
+              <api_component classes="api-layout-left" name="api-layout-left" tag="div">
+                  <api_component classes="api-signature" name="api-signature" tag="div">
+                      <desc_name classes="sig-name descname" xml:space="preserve">
+                          demo-directive
+                  <api_permalink classes="headerlink api-link" href="#directive-demo-directive" title="Link to this definition">
+              <api_component classes="api-layout-right gas-toolbar" name="api-layout-right" tag="div">
+                  <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
+                      <inline classes="sadoc-badge-group">
+                          <inline classes="sadoc-badge--type">
+                              directive
+      <desc_content classes="api-content">
+          <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
+              <paragraph>
+                  A demo directive.
+          <api_component classes="api-footer gal-region gal-region--members" name="api-footer" tag="div">
+              <desc classes="api-container api-profile--rst-directive-option" domain="rst" objtype="directive:option">
+                  <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="directive-option-demo-opt">
+                      <api_component classes="api-layout" name="api-layout" tag="div">
+                          <api_component classes="api-layout-left" name="api-layout-left" tag="div">
+                              <api_component classes="api-signature" name="api-signature" tag="div">
+                                  <desc_name classes="sig-name descname" xml:space="preserve">
+                                      demo-opt
+                              <api_permalink classes="headerlink api-link" href="#directive-option-demo-opt" title="Link to this definition">
+                          <api_component classes="api-layout-right gas-toolbar" name="api-layout-right" tag="div">
+                              <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
+                                  <inline classes="sadoc-badge-group">
+                                      <inline classes="sadoc-badge--type">
+                                          option
+                  <desc_content classes="api-content">
+                      <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
+                          <paragraph>
+                              A demo option.
   '''
 # ---
