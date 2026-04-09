@@ -80,9 +80,9 @@ DEFAULT_EXTENSIONS: list[str] = [
     "sphinx.ext.autodoc",
     "sphinx_fonts",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
     "sphinx_autodoc_typehints",
     "sphinx.ext.todo",
-    "sphinx.ext.napoleon",
     "sphinx_inline_tabs",
     "sphinx_copybutton",
     "sphinxext.opengraph",
@@ -343,6 +343,24 @@ DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC: bool = False
 
 Default is ``False`` to match napoleon's built-in default. Most downstream
 projects never set this explicitly, so ``True`` would change rendered output.
+"""
+
+DEFAULT_NAPOLEON_USE_RTYPE: bool = True
+"""Emit a separate ``:rtype:`` field for return-type documentation.
+
+Must stay ``True`` to agree with the default of ``typehints_use_rtype`` in
+``sphinx_autodoc_typehints``.  If both are ``True`` and ``sphinx.ext.napoleon``
+is loaded **before** ``sphinx_autodoc_typehints`` (as enforced by
+:data:`DEFAULT_EXTENSIONS`), Napoleon emits ``:rtype:`` first and typehints'
+deduplication guard skips the second insertion — no duplicates.
+
+Changing either setting without changing the other will reintroduce
+a duplicate or missing return-type field.
+
+Examples
+--------
+>>> DEFAULT_NAPOLEON_USE_RTYPE
+True
 """
 
 DEFAULT_COPYBUTTON_LINE_CONTINUATION_CHARACTER: str = "\\"
