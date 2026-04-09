@@ -12,9 +12,9 @@ import typing as t
 from docutils import nodes
 from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
+from sphinx_autodoc_layout._nodes import build_api_slot
 
 from sphinx_autodoc_api_style._badges import build_badge_group
-from sphinx_autodoc_api_style._css import _CSS
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -132,11 +132,7 @@ def _detect_deprecated(desc_node: addnodes.desc) -> bool:
 
 
 def _inject_badges(sig_node: addnodes.desc_signature, objtype: str) -> None:
-    """Inject a toolbar containing badges, viewcode, and headerlink.
-
-    Builds a toolbar container (``gas-toolbar``) that groups the badge
-    group, ``[source]`` link, and permalink into a single flex item so
-    they stay together on the right side of the signature header.
+    """Inject structured layout slots containing badges and source links.
 
     Guarded by ``gas_badges_injected`` flag.
 
@@ -181,11 +177,9 @@ def _inject_badges(sig_node: addnodes.desc_signature, objtype: str) -> None:
             viewcode_ref = child
             sig_node.remove(child)
 
-    toolbar = nodes.inline(classes=[_CSS.TOOLBAR])
-    toolbar += badge_group
+    sig_node += build_api_slot("badges", badge_group)
     if viewcode_ref is not None:
-        toolbar += viewcode_ref
-    sig_node += toolbar
+        sig_node += build_api_slot("source-link", viewcode_ref)
 
 
 def _prune_empty_desc_content(desc_node: addnodes.desc) -> None:

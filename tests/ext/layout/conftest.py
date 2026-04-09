@@ -162,12 +162,3 @@ def _build_layout_demo(
 def layout_default_html(layout_cache_root: pathlib.Path) -> str:
     """Build the default layout demo HTML once per test session."""
     return _build_layout_demo(layout_cache_root / "default")
-
-
-@pytest.fixture(scope="session")
-def layout_annotation_disabled_html(layout_cache_root: pathlib.Path) -> str:
-    """Build the annotation-disabled layout demo HTML once per test session."""
-    return _build_layout_demo(
-        layout_cache_root / "annotation-disabled",
-        extra_conf="gal_signature_show_annotations = False",
-    )

@@ -100,6 +100,7 @@ def setup(app: Sphinx) -> SetupDict:
     """
     app.setup_extension("sphinx.ext.autodoc")
     app.setup_extension("sphinx_autodoc_badges")
+    app.setup_extension("sphinx_autodoc_layout")
 
     import pathlib
 

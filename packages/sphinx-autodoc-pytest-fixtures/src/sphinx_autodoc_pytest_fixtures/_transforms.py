@@ -8,6 +8,7 @@ from docutils import nodes
 from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
 from sphinx.util.nodes import make_refnode
+from sphinx_autodoc_layout._nodes import build_api_slot
 
 from sphinx_autodoc_pytest_fixtures._badges import _build_badge_group_node
 from sphinx_autodoc_pytest_fixtures._constants import _FIELD_LABELS
@@ -105,11 +106,7 @@ def _on_missing_reference(
 
 
 def _inject_badges_and_reorder(sig_node: addnodes.desc_signature) -> None:
-    """Inject scope/kind/fixture badges and reorder signature children.
-
-    Appends a badge group to *sig_node* and reorders the \u00b6 headerlink and
-    [source] viewcode link so the visual layout is:
-    ``name \u2192 return \u2192 \u00b6 \u2192 badges (right-aligned) \u2192 [source]``.
+    """Inject scope/kind/fixture badges into shared layout slots.
 
     Guarded by the ``spf_badges_injected`` flag \u2014 safe to call multiple times.
     """
@@ -124,27 +121,23 @@ def _inject_badges_and_reorder(sig_node: addnodes.desc_signature) -> None:
 
     badge_group = _build_badge_group_node(scope, kind, autouse, deprecated=deprecated)
 
-    # Detach [source] and \u00b6 links, then re-append in desired order.
     viewcode_ref = None
-    headerlink_ref = None
     for child in list(sig_node.children):
-        if isinstance(child, nodes.reference):
-            if child.get("internal") is not True and any(
+        if (
+            isinstance(child, nodes.reference)
+            and child.get("internal") is not True
+            and any(
                 "viewcode-link" in getattr(gc, "get", lambda *_: "")("classes", [])
                 for gc in child.children
                 if isinstance(gc, nodes.inline)
-            ):
-                viewcode_ref = child
-                sig_node.remove(child)
-            elif "headerlink" in child.get("classes", []):
-                headerlink_ref = child
-                sig_node.remove(child)
+            )
+        ):
+            viewcode_ref = child
+            sig_node.remove(child)
 
-    if headerlink_ref is not None:
-        sig_node += headerlink_ref
-    sig_node += badge_group
+    sig_node += build_api_slot("badges", badge_group)
     if viewcode_ref is not None:
-        sig_node += viewcode_ref
+        sig_node += build_api_slot("source-link", viewcode_ref)
 
 
 def _strip_rtype_fields(desc_node: addnodes.desc) -> None:

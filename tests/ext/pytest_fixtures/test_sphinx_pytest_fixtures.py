@@ -452,9 +452,10 @@ def test_format_name_honours_fixture_name_alias() -> None:
 def test_setup_return_value() -> None:
     """setup() returns correct extension metadata."""
     connections: list[tuple[str, t.Any]] = []
+    setup_extensions: list[str] = []
 
     app = types.SimpleNamespace(
-        setup_extension=lambda ext: None,
+        setup_extension=setup_extensions.append,
         add_config_value=lambda name, default, rebuild, **kw: None,
         add_crossref_type=lambda *a, **kw: None,
         add_directive_to_domain=lambda d, n, cls: None,
@@ -470,6 +471,11 @@ def test_setup_return_value() -> None:
     assert result["version"] == "1.0"
     assert result["parallel_read_safe"] is True
     assert result["parallel_write_safe"] is True
+    assert setup_extensions == [
+        "sphinx.ext.autodoc",
+        "sphinx_autodoc_badges",
+        "sphinx_autodoc_layout",
+    ]
 
 
 def test_setup_event_connections() -> None:

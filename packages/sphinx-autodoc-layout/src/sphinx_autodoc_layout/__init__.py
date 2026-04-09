@@ -21,6 +21,8 @@ from sphinx_autodoc_layout._nodes import (
     api_component,
     api_inline_component,
     api_permalink,
+    api_slot,
+    build_api_slot,
     gal_fold,
     gal_region,
     gal_sig_fold,
@@ -114,6 +116,14 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_node(
         api_inline_component,
         html=(visit_api_component, depart_api_component),
+        latex=_pt,
+        text=_pt,
+        man=_pt,
+        texinfo=_pt,
+    )
+    app.add_node(
+        api_slot,
+        html=_pt,
         latex=_pt,
         text=_pt,
         man=_pt,
