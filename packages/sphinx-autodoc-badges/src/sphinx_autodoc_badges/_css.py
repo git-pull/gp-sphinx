@@ -14,6 +14,9 @@ Examples
 >>> SAB.ICON_ONLY
 'sab-icon-only'
 
+>>> SAB.XXS
+'sab-xxs'
+
 >>> SAB.SM
 'sab-sm'
 
@@ -69,6 +72,7 @@ class SAB:
     ICON_RIGHT = f"{PREFIX}-icon-right"
 
     # Size variants
+    XXS = f"{PREFIX}-xxs"
     XS = f"{PREFIX}-xs"
     SM = f"{PREFIX}-sm"
     LG = f"{PREFIX}-lg"

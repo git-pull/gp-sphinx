@@ -201,6 +201,7 @@ def test_css_constants() -> None:
     assert SAB.PREFIX == "sab"
     assert SAB.BADGE == "sab-badge"
     assert SAB.ICON_ONLY == "sab-icon-only"
+    assert SAB.XXS == "sab-xxs"
     assert SAB.XS == "sab-xs"
     assert SAB.SM == "sab-sm"
     assert SAB.LG == "sab-lg"

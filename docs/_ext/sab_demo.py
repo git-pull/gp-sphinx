@@ -221,6 +221,19 @@ class BadgeDemoDirective(SphinxDirective):
         result.append(
             _row(
                 build_badge(
+                    "xxs",
+                    size="xxs",
+                    tooltip="Extra-extra small",
+                    classes=[SAB.TYPE_FUNCTION],
+                ),
+                build_badge(
+                    "xxs+icon",
+                    size="xxs",
+                    icon="\U0001f50d",
+                    tooltip="Extra-extra small with icon",
+                    classes=[SAB.TYPE_FUNCTION],
+                ),
+                build_badge(
                     "xs",
                     size="xs",
                     tooltip="Extra small",
@@ -281,13 +294,26 @@ class BadgeDemoDirective(SphinxDirective):
                     tooltip="Extra large with icon",
                     classes=[SAB.TYPE_CONFIG],
                 ),
-                label="xs / sm / default / lg / xl",
+                label="xxs / xs / sm / default / lg / xl",
             )
         )
 
         result.append(_section("All sizes — dense"))
         result.append(
             _row(
+                build_badge(
+                    "xxs",
+                    size="xxs",
+                    tooltip="Extra-extra small dense",
+                    classes=[SAB.DENSE, SAB.TYPE_FUNCTION],
+                ),
+                build_badge(
+                    "xxs+icon",
+                    size="xxs",
+                    icon="\U0001f50d",
+                    tooltip="Extra-extra small dense + icon",
+                    classes=[SAB.DENSE, SAB.TYPE_FUNCTION],
+                ),
                 build_badge(
                     "xs",
                     size="xs",
@@ -351,7 +377,7 @@ class BadgeDemoDirective(SphinxDirective):
                     tooltip="Extra large dense + icon",
                     classes=[SAB.DENSE, SAB.TYPE_CONFIG],
                 ),
-                label="xs / sm / default / lg / xl (sab-dense)",
+                label="xxs / xs / sm / default / lg / xl (sab-dense)",
             )
         )
 
