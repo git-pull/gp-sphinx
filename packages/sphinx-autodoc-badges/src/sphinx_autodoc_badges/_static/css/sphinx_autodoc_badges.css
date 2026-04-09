@@ -114,6 +114,21 @@ body[data-theme="dark"] .sab-badge:not(.sab-outline):not(.sab-inline-icon) {
   content: attr(data-icon);
 }
 
+/* ── Icon-right variant (icon after text via flex reversal) ─ */
+/* The base sab-badge is already display:inline-flex, so reversing
+ * flex-direction moves the ::before pseudo-element to the right of
+ * the text content.  Same data-icon attribute — zero new HTML. */
+.sab-badge.sab-icon-right {
+  flex-direction: row-reverse;
+}
+
+/* sab-dense overrides display:inline-block, so restore inline-flex
+ * when icon-right is also requested. */
+.sab-badge.sab-dense.sab-icon-right {
+  display: inline-flex;
+  flex-direction: row-reverse;
+}
+
 /* ── Badge group ────────────────────────────────────────── */
 .sab-badge-group {
   display: inline-flex;

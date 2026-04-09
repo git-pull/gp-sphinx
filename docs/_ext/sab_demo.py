@@ -39,76 +39,404 @@ class BadgeDemoDirective(SphinxDirective):
                 p += nodes.literal(text=label)
             return p
 
-        # ── Structural variants ──────────────────────────────────
+        # ── All structural variants ──────────────────────────────
 
-        result.append(_section("Size variants (xs / sm / default / lg / xl)"))
+        result.append(_section("No icon"))
         result.append(
             _row(
-                build_badge("xs", size="xs", tooltip="Extra small"),
-                build_badge("sm", size="sm", tooltip="Small"),
-                build_badge("md", tooltip="Default (no size class)"),
-                build_badge("lg", size="lg", tooltip="Large"),
-                build_badge("xl", size="xl", tooltip="Extra large"),
-                label='build_badge("lg", size="lg")',
-            )
-        )
-
-        result.append(_section("Filled (default)"))
-        result.append(
-            _row(
-                build_badge("label", tooltip="Default filled badge"),
+                build_badge("label", tooltip="Plain filled badge"),
                 label='build_badge("label")',
             )
         )
+
+        result.append(_section("With icon — left (default, sab-badge[data-icon])"))
+        result.append(
+            _row(
+                build_badge("readonly", icon="\U0001f50d", tooltip="Icon on left"),
+                build_badge(
+                    "mutating",
+                    icon="\u270f\ufe0f",
+                    tooltip="Icon on left",
+                    classes=[SAB.TYPE_CLASS],
+                ),
+                label='build_badge("readonly", icon="🔍")',
+            )
+        )
+
+        result.append(_section("With icon — right (sab-icon-right)"))
         result.append(
             _row(
                 build_badge(
-                    "with icon",
+                    "readonly",
                     icon="\U0001f50d",
-                    tooltip="Badge with emoji icon",
+                    tooltip="Icon on right",
+                    classes=[SAB.ICON_RIGHT],
                 ),
-                label='build_badge("with icon", icon="\\U0001f50d")',
+                build_badge(
+                    "mutating",
+                    icon="\u270f\ufe0f",
+                    tooltip="Icon on right",
+                    classes=[SAB.ICON_RIGHT, SAB.TYPE_CLASS],
+                ),
+                label='build_badge("readonly", icon="🔍", classes=[SAB.ICON_RIGHT])',
             )
         )
 
-        result.append(_section("Outline"))
-        result.append(
-            _row(
-                build_badge("outline", fill="outline", tooltip="Outline variant"),
-                label='build_badge("outline", fill="outline")',
-            )
-        )
-
-        result.append(_section("Icon-only"))
+        result.append(_section("Icon-only — 16x16 coloured box (sab-icon-only)"))
         result.append(
             _row(
                 build_badge(
                     "",
                     style="icon-only",
                     icon="\U0001f50d",
-                    tooltip="Icon-only badge",
+                    tooltip="Icon-only (no text)",
                 ),
-                label='build_badge("", style="icon-only", icon="\\U0001f50d")',
+                build_badge(
+                    "",
+                    style="icon-only",
+                    icon="\u270f\ufe0f",
+                    tooltip="Icon-only mutating",
+                    classes=[SAB.TYPE_CLASS],
+                ),
+                build_badge(
+                    "",
+                    style="icon-only",
+                    icon="\U0001f4a3",
+                    tooltip="Icon-only destructive",
+                    classes=[SAB.TYPE_EXCEPTION],
+                ),
+                label='build_badge("", style="icon-only", icon="🔍")',
             )
         )
 
-        result.append(_section("Inline-icon (inside code chips)"))
-        code = nodes.literal(text="some_function()")
-        inline_icon = build_badge(
+        result.append(
+            _section("Inline-icon — bare emoji inside code chip (sab-inline-icon)")
+        )
+        wrapper = nodes.paragraph()
+        wrapper += build_badge(
             "",
             style="inline-icon",
             icon="\u270f\ufe0f",
             tooltip="Inline icon",
             tabindex="",
         )
-        wrapper = nodes.paragraph()
-        wrapper += inline_icon
-        wrapper += code
-        wrapper += nodes.Text(" ")
-        wrapper += nodes.literal(
-            text='build_badge("", style="inline-icon", icon="\\u270f\\ufe0f")'
+        wrapper += nodes.literal(text="some_function()")
+        wrapper += nodes.Text("  ")
+        wrapper += build_badge(
+            "",
+            style="inline-icon",
+            icon="\U0001f50d",
+            tooltip="Inline icon search",
+            tabindex="",
         )
+        wrapper += nodes.literal(text="other_func()")
+        wrapper += nodes.Text("  ")
+        wrapper += nodes.literal(text='build_badge("", style="inline-icon", icon="✏️")')
         result.append(wrapper)
+
+        result.append(_section("Outline (sab-outline)"))
+        result.append(
+            _row(
+                build_badge("outline", fill="outline", tooltip="Outline, no bg"),
+                build_badge(
+                    "outline + icon",
+                    icon="\U0001f50d",
+                    fill="outline",
+                    tooltip="Outline with icon left",
+                ),
+                build_badge(
+                    "outline + icon right",
+                    icon="\U0001f50d",
+                    fill="outline",
+                    classes=[SAB.ICON_RIGHT],
+                    tooltip="Outline with icon right",
+                ),
+                label='build_badge("outline", fill="outline")',
+            )
+        )
+
+        result.append(
+            _section("Dense (sab-dense) — compact bordered, dotted underline")
+        )
+        result.append(
+            _row(
+                build_badge(
+                    "dense",
+                    tooltip="Dense, no icon",
+                    classes=[SAB.DENSE, SAB.TYPE_FUNCTION],
+                ),
+                build_badge(
+                    "dense + icon left",
+                    icon="\U0001f50d",
+                    tooltip="Dense with icon left",
+                    classes=[SAB.DENSE, SAB.TYPE_FUNCTION],
+                ),
+                build_badge(
+                    "dense + icon right",
+                    icon="\U0001f50d",
+                    tooltip="Dense with icon right",
+                    classes=[SAB.DENSE, SAB.ICON_RIGHT, SAB.TYPE_FUNCTION],
+                ),
+                build_badge(
+                    "",
+                    style="icon-only",
+                    icon="\U0001f50d",
+                    tooltip="Dense icon-only (icon-only overrides display)",
+                    classes=[SAB.TYPE_FUNCTION],
+                ),
+                label="SAB.DENSE + icon variants",
+            )
+        )
+
+        result.append(_section("Dense + outline"))
+        result.append(
+            _row(
+                build_badge(
+                    "dense outline",
+                    fill="outline",
+                    classes=[SAB.DENSE],
+                    tooltip="Dense outline",
+                ),
+                build_badge(
+                    "dense outline + icon left",
+                    icon="\U0001f50d",
+                    fill="outline",
+                    classes=[SAB.DENSE],
+                    tooltip="Dense outline with icon left",
+                ),
+                build_badge(
+                    "dense outline + icon right",
+                    icon="\U0001f50d",
+                    fill="outline",
+                    classes=[SAB.DENSE, SAB.ICON_RIGHT],
+                    tooltip="Dense outline with icon right",
+                ),
+                label="SAB.DENSE + outline",
+            )
+        )
+
+        # ── All sizes ────────────────────────────────────────────
+
+        result.append(_section("All sizes — standard pill"))
+        result.append(
+            _row(
+                build_badge(
+                    "xs",
+                    size="xs",
+                    tooltip="Extra small",
+                    classes=[SAB.TYPE_FUNCTION],
+                ),
+                build_badge(
+                    "xs+icon",
+                    size="xs",
+                    icon="\U0001f50d",
+                    tooltip="Extra small with icon",
+                    classes=[SAB.TYPE_FUNCTION],
+                ),
+                build_badge(
+                    "sm",
+                    size="sm",
+                    tooltip="Small",
+                    classes=[SAB.TYPE_CLASS],
+                ),
+                build_badge(
+                    "sm+icon",
+                    size="sm",
+                    icon="\U0001f50d",
+                    tooltip="Small with icon",
+                    classes=[SAB.TYPE_CLASS],
+                ),
+                build_badge(
+                    "default", tooltip="Default size", classes=[SAB.TYPE_METHOD]
+                ),
+                build_badge(
+                    "default+icon",
+                    icon="\U0001f50d",
+                    tooltip="Default with icon",
+                    classes=[SAB.TYPE_METHOD],
+                ),
+                build_badge(
+                    "lg",
+                    size="lg",
+                    tooltip="Large",
+                    classes=[SAB.TYPE_FIXTURE],
+                ),
+                build_badge(
+                    "lg+icon",
+                    size="lg",
+                    icon="\U0001f50d",
+                    tooltip="Large with icon",
+                    classes=[SAB.TYPE_FIXTURE],
+                ),
+                build_badge(
+                    "xl",
+                    size="xl",
+                    tooltip="Extra large",
+                    classes=[SAB.TYPE_CONFIG],
+                ),
+                build_badge(
+                    "xl+icon",
+                    size="xl",
+                    icon="\U0001f50d",
+                    tooltip="Extra large with icon",
+                    classes=[SAB.TYPE_CONFIG],
+                ),
+                label="xs / sm / default / lg / xl",
+            )
+        )
+
+        result.append(_section("All sizes — dense"))
+        result.append(
+            _row(
+                build_badge(
+                    "xs",
+                    size="xs",
+                    tooltip="Extra small dense",
+                    classes=[SAB.DENSE, SAB.TYPE_FUNCTION],
+                ),
+                build_badge(
+                    "xs+icon",
+                    size="xs",
+                    icon="\U0001f50d",
+                    tooltip="Extra small dense + icon",
+                    classes=[SAB.DENSE, SAB.TYPE_FUNCTION],
+                ),
+                build_badge(
+                    "sm",
+                    size="sm",
+                    tooltip="Small dense",
+                    classes=[SAB.DENSE, SAB.TYPE_CLASS],
+                ),
+                build_badge(
+                    "sm+icon",
+                    size="sm",
+                    icon="\U0001f50d",
+                    tooltip="Small dense + icon",
+                    classes=[SAB.DENSE, SAB.TYPE_CLASS],
+                ),
+                build_badge(
+                    "default",
+                    tooltip="Default dense",
+                    classes=[SAB.DENSE, SAB.TYPE_METHOD],
+                ),
+                build_badge(
+                    "default+icon",
+                    icon="\U0001f50d",
+                    tooltip="Default dense + icon",
+                    classes=[SAB.DENSE, SAB.TYPE_METHOD],
+                ),
+                build_badge(
+                    "lg",
+                    size="lg",
+                    tooltip="Large dense",
+                    classes=[SAB.DENSE, SAB.TYPE_FIXTURE],
+                ),
+                build_badge(
+                    "lg+icon",
+                    size="lg",
+                    icon="\U0001f50d",
+                    tooltip="Large dense + icon",
+                    classes=[SAB.DENSE, SAB.TYPE_FIXTURE],
+                ),
+                build_badge(
+                    "xl",
+                    size="xl",
+                    tooltip="Extra large dense",
+                    classes=[SAB.DENSE, SAB.TYPE_CONFIG],
+                ),
+                build_badge(
+                    "xl+icon",
+                    size="xl",
+                    icon="\U0001f50d",
+                    tooltip="Extra large dense + icon",
+                    classes=[SAB.DENSE, SAB.TYPE_CONFIG],
+                ),
+                label="xs / sm / default / lg / xl (sab-dense)",
+            )
+        )
+
+        # ── Icon positions with colour — representative rows ──────
+
+        result.append(
+            _section("Icon positions — standard (no icon / left / right / icon-only)")
+        )
+        for colour_label, colour_class, icon, colour_tooltip in [
+            ("function", SAB.TYPE_FUNCTION, "\U0001f4e6", "Python function"),
+            ("fixture", SAB.TYPE_FIXTURE, "\U0001f9ea", "pytest fixture"),
+            ("config", SAB.TYPE_CONFIG, "\u2699\ufe0f", "Sphinx config"),
+            ("directive", SAB.TYPE_DIRECTIVE, "\U0001f4d1", "Docutils directive"),
+        ]:
+            row = nodes.paragraph()
+            row += build_badge(
+                colour_label,
+                tooltip=f"{colour_tooltip} — no icon",
+                classes=[SAB.BADGE_TYPE, colour_class],
+            )
+            row += nodes.Text("  ")
+            row += build_badge(
+                colour_label,
+                icon=icon,
+                tooltip=f"{colour_tooltip} — icon left",
+                classes=[SAB.BADGE_TYPE, colour_class],
+            )
+            row += nodes.Text("  ")
+            row += build_badge(
+                colour_label,
+                icon=icon,
+                tooltip=f"{colour_tooltip} — icon right",
+                classes=[SAB.BADGE_TYPE, colour_class, SAB.ICON_RIGHT],
+            )
+            row += nodes.Text("  ")
+            row += build_badge(
+                "",
+                style="icon-only",
+                icon=icon,
+                tooltip=f"{colour_tooltip} — icon-only",
+                classes=[colour_class],
+            )
+            row += nodes.Text("    ")
+            row += nodes.literal(
+                text=f"{colour_label}: none / left / right / icon-only"
+            )
+            result.append(row)
+
+        result.append(_section("Icon positions — dense"))
+        for colour_label, colour_class, icon, colour_tooltip in [
+            ("function", SAB.TYPE_FUNCTION, "\U0001f4e6", "Python function"),
+            ("fixture", SAB.TYPE_FIXTURE, "\U0001f9ea", "pytest fixture"),
+            ("config", SAB.TYPE_CONFIG, "\u2699\ufe0f", "Sphinx config"),
+            ("directive", SAB.TYPE_DIRECTIVE, "\U0001f4d1", "Docutils directive"),
+        ]:
+            row = nodes.paragraph()
+            row += build_badge(
+                colour_label,
+                tooltip=f"{colour_tooltip} dense — no icon",
+                classes=[SAB.DENSE, SAB.BADGE_TYPE, colour_class],
+            )
+            row += nodes.Text("  ")
+            row += build_badge(
+                colour_label,
+                icon=icon,
+                tooltip=f"{colour_tooltip} dense — icon left",
+                classes=[SAB.DENSE, SAB.BADGE_TYPE, colour_class],
+            )
+            row += nodes.Text("  ")
+            row += build_badge(
+                colour_label,
+                icon=icon,
+                tooltip=f"{colour_tooltip} dense — icon right",
+                classes=[
+                    SAB.DENSE,
+                    SAB.BADGE_TYPE,
+                    colour_class,
+                    SAB.ICON_RIGHT,
+                ],
+            )
+            row += nodes.Text("    ")
+            row += nodes.literal(text=f"{colour_label} (dense): none / left / right")
+            result.append(row)
+
+        # ── Badge group ──────────────────────────────────────────
 
         result.append(_section("Badge group"))
         group = build_badge_group(
@@ -141,7 +469,7 @@ class BadgeDemoDirective(SphinxDirective):
         result.append(heading_container)
         result.append(_row(label="build_toolbar(build_badge_group([...]))"))
 
-        # ── Python API type palette ──────────────────────────────
+        # ── Python API type palette (standard + dense) ───────────
 
         result.append(_section("Python API types (sab-type-*)"))
         py_types = [
@@ -160,7 +488,7 @@ class BadgeDemoDirective(SphinxDirective):
             type_row += build_badge(
                 label,
                 tooltip=tooltip,
-                classes=[SAB.BADGE, SAB.BADGE_TYPE, css_class],
+                classes=[SAB.BADGE_TYPE, css_class],
             )
             type_row += nodes.Text(" ")
         result.append(type_row)
@@ -171,7 +499,7 @@ class BadgeDemoDirective(SphinxDirective):
             type_dense_row += build_badge(
                 label,
                 tooltip=tooltip,
-                classes=[SAB.BADGE, SAB.DENSE, SAB.BADGE_TYPE, css_class],
+                classes=[SAB.DENSE, SAB.BADGE_TYPE, css_class],
             )
             type_dense_row += nodes.Text(" ")
         result.append(type_dense_row)
@@ -189,7 +517,7 @@ class BadgeDemoDirective(SphinxDirective):
             mod_row += build_badge(
                 label,
                 tooltip=tooltip,
-                classes=[SAB.BADGE, SAB.BADGE_MOD, css_class],
+                classes=[SAB.BADGE_MOD, css_class],
                 fill="outline",
             )
             mod_row += nodes.Text(" ")
@@ -201,7 +529,7 @@ class BadgeDemoDirective(SphinxDirective):
             mod_dense_row += build_badge(
                 label,
                 tooltip=tooltip,
-                classes=[SAB.BADGE, SAB.DENSE, SAB.BADGE_MOD, css_class],
+                classes=[SAB.DENSE, SAB.BADGE_MOD, css_class],
                 fill="outline",
             )
             mod_dense_row += nodes.Text(" ")
@@ -215,7 +543,7 @@ class BadgeDemoDirective(SphinxDirective):
                 build_badge(
                     "fixture",
                     tooltip="pytest fixture",
-                    classes=[SAB.BADGE, SAB.BADGE_FIXTURE, SAB.TYPE_FIXTURE],
+                    classes=[SAB.BADGE_FIXTURE, SAB.TYPE_FIXTURE],
                 ),
                 label="SAB.TYPE_FIXTURE — standard",
             )
@@ -225,7 +553,7 @@ class BadgeDemoDirective(SphinxDirective):
                 build_badge(
                     "fixture",
                     tooltip="pytest fixture",
-                    classes=[SAB.BADGE, SAB.DENSE, SAB.BADGE_FIXTURE, SAB.TYPE_FIXTURE],
+                    classes=[SAB.DENSE, SAB.BADGE_FIXTURE, SAB.TYPE_FIXTURE],
                 ),
                 label="SAB.TYPE_FIXTURE — dense",
             )
@@ -238,13 +566,13 @@ class BadgeDemoDirective(SphinxDirective):
             scope_row += build_badge(
                 scope,
                 tooltip=f"Scope: {scope}",
-                classes=[SAB.BADGE, SAB.BADGE_SCOPE, SAB.scope(scope)],
+                classes=[SAB.BADGE_SCOPE, SAB.scope(scope)],
             )
             scope_row += nodes.Text(" ")
             scope_dense_row += build_badge(
                 scope,
                 tooltip=f"Scope: {scope}",
-                classes=[SAB.BADGE, SAB.DENSE, SAB.BADGE_SCOPE, SAB.scope(scope)],
+                classes=[SAB.DENSE, SAB.BADGE_SCOPE, SAB.scope(scope)],
             )
             scope_dense_row += nodes.Text(" ")
         result.append(scope_row)
@@ -264,14 +592,14 @@ class BadgeDemoDirective(SphinxDirective):
             state_row += build_badge(
                 label,
                 tooltip=tooltip,
-                classes=[SAB.BADGE, SAB.BADGE_STATE, css_class],
+                classes=[SAB.BADGE_STATE, css_class],
                 fill=fill,
             )
             state_row += nodes.Text(" ")
             state_dense_row += build_badge(
                 label,
                 tooltip=tooltip,
-                classes=[SAB.BADGE, SAB.DENSE, SAB.BADGE_STATE, css_class],
+                classes=[SAB.DENSE, SAB.BADGE_STATE, css_class],
                 fill=fill,
             )
             state_dense_row += nodes.Text(" ")
@@ -308,18 +636,18 @@ class BadgeDemoDirective(SphinxDirective):
                 build_badge(
                     "config",
                     tooltip="Sphinx config value",
-                    classes=[SAB.BADGE, SAB.DENSE, SAB.TYPE_CONFIG],
+                    classes=[SAB.DENSE, SAB.TYPE_CONFIG],
                 ),
                 build_badge(
                     "env",
                     tooltip="Rebuild mode: env",
-                    classes=[SAB.BADGE, SAB.DENSE, SAB.MOD_REBUILD],
+                    classes=[SAB.DENSE, SAB.MOD_REBUILD],
                     fill="outline",
                 ),
                 build_badge(
                     "html",
                     tooltip="Rebuild mode: html",
-                    classes=[SAB.BADGE, SAB.DENSE, SAB.MOD_REBUILD],
+                    classes=[SAB.DENSE, SAB.MOD_REBUILD],
                     fill="outline",
                 ),
                 label="dense",
@@ -354,17 +682,17 @@ class BadgeDemoDirective(SphinxDirective):
                 build_badge(
                     "directive",
                     tooltip="Docutils directive",
-                    classes=[SAB.BADGE, SAB.DENSE, SAB.TYPE_DIRECTIVE],
+                    classes=[SAB.DENSE, SAB.TYPE_DIRECTIVE],
                 ),
                 build_badge(
                     "role",
                     tooltip="Docutils role",
-                    classes=[SAB.BADGE, SAB.DENSE, SAB.TYPE_ROLE],
+                    classes=[SAB.DENSE, SAB.TYPE_ROLE],
                 ),
                 build_badge(
                     "option",
                     tooltip="Docutils option",
-                    classes=[SAB.BADGE, SAB.DENSE, SAB.TYPE_OPTION],
+                    classes=[SAB.DENSE, SAB.TYPE_OPTION],
                 ),
                 label="dense",
             )

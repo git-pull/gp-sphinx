@@ -66,6 +66,7 @@ class SAB:
     INLINE_ICON = f"{PREFIX}-inline-icon"
     OUTLINE = f"{PREFIX}-outline"
     FILLED = f"{PREFIX}-filled"
+    ICON_RIGHT = f"{PREFIX}-icon-right"
 
     # Size variants
     XS = f"{PREFIX}-xs"
