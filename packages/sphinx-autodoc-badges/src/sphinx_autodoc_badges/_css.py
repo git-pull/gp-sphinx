@@ -17,6 +17,9 @@ Examples
 >>> SAB.XXS
 'sab-xxs'
 
+>>> SAB.MD
+'sab-md'
+
 >>> SAB.SM
 'sab-sm'
 
@@ -75,6 +78,7 @@ class SAB:
     XXS = f"{PREFIX}-xxs"
     XS = f"{PREFIX}-xs"
     SM = f"{PREFIX}-sm"
+    MD = f"{PREFIX}-md"
     LG = f"{PREFIX}-lg"
     XL = f"{PREFIX}-xl"
 

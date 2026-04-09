@@ -23,7 +23,7 @@ import typing as t
 
 from docutils import nodes
 
-_BADGE_SIZES = frozenset({"xxs", "xs", "sm", "lg", "xl"})
+_BADGE_SIZES = frozenset({"xxs", "xs", "sm", "md", "lg", "xl"})
 
 
 class BadgeNode(nodes.inline):

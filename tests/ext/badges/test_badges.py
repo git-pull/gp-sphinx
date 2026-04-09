@@ -204,5 +204,6 @@ def test_css_constants() -> None:
     assert SAB.XXS == "sab-xxs"
     assert SAB.XS == "sab-xs"
     assert SAB.SM == "sab-sm"
+    assert SAB.MD == "sab-md"
     assert SAB.LG == "sab-lg"
     assert SAB.XL == "sab-xl"

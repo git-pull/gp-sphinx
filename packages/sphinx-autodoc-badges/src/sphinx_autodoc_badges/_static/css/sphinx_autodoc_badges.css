@@ -18,11 +18,11 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sab-icon-gap, 0.28rem);
-  font-size: var(--sab-font-size, 0.75em);
+  font-size: var(--sab-font-size, 0.75rem);
   font-weight: var(--sab-font-weight, 700);
   line-height: 1;
   letter-spacing: 0.01em;
-  padding: var(--sab-padding-v, 0.35em) var(--sab-padding-h, 0.65em);
+  padding: var(--sab-padding-v, 0.28rem) var(--sab-padding-h, 0.52rem);
   border-radius: var(--sab-radius, 0.25rem);
   border: var(--sab-border, none);
   /* Use background-color + fallbacks so unset --sab-* does not interact badly
@@ -39,11 +39,13 @@
 }
 
 /* ── Size variants (rem-absolute; compose with outline / icon-only / color classes) ─
- * Both standard and dense use rem so they scale proportionally (standard:dense ≈ 1.12x).
- * Steps mirror Tailwind's text-xs→text-sm cadence (~10–18% per tier). */
+ * Both standard and dense use rem so they scale proportionally.
+ * "md" matches the base badge default — it is the explicit alias for the default size.
+ * Steps: xxs 0.55, xs 0.62, sm 0.69, md/default 0.75, lg 0.85, xl 1.00 rem */
 .sab-badge.sab-xxs { font-size: 0.55rem; padding: 0.10rem 0.28rem; }
 .sab-badge.sab-xs  { font-size: 0.62rem; padding: 0.15rem 0.35rem; }
 .sab-badge.sab-sm  { font-size: 0.69rem; padding: 0.22rem 0.48rem; }
+.sab-badge.sab-md  { font-size: 0.75rem; padding: 0.28rem 0.52rem; }
 .sab-badge.sab-lg  { font-size: 0.85rem; padding: 0.40rem 0.75rem; }
 .sab-badge.sab-xl  { font-size: 1.00rem; padding: 0.45rem 0.85rem; }
 
@@ -73,8 +75,9 @@
  * override it upward to align with standard when explicitly requested. */
 .sab-badge.sab-dense.sab-xxs { font-size: 0.55rem; padding: 0.10rem 0.34rem; }
 .sab-badge.sab-dense.sab-xs  { font-size: 0.62rem; padding: 0.12rem 0.38rem; }
-.sab-badge.sab-dense.sab-sm  { font-size: 0.69rem; padding: 0.14rem 0.44rem; }
+.sab-badge.sab-dense.sab-sm  { font-size: 0.69rem; padding: 0.12rem 0.44rem; }
 /* default dense: 0.67rem — no extra rule needed */
+.sab-badge.sab-dense.sab-md  { font-size: 0.75rem; padding: 0.17rem 0.52rem; }
 .sab-badge.sab-dense.sab-lg  { font-size: 0.85rem; padding: 0.20rem 0.58rem; }
 .sab-badge.sab-dense.sab-xl  { font-size: 1.00rem; padding: 0.24rem 0.68rem; }
 
@@ -215,11 +218,14 @@ code.docutils .sab-badge.sab-inline-icon:last-child {
 /* ── Context-aware badge sizing ─────────────────────────── *
  * Scoped to .document-content (Furo main body) to avoid
  * applying in sidebar, TOC, or navigation contexts.
- * Ancestors use :where() so explicit .sab-xs–.sab-xl size classes win.
- */
-:where(.body h2, .body h3, [role="main"] h2, [role="main"] h3) .sab-badge {
-  font-size: 0.68rem;
-  padding: 0.17rem 0.4rem;
+ * Only applies to DEFAULT (no explicit size class) badges so that
+ * all size-classed badges render at their declared rem values.
+ * Paragraph context compacts default to sm-level (~18px) instead of
+ * the old ultra-compact 0.62rem (~14px). */
+:where(.body h2, .body h3, [role="main"] h2, [role="main"] h3)
+  .sab-badge:not(.sab-xxs):not(.sab-xs):not(.sab-sm):not(.sab-md):not(.sab-lg):not(.sab-xl) {
+  font-size: 0.71rem;
+  padding: 0.20rem 0.44rem;
 }
 
 :where(
@@ -232,9 +238,9 @@ code.docutils .sab-badge.sab-inline-icon:last-child {
     [role="main"] td,
     [role="main"] a
   )
-  .sab-badge {
-  font-size: 0.62rem;
-  padding: 0.12rem 0.32rem;
+  .sab-badge:not(.sab-xxs):not(.sab-xs):not(.sab-sm):not(.sab-md):not(.sab-lg):not(.sab-xl) {
+  font-size: 0.69rem;
+  padding: 0.18rem 0.40rem;
 }
 
 /* ── Consistent code → badge spacing (body only) ────────── */
