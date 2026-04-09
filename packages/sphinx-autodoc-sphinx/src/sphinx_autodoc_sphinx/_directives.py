@@ -28,6 +28,8 @@ from docutils.parsers.rst import directives
 from sphinx import addnodes
 from sphinx.util.docutils import SphinxDirective
 from sphinx_autodoc_layout import (
+    ApiFactRow,
+    build_api_facts_section,
     iter_desc_nodes,
     parse_generated_markup,
 )
@@ -169,6 +171,13 @@ def _render_default(value: object) -> str:  # object: only calls repr()
     return f"``{value!r}``"
 
 
+def _literal_paragraph(text: str) -> nodes.paragraph:
+    """Return a paragraph containing one literal node."""
+    paragraph = nodes.paragraph()
+    paragraph += nodes.literal(text, text)
+    return paragraph
+
+
 def _is_complex_default(value: object) -> bool:  # object: only calls repr()
     """Return True when repr of value exceeds the inline display threshold.
 
@@ -235,6 +244,14 @@ def _render_types(
     if default is None:
         return "``None``"
     return f"``{type(default).__name__}``"
+
+
+def _type_text(
+    types: object,
+    default: object,
+) -> str:
+    """Return plain text for a config value type expression."""
+    return _render_types(types, default).strip("`")
 
 
 def _config_values_from_calls(
@@ -346,26 +363,16 @@ def render_config_value_markup(
     >>> markup = render_config_value_markup(value)
     >>> ".. confval:: demo_option" in markup
     True
-    >>> ":default: ``True``" in markup
-    True
+    >>> ":default:" in markup
+    False
     """
     lines = [
         f".. confval:: {value.name}",
         "   :no-index:" if no_index else "",
-        f"   :type: {_render_types(value.types, value.default)}",
+        "",
     ]
-    if not _is_complex_default(value.default):
-        lines.append(f"   :default: {_render_default(value.default)}")
-    lines.append("")
     if value.description:
         lines.extend([f"   {value.description}", ""])
-    lines.extend(
-        [
-            f"   Registered by ``{value.module_name}.setup()``.",
-            "",
-            f"   Rebuild: ``{value.rebuild or 'none'}``.",
-        ],
-    )
     return "\n".join(lines)
 
 
@@ -461,6 +468,20 @@ def _inject_config_badges(
             )
 
 
+def _config_fact_rows(value: SphinxConfigValue) -> list[ApiFactRow]:
+    """Return shared fact rows for one config value."""
+    default_body: nodes.Node
+    if _is_complex_default(value.default):
+        default_body = _make_default_block(value.default)
+    else:
+        default_body = _literal_paragraph(repr(value.default))
+    return [
+        ApiFactRow("Type", _literal_paragraph(_type_text(value.types, value.default))),
+        ApiFactRow("Default", default_body),
+        ApiFactRow("Registered by", _literal_paragraph(f"{value.module_name}.setup()")),
+    ]
+
+
 def _render_config_value_nodes(
     directive: SphinxDirective,
     value: SphinxConfigValue,
@@ -473,15 +494,8 @@ def _render_config_value_nodes(
         render_config_value_markup(value, no_index=no_index),
     )
     _inject_config_badges(value_nodes, value)
-    if not _is_complex_default(value.default):
-        return value_nodes
-
-    block = _make_default_block(value.default)
     for desc_content in _iter_desc_content(value_nodes):
-        # Insert before the trailing metadata paragraphs
-        # ("Registered by …" and "Rebuild: …")
-        idx = max(0, len(desc_content) - 2)
-        desc_content.insert(idx, block.deepcopy())
+        desc_content += build_api_facts_section(_config_fact_rows(value))
     return value_nodes
 
 

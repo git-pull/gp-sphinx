@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from docutils import nodes
-from sphinx_autodoc_badges import BadgeNode, build_badge
+from sphinx_autodoc_badges import BadgeSpec, build_badge_group_from_specs
 
 from sphinx_autodoc_pytest_fixtures._constants import _SUPPRESSED_SCOPES
 from sphinx_autodoc_pytest_fixtures._css import _CSS
@@ -18,6 +18,72 @@ _BADGE_TOOLTIPS: dict[str, str] = {
     "autouse": "Runs automatically for every test (autouse=True)",
     "deprecated": "Deprecated \u2014 see docs for replacement",
 }
+
+
+def _fixture_badge_specs(
+    scope: str,
+    kind: str,
+    autouse: bool,
+    *,
+    deprecated: bool = False,
+    show_fixture_badge: bool = True,
+) -> list[BadgeSpec]:
+    """Return typed badge specs for one fixture entry."""
+    badges: list[BadgeSpec] = []
+
+    if deprecated:
+        badges.append(
+            BadgeSpec(
+                "deprecated",
+                tooltip=_BADGE_TOOLTIPS["deprecated"],
+                classes=(_CSS.BADGE, _CSS.BADGE_STATE, _CSS.DEPRECATED),
+            )
+        )
+
+    if scope and scope not in _SUPPRESSED_SCOPES:
+        badges.append(
+            BadgeSpec(
+                scope,
+                tooltip=_BADGE_TOOLTIPS.get(scope, f"Scope: {scope}"),
+                classes=(_CSS.BADGE, _CSS.BADGE_SCOPE, _CSS.scope(scope)),
+            )
+        )
+
+    if autouse:
+        badges.append(
+            BadgeSpec(
+                "auto",
+                tooltip=_BADGE_TOOLTIPS["autouse"],
+                classes=(_CSS.BADGE, _CSS.BADGE_STATE, _CSS.AUTOUSE),
+            )
+        )
+    elif kind == "factory":
+        badges.append(
+            BadgeSpec(
+                "factory",
+                tooltip=_BADGE_TOOLTIPS["factory"],
+                classes=(_CSS.BADGE, _CSS.BADGE_KIND, _CSS.FACTORY),
+            )
+        )
+    elif kind == "override_hook":
+        badges.append(
+            BadgeSpec(
+                "override",
+                tooltip=_BADGE_TOOLTIPS["override_hook"],
+                classes=(_CSS.BADGE, _CSS.BADGE_KIND, _CSS.OVERRIDE),
+            )
+        )
+
+    if show_fixture_badge:
+        badges.append(
+            BadgeSpec(
+                "fixture",
+                tooltip=_BADGE_TOOLTIPS["fixture"],
+                classes=(_CSS.BADGE, _CSS.BADGE_FIXTURE),
+            )
+        )
+
+    return badges
 
 
 def _build_badge_group_node(
@@ -56,64 +122,13 @@ def _build_badge_group_node(
     nodes.inline
         Badge group container with BadgeNode children.
     """
-    group = nodes.inline(classes=[_CSS.BADGE_GROUP])
-    badges: list[BadgeNode] = []
-
-    if deprecated:
-        badges.append(
-            build_badge(
-                "deprecated",
-                tooltip=_BADGE_TOOLTIPS["deprecated"],
-                classes=[_CSS.BADGE, _CSS.BADGE_STATE, _CSS.DEPRECATED],
-            )
-        )
-
-    if scope and scope not in _SUPPRESSED_SCOPES:
-        badges.append(
-            build_badge(
-                scope,
-                tooltip=_BADGE_TOOLTIPS.get(scope, f"Scope: {scope}"),
-                classes=[_CSS.BADGE, _CSS.BADGE_SCOPE, _CSS.scope(scope)],
-            )
-        )
-
-    if autouse:
-        badges.append(
-            build_badge(
-                "auto",
-                tooltip=_BADGE_TOOLTIPS["autouse"],
-                classes=[_CSS.BADGE, _CSS.BADGE_STATE, _CSS.AUTOUSE],
-            )
-        )
-    elif kind == "factory":
-        badges.append(
-            build_badge(
-                "factory",
-                tooltip=_BADGE_TOOLTIPS["factory"],
-                classes=[_CSS.BADGE, _CSS.BADGE_KIND, _CSS.FACTORY],
-            )
-        )
-    elif kind == "override_hook":
-        badges.append(
-            build_badge(
-                "override",
-                tooltip=_BADGE_TOOLTIPS["override_hook"],
-                classes=[_CSS.BADGE, _CSS.BADGE_KIND, _CSS.OVERRIDE],
-            )
-        )
-
-    if show_fixture_badge:
-        badges.append(
-            build_badge(
-                "fixture",
-                tooltip=_BADGE_TOOLTIPS["fixture"],
-                classes=[_CSS.BADGE, _CSS.BADGE_FIXTURE],
-            )
-        )
-
-    for i, badge in enumerate(badges):
-        group += badge
-        if i < len(badges) - 1:
-            group += nodes.Text(" ")
-
-    return group
+    return build_badge_group_from_specs(
+        _fixture_badge_specs(
+            scope,
+            kind,
+            autouse,
+            deprecated=deprecated,
+            show_fixture_badge=show_fixture_badge,
+        ),
+        classes=[_CSS.BADGE_GROUP],
+    )

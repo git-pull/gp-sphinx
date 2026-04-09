@@ -21,7 +21,7 @@
                   <desc_returns xml:space="preserve">
                       fixture_mod.Server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
                               session
                            
@@ -35,19 +35,20 @@
                           Created once per test session and shared across all tests. Requesting this fixture does not create a new instance per test.
                   <paragraph>
                       Use this when you need a long-lived server across the session.
-                  <field_list>
-                      <field>
-                          <field_name>
-                              Used by
-                          <field_body>
-                              <paragraph>
-                                  <reference internal="True" refid="fixture_mod.my_client">
-                                      <literal>
-                                          my_client
-                                  , 
-                                  <reference internal="True" refid="fixture_mod.yield_server">
-                                      <literal>
-                                          yield_server
+                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                      <field_list>
+                          <field>
+                              <field_name>
+                                  Used by
+                              <field_body>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.my_client">
+                                          <literal>
+                                              my_client
+                                      , 
+                                      <reference internal="True" refid="fixture_mod.yield_server">
+                                          <literal>
+                                              yield_server
           <index entries="('single',\ 'my_client\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.my_client',\ '',\ None)">
           <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
               <desc_signature _toc_name="my_client" _toc_parts="('fixture_mod', 'my_client')" class="" classes="sig sig-object py" fullname="my_client" ids="fixture_mod.my_client" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_client" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
@@ -63,7 +64,7 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                               fixture
               <desc_content>
@@ -72,15 +73,16 @@
                       <emphasis>
                           my_server
                       .
-                  <field_list>
-                      <field>
-                          <field_name>
-                              Depends on
-                          <field_body>
-                              <paragraph>
-                                  <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
-                                      <literal classes="xref py py-fixture">
-                                          my_server
+                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                      <field_list>
+                          <field>
+                              <field_name>
+                                  Depends on
+                              <field_body>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                          <literal classes="xref py py-fixture">
+                                              my_server
           <index entries="('single',\ 'home_user\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.home_user',\ '',\ None) ('pair',\ 'override\ hooks;\ home_user',\ 'fixture_mod.home_user',\ '',\ None)">
           <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
               <desc_signature _toc_name="home_user" _toc_parts="('fixture_mod', 'home_user')" class="" classes="sig sig-object py" fullname="home_user" ids="fixture_mod.home_user" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.home_user" spf_deprecated="False" spf_kind="override_hook" spf_ret_type="str" spf_scope="function">
@@ -96,7 +98,7 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="Override hook — customize in conftest.py" classes="sab-badge spf-badge spf-badge--kind spf-override" tabindex="0">
                               override
                            
@@ -131,7 +133,7 @@
                   <desc_returns xml:space="preserve">
                       fixture_mod.Server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                               fixture
               <desc_content>
@@ -140,15 +142,16 @@
                   <note>
                       <paragraph>
                           This is a yield fixture — it runs setup code before yielding the value to the test, then teardown code after the test completes.
-                  <field_list>
-                      <field>
-                          <field_name>
-                              Depends on
-                          <field_body>
-                              <paragraph>
-                                  <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
-                                      <literal classes="xref py py-fixture">
-                                          my_server
+                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                      <field_list>
+                          <field>
+                              <field_name>
+                                  Depends on
+                              <field_body>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                          <literal classes="xref py py-fixture">
+                                              my_server
           <index entries="('single',\ 'auto_cleanup\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.auto_cleanup',\ '',\ None)">
           <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
               <desc_signature _toc_name="auto_cleanup" _toc_parts="('fixture_mod', 'auto_cleanup')" class="" classes="sig sig-object py" fullname="auto_cleanup" ids="fixture_mod.auto_cleanup" module="fixture_mod" spf_autouse="True" spf_badges_injected="True" spf_canonical_name="fixture_mod.auto_cleanup" spf_deprecated="False" spf_kind="resource" spf_ret_type="None" spf_scope="function">
@@ -164,7 +167,7 @@
                   <desc_returns xml:space="preserve">
                       None
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="Runs automatically for every test (autouse=True)" classes="sab-badge spf-badge spf-badge--state spf-autouse" tabindex="0">
                               auto
                            
@@ -173,13 +176,14 @@
               <desc_content>
                   <paragraph>
                       Runs automatically before every test — no request needed.
-                  <field_list>
-                      <field>
-                          <field_name>
-                              Autouse
-                          <field_body>
-                              <paragraph>
-                                  yes — runs automatically for every test
+                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                      <field_list>
+                          <field>
+                              <field_name>
+                                  Autouse
+                              <field_body>
+                                  <paragraph>
+                                      yes — runs automatically for every test
                   <note>
                       <paragraph>
                           No request needed — this fixture runs automatically for every test.
@@ -203,7 +207,7 @@
                       <desc_sig_punctuation classes="p">
                           ]
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="Factory — returns a callable that creates instances" classes="sab-badge spf-badge spf-badge--kind spf-factory" tabindex="0">
                               factory
                            
@@ -231,7 +235,7 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                               fixture
               <desc_content>
@@ -255,21 +259,22 @@
           <desc_returns xml:space="preserve">
               str
           <api_slot classes="api-slot api-slot--badges" slot="badges">
-              <inline classes="spf-badge-group">
+              <inline classes="sab-badge-group spf-badge-group">
                   <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                       fixture
       <desc_content>
           <paragraph>
               Uses tmp_path internally.
-          <field_list>
-              <field>
-                  <field_name>
-                      Depends on
-                  <field_body>
-                      <paragraph>
-                          <reference refuri="https://docs.pytest.org/en/stable/reference/fixtures.html#tmp_path">
-                              <literal>
-                                  tmp_path
+          <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+              <field_list>
+                  <field>
+                      <field_name>
+                          Depends on
+                      <field_body>
+                          <paragraph>
+                              <reference refuri="https://docs.pytest.org/en/stable/reference/fixtures.html#tmp_path">
+                                  <literal>
+                                      tmp_path
   '''
 # ---
 # name: test_dependency_rendering_snapshot[external_dependency_link]
@@ -286,19 +291,20 @@
           <desc_name classes="sig-name descname" xml:space="preserve">
               my_widget
           <api_slot classes="api-slot api-slot--badges" slot="badges">
-              <inline classes="spf-badge-group">
+              <inline classes="sab-badge-group spf-badge-group">
                   <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                       fixture
       <desc_content>
-          <field_list>
-              <field>
-                  <field_name>
-                      Depends on
-                  <field_body>
-                      <paragraph>
-                          <reference refuri="https://example.com/fixtures/special_dep">
-                              <literal>
-                                  special_dep
+          <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+              <field_list>
+                  <field>
+                      <field_name>
+                          Depends on
+                      <field_body>
+                          <paragraph>
+                              <reference refuri="https://example.com/fixtures/special_dep">
+                                  <literal>
+                                      special_dep
   '''
 # ---
 # name: test_dependency_rendering_snapshot[hidden_dependencies]
@@ -317,7 +323,7 @@
           <desc_returns xml:space="preserve">
               str
           <api_slot classes="api-slot api-slot--badges" slot="badges">
-              <inline classes="spf-badge-group">
+              <inline classes="sab-badge-group spf-badge-group">
                   <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                       fixture
       <desc_content>
@@ -389,7 +395,7 @@
                                               my_client
                               <entry>
                                   <paragraph>
-                                      <inline classes="spf-badge-group">
+                                      <inline classes="sab-badge-group spf-badge-group">
                                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                                               fixture
                               <entry>
@@ -407,7 +413,7 @@
                                               my_server
                               <entry>
                                   <paragraph>
-                                      <inline classes="spf-badge-group">
+                                      <inline classes="sab-badge-group spf-badge-group">
                                           <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
                                               session
                                            
@@ -428,7 +434,7 @@
                                               renamed_fixture
                               <entry>
                                   <paragraph>
-                                      <inline classes="spf-badge-group">
+                                      <inline classes="sab-badge-group spf-badge-group">
                                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                                               fixture
                               <entry>
@@ -455,7 +461,7 @@
                   <desc_returns xml:space="preserve">
                       fixture_mod.Server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
                               session
                            
@@ -467,15 +473,16 @@
                   <note>
                       <paragraph>
                           Created once per test session and shared across all tests. Requesting this fixture does not create a new instance per test.
-                  <field_list>
-                      <field>
-                          <field_name>
-                              Used by
-                          <field_body>
-                              <paragraph>
-                                  <reference internal="True" refid="fixture_mod.my_client">
-                                      <literal>
-                                          my_client
+                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                      <field_list>
+                          <field>
+                              <field_name>
+                                  Used by
+                              <field_body>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.my_client">
+                                          <literal>
+                                              my_client
           <index entries="('single',\ 'my_client\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.my_client',\ '',\ None)">
           <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
               <desc_signature _toc_name="my_client" _toc_parts="('fixture_mod', 'my_client')" class="" classes="sig sig-object py" fullname="my_client" ids="fixture_mod.my_client" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_client" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
@@ -491,7 +498,7 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                               fixture
               <desc_content>
@@ -500,15 +507,16 @@
                       <emphasis>
                           my_server
                       .
-                  <field_list>
-                      <field>
-                          <field_name>
-                              Depends on
-                          <field_body>
-                              <paragraph>
-                                  <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
-                                      <literal classes="xref py py-fixture">
-                                          my_server
+                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                      <field_list>
+                          <field>
+                              <field_name>
+                                  Depends on
+                              <field_body>
+                                  <paragraph>
+                                      <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                          <literal classes="xref py py-fixture">
+                                              my_server
           <index entries="('single',\ 'renamed_fixture\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.renamed_fixture',\ '',\ None)">
           <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
               <desc_signature _toc_name="renamed_fixture" _toc_parts="('fixture_mod', 'renamed_fixture')" class="" classes="sig sig-object py" fullname="renamed_fixture" ids="fixture_mod.renamed_fixture" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.renamed_fixture" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
@@ -524,7 +532,7 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                               fixture
               <desc_content>
@@ -552,7 +560,7 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       my_server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                               fixture
               <desc_content>
@@ -571,7 +579,7 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                               fixture
               <desc_content>
@@ -595,7 +603,7 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                               fixture
               <desc_content>
@@ -619,7 +627,7 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                               fixture
               <desc_content>
@@ -650,7 +658,7 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       yield_server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                               fixture
               <desc_content>
@@ -674,7 +682,7 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       old_server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="Deprecated — see docs for replacement" classes="sab-badge spf-badge spf-badge--state spf-deprecated" tabindex="0">
                               deprecated
                            
@@ -704,7 +712,7 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       old_thing
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="Deprecated — see docs for replacement" classes="sab-badge spf-badge spf-badge--state spf-deprecated" tabindex="0">
                               deprecated
                            
@@ -729,7 +737,7 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       async_thing
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                               fixture
               <desc_content>
@@ -753,42 +761,43 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
                       Fixture parametrized over shell interpreters.
-                  <field_list>
-                      <field>
-                          <field_name>
-                              Depends on
-                          <field_body>
-                              <paragraph>
-                                  <reference refuri="https://docs.pytest.org/en/stable/reference/fixtures.html#request">
-                                      <literal>
-                                          request
-                      <field>
-                          <field_name>
-                              Parametrized
-                          <field_body>
-                              <enumerated_list enumtype="arabic">
-                                  <list_item>
-                                      <paragraph>
+                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                      <field_list>
+                          <field>
+                              <field_name>
+                                  Depends on
+                              <field_body>
+                                  <paragraph>
+                                      <reference refuri="https://docs.pytest.org/en/stable/reference/fixtures.html#request">
                                           <literal>
-                                              'bash'
-                                  <list_item>
-                                      <paragraph>
-                                          <literal>
-                                              'zsh'
-                                  <list_item>
-                                      <paragraph>
-                                          <literal>
-                                              'fish'
-                                  <list_item>
-                                      <paragraph>
-                                          <literal>
-                                              'nushell'
+                                              request
+                          <field>
+                              <field_name>
+                                  Parametrized
+                              <field_body>
+                                  <enumerated_list enumtype="arabic">
+                                      <list_item>
+                                          <paragraph>
+                                              <literal>
+                                                  'bash'
+                                      <list_item>
+                                          <paragraph>
+                                              <literal>
+                                                  'zsh'
+                                      <list_item>
+                                          <paragraph>
+                                              <literal>
+                                                  'fish'
+                                      <list_item>
+                                          <paragraph>
+                                              <literal>
+                                                  'nushell'
           <index entries="('single',\ 'shell_manual\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.shell_manual',\ '',\ None)">
           <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
               <desc_signature _toc_name="shell_manual" _toc_parts="('fixture_mod', 'shell_manual')" class="" classes="sig sig-object py" fullname="shell_manual" ids="fixture_mod.shell_manual" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.shell_manual" spf_deprecated="False" spf_kind="resource" spf_ret_type="" spf_scope="function">
@@ -802,21 +811,22 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       shell_manual
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="spf-badge-group">
+                      <inline classes="sab-badge-group spf-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
                               fixture
               <desc_content>
-                  <field_list>
-                      <field>
-                          <field_name>
-                              Parametrized
-                          <field_body>
-                              <paragraph>
-                                  <literal>
-                                      'bash'
-                                  , 
-                                  <literal>
-                                      'zsh'
+                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                      <field_list>
+                          <field>
+                              <field_name>
+                                  Parametrized
+                              <field_body>
+                                  <paragraph>
+                                      <literal>
+                                          'bash'
+                                      , 
+                                      <literal>
+                                          'zsh'
   '''
 # ---
 # name: test_warning_and_manual_option_snapshot[warning_and_manual_options_warnings]

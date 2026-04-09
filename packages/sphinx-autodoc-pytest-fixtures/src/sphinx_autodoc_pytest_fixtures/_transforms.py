@@ -8,6 +8,7 @@ from docutils import nodes
 from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
 from sphinx.util.nodes import make_refnode
+from sphinx_autodoc_layout import build_api_table_section
 from sphinx_autodoc_layout._slots import inject_signature_slots
 
 from sphinx_autodoc_pytest_fixtures._badges import _build_badge_group_node
@@ -23,6 +24,10 @@ if t.TYPE_CHECKING:
     pass
 
 logger = sphinx_logging.getLogger(__name__)
+
+_PARAMETER_FIELD_LABELS = frozenset(
+    {"parameter", "parameters", "return", "returns", "yield", "yields", "raises"}
+)
 
 
 def _on_missing_reference(
@@ -142,6 +147,27 @@ def _strip_rtype_fields(desc_node: addnodes.desc) -> None:
                     fl.remove(field)
             if not fl.children:
                 content_child.remove(fl)
+
+
+def _wrap_fixture_field_lists(desc_node: addnodes.desc) -> None:
+    """Wrap top-level fixture field lists in shared body sections."""
+    for content_child in desc_node.findall(addnodes.desc_content):
+        for field_list in list(content_child.children):
+            if not isinstance(field_list, nodes.field_list):
+                continue
+            labels = {
+                field_name.astext().strip().lower()
+                for field_name in field_list.findall(nodes.field_name)
+            }
+            section_name = (
+                "api-parameters" if labels & _PARAMETER_FIELD_LABELS else "api-facts"
+            )
+            insert_idx = content_child.children.index(field_list)
+            content_child.remove(field_list)
+            content_child.insert(
+                insert_idx,
+                build_api_table_section(section_name, field_list),
+            )
 
 
 def _inject_metadata_fields(
@@ -268,6 +294,7 @@ def _on_doctree_resolved(
             _inject_badges_and_reorder(sig_node)
         _strip_rtype_fields(desc_node)
         _inject_metadata_fields(desc_node, store, py_domain, app, docname)
+        _wrap_fixture_field_lists(desc_node)
 
     # Resolve autofixture-index placeholders
     for idx_node in list(doctree.findall(autofixture_index_node)):

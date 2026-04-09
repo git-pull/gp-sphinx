@@ -9,6 +9,7 @@ import typing as t
 import pytest
 from docutils import nodes
 from sphinx import addnodes
+from sphinx_autodoc_layout._nodes import api_component
 
 from tests._snapshots import normalize_warning_text
 from tests._sphinx_scenarios import (
@@ -239,6 +240,18 @@ def _fixture_order(doctree: nodes.Node) -> list[str]:
     return fixture_ids
 
 
+def _content_section_names(desc_node: addnodes.desc) -> list[str]:
+    """Return shared API section names for one fixture description."""
+    content = next(desc_node.findall(addnodes.desc_content), None)
+    if content is None:
+        return []
+    return [
+        str(child.get("name"))
+        for child in content.children
+        if isinstance(child, api_component)
+    ]
+
+
 def test_default_fixture_store_and_domain_contract(
     default_dummy_result: SharedSphinxResult,
 ) -> None:
@@ -282,6 +295,16 @@ def test_default_fixture_post_transform_snapshot(
         name="default_fixture_page",
         roots=(default_dummy_result.srcdir, default_dummy_result.outdir),
     )
+
+
+def test_default_fixture_sections_use_shared_fact_region(
+    default_dummy_result: SharedSphinxResult,
+) -> None:
+    """Fixture pages wrap metadata field lists in the shared facts region."""
+    doctree = get_doctree(default_dummy_result, "index", post_transforms=True)
+    fixture_desc = _find_fixture_desc(doctree, "fixture_mod.my_server")
+
+    assert "api-facts" in _content_section_names(fixture_desc)
 
 
 def test_manual_directive_without_module_registers_unqualified_name(

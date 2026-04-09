@@ -23,8 +23,11 @@ import typing as t
 from sphinx.application import Sphinx
 
 from sphinx_autodoc_badges._builders import (
+    BadgeSpec,
     build_badge,
+    build_badge_from_spec,
     build_badge_group,
+    build_badge_group_from_specs,
     build_toolbar,
 )
 from sphinx_autodoc_badges._nodes import BadgeNode
@@ -32,8 +35,11 @@ from sphinx_autodoc_badges._visitors import depart_badge_html, visit_badge_html
 
 __all__ = [
     "BadgeNode",
+    "BadgeSpec",
     "build_badge",
+    "build_badge_from_spec",
     "build_badge_group",
+    "build_badge_group_from_specs",
     "build_toolbar",
     "setup",
 ]

@@ -40,7 +40,7 @@ def test_config_blocks_render_confval_entries() -> None:
     )
     markup = render_config_value_markup(value)
     assert ".. confval:: argparse_show_defaults" in markup
-    assert ":default: ``True``" in markup
+    assert "Show default values in argument docs" in markup
 
 
 def test_discover_config_value_resolves_qualified_paths() -> None:
@@ -89,7 +89,7 @@ def test_make_default_block_produces_literal_block() -> None:
 
 
 def test_render_config_value_markup_omits_default_for_complex() -> None:
-    """Complex defaults omit the :default: field; simple defaults keep it."""
+    """Config markup leaves defaults to the shared facts presenter."""
     complex_value = SphinxConfigValue(
         "demo_ext",
         "demo_map",
@@ -100,4 +100,4 @@ def test_render_config_value_markup_omits_default_for_complex() -> None:
     assert ":default:" not in render_config_value_markup(complex_value)
 
     simple_value = SphinxConfigValue("demo_ext", "demo_flag", True, "html", (bool,))
-    assert ":default: ``True``" in render_config_value_markup(simple_value)
+    assert ":default:" not in render_config_value_markup(simple_value)

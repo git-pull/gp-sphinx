@@ -109,6 +109,7 @@ def test_fastmcp_tool_cards_use_shared_layout(
     assert 'class="api-entry smf-tool-entry api-profile--fastmcp-tool"' in html
     assert 'class="api-layout"' in html
     assert 'class="api-badge-container"' in html
+    assert 'class="api-facts gal-region gal-region--facts smf-body-section"' in html
     assert 'class="headerlink api-link"' in html
     assert 'class="reference internal" href="#list-sessions"' in html
     assert "Parameters" in html
