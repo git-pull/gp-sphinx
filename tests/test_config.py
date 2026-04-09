@@ -351,17 +351,6 @@ def test_merge_sphinx_config_autodoc_typehints() -> None:
     assert result["autodoc_typehints"] == "description"
 
 
-def test_merge_sphinx_config_napoleon_defaults() -> None:
-    """Default napoleon settings are present."""
-    result = merge_sphinx_config(
-        project="test",
-        version="1.0",
-        copyright="2026",
-    )
-    assert result["napoleon_google_docstring"] is True
-    assert result["napoleon_include_init_with_doc"] is False
-
-
 def test_merge_sphinx_config_copybutton_continuation() -> None:
     """Default copybutton line continuation character is backslash."""
     result = merge_sphinx_config(

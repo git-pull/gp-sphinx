@@ -47,9 +47,6 @@ from gp_sphinx.defaults import (
     DEFAULT_HTML_STATIC_PATH,
     DEFAULT_MYST_EXTENSIONS,
     DEFAULT_MYST_HEADING_ANCHORS,
-    DEFAULT_NAPOLEON_GOOGLE_DOCSTRING,
-    DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC,
-    DEFAULT_NAPOLEON_USE_RTYPE,
     DEFAULT_PYGMENTS_DARK_STYLE,
     DEFAULT_PYGMENTS_STYLE,
     DEFAULT_SOURCE_SUFFIX,
@@ -400,10 +397,6 @@ def merge_sphinx_config(
         "autodoc_typehints": DEFAULT_AUTODOC_TYPEHINTS,
         "toc_object_entries_show_parents": DEFAULT_TOC_OBJECT_ENTRIES_SHOW_PARENTS,
         "autodoc_default_options": dict(DEFAULT_AUTODOC_OPTIONS),
-        # Napoleon
-        "napoleon_google_docstring": DEFAULT_NAPOLEON_GOOGLE_DOCSTRING,
-        "napoleon_include_init_with_doc": DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC,
-        "napoleon_use_rtype": DEFAULT_NAPOLEON_USE_RTYPE,
         # Copybutton
         "copybutton_prompt_text": DEFAULT_COPYBUTTON_PROMPT_TEXT,
         "copybutton_prompt_is_regexp": DEFAULT_COPYBUTTON_PROMPT_IS_REGEXP,
