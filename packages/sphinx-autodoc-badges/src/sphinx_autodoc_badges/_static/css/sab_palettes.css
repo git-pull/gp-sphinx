@@ -1,0 +1,364 @@
+/* sphinx_autodoc_badges — unified badge colour palette.
+ *
+ * Single source of truth for every semantic badge colour across all
+ * sphinx-autodoc-* extensions.  Packages no longer ship their own colour
+ * CSS; they use the sab-type-*, sab-mod-*, sab-scope-*, and sab-state-*
+ * classes defined here.
+ *
+ * All classes set --sab-bg, --sab-fg, --sab-border so the shared
+ * sab-badge base layer in sphinx_autodoc_badges.css picks them up.
+ * Outlined variants (modifiers, rebuild, factory, etc.) only set fg/border;
+ * they rely on the .sab-outline rule for a transparent background.
+ */
+
+/* ══════════════════════════════════════════════════════════
+ * Light-mode token definitions
+ * ══════════════════════════════════════════════════════════ */
+:root {
+  /* ── Python API type badges ─────────────────────────── */
+  --sab-py-function-bg:     #e8f0fe;
+  --sab-py-function-fg:     #1a56db;
+  --sab-py-function-border: #3b82f6;
+
+  --sab-py-class-bg:     #eef2ff;
+  --sab-py-class-fg:     #4338ca;
+  --sab-py-class-border: #6366f1;
+
+  --sab-py-method-bg:     #ecfeff;
+  --sab-py-method-fg:     #0e7490;
+  --sab-py-method-border: #06b6d4;
+
+  --sab-py-property-bg:     #f0fdfa;
+  --sab-py-property-fg:     #0f766e;
+  --sab-py-property-border: #14b8a6;
+
+  --sab-py-attribute-bg:     #f1f5f9;
+  --sab-py-attribute-fg:     #475569;
+  --sab-py-attribute-border: #94a3b8;
+
+  --sab-py-data-bg:     #f5f5f5;
+  --sab-py-data-fg:     #525252;
+  --sab-py-data-border: #a3a3a3;
+
+  --sab-py-exception-bg:     #fff1f2;
+  --sab-py-exception-fg:     #be123c;
+  --sab-py-exception-border: #f43f5e;
+
+  --sab-py-typealias-bg:     #f5f3ff;
+  --sab-py-typealias-fg:     #6d28d9;
+  --sab-py-typealias-border: #8b5cf6;
+
+  --sab-py-module-bg:     #f0fdf4;
+  --sab-py-module-fg:     #166534;
+  --sab-py-module-border: #22c55e;
+
+  /* ── Python API modifier badges (outlined) ──────────── */
+  --sab-mod-async-fg:          #7c3aed;
+  --sab-mod-async-border:      #a78bfa;
+
+  --sab-mod-classmethod-fg:    #b45309;
+  --sab-mod-classmethod-border: #f59e0b;
+
+  --sab-mod-staticmethod-fg:    #475569;
+  --sab-mod-staticmethod-border: #94a3b8;
+
+  --sab-mod-abstract-fg:       #4338ca;
+  --sab-mod-abstract-border:   #818cf8;
+
+  --sab-mod-final-fg:          #047857;
+  --sab-mod-final-border:      #34d399;
+
+  --sab-mod-rebuild-fg:        #6b7280;
+  --sab-mod-rebuild-border:    #d1d5db;
+
+  /* ── Shared deprecated (filled muted) ───────────────── */
+  --sab-state-deprecated-bg:     transparent;
+  --sab-state-deprecated-fg:     #8a4040;
+  --sab-state-deprecated-border: #c07070;
+
+  /* ── pytest fixture types ───────────────────────────── */
+  --sab-fixture-bg:     #e6f7ed;
+  --sab-fixture-fg:     #1a5c2e;
+  --sab-fixture-border: #3aad65;
+
+  /* ── pytest fixture scopes ──────────────────────────── */
+  --sab-scope-session-bg:     #fff3cd;
+  --sab-scope-session-fg:     #7a5200;
+  --sab-scope-session-border: #d4a017;
+
+  --sab-scope-module-bg:     #e0f4f4;
+  --sab-scope-module-fg:     #1a5c5c;
+  --sab-scope-module-border: #3aabab;
+
+  --sab-scope-class-bg:     #eeedf6;
+  --sab-scope-class-fg:     #3c3670;
+  --sab-scope-class-border: #7b76c0;
+
+  /* ── pytest fixture kinds / states (outlined) ───────── */
+  --sab-state-factory-fg:     #7a4200;
+  --sab-state-factory-border: #c87f35;
+
+  --sab-state-override-fg:    #5a1a7a;
+  --sab-state-override-border: #9b59c8;
+
+  --sab-state-autouse-fg:     #7a1a2a;
+  --sab-state-autouse-border: #c85070;
+
+  /* ── Sphinx config (filled amber) ───────────────────── */
+  --sab-config-bg:     #fff7ed;
+  --sab-config-fg:     #c2410c;
+  --sab-config-border: #f97316;
+
+  /* ── docutils (filled violet) ───────────────────────── */
+  --sab-docutils-bg:     #f5f3ff;
+  --sab-docutils-fg:     #6d28d9;
+  --sab-docutils-border: #8b5cf6;
+}
+
+/* ══════════════════════════════════════════════════════════
+ * Dark-mode overrides (OS-level prefers-color-scheme)
+ * ══════════════════════════════════════════════════════════ */
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) {
+    --sab-py-function-bg:     #172554;
+    --sab-py-function-fg:     #93c5fd;
+    --sab-py-function-border: #3b82f6;
+
+    --sab-py-class-bg:     #1e1b4b;
+    --sab-py-class-fg:     #a5b4fc;
+    --sab-py-class-border: #6366f1;
+
+    --sab-py-method-bg:     #083344;
+    --sab-py-method-fg:     #67e8f9;
+    --sab-py-method-border: #22d3ee;
+
+    --sab-py-property-bg:     #042f2e;
+    --sab-py-property-fg:     #5eead4;
+    --sab-py-property-border: #2dd4bf;
+
+    --sab-py-attribute-bg:     #1e293b;
+    --sab-py-attribute-fg:     #cbd5e1;
+    --sab-py-attribute-border: #64748b;
+
+    --sab-py-data-bg:     #262626;
+    --sab-py-data-fg:     #d4d4d4;
+    --sab-py-data-border: #737373;
+
+    --sab-py-exception-bg:     #4c0519;
+    --sab-py-exception-fg:     #fda4af;
+    --sab-py-exception-border: #fb7185;
+
+    --sab-py-typealias-bg:     #2e1065;
+    --sab-py-typealias-fg:     #c4b5fd;
+    --sab-py-typealias-border: #a78bfa;
+
+    --sab-py-module-bg:     #052e16;
+    --sab-py-module-fg:     #86efac;
+    --sab-py-module-border: #4ade80;
+
+    --sab-mod-async-fg:          #c4b5fd;
+    --sab-mod-async-border:      #7c3aed;
+
+    --sab-mod-classmethod-fg:    #fcd34d;
+    --sab-mod-classmethod-border: #d97706;
+
+    --sab-mod-staticmethod-fg:    #94a3b8;
+    --sab-mod-staticmethod-border: #475569;
+
+    --sab-mod-abstract-fg:       #a5b4fc;
+    --sab-mod-abstract-border:   #4338ca;
+
+    --sab-mod-final-fg:          #6ee7b7;
+    --sab-mod-final-border:      #059669;
+
+    --sab-mod-rebuild-fg:        #9ca3af;
+    --sab-mod-rebuild-border:    #4b5563;
+
+    --sab-state-deprecated-fg:     #e08080;
+    --sab-state-deprecated-border: #c06060;
+
+    --sab-fixture-bg:     #0d2e1a;
+    --sab-fixture-fg:     #70dd90;
+    --sab-fixture-border: #309050;
+
+    --sab-scope-session-bg:     #3a2800;
+    --sab-scope-session-fg:     #f5d580;
+    --sab-scope-session-border: #c89030;
+
+    --sab-scope-module-bg:     #0d2a2a;
+    --sab-scope-module-fg:     #70dddd;
+    --sab-scope-module-border: #309090;
+
+    --sab-scope-class-bg:     #1a1838;
+    --sab-scope-class-fg:     #b0acee;
+    --sab-scope-class-border: #6060b0;
+
+    --sab-state-factory-fg:     #f0b060;
+    --sab-state-factory-border: #d08040;
+
+    --sab-state-override-fg:    #d090f0;
+    --sab-state-override-border: #a060d0;
+
+    --sab-state-autouse-fg:     #f080a0;
+    --sab-state-autouse-border: #d05070;
+
+    --sab-config-bg:     #431407;
+    --sab-config-fg:     #fdba74;
+    --sab-config-border: #f97316;
+
+    --sab-docutils-bg:     #2e1065;
+    --sab-docutils-fg:     #c4b5fd;
+    --sab-docutils-border: #a78bfa;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+ * Explicit dark toggle (Furo data-theme="dark")
+ * Identical values to the @media block above.
+ * ══════════════════════════════════════════════════════════ */
+body[data-theme="dark"] {
+  --sab-py-function-bg:     #172554;
+  --sab-py-function-fg:     #93c5fd;
+  --sab-py-function-border: #3b82f6;
+
+  --sab-py-class-bg:     #1e1b4b;
+  --sab-py-class-fg:     #a5b4fc;
+  --sab-py-class-border: #6366f1;
+
+  --sab-py-method-bg:     #083344;
+  --sab-py-method-fg:     #67e8f9;
+  --sab-py-method-border: #22d3ee;
+
+  --sab-py-property-bg:     #042f2e;
+  --sab-py-property-fg:     #5eead4;
+  --sab-py-property-border: #2dd4bf;
+
+  --sab-py-attribute-bg:     #1e293b;
+  --sab-py-attribute-fg:     #cbd5e1;
+  --sab-py-attribute-border: #64748b;
+
+  --sab-py-data-bg:     #262626;
+  --sab-py-data-fg:     #d4d4d4;
+  --sab-py-data-border: #737373;
+
+  --sab-py-exception-bg:     #4c0519;
+  --sab-py-exception-fg:     #fda4af;
+  --sab-py-exception-border: #fb7185;
+
+  --sab-py-typealias-bg:     #2e1065;
+  --sab-py-typealias-fg:     #c4b5fd;
+  --sab-py-typealias-border: #a78bfa;
+
+  --sab-py-module-bg:     #052e16;
+  --sab-py-module-fg:     #86efac;
+  --sab-py-module-border: #4ade80;
+
+  --sab-mod-async-fg:          #c4b5fd;
+  --sab-mod-async-border:      #7c3aed;
+
+  --sab-mod-classmethod-fg:    #fcd34d;
+  --sab-mod-classmethod-border: #d97706;
+
+  --sab-mod-staticmethod-fg:    #94a3b8;
+  --sab-mod-staticmethod-border: #475569;
+
+  --sab-mod-abstract-fg:       #a5b4fc;
+  --sab-mod-abstract-border:   #4338ca;
+
+  --sab-mod-final-fg:          #6ee7b7;
+  --sab-mod-final-border:      #059669;
+
+  --sab-mod-rebuild-fg:        #9ca3af;
+  --sab-mod-rebuild-border:    #4b5563;
+
+  --sab-state-deprecated-fg:     #e08080;
+  --sab-state-deprecated-border: #c06060;
+
+  --sab-fixture-bg:     #0d2e1a;
+  --sab-fixture-fg:     #70dd90;
+  --sab-fixture-border: #309050;
+
+  --sab-scope-session-bg:     #3a2800;
+  --sab-scope-session-fg:     #f5d580;
+  --sab-scope-session-border: #c89030;
+
+  --sab-scope-module-bg:     #0d2a2a;
+  --sab-scope-module-fg:     #70dddd;
+  --sab-scope-module-border: #309090;
+
+  --sab-scope-class-bg:     #1a1838;
+  --sab-scope-class-fg:     #b0acee;
+  --sab-scope-class-border: #6060b0;
+
+  --sab-state-factory-fg:     #f0b060;
+  --sab-state-factory-border: #d08040;
+
+  --sab-state-override-fg:    #d090f0;
+  --sab-state-override-border: #a060d0;
+
+  --sab-state-autouse-fg:     #f080a0;
+  --sab-state-autouse-border: #d05070;
+
+  --sab-config-bg:     #431407;
+  --sab-config-fg:     #fdba74;
+  --sab-config-border: #f97316;
+
+  --sab-docutils-bg:     #2e1065;
+  --sab-docutils-fg:     #c4b5fd;
+  --sab-docutils-border: #a78bfa;
+}
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — Python API types (filled)
+ * ══════════════════════════════════════════════════════════ */
+.sab-type-function  { --sab-bg: var(--sab-py-function-bg);  --sab-fg: var(--sab-py-function-fg);  --sab-border: var(--sab-py-function-border); }
+.sab-type-class     { --sab-bg: var(--sab-py-class-bg);     --sab-fg: var(--sab-py-class-fg);     --sab-border: var(--sab-py-class-border); }
+.sab-type-method    { --sab-bg: var(--sab-py-method-bg);    --sab-fg: var(--sab-py-method-fg);    --sab-border: var(--sab-py-method-border); }
+.sab-type-property  { --sab-bg: var(--sab-py-property-bg);  --sab-fg: var(--sab-py-property-fg);  --sab-border: var(--sab-py-property-border); }
+.sab-type-attribute { --sab-bg: var(--sab-py-attribute-bg); --sab-fg: var(--sab-py-attribute-fg); --sab-border: var(--sab-py-attribute-border); }
+.sab-type-data      { --sab-bg: var(--sab-py-data-bg);      --sab-fg: var(--sab-py-data-fg);      --sab-border: var(--sab-py-data-border); }
+.sab-type-exception { --sab-bg: var(--sab-py-exception-bg); --sab-fg: var(--sab-py-exception-fg); --sab-border: var(--sab-py-exception-border); }
+.sab-type-typealias { --sab-bg: var(--sab-py-typealias-bg); --sab-fg: var(--sab-py-typealias-fg); --sab-border: var(--sab-py-typealias-border); }
+.sab-type-module    { --sab-bg: var(--sab-py-module-bg);    --sab-fg: var(--sab-py-module-fg);    --sab-border: var(--sab-py-module-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — Python API modifiers (outlined)
+ * ══════════════════════════════════════════════════════════ */
+.sab-mod-async        { --sab-fg: var(--sab-mod-async-fg);          --sab-border: var(--sab-mod-async-border); }
+.sab-mod-classmethod  { --sab-fg: var(--sab-mod-classmethod-fg);    --sab-border: var(--sab-mod-classmethod-border); }
+.sab-mod-staticmethod { --sab-fg: var(--sab-mod-staticmethod-fg);   --sab-border: var(--sab-mod-staticmethod-border); }
+.sab-mod-abstract     { --sab-fg: var(--sab-mod-abstract-fg);       --sab-border: var(--sab-mod-abstract-border); }
+.sab-mod-final        { --sab-fg: var(--sab-mod-final-fg);          --sab-border: var(--sab-mod-final-border); }
+.sab-mod-rebuild      { --sab-fg: var(--sab-mod-rebuild-fg);        --sab-border: var(--sab-mod-rebuild-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — pytest fixture types (filled)
+ * ══════════════════════════════════════════════════════════ */
+.sab-type-fixture   { --sab-bg: var(--sab-fixture-bg); --sab-fg: var(--sab-fixture-fg); --sab-border: var(--sab-fixture-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — pytest fixture scopes (filled)
+ * ══════════════════════════════════════════════════════════ */
+.sab-scope-session { --sab-bg: var(--sab-scope-session-bg); --sab-fg: var(--sab-scope-session-fg); --sab-border: var(--sab-scope-session-border); }
+.sab-scope-module  { --sab-bg: var(--sab-scope-module-bg);  --sab-fg: var(--sab-scope-module-fg);  --sab-border: var(--sab-scope-module-border); }
+.sab-scope-class   { --sab-bg: var(--sab-scope-class-bg);   --sab-fg: var(--sab-scope-class-fg);   --sab-border: var(--sab-scope-class-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — fixture kinds / states
+ * ══════════════════════════════════════════════════════════ */
+.sab-state-factory    { --sab-fg: var(--sab-state-factory-fg);    --sab-border: var(--sab-state-factory-border); }
+.sab-state-override   { --sab-fg: var(--sab-state-override-fg);   --sab-border: var(--sab-state-override-border); }
+.sab-state-autouse    { --sab-fg: var(--sab-state-autouse-fg);    --sab-border: var(--sab-state-autouse-border); }
+.sab-state-deprecated { --sab-bg: var(--sab-state-deprecated-bg); --sab-fg: var(--sab-state-deprecated-fg); --sab-border: var(--sab-state-deprecated-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — Sphinx config (filled amber)
+ * ══════════════════════════════════════════════════════════ */
+.sab-type-config { --sab-bg: var(--sab-config-bg); --sab-fg: var(--sab-config-fg); --sab-border: var(--sab-config-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — docutils (filled violet, all three kinds)
+ * ══════════════════════════════════════════════════════════ */
+.sab-type-directive,
+.sab-type-role,
+.sab-type-option { --sab-bg: var(--sab-docutils-bg); --sab-fg: var(--sab-docutils-fg); --sab-border: var(--sab-docutils-border); }

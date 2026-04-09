@@ -21,11 +21,11 @@
                   <desc_returns xml:space="preserve">
                       fixture_mod.Server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge sab-badge sab-badge--scope sab-scope-session" tabindex="0">
                               session
                            
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -64,8 +64,8 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -98,11 +98,11 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="Override hook — customize in conftest.py" classes="sab-badge spf-badge spf-badge--kind spf-override" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="Override hook — customize in conftest.py" classes="sab-badge sab-badge sab-badge--kind sab-state-override sab-outline" tabindex="0">
                               override
                            
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -133,8 +133,8 @@
                   <desc_returns xml:space="preserve">
                       fixture_mod.Server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -167,11 +167,11 @@
                   <desc_returns xml:space="preserve">
                       None
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="Runs automatically for every test (autouse=True)" classes="sab-badge spf-badge spf-badge--state spf-autouse" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="Runs automatically for every test (autouse=True)" classes="sab-badge sab-badge sab-badge--state sab-state-autouse sab-outline" tabindex="0">
                               auto
                            
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -207,11 +207,11 @@
                       <desc_sig_punctuation classes="p">
                           ]
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="Factory — returns a callable that creates instances" classes="sab-badge spf-badge spf-badge--kind spf-factory" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="Factory — returns a callable that creates instances" classes="sab-badge sab-badge sab-badge--kind sab-state-factory sab-outline" tabindex="0">
                               factory
                            
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -235,8 +235,8 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -259,8 +259,8 @@
           <desc_returns xml:space="preserve">
               str
           <api_slot classes="api-slot api-slot--badges" slot="badges">
-              <inline classes="sab-badge-group spf-badge-group">
-                  <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+              <inline classes="sab-badge-group sab-badge-group">
+                  <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                       fixture
       <desc_content>
           <paragraph>
@@ -291,8 +291,8 @@
           <desc_name classes="sig-name descname" xml:space="preserve">
               my_widget
           <api_slot classes="api-slot api-slot--badges" slot="badges">
-              <inline classes="sab-badge-group spf-badge-group">
-                  <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+              <inline classes="sab-badge-group sab-badge-group">
+                  <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                       fixture
       <desc_content>
           <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
@@ -323,8 +323,8 @@
           <desc_returns xml:space="preserve">
               str
           <api_slot classes="api-slot api-slot--badges" slot="badges">
-              <inline classes="sab-badge-group spf-badge-group">
-                  <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+              <inline classes="sab-badge-group sab-badge-group">
+                  <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                       fixture
       <desc_content>
           <paragraph>
@@ -395,8 +395,8 @@
                                               my_client
                               <entry>
                                   <paragraph>
-                                      <inline classes="sab-badge-group spf-badge-group">
-                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                      <inline classes="sab-badge-group sab-badge-group">
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                                               fixture
                               <entry>
                                   <paragraph>
@@ -413,11 +413,11 @@
                                               my_server
                               <entry>
                                   <paragraph>
-                                      <inline classes="sab-badge-group spf-badge-group">
-                                          <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
+                                      <inline classes="sab-badge-group sab-badge-group">
+                                          <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge sab-badge sab-badge--scope sab-scope-session" tabindex="0">
                                               session
                                            
-                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                                               fixture
                               <entry>
                                   <paragraph>
@@ -434,8 +434,8 @@
                                               renamed_fixture
                               <entry>
                                   <paragraph>
-                                      <inline classes="sab-badge-group spf-badge-group">
-                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                                      <inline classes="sab-badge-group sab-badge-group">
+                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                                               fixture
                               <entry>
                                   <paragraph>
@@ -461,11 +461,11 @@
                   <desc_returns xml:space="preserve">
                       fixture_mod.Server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge spf-badge spf-badge--scope spf-scope-session" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge sab-badge sab-badge--scope sab-scope-session" tabindex="0">
                               session
                            
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -498,8 +498,8 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -532,8 +532,8 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -560,8 +560,8 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       my_server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
           <index entries="('single',\ 'async_resource\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.async_resource',\ '',\ None)">
@@ -579,8 +579,8 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -603,8 +603,8 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -627,8 +627,8 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -658,8 +658,8 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       yield_server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <note>
@@ -670,7 +670,7 @@
                               Teardown: 
                           Shuts down the server and cleans socket files.
           <index entries="('single',\ 'old_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.old_server',\ '',\ None)">
-          <desc classes="py fixture spf-deprecated" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
+          <desc classes="py fixture sab-state-deprecated" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
               <desc_signature _toc_name="old_server" _toc_parts="('fixture_mod', 'old_server')" class="" classes="sig sig-object py" fullname="old_server" ids="fixture_mod.old_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.old_server" spf_deprecated="True" spf_kind="resource" spf_ret_type="" spf_scope="function">
                   <desc_annotation xml:space="preserve">
                       <desc_sig_keyword classes="k">
@@ -682,11 +682,11 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       old_server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="Deprecated — see docs for replacement" classes="sab-badge spf-badge spf-badge--state spf-deprecated" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="Deprecated — see docs for replacement" classes="sab-badge sab-badge sab-badge--state sab-state-deprecated" tabindex="0">
                               deprecated
                            
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -712,11 +712,11 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       old_thing
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="Deprecated — see docs for replacement" classes="sab-badge spf-badge spf-badge--state spf-deprecated" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="Deprecated — see docs for replacement" classes="sab-badge sab-badge sab-badge--state sab-state-deprecated" tabindex="0">
                               deprecated
                            
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -737,8 +737,8 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       async_thing
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -761,8 +761,8 @@
                   <desc_returns xml:space="preserve">
                       str
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <paragraph>
@@ -811,8 +811,8 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       shell_manual
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
-                      <inline classes="sab-badge-group spf-badge-group">
-                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge spf-badge spf-badge--fixture" tabindex="0">
+                      <inline classes="sab-badge-group sab-badge-group">
+                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
                   <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">

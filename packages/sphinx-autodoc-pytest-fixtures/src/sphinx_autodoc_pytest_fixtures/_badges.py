@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 from docutils import nodes
-from sphinx_autodoc_badges import BadgeSpec, build_badge_group_from_specs
+from sphinx_autodoc_badges import SAB, BadgeSpec, build_badge_group_from_specs
 
 from sphinx_autodoc_pytest_fixtures._constants import _SUPPRESSED_SCOPES
-from sphinx_autodoc_pytest_fixtures._css import _CSS
 
 _BADGE_TOOLTIPS: dict[str, str] = {
     "session": "Scope: session \u2014 created once per test session",
@@ -36,7 +35,8 @@ def _fixture_badge_specs(
             BadgeSpec(
                 "deprecated",
                 tooltip=_BADGE_TOOLTIPS["deprecated"],
-                classes=(_CSS.BADGE, _CSS.BADGE_STATE, _CSS.DEPRECATED),
+                classes=(SAB.BADGE, SAB.BADGE_STATE, SAB.STATE_DEPRECATED),
+                fill="filled",
             )
         )
 
@@ -45,7 +45,7 @@ def _fixture_badge_specs(
             BadgeSpec(
                 scope,
                 tooltip=_BADGE_TOOLTIPS.get(scope, f"Scope: {scope}"),
-                classes=(_CSS.BADGE, _CSS.BADGE_SCOPE, _CSS.scope(scope)),
+                classes=(SAB.BADGE, SAB.BADGE_SCOPE, SAB.scope(scope)),
             )
         )
 
@@ -54,7 +54,8 @@ def _fixture_badge_specs(
             BadgeSpec(
                 "auto",
                 tooltip=_BADGE_TOOLTIPS["autouse"],
-                classes=(_CSS.BADGE, _CSS.BADGE_STATE, _CSS.AUTOUSE),
+                classes=(SAB.BADGE, SAB.BADGE_STATE, SAB.STATE_AUTOUSE),
+                fill="outline",
             )
         )
     elif kind == "factory":
@@ -62,7 +63,8 @@ def _fixture_badge_specs(
             BadgeSpec(
                 "factory",
                 tooltip=_BADGE_TOOLTIPS["factory"],
-                classes=(_CSS.BADGE, _CSS.BADGE_KIND, _CSS.FACTORY),
+                classes=(SAB.BADGE, SAB.BADGE_KIND, SAB.STATE_FACTORY),
+                fill="outline",
             )
         )
     elif kind == "override_hook":
@@ -70,7 +72,8 @@ def _fixture_badge_specs(
             BadgeSpec(
                 "override",
                 tooltip=_BADGE_TOOLTIPS["override_hook"],
-                classes=(_CSS.BADGE, _CSS.BADGE_KIND, _CSS.OVERRIDE),
+                classes=(SAB.BADGE, SAB.BADGE_KIND, SAB.STATE_OVERRIDE),
+                fill="outline",
             )
         )
 
@@ -79,7 +82,7 @@ def _fixture_badge_specs(
             BadgeSpec(
                 "fixture",
                 tooltip=_BADGE_TOOLTIPS["fixture"],
-                classes=(_CSS.BADGE, _CSS.BADGE_FIXTURE),
+                classes=(SAB.BADGE, SAB.BADGE_FIXTURE, SAB.TYPE_FIXTURE),
             )
         )
 
@@ -130,5 +133,5 @@ def _build_badge_group_node(
             deprecated=deprecated,
             show_fixture_badge=show_fixture_badge,
         ),
-        classes=[_CSS.BADGE_GROUP],
+        classes=[SAB.BADGE_GROUP],
     )

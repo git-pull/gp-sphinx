@@ -1,28 +1,37 @@
 from __future__ import annotations
 
+from sphinx_autodoc_badges import SAB
+
 
 class _CSS:
-    """CSS class name constants used in generated HTML.
+    """CSS class name constants for sphinx_autodoc_pytest_fixtures.
 
-    Centralises every ``spf-*`` class name so the extension and stylesheet
-    stay in sync.  Tests import this class to assert on rendered output.
+    Re-exports SAB constants that replaced the old ``spf-*`` prefix.
+    Retained for backward compatibility; prefer using ``SAB`` directly.
     """
 
-    PREFIX = "spf"
-    BADGE_GROUP = f"{PREFIX}-badge-group"
-    BADGE = f"{PREFIX}-badge"
-    BADGE_SCOPE = f"{PREFIX}-badge--scope"
-    BADGE_KIND = f"{PREFIX}-badge--kind"
-    BADGE_STATE = f"{PREFIX}-badge--state"
-    BADGE_FIXTURE = f"{PREFIX}-badge--fixture"
-    FACTORY = f"{PREFIX}-factory"
-    OVERRIDE = f"{PREFIX}-override"
-    AUTOUSE = f"{PREFIX}-autouse"
-    DEPRECATED = f"{PREFIX}-deprecated"
-    FIXTURE_INDEX = f"{PREFIX}-fixture-index"
-    TABLE_SCROLL = f"{PREFIX}-table-scroll"
+    PREFIX = SAB.PREFIX
+    BADGE_GROUP = SAB.BADGE_GROUP
+    BADGE = SAB.BADGE
+    BADGE_SCOPE = SAB.BADGE_SCOPE
+    BADGE_KIND = SAB.BADGE_KIND
+    BADGE_STATE = SAB.BADGE_STATE
+    BADGE_FIXTURE = SAB.BADGE_FIXTURE
+    FACTORY = SAB.STATE_FACTORY
+    OVERRIDE = SAB.STATE_OVERRIDE
+    AUTOUSE = SAB.STATE_AUTOUSE
+    DEPRECATED = SAB.STATE_DEPRECATED
+    # Layout-only (not badges)
+    FIXTURE_INDEX = "spf-fixture-index"
+    TABLE_SCROLL = "spf-table-scroll"
 
     @staticmethod
     def scope(name: str) -> str:
-        """Return the scope-specific CSS class, e.g. ``spf-scope-session``."""
-        return f"{_CSS.PREFIX}-scope-{name}"
+        """Return the scope-specific CSS class, e.g. ``sab-scope-session``.
+
+        Examples
+        --------
+        >>> _CSS.scope("session")
+        'sab-scope-session'
+        """
+        return SAB.scope(name)

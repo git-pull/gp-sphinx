@@ -41,7 +41,7 @@ def test_layout_demo_renders_api_component_contract(layout_default_html: str) ->
     )
     assert 'class="api-layout"' in init_html
     assert 'class="api-layout-left"' in init_html
-    assert 'class="api-layout-right gas-toolbar"' in init_html
+    assert 'class="api-layout-right sab-toolbar"' in init_html
     assert 'class="api-signature"' in init_html
     assert 'class="headerlink api-link"' in init_html
     assert 'class="api-badge-container"' in init_html

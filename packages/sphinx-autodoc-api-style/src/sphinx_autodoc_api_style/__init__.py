@@ -24,7 +24,7 @@ True
 
 >>> from sphinx_autodoc_api_style._css import _CSS
 >>> _CSS.BADGE_GROUP
-'gas-badge-group'
+'sab-badge-group'
 """
 
 from __future__ import annotations

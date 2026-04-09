@@ -3,10 +3,15 @@
 from __future__ import annotations
 
 from docutils import nodes
-from sphinx_autodoc_badges import BadgeSpec, build_badge_group_from_specs
+from sphinx_autodoc_badges import SAB, BadgeSpec, build_badge_group_from_specs
 
-_GROUP_CLASS = "sadoc-badge-group"
-_TYPE_CLASS = "sadoc-badge--type"
+_GROUP_CLASS = SAB.BADGE_GROUP
+
+_KIND_CLASSES: dict[str, str] = {
+    "directive": SAB.TYPE_DIRECTIVE,
+    "role": SAB.TYPE_ROLE,
+    "option": SAB.TYPE_OPTION,
+}
 
 
 def build_kind_badge_group(kind: str) -> nodes.inline:
@@ -22,12 +27,13 @@ def build_kind_badge_group(kind: str) -> nodes.inline:
     nodes.inline
         Badge group for the entry header.
     """
+    colour_class = _KIND_CLASSES.get(kind, SAB.TYPE_DIRECTIVE)
     return build_badge_group_from_specs(
         [
             BadgeSpec(
                 kind,
                 tooltip=f"Docutils {kind}",
-                classes=(_TYPE_CLASS,),
+                classes=(colour_class,),
             ),
         ],
         classes=[_GROUP_CLASS],

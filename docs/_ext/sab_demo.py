@@ -12,7 +12,7 @@ import typing as t
 from docutils import nodes
 from sphinx.application import Sphinx
 from sphinx.util.docutils import SphinxDirective
-from sphinx_autodoc_badges import build_badge, build_badge_group, build_toolbar
+from sphinx_autodoc_badges import SAB, build_badge, build_badge_group, build_toolbar
 
 
 class BadgeDemoDirective(SphinxDirective):
@@ -38,6 +38,8 @@ class BadgeDemoDirective(SphinxDirective):
             if label:
                 p += nodes.literal(text=label)
             return p
+
+        # ── Structural variants ──────────────────────────────────
 
         result.append(_section("Size variants (xs / sm / default / lg / xl)"))
         result.append(
@@ -138,6 +140,143 @@ class BadgeDemoDirective(SphinxDirective):
         heading_container += heading_p
         result.append(heading_container)
         result.append(_row(label="build_toolbar(build_badge_group([...]))"))
+
+        # ── Python API type palette ──────────────────────────────
+
+        result.append(_section("Python API types (sab-type-*)"))
+        py_types = [
+            ("function", SAB.TYPE_FUNCTION, "Python function"),
+            ("class", SAB.TYPE_CLASS, "Python class"),
+            ("method", SAB.TYPE_METHOD, "Instance method"),
+            ("property", SAB.TYPE_PROPERTY, "Python property"),
+            ("attribute", SAB.TYPE_ATTRIBUTE, "Class or instance attribute"),
+            ("data", SAB.TYPE_DATA, "Module-level data"),
+            ("exception", SAB.TYPE_EXCEPTION, "Exception class"),
+            ("type alias", SAB.TYPE_TYPEALIAS, "Type alias"),
+            ("module", SAB.TYPE_MODULE, "Python module"),
+        ]
+        type_row = nodes.paragraph()
+        for label, css_class, tooltip in py_types:
+            type_row += build_badge(
+                label,
+                tooltip=tooltip,
+                classes=[SAB.BADGE, SAB.BADGE_TYPE, css_class],
+            )
+            type_row += nodes.Text(" ")
+        result.append(type_row)
+
+        result.append(_section("Python API modifiers (sab-mod-*, outlined)"))
+        py_mods = [
+            ("async", SAB.MOD_ASYNC, "Asynchronous"),
+            ("classmethod", SAB.MOD_CLASSMETHOD, "Class method"),
+            ("staticmethod", SAB.MOD_STATICMETHOD, "Static method"),
+            ("abstract", SAB.MOD_ABSTRACT, "Abstract"),
+            ("final", SAB.MOD_FINAL, "Final"),
+        ]
+        mod_row = nodes.paragraph()
+        for label, css_class, tooltip in py_mods:
+            mod_row += build_badge(
+                label,
+                tooltip=tooltip,
+                classes=[SAB.BADGE, SAB.BADGE_MOD, css_class],
+                fill="outline",
+            )
+            mod_row += nodes.Text(" ")
+        result.append(mod_row)
+
+        # ── pytest fixture palette ───────────────────────────────
+
+        result.append(_section("pytest fixture types (sab-type-fixture)"))
+        result.append(
+            _row(
+                build_badge(
+                    "fixture",
+                    tooltip="pytest fixture",
+                    classes=[SAB.BADGE, SAB.BADGE_FIXTURE, SAB.TYPE_FIXTURE],
+                ),
+                label="SAB.TYPE_FIXTURE — green filled",
+            )
+        )
+
+        result.append(_section("pytest fixture scopes (sab-scope-*)"))
+        scope_row = nodes.paragraph()
+        for scope in ("session", "module", "class"):
+            scope_row += build_badge(
+                scope,
+                tooltip=f"Scope: {scope}",
+                classes=[SAB.BADGE, SAB.BADGE_SCOPE, SAB.scope(scope)],
+            )
+            scope_row += nodes.Text(" ")
+        result.append(scope_row)
+
+        result.append(_section("pytest fixture kinds / states (outlined)"))
+        state_row = nodes.paragraph()
+        states = [
+            ("factory", SAB.STATE_FACTORY, "Factory"),
+            ("override", SAB.STATE_OVERRIDE, "Override hook"),
+            ("auto", SAB.STATE_AUTOUSE, "Autouse"),
+            ("deprecated", SAB.STATE_DEPRECATED, "Deprecated"),
+        ]
+        for label, css_class, tooltip in states:
+            fill = "filled" if label == "deprecated" else "outline"
+            state_row += build_badge(
+                label,
+                tooltip=tooltip,
+                classes=[SAB.BADGE, SAB.BADGE_STATE, css_class],
+                fill=fill,
+            )
+            state_row += nodes.Text(" ")
+        result.append(state_row)
+
+        # ── Sphinx config palette ────────────────────────────────
+
+        result.append(_section("Sphinx config (sab-type-config / sab-mod-rebuild)"))
+        result.append(
+            _row(
+                build_badge(
+                    "config",
+                    tooltip="Sphinx config value",
+                    classes=[SAB.TYPE_CONFIG],
+                ),
+                build_badge(
+                    "env",
+                    tooltip="Rebuild mode: env",
+                    classes=[SAB.MOD_REBUILD],
+                    fill="outline",
+                ),
+                build_badge(
+                    "html",
+                    tooltip="Rebuild mode: html",
+                    classes=[SAB.MOD_REBUILD],
+                    fill="outline",
+                ),
+                label="SAB.TYPE_CONFIG + SAB.MOD_REBUILD (outline)",
+            )
+        )
+
+        # ── docutils palette ─────────────────────────────────────
+
+        result.append(_section("docutils (sab-type-directive / role / option)"))
+        result.append(
+            _row(
+                build_badge(
+                    "directive",
+                    tooltip="Docutils directive",
+                    classes=[SAB.TYPE_DIRECTIVE],
+                ),
+                build_badge(
+                    "role",
+                    tooltip="Docutils role",
+                    classes=[SAB.TYPE_ROLE],
+                ),
+                build_badge(
+                    "option",
+                    tooltip="Docutils option",
+                    classes=[SAB.TYPE_OPTION],
+                ),
+                label="SAB.TYPE_DIRECTIVE / TYPE_ROLE / TYPE_OPTION — violet",
+            )
+        )
 
         return result
 
