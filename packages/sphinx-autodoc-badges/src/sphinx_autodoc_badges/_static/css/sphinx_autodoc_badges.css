@@ -77,6 +77,14 @@
   box-shadow: none;
 }
 
+/* ── Dense + size compositions ──────────────────────────── */
+/* Three-class specificity (0,3,0) beats both sab-dense and sab-size (0,2,0). */
+.sab-badge.sab-dense.sab-xs { font-size: 0.54rem; padding: 0.09rem 0.36rem; }
+.sab-badge.sab-dense.sab-sm { font-size: 0.61rem; padding: 0.12rem 0.44rem; }
+/* default dense: 0.67rem — no extra rule needed */
+.sab-badge.sab-dense.sab-lg { font-size: 0.75rem; padding: 0.19rem 0.58rem; }
+.sab-badge.sab-dense.sab-xl { font-size: 0.86rem; padding: 0.23rem 0.66rem; }
+
 .sab-badge:not(.sab-outline):not(.sab-inline-icon) {
   box-shadow: var(--sab-buff-shadow);
 }
