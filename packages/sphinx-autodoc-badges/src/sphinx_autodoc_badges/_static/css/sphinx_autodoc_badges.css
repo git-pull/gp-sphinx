@@ -105,13 +105,27 @@ body[data-theme="dark"] .sab-badge:not(.sab-outline):not(.sab-inline-icon) {
   background: transparent;
 }
 
-/* ── Icon system (::before pseudo-element) ──────────────── */
-.sab-badge::before {
+/* ── Underline control modifiers ────────────────────────── */
+/* Compose with sab-dense to override its default underline-dotted,
+ * or add to any badge for an explicit underline style.
+ * Declared after sab-dense so same-specificity (0,2,0) rules win via order. */
+.sab-badge.sab-no-underline     { text-decoration: none; }
+.sab-badge.sab-underline        { text-decoration: underline; }
+.sab-badge.sab-underline-dotted { text-decoration: underline dotted; }
+.sab-badge.sab-underline-solid  { text-decoration: underline solid; }
+
+/* ── Icon system (::before / ::after pseudo-elements) ───── */
+/* Icons can sit at ::before (default, or right via flex reversal) or ::after
+ * (future positions). Both must suppress any text-decoration inherited from
+ * the dense parent so the emoji is never underlined regardless of position. */
+.sab-badge::before,
+.sab-badge::after {
   font-style: normal;
   font-weight: normal;
   font-size: 1em;
   line-height: 1;
   flex-shrink: 0;
+  text-decoration: none;
 }
 
 .sab-badge[data-icon]::before {

@@ -215,6 +215,51 @@ class BadgeDemoDirective(SphinxDirective):
             )
         )
 
+        # ── Underline control ────────────────────────────────────
+
+        result.append(_section("Underline control modifiers"))
+        result.append(
+            _row(
+                build_badge(
+                    "dense default",
+                    icon="\U0001f50d",
+                    tooltip="Dense default — underline dotted (icon has no underline)",
+                    classes=[SAB.DENSE, SAB.TYPE_FUNCTION],
+                ),
+                build_badge(
+                    "dense icon right",
+                    icon="\U0001f50d",
+                    tooltip="Dense icon-right — icon has no underline",
+                    classes=[SAB.DENSE, SAB.ICON_RIGHT, SAB.TYPE_FUNCTION],
+                ),
+                build_badge(
+                    "no underline",
+                    icon="\U0001f50d",
+                    tooltip="Dense + sab-no-underline",
+                    classes=[SAB.DENSE, SAB.NO_UNDERLINE, SAB.TYPE_CLASS],
+                ),
+                build_badge(
+                    "solid",
+                    icon="\U0001f50d",
+                    tooltip="Dense + sab-underline-solid",
+                    classes=[SAB.DENSE, SAB.UNDERLINE_SOLID, SAB.TYPE_FIXTURE],
+                ),
+                build_badge(
+                    "dotted (opt-in)",
+                    icon="\U0001f50d",
+                    tooltip="Standard pill + sab-underline-dotted",
+                    classes=[SAB.UNDERLINE_DOTTED, SAB.TYPE_CONFIG],
+                ),
+                build_badge(
+                    "solid (opt-in)",
+                    icon="\U0001f50d",
+                    tooltip="Standard pill + sab-underline-solid",
+                    classes=[SAB.UNDERLINE_SOLID, SAB.TYPE_DIRECTIVE],
+                ),
+                label=("SAB.NO_UNDERLINE / SAB.UNDERLINE_SOLID / SAB.UNDERLINE_DOTTED"),
+            )
+        )
+
         # ── All sizes ────────────────────────────────────────────
 
         result.append(_section("All sizes — standard pill"))

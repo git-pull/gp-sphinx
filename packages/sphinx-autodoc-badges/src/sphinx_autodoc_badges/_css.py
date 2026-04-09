@@ -74,6 +74,12 @@ class SAB:
     FILLED = f"{PREFIX}-filled"
     ICON_RIGHT = f"{PREFIX}-icon-right"
 
+    # Underline control (compose with sab-dense or any badge)
+    NO_UNDERLINE = f"{PREFIX}-no-underline"
+    UNDERLINE = f"{PREFIX}-underline"
+    UNDERLINE_DOTTED = f"{PREFIX}-underline-dotted"
+    UNDERLINE_SOLID = f"{PREFIX}-underline-solid"
+
     # Size variants
     XXS = f"{PREFIX}-xxs"
     XS = f"{PREFIX}-xs"
