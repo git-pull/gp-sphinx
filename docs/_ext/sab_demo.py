@@ -260,12 +260,25 @@ class BadgeDemoDirective(SphinxDirective):
                     classes=[SAB.TYPE_CLASS],
                 ),
                 build_badge(
-                    "default", tooltip="Default size", classes=[SAB.TYPE_METHOD]
+                    "md",
+                    size="md",
+                    tooltip="Medium (alias: default)",
+                    classes=[SAB.TYPE_METHOD],
+                ),
+                build_badge(
+                    "md+icon",
+                    size="md",
+                    icon="\U0001f50d",
+                    tooltip="Medium with icon",
+                    classes=[SAB.TYPE_METHOD],
+                ),
+                build_badge(
+                    "default", tooltip="Default size (= md)", classes=[SAB.TYPE_METHOD]
                 ),
                 build_badge(
                     "default+icon",
                     icon="\U0001f50d",
-                    tooltip="Default with icon",
+                    tooltip="Default with icon (= md)",
                     classes=[SAB.TYPE_METHOD],
                 ),
                 build_badge(
@@ -294,7 +307,7 @@ class BadgeDemoDirective(SphinxDirective):
                     tooltip="Extra large with icon",
                     classes=[SAB.TYPE_CONFIG],
                 ),
-                label="xxs / xs / sm / default / lg / xl",
+                label="xxs / xs / sm / md / default / lg / xl",
             )
         )
 
@@ -341,14 +354,27 @@ class BadgeDemoDirective(SphinxDirective):
                     classes=[SAB.DENSE, SAB.TYPE_CLASS],
                 ),
                 build_badge(
+                    "md",
+                    size="md",
+                    tooltip="Medium dense (alias: default)",
+                    classes=[SAB.DENSE, SAB.TYPE_METHOD],
+                ),
+                build_badge(
+                    "md+icon",
+                    size="md",
+                    icon="\U0001f50d",
+                    tooltip="Medium dense + icon",
+                    classes=[SAB.DENSE, SAB.TYPE_METHOD],
+                ),
+                build_badge(
                     "default",
-                    tooltip="Default dense",
+                    tooltip="Default dense (= md)",
                     classes=[SAB.DENSE, SAB.TYPE_METHOD],
                 ),
                 build_badge(
                     "default+icon",
                     icon="\U0001f50d",
-                    tooltip="Default dense + icon",
+                    tooltip="Default dense + icon (= md)",
                     classes=[SAB.DENSE, SAB.TYPE_METHOD],
                 ),
                 build_badge(
@@ -377,7 +403,7 @@ class BadgeDemoDirective(SphinxDirective):
                     tooltip="Extra large dense + icon",
                     classes=[SAB.DENSE, SAB.TYPE_CONFIG],
                 ),
-                label="xxs / xs / sm / default / lg / xl (sab-dense)",
+                label="xxs / xs / sm / md / default / lg / xl (sab-dense)",
             )
         )
 
