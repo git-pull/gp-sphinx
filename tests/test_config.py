@@ -257,7 +257,7 @@ def test_merge_sphinx_config_suppress_warnings() -> None:
         version="1.0",
         copyright="2026",
     )
-    assert "sphinx_autodoc_typehints.forward_reference" in result["suppress_warnings"]
+    assert "sphinx_typehints_gp.forward_reference" in result["suppress_warnings"]
 
 
 def test_merge_sphinx_config_linkcode_auto_added() -> None:

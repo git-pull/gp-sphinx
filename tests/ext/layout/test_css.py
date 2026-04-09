@@ -19,9 +19,7 @@ def test_api_header_defaults_to_center_alignment() -> None:
     css = _LAYOUT_CSS.read_text(encoding="utf-8")
 
     assert (
-        "dl.api-container > dt.api-header {\n"
-        "  display: flex;\n"
-        "  align-items: center;\n"
+        "dl.api-container > dt.api-header {\n  display: flex;\n  align-items: center;\n"
     ) in css
     assert "display: block;" not in css
     assert (

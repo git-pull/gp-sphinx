@@ -30,7 +30,7 @@ dependencies = [
   "sphinx-fonts==0.0.1a7",
   "myst-parser",
   "docutils",
-  "sphinx-autodoc-typehints",
+  "sphinx-typehints-gp==0.0.1a6",
   "sphinx-inline-tabs",
   "sphinx-copybutton",
   "sphinxext-opengraph",

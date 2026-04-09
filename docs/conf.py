@@ -31,6 +31,10 @@ sys.path.insert(
     0,
     str(project_root / "packages" / "sphinx-autodoc-layout" / "src"),
 )
+sys.path.insert(
+    0,
+    str(project_root / "packages" / "sphinx-typehints-gp" / "src"),
+)
 sys.path.insert(0, str(cwd / "_ext"))  # docs demo modules
 
 import gp_sphinx  # noqa: E402

@@ -81,7 +81,7 @@ DEFAULT_EXTENSIONS: list[str] = [
     "sphinx_fonts",
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
-    "sphinx_autodoc_typehints",
+    "sphinx_typehints_gp",
     "sphinx.ext.todo",
     "sphinx_inline_tabs",
     "sphinx_copybutton",
@@ -348,14 +348,18 @@ projects never set this explicitly, so ``True`` would change rendered output.
 DEFAULT_NAPOLEON_USE_RTYPE: bool = True
 """Emit a separate ``:rtype:`` field for return-type documentation.
 
-Must stay ``True`` to agree with the default of ``typehints_use_rtype`` in
-``sphinx_autodoc_typehints``.  If both are ``True`` and ``sphinx.ext.napoleon``
-is loaded **before** ``sphinx_autodoc_typehints`` (as enforced by
-:data:`DEFAULT_EXTENSIONS`), Napoleon emits ``:rtype:`` first and typehints'
-deduplication guard skips the second insertion — no duplicates.
+``sphinx_typehints_gp`` hooks ``object-description-transform`` at priority
+499 (before Sphinx's built-in ``_merge_typehints`` at 500) so it can insert
+cross-referenced ``:type:`` / ``:rtype:`` field nodes first.  When Napoleon
+has already emitted a plain-text ``:rtype:`` field (because
+``napoleon_use_rtype`` is ``True``), ``_enhance_existing_type_field`` in
+``sphinx_typehints_gp`` upgrades that field in-place to ``pending_xref``
+nodes rather than inserting a duplicate.
 
-Changing either setting without changing the other will reintroduce
-a duplicate or missing return-type field.
+Keep this ``True`` so Napoleon always emits explicit ``:rtype:`` fields that
+``sphinx_typehints_gp`` can then enhance.  Setting it to ``False`` makes
+Napoleon embed the type inline in ``:returns:`` (e.g. ``bool -- description``)
+where enhancement is harder and less useful.
 
 Examples
 --------
@@ -379,7 +383,7 @@ Examples
 """
 
 DEFAULT_SUPPRESS_WARNINGS: list[str] = [
-    "sphinx_autodoc_typehints.forward_reference",
+    "sphinx_typehints_gp.forward_reference",
 ]
 """Warnings to suppress by default.
 

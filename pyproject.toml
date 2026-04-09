@@ -24,6 +24,7 @@ sphinx-autodoc-docutils = { workspace = true }
 sphinx-autodoc-sphinx = { workspace = true }
 sphinx-autodoc-api-style = { workspace = true }
 sphinx-autodoc-fastmcp = { workspace = true }
+sphinx-typehints-gp = { workspace = true }
 sphinx-autodoc-badges = { workspace = true }
 sphinx-autodoc-layout = { workspace = true }
 gp-sphinx = { workspace = true }
