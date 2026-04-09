@@ -357,6 +357,60 @@ def _nest_python_members(container: nodes.Element) -> None:
         index += 1
 
 
+def _deduplicate_return_type_fields(content: addnodes.desc_content) -> None:
+    """Remove duplicate "Return type" fields, keeping the richest one.
+
+    When ``sphinx.ext.napoleon`` and ``sphinx_autodoc_typehints`` both run
+    and are loaded in the wrong order they each emit a ``:rtype:`` field,
+    producing two "Return type" rows.  Loading napoleon before typehints
+    (as ``DEFAULT_EXTENSIONS`` now enforces) prevents the duplication at the
+    source.  This helper is a defensive doctree-level safety net: if the
+    duplicate still appears for any reason, it removes all but the first
+    "Return type" field in each field list.
+
+    The first occurrence is preferred because ``sphinx_autodoc_typehints``
+    inserts its entry before Napoleon's when it does run second.  If
+    napoleon runs first the single entry it emits is the first (and only)
+    "Return type" field.
+
+    Examples
+    --------
+    >>> from docutils import nodes
+    >>> from sphinx import addnodes
+    >>> content = addnodes.desc_content()
+    >>> fl = nodes.field_list()
+    >>> for label in ("Return type", "Returns", "Return type"):
+    ...     f = nodes.field()
+    ...     f += nodes.field_name("", label)
+    ...     f += nodes.field_body("", nodes.paragraph("", label + " body"))
+    ...     fl += f
+    >>> content += fl
+    >>> _deduplicate_return_type_fields(content)
+    >>> rtype_fields = [
+    ...     f for f in fl.children
+    ...     if isinstance(f, nodes.field)
+    ...     and f.children
+    ...     and f.children[0].astext().lower() == "return type"
+    ... ]
+    >>> len(rtype_fields)
+    1
+    """
+    for field_list in content.findall(nodes.field_list):
+        seen_rtype = False
+        for field in list(field_list.children):
+            if not isinstance(field, nodes.field):
+                continue
+            name_node = field.children[0] if field.children else None
+            if (
+                isinstance(name_node, nodes.field_name)
+                and name_node.astext().lower() == "return type"
+            ):
+                if seen_rtype:
+                    field_list.remove(field)
+                else:
+                    seen_rtype = True
+
+
 def _count_field_entries(field_list: nodes.field_list) -> int:
     """Count individual entries in a Sphinx field list.
 
@@ -888,6 +942,10 @@ def on_doctree_resolved(
         _append_class(desc_node, "api-container")
         _append_class(desc_node, profile.class_name)
         _wrap_content_runs(desc_node)
+
+        for child in desc_node.children:
+            if isinstance(child, addnodes.desc_content):
+                _deduplicate_return_type_fields(child)
 
         allow_signature_fold = (
             gal_enabled and fold_params and profile.allow_signature_fold
