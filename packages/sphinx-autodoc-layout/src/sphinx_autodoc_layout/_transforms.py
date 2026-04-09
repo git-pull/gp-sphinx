@@ -360,18 +360,13 @@ def _nest_python_members(container: nodes.Element) -> None:
 def _deduplicate_return_type_fields(content: addnodes.desc_content) -> None:
     """Remove duplicate "Return type" fields, keeping the richest one.
 
-    When ``sphinx.ext.napoleon`` and ``sphinx_autodoc_typehints`` both run
-    and are loaded in the wrong order they each emit a ``:rtype:`` field,
-    producing two "Return type" rows.  Loading napoleon before typehints
-    (as ``DEFAULT_EXTENSIONS`` now enforces) prevents the duplication at the
-    source.  This helper is a defensive doctree-level safety net: if the
-    duplicate still appears for any reason, it removes all but the first
-    "Return type" field in each field list.
-
-    The first occurrence is preferred because ``sphinx_autodoc_typehints``
-    inserts its entry before Napoleon's when it does run second.  If
-    napoleon runs first the single entry it emits is the first (and only)
-    "Return type" field.
+    Remove duplicate "Return type" fields that can appear when multiple
+    docstring processors each emit a ``:rtype:`` field.  ``sphinx_typehints_gp``
+    inserts its cross-referenced entry at priority 499 before the Sphinx
+    built-in runs at 500, but the NumPy docstring parser may also produce a
+    plain-text ``:rtype:`` that ``_enhance_existing_type_field`` upgrades in
+    place.  This helper is a defensive safety net: it removes all but the
+    first "Return type" field so no duplicate ever reaches the browser.
 
     Examples
     --------
