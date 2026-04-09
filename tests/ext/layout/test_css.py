@@ -18,7 +18,11 @@ def test_signature_expanded_uses_contents_layout() -> None:
 def test_api_header_defaults_to_center_alignment() -> None:
     css = _LAYOUT_CSS.read_text(encoding="utf-8")
 
-    assert "dl.api-container > dt.api-header {\n  align-items: center;\n" in css
+    assert (
+        "dl.api-container > dt.api-header {\n"
+        "  display: flex;\n"
+        "  align-items: center;\n"
+    ) in css
     assert "display: block;" not in css
     assert (
         "dl.api-container > dt.api-header > .api-layout {\n"
@@ -42,7 +46,10 @@ def test_expanded_api_header_switches_back_to_top_alignment() -> None:
     css = _LAYOUT_CSS.read_text(encoding="utf-8")
 
     assert (
-        'dt.api-header[data-signature-expanded="true"] {\n  align-items: flex-start;\n}'
+        'dt.api-header[data-signature-expanded="true"] {\n'
+        "  display: flex;\n"
+        "  align-items: flex-start;\n"
+        "}"
     ) in css
     assert (
         '> dt.api-header[data-signature-expanded="true"] > .api-layout {\n'
