@@ -7,6 +7,11 @@ registers a Python-domain fixture directive and role, autodoc helpers for bulk
 fixture discovery, a higher-level pytest plugin page helper, and the
 badge/index UI used throughout the page below.
 
+Fixture pages now use the shared stack end-to-end: badge output comes from
+`sphinx-autodoc-badges`, visible `api-*` structure comes from
+`sphinx-autodoc-layout`, and fixture return types use the shared
+`sphinx-typehints-gp` rendering helpers.
+
 ```console
 $ pip install sphinx-autodoc-pytest-fixtures
 ```
@@ -21,6 +26,9 @@ pytest_external_fixture_links = {
     "db": "https://docs.example.com/testing#db",
 }
 ```
+
+`sphinx_autodoc_pytest_fixtures` auto-loads the shared badge, layout, and
+typehint extensions.
 
 ## Registered configuration values
 

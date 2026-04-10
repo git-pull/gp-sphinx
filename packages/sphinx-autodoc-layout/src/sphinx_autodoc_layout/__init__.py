@@ -17,6 +17,7 @@ import typing as t
 
 from sphinx import addnodes
 
+from sphinx_autodoc_layout._cards import build_api_card_entry
 from sphinx_autodoc_layout._nodes import (
     api_component,
     api_inline_component,
@@ -34,6 +35,7 @@ from sphinx_autodoc_layout._sections import (
     ApiFactRow,
     build_api_facts_section,
     build_api_section,
+    build_api_summary_section,
     build_api_table_section,
 )
 from sphinx_autodoc_layout._transforms import on_doctree_resolved
@@ -63,11 +65,13 @@ __all__ = [
     "api_inline_component",
     "api_permalink",
     "api_slot",
+    "build_api_card_entry",
     "build_api_component",
     "build_api_facts_section",
     "build_api_inline_component",
     "build_api_section",
     "build_api_slot",
+    "build_api_summary_section",
     "build_api_table_section",
     "gal_fold",
     "gal_region",

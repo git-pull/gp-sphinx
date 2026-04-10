@@ -15,6 +15,7 @@ from __future__ import annotations
 import inspect
 import re
 import typing as t
+from dataclasses import dataclass
 
 from docutils import nodes
 from sphinx import addnodes
@@ -30,6 +31,30 @@ if t.TYPE_CHECKING:
     from docutils.nodes import Node
     from sphinx.application import Sphinx
     from sphinx.environment import BuildEnvironment
+
+_LITERAL_DISPLAY_PATTERN = re.compile(
+    r"""^(?:'[^']*'|"[^"]*"|-?\d+(?:\.\d+)?|True|False|None)$"""
+)
+
+
+@dataclass(frozen=True, slots=True)
+class AnnotationDisplay:
+    """Normalized annotation display metadata for UI and table renderers.
+
+    Examples
+    --------
+    >>> display = AnnotationDisplay(
+    ...     text="'open', 'closed'",
+    ...     is_literal_enum=True,
+    ...     literal_members=("'open'", "'closed'"),
+    ... )
+    >>> display.is_literal_enum
+    True
+    """
+
+    text: str
+    is_literal_enum: bool
+    literal_members: tuple[str, ...] = ()
 
 
 def _downgrade_unresolvable_xrefs(children: list[Node]) -> list[Node]:
@@ -88,6 +113,35 @@ def _strip_optional_none(text: str) -> str:
     if not stripped:
         return text
     return " | ".join(stripped)
+
+
+def _split_annotation_display(text: str) -> tuple[str, ...]:
+    """Split normalized display text into candidate literal members.
+
+    Parameters
+    ----------
+    text : str
+        Normalized display text.
+
+    Returns
+    -------
+    tuple[str, ...]
+        Candidate members split on ``|`` and ``,``.
+
+    Examples
+    --------
+    >>> _split_annotation_display("'open', 'closed'")
+    ("'open'", "'closed'")
+    >>> _split_annotation_display("str | None")
+    ('str', 'None')
+    """
+    members: list[str] = []
+    for pipe_part in text.split("|"):
+        for member in pipe_part.split(","):
+            stripped = member.strip()
+            if stripped:
+                members.append(stripped)
+    return tuple(members)
 
 
 def normalize_annotation_text(
@@ -214,6 +268,72 @@ def normalize_type_collection_text(
     if default is inspect.Parameter.empty:
         return ""
     return normalize_annotation_text(type(default))
+
+
+def classify_annotation_display(
+    annotation: t.Any,
+    *,
+    strip_none: bool = False,
+    collapse_literal: bool = True,
+    module_name: str | None = None,
+    aliases: dict[str, str] | None = None,
+    qualify_unresolved: bool = False,
+) -> AnnotationDisplay:
+    """Return normalized annotation text plus enum-display metadata.
+
+    Parameters
+    ----------
+    annotation : Any
+        Annotation object or raw string.
+    strip_none : bool
+        When ``True``, drop ``None`` from ``X | None`` unions.
+    collapse_literal : bool
+        When ``True``, collapse ``Literal[...]`` to its member text before
+        determining whether the display is enum-like.
+    module_name : str | None
+        Module context used when resolving forward-reference strings.
+    aliases : dict[str, str] | None
+        Explicit alias mapping used to qualify annotation names.
+    qualify_unresolved : bool
+        When ``True``, unqualified non-builtin names are resolved relative to
+        ``module_name``.
+
+    Returns
+    -------
+    AnnotationDisplay
+        Normalized text plus literal-enum classification metadata.
+
+    Examples
+    --------
+    >>> display = classify_annotation_display("Literal['open', 'closed']")
+    >>> display.text
+    "'open', 'closed'"
+    >>> display.literal_members
+    ("'open'", "'closed'")
+    >>> classify_annotation_display("str | None", strip_none=True).is_literal_enum
+    False
+    """
+    text = normalize_annotation_text(
+        annotation,
+        strip_none=strip_none,
+        collapse_literal=collapse_literal,
+        module_name=module_name,
+        aliases=aliases,
+        qualify_unresolved=qualify_unresolved,
+    )
+    if not text:
+        return AnnotationDisplay(text="", is_literal_enum=False)
+
+    members = _split_annotation_display(text)
+    is_literal_enum = bool(members) and all(
+        _LITERAL_DISPLAY_PATTERN.fullmatch(member) for member in members
+    )
+    literal_members = members if is_literal_enum else ()
+    return AnnotationDisplay(
+        text=text,
+        is_literal_enum=is_literal_enum,
+        literal_members=literal_members,
+    )
 
 
 def render_annotation_nodes(

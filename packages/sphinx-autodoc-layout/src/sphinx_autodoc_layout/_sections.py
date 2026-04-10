@@ -3,12 +3,18 @@
 Examples
 --------
 >>> from docutils import nodes
->>> from sphinx_autodoc_layout._sections import ApiFactRow, build_api_facts_section
+>>> from sphinx_autodoc_layout._sections import (
+...     ApiFactRow,
+...     build_api_facts_section,
+...     build_api_summary_section,
+... )
 >>> section = build_api_facts_section(
 ...     [ApiFactRow("Type", nodes.paragraph("", "", nodes.literal("", "bool")))]
 ... )
 >>> section.get("name")
 'api-facts'
+>>> build_api_summary_section(nodes.paragraph("", "Summary")).get("name")
+'api-summary'
 """
 
 from __future__ import annotations
@@ -85,3 +91,31 @@ def build_api_table_section(
 ) -> api_component:
     """Wrap one or more table-like body nodes in a shared API section."""
     return build_api_section(name, *children, classes=classes)
+
+
+def build_api_summary_section(
+    *children: nodes.Node,
+    classes: tuple[str, ...] = (),
+) -> api_component:
+    """Wrap summary or index content in the shared ``api-summary`` region.
+
+    Parameters
+    ----------
+    *children : nodes.Node
+        Summary or index nodes to render in the shared summary region.
+    classes : tuple[str, ...]
+        Extra CSS classes appended to the summary wrapper.
+
+    Returns
+    -------
+    api_component
+        Shared summary wrapper.
+
+    Examples
+    --------
+    >>> from docutils import nodes
+    >>> section = build_api_summary_section(nodes.paragraph("", "Summary"))
+    >>> section.get("name")
+    'api-summary'
+    """
+    return build_api_table_section("api-summary", *children, classes=classes)

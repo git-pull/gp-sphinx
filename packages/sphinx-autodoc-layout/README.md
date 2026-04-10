@@ -12,3 +12,10 @@ badges, source links, and permalinks can be positioned independently without
 raw HTML mutation. Large signatures can fold into native multiline signature
 markup, and expanded folded signatures show annotations by default via
 `gal_signature_show_annotations`.
+
+For shared consumers, the public helper surface now includes:
+
+- `build_api_card_entry()` for section-card consumers that need the same inner
+  `api-*` shell without becoming `desc` entries
+- `build_api_summary_section()` for summary/index wrappers such as config and
+  fixture tables

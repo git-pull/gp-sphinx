@@ -8,7 +8,7 @@ from docutils import nodes
 from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
 from sphinx.util.nodes import make_refnode
-from sphinx_autodoc_layout import build_api_table_section
+from sphinx_autodoc_layout import build_api_summary_section
 from sphinx_typehints_gp import build_resolved_annotation_paragraph
 
 from sphinx_autodoc_pytest_fixtures._badges import _build_badge_group_node
@@ -271,4 +271,4 @@ def _resolve_fixture_index(
 
     scroll_wrapper = nodes.container(classes=[_CSS.TABLE_SCROLL])
     scroll_wrapper += table
-    node.replace_self([build_api_table_section("api-summary", scroll_wrapper)])
+    node.replace_self([build_api_summary_section(scroll_wrapper)])

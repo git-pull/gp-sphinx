@@ -4,6 +4,11 @@ Sphinx extension that adds type and modifier badges and card-style containers to
 standard Python domain autodoc entries (functions, classes, methods, properties,
 attributes, data, exceptions).
 
+Internally it is now a thin metadata producer on top of the shared stack:
+`sphinx_autodoc_badges` owns badge rendering, `sphinx_autodoc_layout` owns the
+`api-*` entry structure, and `sphinx_typehints_gp` is auto-loaded for type
+rendering.
+
 ## Install
 
 ```console

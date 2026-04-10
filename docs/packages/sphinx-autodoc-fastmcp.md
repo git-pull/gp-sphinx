@@ -8,6 +8,10 @@ Sphinx extension for documenting **FastMCP** tools: section cards built from
 shared `api-*` layout regions, safety badges, parameter tables, and
 cross-reference roles (`:tool:`, `:toolref:`, `:badge:`, etc.).
 
+The shipped output intentionally keeps the outer `section` wrapper so table of
+contents labels and tool references stay stable. Inside that wrapper, shared
+layout, badge, and typehint helpers now own the visible card structure.
+
 ```console
 $ pip install sphinx-autodoc-fastmcp
 ```
@@ -25,6 +29,9 @@ fastmcp_area_map = {
 }
 fastmcp_collector_mode = "introspect"
 ```
+
+`sphinx_autodoc_fastmcp` auto-loads `sphinx_autodoc_badges`,
+`sphinx_autodoc_layout`, and `sphinx_typehints_gp`.
 
 ## Working usage examples
 

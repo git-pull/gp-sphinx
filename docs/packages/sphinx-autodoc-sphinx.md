@@ -7,6 +7,11 @@ extension `setup()` hooks. It takes the repetitive part of `conf.py`
 reference-writing, records {py:meth}`sphinx:~sphinx.application.Sphinx.add_config_value` calls, and renders them as
 live `confval` entries and summary indexes.
 
+Config entries now share the same badge, layout, and type-rendering stack as
+the rest of the autodoc family: badges come from `sphinx-autodoc-badges`,
+entry structure comes from `sphinx-autodoc-layout`, and displayed config types
+come from `sphinx-typehints-gp`.
+
 ```console
 $ pip install sphinx-autodoc-sphinx
 ```
@@ -16,6 +21,9 @@ $ pip install sphinx-autodoc-sphinx
 ```python
 extensions = ["sphinx_autodoc_sphinx"]
 ```
+
+`sphinx_autodoc_sphinx` auto-loads the shared badge, layout, and typehint
+extensions.
 
 ## Working usage examples
 

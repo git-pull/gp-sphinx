@@ -4,6 +4,10 @@ Sphinx extension that documents pytest fixtures as first-class domain objects
 with scope badges, dependency tracking, reverse-dep graphs, and auto-generated
 usage snippets.
 
+The extension auto-loads the shared stack: `sphinx_autodoc_badges` owns badge
+rendering, `sphinx_autodoc_layout` owns the shared `api-*` regions and summary
+wrappers, and `sphinx_typehints_gp` owns fixture return-type rendering.
+
 ## Install
 
 ```console

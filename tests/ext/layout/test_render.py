@@ -7,7 +7,7 @@ import typing as t
 from docutils import nodes
 from docutils.statemachine import StringList
 from sphinx import addnodes
-from sphinx_autodoc_layout._cards import build_api_card_entry
+from sphinx_autodoc_layout import build_api_card_entry, build_api_summary_section
 from sphinx_autodoc_layout._nodes import api_permalink
 from sphinx_autodoc_layout._render import iter_desc_nodes, parse_generated_markup
 
@@ -70,3 +70,12 @@ def test_build_api_card_entry_uses_shared_component_shell() -> None:
     assert "demo_tool" in header.astext()
     assert "badge" in header.astext()
     assert "Demo body." in content.astext()
+
+
+def test_build_api_summary_section_uses_shared_summary_region() -> None:
+    """Shared summary content uses a dedicated public summary wrapper."""
+    summary = build_api_summary_section(nodes.paragraph("", "Summary"))
+
+    assert summary.get("name") == "api-summary"
+    assert "gal-region--summary" in summary.get("classes", [])
+    assert summary.astext() == "Summary"

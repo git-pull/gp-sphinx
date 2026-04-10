@@ -10,6 +10,10 @@ Large field-list parameter sections still use native `<details>/<summary>`,
 while inline signature expansion uses a custom disclosure that reveals
 Sphinx's native multiline parameter-list rendering.
 
+It is now the shared presenter for the whole autodoc family. `desc`-backed
+entries use it directly, and section-card consumers reuse the same inner shell
+through the public `build_api_card_entry()` helper.
+
 ```console
 $ pip install sphinx-autodoc-layout
 ```
@@ -79,6 +83,13 @@ The class above should render with:
 | `gal_fold_parameters` | `True` | Folds large field-list sections |
 | `gal_collapsed_threshold` | `10` | Minimum field count before folding |
 | `gal_signature_show_annotations` | `True` | Shows `name: type` in expanded folded signatures when type data is available |
+
+## Shared helper surface
+
+- `build_api_card_entry()` builds the shared inner `api-*` shell for
+  section-card consumers such as FastMCP.
+- `build_api_summary_section()` wraps summary and index tables in the shared
+  `api-summary` region.
 
 ## CSS classes
 
