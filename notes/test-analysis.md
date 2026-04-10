@@ -12,8 +12,8 @@ Two baselines remain non-negotiable:
 
 Current measured suite status on 2026-04-10:
 
-- raw full suite: `911 passed, 3 skipped in 35.27s`
-- optimized full suite: `911 passed, 3 skipped in 3.74s`
+- raw full suite: `916 passed, 3 skipped in 40.22s`
+- optimized full suite: `916 passed, 3 skipped in 4.24s`, wall `5.44s`
 
 The dominant conclusions did not change in this wave:
 
@@ -77,7 +77,7 @@ still `api-layout-right`.
 This migration closed the remaining foundation gaps that were still forcing
 package-local duplication:
 
-- `sphinx_autodoc_layout` now exposes one internal shared non-`desc`
+- `sphinx_autodoc_layout` now exposes a public shared non-`desc`
   card-shell builder for section-card consumers
 - shared section builders now cover description, facts, parameters, options,
   footer, and summary/index table wrappers
@@ -87,6 +87,9 @@ package-local duplication:
   the canonical badge pipeline
 - `sphinx_typehints_gp` now provides reusable annotation helpers instead of
   requiring package-local stringification and xref rendering
+- `sphinx_typehints_gp.AnnotationDisplay` and
+  `classify_annotation_display()` now cover literal-only enum displays so
+  FastMCP and other consumers no longer need local enum heuristics
 
 ## Rendering hook points and extension ownership
 
@@ -121,6 +124,7 @@ The current rendering path is:
 `sphinx_typehints_gp`
 
 - canonical annotation normalization
+- structured annotation display classification
 - type collection normalization
 - annotation-to-node rendering
 - paragraph helpers for embedding typed content in facts and tables
@@ -276,8 +280,8 @@ These remain on real builders because the builder is the contract:
 
 | Command | Result | What it shows |
 | --- | --- | --- |
-| `/usr/bin/time -p uv run pytest -q` | `911 passed, 3 skipped in 35.27s`, wall `35.36s` | Current conservative baseline with full signal |
-| `/usr/bin/time -p uv run pytest -q -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-wave5` | `911 passed, 3 skipped in 3.74s`, wall `4.72s` | Same coverage with most raw tempdir/path overhead removed |
+| `uv run py.test --reruns 0 -vvv` | `916 passed, 3 skipped in 40.22s` | Current conservative baseline with full signal and the required validation command |
+| `/usr/bin/time -p uv run pytest -q -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-full-wave6` | `916 passed, 3 skipped in 4.24s`, wall `5.44s` | Same coverage with most raw tempdir/path overhead removed |
 
 ### Expanded autodoc slice
 
@@ -293,9 +297,9 @@ This slice is:
 
 | Command | Result | What it shows |
 | --- | --- | --- |
-| `/usr/bin/time -p uv run pytest -q tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp tests/ext/typehints_gp` | `334 passed, 3 skipped in 28.13s`, wall `29.12s` | Honest cost of the shared autodoc surface in raw mode |
-| `/usr/bin/time -p uv run pytest -q -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-autodoc-wave5 tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp tests/ext/typehints_gp` | `334 passed, 3 skipped in 2.15s`, wall `3.01s` | Same slice with runner overhead mostly removed |
-| `uv run python -m cProfile -o /tmp/gp_sphinx_wave5_autodoc.prof -m pytest -q tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp tests/ext/typehints_gp` | `334 passed, 3 skipped in 31.20s` | Profile source for the shared-stack slice |
+| `/usr/bin/time -p uv run pytest -q tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp tests/ext/typehints_gp` | `339 passed, 3 skipped in 36.74s`, wall `37.06s` | Honest cost of the shared autodoc surface in raw mode |
+| `/usr/bin/time -p uv run pytest -q -o tmp_path_retention_policy=none --basetemp=/home/d/work/python/gp-sphinx/.cache/pytest-autodoc-wave6 tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp tests/ext/typehints_gp` | `339 passed, 3 skipped in 2.40s`, wall `2.30s` | Same slice with runner overhead mostly removed |
+| `uv run python -m cProfile -o /tmp/gp_sphinx_wave6_autodoc.prof -m pytest -q tests/ext/layout tests/ext/api_style tests/ext/autodoc_sphinx tests/ext/autodoc_docutils tests/ext/pytest_fixtures tests/ext/fastmcp tests/ext/typehints_gp` | `339 passed, 3 skipped in 38.93s` | Profile source for the shared-stack slice |
 
 ## Long-running tests and causes
 
@@ -303,16 +307,16 @@ The slow tail is still dominated by honest builder-backed scenarios.
 
 | Test | Measured runtime | Cause | Verdict |
 | --- | --- | --- | --- |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `3.93s setup` | Real multi-page HTML build with cross-document links and inventory data | Keep |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `3.46s setup` | Real HTML build for badge markup, genindex, and inventory output | Keep |
-| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `3.23s setup` | Real HTML build for final emitted Python layout contract | Keep |
-| `tests/test_docs_package_pages.py::test_fastmcp_docs_page_renders_live_demo_output` | `2.90s setup` | Focused docs build smoke for live rendered output | Keep |
-| `tests/ext/autodoc_docutils/test_autodoc_docutils_integration.py::test_autodoc_docutils_entries_use_shared_layout` | `2.59s setup` | Real `rst:*` HTML build with nested directive options | Keep |
-| `tests/ext/fastmcp/test_fastmcp_integration.py::test_fastmcp_tool_cards_use_shared_layout` | `2.02s setup` | Real FastMCP HTML build with section refs and shared-card wrappers | Keep |
-| `tests/ext/autodoc_sphinx/test_autodoc_sphinx_integration.py::test_autodoc_sphinx_confvals_use_shared_layout` | `1.95s setup` | Real `confval` HTML build | Keep |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_myst_smoke` | `0.77s setup` | Shared MyST dummy-builder scenario | Already cached; acceptable |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixture_index_resolution_smoke` | `0.67s call` | Dense fixture index scenario with real reference resolution | Acceptable |
-| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_text_builder_does_not_crash` | `0.56s call` | Real text-builder smoke | Keep |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_cross_document_fixture_reference_html_resolves` | `3.9s`-class setup | Real multi-page HTML build with cross-document links and inventory data | Keep |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_default_html_outputs_smoke` | `3.4s`-class setup | Real HTML build for badge markup, genindex, and inventory output | Keep |
+| `tests/ext/layout/test_integration.py::test_layout_demo_renders_api_component_contract` | `3.2s`-class setup | Real HTML build for final emitted Python layout contract | Keep |
+| `tests/test_docs_package_pages.py::test_fastmcp_docs_page_renders_live_demo_output` | `2.9s`-class setup | Focused docs build smoke for live rendered output | Keep |
+| `tests/ext/autodoc_docutils/test_autodoc_docutils_integration.py::test_autodoc_docutils_entries_use_shared_layout` | `2.5s`-class setup | Real `rst:*` HTML build with nested directive options | Keep |
+| `tests/ext/fastmcp/test_fastmcp_integration.py::test_fastmcp_tool_cards_use_shared_layout` | `2.0s`-class setup | Real FastMCP HTML build with section refs and shared-card wrappers | Keep |
+| `tests/ext/autodoc_sphinx/test_autodoc_sphinx_integration.py::test_autodoc_sphinx_confvals_use_shared_layout` | `1.9s`-class setup | Real `confval` HTML build | Keep |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_doc_pytest_plugin_myst_smoke` | `0.7s`-class setup | Shared MyST dummy-builder scenario | Already cached; acceptable |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_doctree.py::test_autofixture_index_resolution_smoke` | `0.6s`-class call | Dense fixture index scenario with real reference resolution | Acceptable |
+| `tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures_integration.py::test_text_builder_does_not_crash` | `0.5s`-class call | Real text-builder smoke | Keep |
 
 No currently slow test looks like a hidden hang or a synthetic timeout.
 
@@ -324,23 +328,23 @@ Top cumulative costs:
 
 | Function | Cumulative time |
 | --- | --- |
-| `tests._sphinx_scenarios.build_shared_sphinx_result` | `29.172s` |
-| `pathlib.Path.resolve` | `12.565s` |
-| `posixpath.realpath` | `12.554s` |
-| `_pytest.tmpdir.mktemp` | `0.256s` |
-| `_pytest.pathlib.make_numbered_dir` | `0.122s` |
+| `tests._sphinx_scenarios.build_shared_sphinx_result` | `36.611s` |
+| `posixpath.realpath` | `16.561s` |
+| `_pytest.tmpdir.mktemp` | `0.313s` |
+| `_pytest.pathlib.make_numbered_dir` | `0.155s` |
 | `sphinx_autodoc_layout._transforms.on_doctree_resolved` | negligible compared with builder setup |
 | `sphinx_typehints_gp.rendering.render_annotation_nodes` | negligible compared with builder setup |
 
 Profile total:
 
-- `8782254` function calls (`8195222` primitive calls) in `31.938s`
+- `8813847` function calls (`8224448` primitive calls) in `39.724s`
 
 ### What that means
 
 - the dominant repo-owned cost is still cached Sphinx scenario setup
 - the dominant raw-runner overhead is still path resolution and `realpath()`
 - the new shared typehint helpers are not hotspots
+- the new annotation-display classifier is not a hotspot
 - the shared layout transform and shared card builder are not hotspots
 
 ## Where time is spent and where execution appears to stall
@@ -494,5 +498,9 @@ $ uv run mypy
 ```
 
 ```console
-$ uv run py.test --reruns 0 -vvv out
+$ uv run py.test --reruns 0 -vvv
+```
+
+```console
+$ just build-docs
 ```

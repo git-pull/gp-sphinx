@@ -7,7 +7,7 @@ import re
 import typing as t
 
 from docutils import nodes
-from sphinx_typehints_gp import normalize_annotation_text
+from sphinx_typehints_gp import classify_annotation_display
 
 from sphinx_autodoc_fastmcp._models import ParamInfo
 
@@ -99,10 +99,9 @@ def extract_params(func: t.Callable[..., t.Any]) -> list[ParamInfo]:
 
     for name, param in sig.parameters.items():
         is_optional = param.default != inspect.Parameter.empty
-        type_str = normalize_annotation_text(
+        display = classify_annotation_display(
             param.annotation,
             strip_none=is_optional,
-            collapse_literal=True,
         )
 
         if is_optional:
@@ -122,7 +121,7 @@ def extract_params(func: t.Callable[..., t.Any]) -> list[ParamInfo]:
         params.append(
             ParamInfo(
                 name=name,
-                type_str=type_str,
+                type_str=display.text,
                 required=required,
                 default=default_str,
                 description=doc_params.get(name, ""),
@@ -130,18 +129,6 @@ def extract_params(func: t.Callable[..., t.Any]) -> list[ParamInfo]:
         )
 
     return params
-
-
-def extract_enum_values(type_str: str) -> list[str]:
-    """Extract individual enum values from a Literal type string."""
-    parts = [p.strip() for p in type_str.split("|")]
-    values: list[str] = []
-    for part in parts:
-        for sub in part.split(","):
-            sub = sub.strip()
-            if re.match(r"^'[^']*'$", sub):
-                values.append(sub)
-    return values
 
 
 def make_literal(text: str) -> nodes.literal:
@@ -158,45 +145,6 @@ def make_para(*children: nodes.Node | str) -> nodes.paragraph:
         else:
             para += child
     return para
-
-
-def make_type_cell(type_str: str) -> nodes.paragraph:
-    """Render a type annotation as comma-separated code literals."""
-    parts = [p.strip() for p in type_str.split("|")]
-
-    expanded: list[str] = []
-    for part in parts:
-        if re.match(r"^'[^']*'(\s*,\s*'[^']*')+$", part):
-            expanded.extend(v.strip() for v in part.split(","))
-        else:
-            expanded.append(part)
-
-    para = nodes.paragraph("")
-    for i, part in enumerate(expanded):
-        if i > 0:
-            para += nodes.Text(", ")
-        para += nodes.literal("", part)
-    return para
-
-
-def make_type_cell_smart(
-    type_str: str,
-) -> tuple[nodes.paragraph | str, bool]:
-    """Render a type annotation, detecting enum-only types."""
-    if not type_str:
-        return ("", False)
-
-    parts = [p.strip() for p in type_str.split("|")]
-
-    all_quoted = all(re.match(r"^'[^']*'$", p) for p in parts)
-    if not all_quoted and len(parts) == 1:
-        sub = [s.strip() for s in parts[0].split(",")]
-        all_quoted = len(sub) > 1 and all(re.match(r"^'[^']*'$", s) for s in sub)
-
-    if all_quoted:
-        return (make_para(make_literal("enum")), True)
-
-    return (make_type_cell(type_str), False)
 
 
 def parse_rst_inline(

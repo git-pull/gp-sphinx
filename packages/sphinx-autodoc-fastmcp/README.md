@@ -4,6 +4,11 @@ Sphinx extension that documents **FastMCP** tools with card-style section
 entries built from the shared `api-*` layout regions, plus safety badges,
 parameter tables, and cross-reference roles.
 
+The shipped output intentionally keeps a section wrapper for stable ToC labels
+and `:tool:` / `:toolref:` behavior, but the inner card, badges, and type
+rendering now come from `sphinx_autodoc_layout`, `sphinx_autodoc_badges`, and
+`sphinx_typehints_gp`.
+
 ## Features
 
 - **`fastmcp-tool`**: Renders a tool entry as a section card with shared

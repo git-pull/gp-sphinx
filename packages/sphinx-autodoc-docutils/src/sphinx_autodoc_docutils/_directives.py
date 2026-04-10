@@ -13,6 +13,7 @@ from sphinx.util.docutils import SphinxDirective
 from sphinx_autodoc_layout import (
     ApiFactRow,
     build_api_facts_section,
+    build_api_summary_section,
     build_api_table_section,
     iter_desc_nodes,
     parse_generated_markup,
@@ -484,9 +485,7 @@ class AutoDirectiveIndex(SphinxDirective):
             return []
         rendered = parse_generated_markup(self, markup)
         return [
-            build_api_table_section("api-summary", node)
-            if isinstance(node, nodes.table)
-            else node
+            build_api_summary_section(node) if isinstance(node, nodes.table) else node
             for node in rendered
         ]
 
@@ -564,8 +563,6 @@ class AutoRoleIndex(SphinxDirective):
             return []
         rendered = parse_generated_markup(self, markup)
         return [
-            build_api_table_section("api-summary", node)
-            if isinstance(node, nodes.table)
-            else node
+            build_api_summary_section(node) if isinstance(node, nodes.table) else node
             for node in rendered
         ]

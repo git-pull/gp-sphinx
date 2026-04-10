@@ -37,15 +37,15 @@ from __future__ import annotations
 from docutils import nodes
 from sphinx import addnodes
 from sphinx_autodoc_layout._slots import inject_signature_slots
-from sphinx_typehints_gp import normalize_annotation_text
+from sphinx_typehints_gp import classify_annotation_display, normalize_annotation_text
 
 from sphinx_autodoc_fastmcp._badges import build_tool_badge_group
 from sphinx_autodoc_fastmcp._models import ParamInfo, ToolInfo
 from sphinx_autodoc_fastmcp._parsing import (
     first_paragraph,
+    make_literal,
     make_para,
     make_table,
-    make_type_cell_smart,
 )
 
 
@@ -75,11 +75,15 @@ def _build_parameter_table(tool: ToolInfo) -> nodes.table:
     headers = ["Parameter", "Type", "Required", "Default", "Description"]
     rows: list[list[str | nodes.Node]] = []
     for param in tool.params:
-        type_cell, is_enum = make_type_cell_smart(param.type_str)
-        if param.type_str and not is_enum:
-            type_cell = make_para(
-                nodes.literal("", normalize_annotation_text(param.type_str)),
-            )
+        display = classify_annotation_display(param.type_str)
+        type_cell: str | nodes.Node = "—"
+        if display.text:
+            if display.is_literal_enum:
+                type_cell = make_para(make_literal("enum"))
+            else:
+                type_cell = make_para(
+                    nodes.literal("", display.text),
+                )
         default_cell: str | nodes.Node = "—"
         if param.default:
             default_cell = make_para(nodes.literal("", param.default))

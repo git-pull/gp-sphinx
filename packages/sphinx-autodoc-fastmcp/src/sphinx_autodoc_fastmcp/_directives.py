@@ -7,22 +7,22 @@ from sphinx.util.docutils import SphinxDirective
 from sphinx_autodoc_layout import (
     ApiFactRow,
     api_permalink,
+    build_api_card_entry,
     build_api_facts_section,
     build_api_section,
+    build_api_summary_section,
     build_api_table_section,
 )
-from sphinx_autodoc_layout._cards import build_api_card_entry
-from sphinx_typehints_gp import build_annotation_paragraph
+from sphinx_typehints_gp import build_annotation_paragraph, classify_annotation_display
 
 from sphinx_autodoc_fastmcp._badges import build_tool_badge_group
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._models import ParamInfo, ToolInfo
 from sphinx_autodoc_fastmcp._parsing import (
-    extract_enum_values as extract_enum_values_from_type,
     first_paragraph,
+    make_literal,
     make_para,
     make_table,
-    make_type_cell_smart,
     parse_rst_inline,
 )
 
@@ -145,20 +145,25 @@ class FastMCPToolInputDirective(SphinxDirective):
             rows: list[list[str | nodes.Node]] = []
             for p in tool.params:
                 desc_node = self._build_description(p)
+                type_display = classify_annotation_display(p.type_str)
 
-                type_cell, is_enum = make_type_cell_smart(p.type_str)
-                if p.type_str and not is_enum:
-                    type_cell = build_annotation_paragraph(p.type_str, self.env)
+                type_cell: str | nodes.Node = "—"
+                if type_display.text:
+                    if type_display.is_literal_enum:
+                        type_cell = make_para(make_literal("enum"))
+                    else:
+                        type_cell = build_annotation_paragraph(
+                            type_display.text,
+                            self.env,
+                        )
 
-                if is_enum and p.type_str:
-                    enum_values = extract_enum_values_from_type(p.type_str)
-                    if enum_values:
-                        desc_node += nodes.Text(" One of: ")
-                        for i, val in enumerate(enum_values):
-                            if i > 0:
-                                desc_node += nodes.Text(", ")
-                            desc_node += nodes.literal("", val)
-                        desc_node += nodes.Text(".")
+                if type_display.literal_members:
+                    desc_node += nodes.Text(" One of: ")
+                    for i, val in enumerate(type_display.literal_members):
+                        if i > 0:
+                            desc_node += nodes.Text(", ")
+                        desc_node += nodes.literal("", val)
+                    desc_node += nodes.Text(".")
 
                 default_cell: str | nodes.Node = "—"
                 if p.default and p.default != "None":
@@ -252,8 +257,7 @@ class FastMCPToolSummaryDirective(SphinxDirective):
                         parse_rst_inline(first_line, self.state, self.lineno),
                     ],
                 )
-            section += build_api_table_section(
-                "api-summary",
+            section += build_api_summary_section(
                 make_table(headers, rows, col_widths=[30, 70]),
             )
 

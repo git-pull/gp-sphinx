@@ -7,6 +7,10 @@ callables as reference material. The extension does not invent a new domain;
 instead it introspects Python modules and renders copyable `rst:directive` and
 `rst:role` reference blocks from the live objects.
 
+Those rendered entries now share the same badge, layout, and type-display
+stack as the rest of the autodoc packages even though the package still keeps
+its semantic `rst:*` generation path.
+
 ```console
 $ pip install sphinx-autodoc-docutils
 ```
@@ -16,6 +20,9 @@ $ pip install sphinx-autodoc-docutils
 ```python
 extensions = ["sphinx_autodoc_docutils"]
 ```
+
+`sphinx_autodoc_docutils` auto-loads `sphinx_autodoc_badges`,
+`sphinx_autodoc_layout`, and `sphinx_typehints_gp`.
 
 ## Working usage examples
 

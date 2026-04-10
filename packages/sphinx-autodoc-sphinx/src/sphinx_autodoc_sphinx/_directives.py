@@ -30,7 +30,7 @@ from sphinx.util.docutils import SphinxDirective
 from sphinx_autodoc_layout import (
     ApiFactRow,
     build_api_facts_section,
-    build_api_table_section,
+    build_api_summary_section,
     iter_desc_nodes,
     parse_generated_markup,
 )
@@ -525,9 +525,7 @@ class AutoconfigvalueIndexDirective(SphinxDirective):
             return []
         rendered = parse_generated_markup(self, markup)
         return [
-            build_api_table_section("api-summary", node)
-            if isinstance(node, nodes.table)
-            else node
+            build_api_summary_section(node) if isinstance(node, nodes.table) else node
             for node in rendered
         ]
 
@@ -549,7 +547,7 @@ class AutosphinxconfigIndexDirective(SphinxDirective):
         if markup:
             rendered = parse_generated_markup(self, markup)
             result.extend(
-                build_api_table_section("api-summary", node)
+                build_api_summary_section(node)
                 if isinstance(node, nodes.table)
                 else node
                 for node in rendered

@@ -10,8 +10,10 @@ import sphinx_typehints_gp.rendering as sphinx_typehints_rendering
 from docutils import nodes
 from sphinx import addnodes
 from sphinx_typehints_gp import (
+    AnnotationDisplay,
     build_annotation_paragraph,
     build_resolved_annotation_paragraph,
+    classify_annotation_display,
     normalize_annotation_text,
     normalize_type_collection_text,
     render_annotation_nodes,
@@ -75,6 +77,26 @@ def test_normalize_annotation_text_can_collapse_literal_members() -> None:
         collapse_literal=True,
     )
     assert result == "'open', 'closed'"
+
+
+def test_classify_annotation_display_marks_literal_unions_as_enums() -> None:
+    """Literal-only displays are classified as enum-like output."""
+    display = classify_annotation_display("Literal['open', 'closed']")
+
+    assert display == AnnotationDisplay(
+        text="'open', 'closed'",
+        is_literal_enum=True,
+        literal_members=("'open'", "'closed'"),
+    )
+
+
+def test_classify_annotation_display_strips_none_before_classifying() -> None:
+    """Optional annotations are not misclassified after stripping ``None``."""
+    display = classify_annotation_display("str | None", strip_none=True)
+
+    assert display.text == "str"
+    assert display.is_literal_enum is False
+    assert display.literal_members == ()
 
 
 def test_render_annotation_nodes_delegates_to_private_parser(
