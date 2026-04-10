@@ -13,7 +13,7 @@ True
 from __future__ import annotations
 
 from docutils import nodes
-from sphinx_autodoc_badges import SAB, build_badge
+from sphinx_autodoc_badges import SAB, BadgeSpec, build_badge_group_from_specs
 
 _TYPE_TOOLTIPS: dict[str, str] = {
     "function": "Python function",
@@ -128,36 +128,30 @@ def build_badge_group(
     >>> "deprecated" in labels and "abstract" in labels and "class" in labels
     True
     """
-    group = nodes.inline(classes=[SAB.BADGE_GROUP])
-    badges = []
+    badge_specs: list[BadgeSpec] = []
 
     for mod in _MOD_ORDER:
         if mod not in modifiers:
             continue
         fill = "filled" if mod == "deprecated" else "outline"
-        badges.append(
-            build_badge(
+        badge_specs.append(
+            BadgeSpec(
                 _MOD_LABELS[mod],
                 tooltip=_MOD_TOOLTIPS[mod],
-                classes=[SAB.BADGE, SAB.BADGE_MOD, _MOD_CSS[mod]],
+                classes=(SAB.BADGE, SAB.BADGE_MOD, _MOD_CSS[mod]),
                 fill=fill,
-            ),
+            )
         )
 
     if show_type_badge:
         label = _TYPE_LABELS.get(objtype, objtype)
         tooltip = _TYPE_TOOLTIPS.get(objtype, f"Python {objtype}")
-        badges.append(
-            build_badge(
+        badge_specs.append(
+            BadgeSpec(
                 label,
                 tooltip=tooltip,
-                classes=[SAB.BADGE, SAB.BADGE_TYPE, SAB.obj_type(objtype)],
-            ),
+                classes=(SAB.BADGE, SAB.BADGE_TYPE, SAB.obj_type(objtype)),
+            )
         )
 
-    for i, badge in enumerate(badges):
-        group += badge
-        if i < len(badges) - 1:
-            group += nodes.Text(" ")
-
-    return group
+    return build_badge_group_from_specs(badge_specs, classes=[SAB.BADGE_GROUP])

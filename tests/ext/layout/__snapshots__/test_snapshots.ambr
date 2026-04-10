@@ -341,10 +341,7 @@
                                           <entry>
                                               <paragraph>
                                                   <literal>
-                                                      str
-                                                  , 
-                                                  <literal>
-                                                      None
+                                                      str | None
                                           <entry>
                                               <paragraph>
                                                   no
@@ -363,10 +360,7 @@
                                           <entry>
                                               <paragraph>
                                                   <literal>
-                                                      str
-                                                  , 
-                                                  <literal>
-                                                      None
+                                                      str | None
                                           <entry>
                                               <paragraph>
                                                   no
@@ -404,10 +398,7 @@
                                           <entry>
                                               <paragraph>
                                                   <literal>
-                                                      str
-                                                  , 
-                                                  <literal>
-                                                      None
+                                                      str | None
                                           <entry>
                                               <paragraph>
                                                   no
@@ -426,10 +417,7 @@
                                           <entry>
                                               <paragraph>
                                                   <literal>
-                                                      str
-                                                  , 
-                                                  <literal>
-                                                      None
+                                                      str | None
                                           <entry>
                                               <paragraph>
                                                   no
@@ -448,10 +436,7 @@
                                           <entry>
                                               <paragraph>
                                                   <literal>
-                                                      str
-                                                  , 
-                                                  <literal>
-                                                      None
+                                                      str | None
                                           <entry>
                                               <paragraph>
                                                   no
@@ -470,10 +455,7 @@
                                           <entry>
                                               <paragraph>
                                                   <literal>
-                                                      str
-                                                  , 
-                                                  <literal>
-                                                      None
+                                                      str | None
                                           <entry>
                                               <paragraph>
                                                   no
@@ -511,10 +493,7 @@
                                           <entry>
                                               <paragraph>
                                                   <literal>
-                                                      str
-                                                  , 
-                                                  <literal>
-                                                      None
+                                                      str | None
                                           <entry>
                                               <paragraph>
                                                   no
@@ -533,10 +512,7 @@
                                           <entry>
                                               <paragraph>
                                                   <literal>
-                                                      str
-                                                  , 
-                                                  <literal>
-                                                      None
+                                                      str | None
                                           <entry>
                                               <paragraph>
                                                   no
@@ -552,9 +528,8 @@
                           Returns
                       <field_body>
                           <paragraph>
-                              <pending_xref refdomain="py" reftarget="str" reftype="class">
-                                  <literal>
-                                      str
+                              <literal>
+                                  str
   '''
 # ---
 # name: test_large_signature_snapshot_annotated[large_signature_annotated]

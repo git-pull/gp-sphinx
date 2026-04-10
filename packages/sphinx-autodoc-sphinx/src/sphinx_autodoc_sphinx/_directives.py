@@ -30,10 +30,12 @@ from sphinx.util.docutils import SphinxDirective
 from sphinx_autodoc_layout import (
     ApiFactRow,
     build_api_facts_section,
+    build_api_table_section,
     iter_desc_nodes,
     parse_generated_markup,
 )
 from sphinx_autodoc_layout._slots import inject_signature_slots
+from sphinx_typehints_gp import normalize_type_collection_text
 
 from sphinx_autodoc_sphinx._badges import build_config_badge_group
 
@@ -220,40 +222,6 @@ def _make_default_block(value: object) -> nodes.literal_block:  # object: calls 
     return block
 
 
-def _render_types(
-    types: object,
-    default: object,
-) -> str:  # object: uses isinstance guards
-    """Render a readable type expression for ``:type:``.
-
-    Examples
-    --------
-    >>> _render_types((bool, str), False)
-    '``bool | str``'
-    >>> _render_types((), None)
-    '``None``'
-    """
-    if isinstance(types, (list, tuple, set, frozenset)) and types:
-        names = sorted(
-            "None" if getattr(item, "__name__", "") == "NoneType" else item.__name__
-            for item in t.cast("t.Iterable[type]", types)
-        )
-        return f"``{' | '.join(names)}``"
-    if types:
-        return f"``{types!r}``"
-    if default is None:
-        return "``None``"
-    return f"``{type(default).__name__}``"
-
-
-def _type_text(
-    types: object,
-    default: object,
-) -> str:
-    """Return plain text for a config value type expression."""
-    return _render_types(types, default).strip("`")
-
-
 def _config_values_from_calls(
     module_name: str,
     calls: list[tuple[str, tuple[object, ...], dict[str, object]]],
@@ -420,10 +388,14 @@ def render_config_index_markup(
         "     - Rebuild",
     ]
     for value in values:
+        type_text = normalize_type_collection_text(
+            value.types,
+            default=value.default,
+        )
         lines.extend(
             [
                 f"   * - ``{value.name}``",
-                f"     - {_render_types(value.types, value.default)}",
+                f"     - ``{type_text}``",
                 f"     - {_render_default(value.default)}",
                 f"     - ``{value.rebuild or 'none'}``",
             ],
@@ -476,7 +448,15 @@ def _config_fact_rows(value: SphinxConfigValue) -> list[ApiFactRow]:
     else:
         default_body = _literal_paragraph(repr(value.default))
     return [
-        ApiFactRow("Type", _literal_paragraph(_type_text(value.types, value.default))),
+        ApiFactRow(
+            "Type",
+            _literal_paragraph(
+                normalize_type_collection_text(
+                    value.types,
+                    default=value.default,
+                )
+            ),
+        ),
         ApiFactRow("Default", default_body),
         ApiFactRow("Registered by", _literal_paragraph(f"{value.module_name}.setup()")),
     ]
@@ -541,7 +521,15 @@ class AutoconfigvalueIndexDirective(SphinxDirective):
 
     def run(self) -> list[nodes.Node]:
         markup = render_config_index_markup(self.arguments[0])
-        return parse_generated_markup(self, markup) if markup else []
+        if not markup:
+            return []
+        rendered = parse_generated_markup(self, markup)
+        return [
+            build_api_table_section("api-summary", node)
+            if isinstance(node, nodes.table)
+            else node
+            for node in rendered
+        ]
 
 
 class AutosphinxconfigIndexDirective(SphinxDirective):
@@ -559,7 +547,13 @@ class AutosphinxconfigIndexDirective(SphinxDirective):
         result: list[nodes.Node] = []
         markup = render_config_index_markup(module_name, heading="Sphinx Config Index")
         if markup:
-            result.extend(parse_generated_markup(self, markup))
+            rendered = parse_generated_markup(self, markup)
+            result.extend(
+                build_api_table_section("api-summary", node)
+                if isinstance(node, nodes.table)
+                else node
+                for node in rendered
+            )
         for value in discover_config_values(module_name):
             result.extend(_render_config_value_nodes(self, value))
         return result

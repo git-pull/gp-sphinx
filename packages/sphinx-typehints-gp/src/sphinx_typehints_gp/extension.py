@@ -27,6 +27,7 @@ import typing as t
 
 from docutils import nodes
 from sphinx import addnodes
+from sphinx.errors import ExtensionError
 
 if t.TYPE_CHECKING:
     from docutils.nodes import Element, Node
@@ -104,14 +105,23 @@ def get_module_imports(module_name: str) -> dict[str, str]:
 class _TypeTransformer(ast.NodeTransformer):
     """AST transformer to resolve type names using import aliases."""
 
-    def __init__(self, module_name: str, aliases: dict[str, str]) -> None:
+    def __init__(
+        self,
+        module_name: str,
+        aliases: dict[str, str],
+        *,
+        qualify_unresolved: bool,
+    ) -> None:
         self.module_name = module_name
         self.aliases = aliases
+        self.qualify_unresolved = qualify_unresolved
 
     def visit_Name(self, node: ast.Name) -> ast.AST:
         if node.id in self.aliases:
             return ast.Name(id=f"~{self.aliases[node.id]}", ctx=node.ctx)
         if hasattr(builtins, node.id):
+            return node
+        if not self.qualify_unresolved:
             return node
         return ast.Name(id=f"~{self.module_name}.{node.id}", ctx=node.ctx)
 
@@ -123,7 +133,11 @@ class _TypeTransformer(ast.NodeTransformer):
 
 
 def resolve_annotation_string(
-    ann_str: str, module_name: str, aliases: dict[str, str]
+    ann_str: str,
+    module_name: str,
+    aliases: dict[str, str],
+    *,
+    qualify_unresolved: bool = True,
 ) -> str:
     """Resolve a string annotation to use fully qualified names.
 
@@ -146,13 +160,24 @@ def resolve_annotation_string(
     >>> aliases = {'List': 'typing.List', 'MyClass': 'other.MyClass'}
     >>> resolve_annotation_string('List[MyClass]', 'my_module', aliases)
     '~typing.List[~other.MyClass]'
+    >>> resolve_annotation_string(
+    ...     'PathLike[str]',
+    ...     'my_module',
+    ...     {'PathLike': 'os.PathLike'},
+    ...     qualify_unresolved=False,
+    ... )
+    '~os.PathLike[str]'
     """
     try:
         tree = ast.parse(ann_str, mode="eval")
     except SyntaxError:
         return ann_str
 
-    transformed = _TypeTransformer(module_name, aliases).visit(tree)
+    transformed = _TypeTransformer(
+        module_name,
+        aliases,
+        qualify_unresolved=qualify_unresolved,
+    ).visit(tree)
     return ast.unparse(transformed)
 
 
@@ -459,7 +484,8 @@ def merge_typehints(
     >>> merge_typehints  # doctest: +ELLIPSIS
     <function merge_typehints at 0x...>
     """
-    if app.config.autodoc_typehints not in {"both", "description"}:
+    autodoc_typehints = getattr(app.config, "autodoc_typehints", None)
+    if autodoc_typehints not in {"both", "description"}:
         return
     if domain != "py":
         return
@@ -522,8 +548,12 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     >>> setup  # doctest: +ELLIPSIS
     <function setup at 0x...>
     """
-    app.connect("autodoc-process-docstring", process_docstring)
-    app.connect("autodoc-process-signature", record_typehints)
+    try:
+        app.connect("autodoc-process-docstring", process_docstring)
+        app.connect("autodoc-process-signature", record_typehints)
+    except ExtensionError as exc:
+        if "Unknown event name" not in str(exc):
+            raise
     # Priority 499: run before Sphinx's _merge_typehints at 500 so our
     # cross-referenced fields are seen first and the plain-text duplicates
     # are skipped by the built-in handler.

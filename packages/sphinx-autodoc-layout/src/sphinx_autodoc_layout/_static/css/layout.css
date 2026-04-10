@@ -12,6 +12,10 @@
   margin-top: 1.5rem;
 }
 
+.api-summary table {
+  margin-top: 0;
+}
+
 /* ── API shell ──────────────────────────────────────── */
 dl.api-container > dt.api-header {
   display: flex;
@@ -237,6 +241,61 @@ dl.api-container:not(.py) > dd.api-content {
   margin-left: 0 !important;
 }
 
+.gal-card-shell {
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin-bottom: 1.5rem;
+  overflow: clip;
+}
+
+.gal-card-shell > .gal-card-entry > .api-header {
+  background: var(--color-background-secondary);
+  border-bottom: 1px solid var(--color-background-border);
+  padding: 0.5rem 0.75rem 0.5rem 1rem;
+  transition: background 100ms ease-out;
+}
+
+.gal-card-shell > .gal-card-entry > .api-header:hover {
+  background: var(--color-api-background-hover);
+}
+
+.gal-card-shell > .gal-card-entry > .api-header > .api-layout {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.gal-card-shell > .gal-card-entry > .api-header .api-layout-left {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.gal-card-shell > .gal-card-entry > .api-header .api-signature {
+  min-width: 0;
+  font-family: var(--font-stack--monospace);
+}
+
+.gal-card-shell > .gal-card-entry > .api-header .api-layout-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.gal-card-shell > .gal-card-entry > .api-content {
+  padding: 0.75rem 1rem;
+}
+
+.gal-card-shell > .gal-card-entry > .api-content > * + * {
+  margin-top: 0.75rem;
+}
+
 /* Nested entries — lighter (e.g. rst:directive:option inside rst:directive) */
 dl.api-container:not(.py) .api-footer dl.api-container:not(.py) {
   border-color: var(--color-background-border);
@@ -266,6 +325,18 @@ dl.api-container:not(.py) .api-footer dl.api-container:not(.py) > dt.api-header:
     white-space: normal;
     width: 100%;
     justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .gal-card-shell > .gal-card-entry > .api-header > .api-layout {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gal-card-shell > .gal-card-entry > .api-header .api-layout-right {
+    margin-left: 0;
+    white-space: normal;
+    width: 100%;
     flex-wrap: wrap;
   }
 }

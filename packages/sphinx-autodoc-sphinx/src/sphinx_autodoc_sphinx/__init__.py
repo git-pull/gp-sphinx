@@ -49,6 +49,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     """
     app.setup_extension("sphinx_autodoc_badges")
     app.setup_extension("sphinx_autodoc_layout")
+    app.setup_extension("sphinx_typehints_gp")
     app.add_directive("autoconfigvalue", AutoconfigvalueDirective)
     app.add_directive("autoconfigvalues", AutoconfigvaluesDirective)
     app.add_directive("autoconfigvalue-index", AutoconfigvalueIndexDirective)

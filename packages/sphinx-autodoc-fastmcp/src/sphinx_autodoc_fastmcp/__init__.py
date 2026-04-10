@@ -68,6 +68,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     """
     app.setup_extension("sphinx_autodoc_badges")
     app.setup_extension("sphinx_autodoc_layout")
+    app.setup_extension("sphinx_typehints_gp")
 
     app.add_config_value("fastmcp_tool_modules", [], "env")
     app.add_config_value("fastmcp_area_map", {}, "env")

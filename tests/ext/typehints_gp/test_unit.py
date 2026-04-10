@@ -2,9 +2,20 @@
 
 from __future__ import annotations
 
+import types
 import typing as t
 
 import pytest
+import sphinx_typehints_gp.rendering as sphinx_typehints_rendering
+from docutils import nodes
+from sphinx import addnodes
+from sphinx_typehints_gp import (
+    build_annotation_paragraph,
+    build_resolved_annotation_paragraph,
+    normalize_annotation_text,
+    normalize_type_collection_text,
+    render_annotation_nodes,
+)
 from sphinx_typehints_gp._numpy_docstring import (
     _escape_args_and_kwargs,
     _partition_on_colon,
@@ -39,6 +50,199 @@ def test_get_module_imports_missing_module_returns_empty() -> None:
     """get_module_imports returns empty dict for an unknown module name."""
     result = get_module_imports("__nonexistent_module__")
     assert result == {}
+
+
+def test_normalize_annotation_text_qualifies_unresolved_names() -> None:
+    """normalize_annotation_text can qualify unresolved forward refs."""
+    result = normalize_annotation_text(
+        "Session",
+        module_name="libtmux.session",
+        qualify_unresolved=True,
+    )
+    assert result == "libtmux.session.Session"
+
+
+def test_normalize_type_collection_text_uses_default_type() -> None:
+    """normalize_type_collection_text falls back to the default value type."""
+    result = normalize_type_collection_text((), default={"theme": "mint"})
+    assert result == "dict"
+
+
+def test_normalize_annotation_text_can_collapse_literal_members() -> None:
+    """normalize_annotation_text can flatten Literal[...] displays."""
+    result = normalize_annotation_text(
+        "Literal['open', 'closed']",
+        collapse_literal=True,
+    )
+    assert result == "'open', 'closed'"
+
+
+def test_render_annotation_nodes_delegates_to_private_parser(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """render_annotation_nodes passes normalized text to the shared parser."""
+    seen: dict[str, str] = {}
+
+    def _fake_annotation_to_nodes(
+        annotation: str,
+        env: object,
+    ) -> list[nodes.Node]:
+        del env
+        seen["annotation"] = annotation
+        return [nodes.literal("", annotation)]
+
+    monkeypatch.setattr(
+        sphinx_typehints_rendering,
+        "_annotation_to_nodes",
+        _fake_annotation_to_nodes,
+    )
+
+    rendered = render_annotation_nodes(
+        "Session",
+        t.cast("t.Any", object()),
+        module_name="libtmux.session",
+        qualify_unresolved=True,
+    )
+
+    assert seen["annotation"] == "libtmux.session.Session"
+    assert rendered[0].astext() == "libtmux.session.Session"
+
+
+def test_build_annotation_paragraph_wraps_rendered_nodes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """build_annotation_paragraph returns a paragraph around shared nodes."""
+
+    def _fake_render_annotation_nodes(
+        annotation: t.Any,
+        env: object,
+        *,
+        strip_none: bool = False,
+        collapse_literal: bool = False,
+        module_name: str | None = None,
+        aliases: dict[str, str] | None = None,
+        qualify_unresolved: bool = False,
+    ) -> list[nodes.Node]:
+        del (
+            annotation,
+            env,
+            strip_none,
+            collapse_literal,
+            module_name,
+            aliases,
+            qualify_unresolved,
+        )
+        return [nodes.literal("", "Server")]
+
+    monkeypatch.setattr(
+        sphinx_typehints_rendering,
+        "render_annotation_nodes",
+        _fake_render_annotation_nodes,
+    )
+
+    paragraph = build_annotation_paragraph("Server", t.cast("t.Any", object()))
+
+    assert isinstance(paragraph, nodes.paragraph)
+    assert paragraph.astext() == "Server"
+
+
+def test_render_annotation_nodes_downgrades_none_pending_xref(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """render_annotation_nodes turns unresolved ``None`` xrefs into literals."""
+
+    def _fake_annotation_to_nodes(
+        annotation: str,
+        env: object,
+    ) -> list[nodes.Node]:
+        del annotation, env
+        return [
+            addnodes.pending_xref(
+                "",
+                nodes.Text("None"),
+                refdomain="py",
+                reftype="class",
+                reftarget="None",
+            )
+        ]
+
+    monkeypatch.setattr(
+        sphinx_typehints_rendering,
+        "_annotation_to_nodes",
+        _fake_annotation_to_nodes,
+    )
+
+    rendered = render_annotation_nodes("None", t.cast("t.Any", object()))
+
+    assert len(rendered) == 1
+    assert isinstance(rendered[0], nodes.literal)
+    assert rendered[0].astext() == "None"
+
+
+def test_build_resolved_annotation_paragraph_resolves_pending_xrefs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Late-added annotation nodes are resolved before HTML writing."""
+
+    class _DummyEnv:
+        def resolve_references(
+            self,
+            doctree: nodes.document,
+            docname: str,
+            builder: object,
+        ) -> None:
+            del docname, builder
+            pending = t.cast(addnodes.pending_xref, doctree.children[0].children[0])
+            paragraph = t.cast(nodes.paragraph, doctree.children[0])
+            paragraph[0] = nodes.literal("", pending.astext())
+
+    app = t.cast(
+        "t.Any",
+        types.SimpleNamespace(
+            env=_DummyEnv(),
+            builder=object(),
+        ),
+    )
+
+    def _fake_build_annotation_paragraph(
+        annotation: t.Any,
+        env: object,
+        *,
+        strip_none: bool = False,
+        collapse_literal: bool = False,
+        module_name: str | None = None,
+        aliases: dict[str, str] | None = None,
+        qualify_unresolved: bool = False,
+    ) -> nodes.paragraph:
+        del (
+            annotation,
+            env,
+            strip_none,
+            collapse_literal,
+            module_name,
+            aliases,
+            qualify_unresolved,
+        )
+        paragraph = nodes.paragraph()
+        paragraph += addnodes.pending_xref(
+            "",
+            nodes.Text("None"),
+            refdomain="py",
+            reftype="class",
+            reftarget="None",
+        )
+        return paragraph
+
+    monkeypatch.setattr(
+        sphinx_typehints_rendering,
+        "build_annotation_paragraph",
+        _fake_build_annotation_paragraph,
+    )
+    paragraph = build_resolved_annotation_paragraph("None", app, "index")
+
+    assert isinstance(paragraph, nodes.paragraph)
+    assert isinstance(paragraph.children[0], nodes.literal)
+    assert paragraph.astext() == "None"
 
 
 def test_numpy_empty_docstring() -> None:

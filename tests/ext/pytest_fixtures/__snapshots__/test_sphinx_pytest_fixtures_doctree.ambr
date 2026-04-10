@@ -8,7 +8,7 @@
           <index entries="('pair',\ 'module;\ fixture_mod',\ 'module-fixture_mod',\ '',\ None)">
           <index entries="('single',\ 'my_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.my_server',\ '',\ None) ('pair',\ 'session-scoped\ fixtures;\ my_server',\ 'fixture_mod.my_server',\ '',\ None)">
           <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
-              <desc_signature _toc_name="my_server" _toc_parts="('fixture_mod', 'my_server')" class="" classes="sig sig-object py" fullname="my_server" ids="fixture_mod.my_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="fixture_mod.Server" spf_scope="session">
+              <desc_signature _toc_name="my_server" _toc_parts="('fixture_mod', 'my_server')" class="" classes="sig sig-object py" fullname="my_server" ids="fixture_mod.my_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="~fixture_mod.Server" spf_scope="session">
                   <desc_annotation xml:space="preserve">
                       <desc_sig_keyword classes="k">
                           fixture
@@ -19,7 +19,7 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       my_server
                   <desc_returns xml:space="preserve">
-                      fixture_mod.Server
+                      Server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
                       <inline classes="sab-badge-group sab-badge-group">
                           <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge sab-badge sab-badge--scope sab-scope-session" tabindex="0">
@@ -120,7 +120,7 @@
                           return ...  # your value here
           <index entries="('single',\ 'yield_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.yield_server',\ '',\ None)">
           <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
-              <desc_signature _toc_name="yield_server" _toc_parts="('fixture_mod', 'yield_server')" class="" classes="sig sig-object py" fullname="yield_server" ids="fixture_mod.yield_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.yield_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="fixture_mod.Server" spf_scope="function">
+              <desc_signature _toc_name="yield_server" _toc_parts="('fixture_mod', 'yield_server')" class="" classes="sig sig-object py" fullname="yield_server" ids="fixture_mod.yield_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.yield_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="~fixture_mod.Server" spf_scope="function">
                   <desc_annotation xml:space="preserve">
                       <desc_sig_keyword classes="k">
                           fixture
@@ -131,7 +131,7 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       yield_server
                   <desc_returns xml:space="preserve">
-                      fixture_mod.Server
+                      Server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
                       <inline classes="sab-badge-group sab-badge-group">
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
@@ -189,7 +189,7 @@
                           No request needed — this fixture runs automatically for every test.
           <index entries="('single',\ 'TestServer\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.TestServer',\ '',\ None) ('pair',\ 'factory\ fixtures;\ TestServer',\ 'fixture_mod.TestServer',\ '',\ None)">
           <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
-              <desc_signature _toc_name="TestServer" _toc_parts="('fixture_mod', 'TestServer')" class="" classes="sig sig-object py" fullname="TestServer" ids="fixture_mod.TestServer" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.TestServer" spf_deprecated="False" spf_kind="factory" spf_ret_type="type[fixture_mod.Server]" spf_scope="function">
+              <desc_signature _toc_name="TestServer" _toc_parts="('fixture_mod', 'TestServer')" class="" classes="sig sig-object py" fullname="TestServer" ids="fixture_mod.TestServer" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.TestServer" spf_deprecated="False" spf_kind="factory" spf_ret_type="type[~fixture_mod.Server]" spf_scope="function">
                   <desc_annotation xml:space="preserve">
                       <desc_sig_keyword classes="k">
                           fixture
@@ -203,7 +203,7 @@
                       type
                       <desc_sig_punctuation classes="p">
                           [
-                      fixture_mod.Server
+                      Server
                       <desc_sig_punctuation classes="p">
                           ]
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
@@ -217,7 +217,7 @@
                   <paragraph>
                       Return the Server class for direct instantiation (factory fixture).
                   <literal_block language="python" linenos="False" xml:space="preserve">
-                      def test_example(TestServer: type[fixture_mod.Server]) -> None:
+                      def test_example(TestServer: type[~fixture_mod.Server]) -> None:
                           obj = TestServer()
                           assert obj is not None
           <index entries="('single',\ 'renamed_fixture\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.renamed_fixture',\ '',\ None)">
@@ -365,90 +365,88 @@
               conftest boilerplate.
           <rubric>
               Fixture Summary
-          <container classes="spf-table-scroll">
-              <table classes="spf-fixture-index">
-                  <tgroup cols="4">
-                      <colspec colwidth="20">
-                      <colspec colwidth="22">
-                      <colspec colwidth="12">
-                      <colspec colwidth="46">
-                      <thead>
-                          <row>
-                              <entry>
-                                  <paragraph>
-                                      Fixture
-                              <entry>
-                                  <paragraph>
-                                      Flags
-                              <entry>
-                                  <paragraph>
-                                      Returns
-                              <entry>
-                                  <paragraph>
-                                      Description
-                      <tbody>
-                          <row>
-                              <entry>
-                                  <paragraph>
-                                      <reference internal="True" refid="fixture_mod.my_client">
-                                          <literal>
-                                              my_client
-                              <entry>
-                                  <paragraph>
-                                      <inline classes="sab-badge-group sab-badge-group">
-                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
-                                              fixture
-                              <entry>
-                                  <paragraph>
-                                      <literal classes="xref py py-class">
+          <api_component classes="api-summary gal-region gal-region--summary" name="api-summary" tag="div">
+              <container classes="spf-table-scroll">
+                  <table classes="spf-fixture-index">
+                      <tgroup cols="4">
+                          <colspec colwidth="20">
+                          <colspec colwidth="22">
+                          <colspec colwidth="12">
+                          <colspec colwidth="46">
+                          <thead>
+                              <row>
+                                  <entry>
+                                      <paragraph>
+                                          Fixture
+                                  <entry>
+                                      <paragraph>
+                                          Flags
+                                  <entry>
+                                      <paragraph>
+                                          Returns
+                                  <entry>
+                                      <paragraph>
+                                          Description
+                          <tbody>
+                              <row>
+                                  <entry>
+                                      <paragraph>
+                                          <reference internal="True" refid="fixture_mod.my_client">
+                                              <literal>
+                                                  my_client
+                                  <entry>
+                                      <paragraph>
+                                          <inline classes="sab-badge-group sab-badge-group">
+                                              <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
+                                                  fixture
+                                  <entry>
+                                      <paragraph>
                                           str
-                              <entry>
-                                  <paragraph>
-                                      Return a fake client connected to *my_server*.
-                          <row>
-                              <entry>
-                                  <paragraph>
-                                      <reference internal="True" refid="fixture_mod.my_server">
-                                          <literal>
-                                              my_server
-                              <entry>
-                                  <paragraph>
-                                      <inline classes="sab-badge-group sab-badge-group">
-                                          <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge sab-badge sab-badge--scope sab-scope-session" tabindex="0">
-                                              session
-                                           
-                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
-                                              fixture
-                              <entry>
-                                  <paragraph>
-                                      <literal classes="xref py py-class">
+                                  <entry>
+                                      <paragraph>
+                                          Return a fake client connected to *my_server*.
+                              <row>
+                                  <entry>
+                                      <paragraph>
+                                          <reference internal="True" refid="fixture_mod.my_server">
+                                              <literal>
+                                                  my_server
+                                  <entry>
+                                      <paragraph>
+                                          <inline classes="sab-badge-group sab-badge-group">
+                                              <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge sab-badge sab-badge--scope sab-scope-session" tabindex="0">
+                                                  session
+                                               
+                                              <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
+                                                  fixture
+                                  <entry>
+                                      <paragraph>
                                           Server
-                              <entry>
-                                  <paragraph>
-                                      Return a fake server for testing.
-                          <row>
-                              <entry>
-                                  <paragraph>
-                                      <reference internal="True" refid="fixture_mod.renamed_fixture">
-                                          <literal>
-                                              renamed_fixture
-                              <entry>
-                                  <paragraph>
-                                      <inline classes="sab-badge-group sab-badge-group">
-                                          <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
-                                              fixture
-                              <entry>
-                                  <paragraph>
-                                      <literal classes="xref py py-class">
+                                  <entry>
+                                      <paragraph>
+                                          Return a fake server for testing.
+                              <row>
+                                  <entry>
+                                      <paragraph>
+                                          <reference internal="True" refid="fixture_mod.renamed_fixture">
+                                              <literal>
+                                                  renamed_fixture
+                                  <entry>
+                                      <paragraph>
+                                          <inline classes="sab-badge-group sab-badge-group">
+                                              <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
+                                                  fixture
+                                  <entry>
+                                      <paragraph>
                                           str
-                              <entry>
-                                  <paragraph>
-                                      Fixture with a name alias — injected as 'renamed_fixture'.
+                                  <entry>
+                                      <paragraph>
+                                          Fixture with a name alias — injected as 'renamed_fixture'.
           <rubric>
               Fixture Reference
           <index entries="('single',\ 'my_server\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.my_server',\ '',\ None) ('pair',\ 'session-scoped\ fixtures;\ my_server',\ 'fixture_mod.my_server',\ '',\ None)">
           <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
-              <desc_signature _toc_name="my_server" _toc_parts="('fixture_mod', 'my_server')" class="" classes="sig sig-object py" fullname="my_server" ids="fixture_mod.my_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="fixture_mod.Server" spf_scope="session">
+              <desc_signature _toc_name="my_server" _toc_parts="('fixture_mod', 'my_server')" class="" classes="sig sig-object py" fullname="my_server" ids="fixture_mod.my_server" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.my_server" spf_deprecated="False" spf_kind="resource" spf_ret_type="~fixture_mod.Server" spf_scope="session">
                   <desc_annotation xml:space="preserve">
                       <desc_sig_keyword classes="k">
                           fixture
@@ -459,7 +457,7 @@
                   <desc_name classes="sig-name descname" xml:space="preserve">
                       my_server
                   <desc_returns xml:space="preserve">
-                      fixture_mod.Server
+                      Server
                   <api_slot classes="api-slot api-slot--badges" slot="badges">
                       <inline classes="sab-badge-group sab-badge-group">
                           <BadgeNode badge_tooltip="Scope: session — created once per test session" classes="sab-badge sab-badge sab-badge--scope sab-scope-session" tabindex="0">

@@ -29,6 +29,7 @@ dependencies = [
   "sphinx",
   "sphinx-autodoc-badges==0.0.1a6",
   "sphinx-autodoc-layout==0.0.1a6",
+  "sphinx-typehints-gp==0.0.1a6",
 ]
 
 [project.urls]

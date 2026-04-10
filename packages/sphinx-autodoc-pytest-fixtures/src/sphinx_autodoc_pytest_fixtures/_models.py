@@ -65,9 +65,6 @@ class FixtureMeta:
     return_display: str
     """Short type label, e.g. ``"Server"``."""
 
-    return_xref_target: str | None
-    """Simple class name for cross-referencing, or ``None`` for complex types."""
-
     deps: tuple[FixtureDep, ...]
     """Classified fixture dependencies."""
 
