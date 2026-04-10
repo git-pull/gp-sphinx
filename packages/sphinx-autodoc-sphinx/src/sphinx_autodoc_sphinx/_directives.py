@@ -31,10 +31,10 @@ from sphinx_autodoc_layout import (
     ApiFactRow,
     build_api_facts_section,
     build_api_summary_section,
+    inject_signature_slots,
     iter_desc_nodes,
     parse_generated_markup,
 )
-from sphinx_autodoc_layout._slots import inject_signature_slots
 from sphinx_typehints_gp import normalize_type_collection_text
 
 from sphinx_autodoc_sphinx._badges import build_config_badge_group

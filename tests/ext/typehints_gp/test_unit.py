@@ -11,7 +11,9 @@ from docutils import nodes
 from sphinx import addnodes
 from sphinx_typehints_gp import (
     AnnotationDisplay,
+    build_annotation_display_paragraph,
     build_annotation_paragraph,
+    build_resolved_annotation_display_paragraph,
     build_resolved_annotation_paragraph,
     classify_annotation_display,
     normalize_annotation_text,
@@ -168,6 +170,69 @@ def test_build_annotation_paragraph_wraps_rendered_nodes(
     assert paragraph.astext() == "Server"
 
 
+def test_build_annotation_display_paragraph_marks_literal_unions_as_enum() -> None:
+    """Literal-only displays use the compact shared enum marker."""
+    paragraph = build_annotation_display_paragraph(
+        "Literal['open', 'closed']",
+        None,
+    )
+
+    assert isinstance(paragraph, nodes.paragraph)
+    assert len(paragraph.children) == 1
+    assert isinstance(paragraph.children[0], nodes.literal)
+    assert paragraph.astext() == "enum"
+
+
+def test_build_annotation_display_paragraph_delegates_for_non_enum(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Non-enum displays still use the shared annotation paragraph builder."""
+    seen: dict[str, str] = {}
+
+    def _fake_build_annotation_paragraph(
+        annotation: t.Any,
+        env: object,
+        *,
+        strip_none: bool = False,
+        collapse_literal: bool = False,
+        module_name: str | None = None,
+        aliases: dict[str, str] | None = None,
+        qualify_unresolved: bool = False,
+    ) -> nodes.paragraph:
+        del (
+            env,
+            strip_none,
+            collapse_literal,
+            module_name,
+            aliases,
+            qualify_unresolved,
+        )
+        seen["annotation"] = t.cast(str, annotation)
+        return nodes.paragraph("", "Server")
+
+    monkeypatch.setattr(
+        sphinx_typehints_rendering,
+        "build_annotation_paragraph",
+        _fake_build_annotation_paragraph,
+    )
+
+    paragraph = build_annotation_display_paragraph(
+        "Server",
+        t.cast("t.Any", object()),
+    )
+
+    assert seen["annotation"] == "Server"
+    assert paragraph.astext() == "Server"
+
+
+def test_build_annotation_display_paragraph_uses_literal_fallback_without_env() -> None:
+    """The shared display helper stays safe without a live Sphinx env."""
+    paragraph = build_annotation_display_paragraph("Server", None)
+
+    assert isinstance(paragraph.children[0], nodes.literal)
+    assert paragraph.astext() == "Server"
+
+
 def test_render_annotation_nodes_downgrades_none_pending_xref(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -265,6 +330,66 @@ def test_build_resolved_annotation_paragraph_resolves_pending_xrefs(
     assert isinstance(paragraph, nodes.paragraph)
     assert isinstance(paragraph.children[0], nodes.literal)
     assert paragraph.astext() == "None"
+
+
+def test_build_resolved_annotation_display_paragraph_marks_literal_unions_as_enum() -> (
+    None
+):
+    """Literal-only displays do not try to late-resolve shared enum markers."""
+    paragraph = build_resolved_annotation_display_paragraph(
+        "Literal['open', 'closed']",
+        t.cast("t.Any", object()),
+        "index",
+    )
+
+    assert isinstance(paragraph, nodes.paragraph)
+    assert isinstance(paragraph.children[0], nodes.literal)
+    assert paragraph.astext() == "enum"
+
+
+def test_build_resolved_annotation_display_paragraph_delegates_for_non_enum(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Resolved non-enum displays still use the shared resolved builder."""
+    seen: dict[str, str] = {}
+
+    def _fake_build_resolved_annotation_paragraph(
+        annotation: t.Any,
+        app: object,
+        docname: str,
+        *,
+        strip_none: bool = False,
+        collapse_literal: bool = False,
+        module_name: str | None = None,
+        aliases: dict[str, str] | None = None,
+        qualify_unresolved: bool = False,
+    ) -> nodes.paragraph:
+        del (
+            app,
+            docname,
+            strip_none,
+            collapse_literal,
+            module_name,
+            aliases,
+            qualify_unresolved,
+        )
+        seen["annotation"] = t.cast(str, annotation)
+        return nodes.paragraph("", "Server")
+
+    monkeypatch.setattr(
+        sphinx_typehints_rendering,
+        "build_resolved_annotation_paragraph",
+        _fake_build_resolved_annotation_paragraph,
+    )
+
+    paragraph = build_resolved_annotation_display_paragraph(
+        "Server",
+        t.cast("t.Any", object()),
+        "index",
+    )
+
+    assert seen["annotation"] == "Server"
+    assert paragraph.astext() == "Server"
 
 
 def test_numpy_empty_docstring() -> None:

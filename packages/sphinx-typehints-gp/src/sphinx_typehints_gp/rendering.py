@@ -443,6 +443,89 @@ def build_annotation_paragraph(
     return paragraph
 
 
+def build_annotation_display_paragraph(
+    annotation: t.Any,
+    env: BuildEnvironment | None,
+    *,
+    strip_none: bool = False,
+    collapse_literal: bool = True,
+    module_name: str | None = None,
+    aliases: dict[str, str] | None = None,
+    qualify_unresolved: bool = False,
+) -> nodes.paragraph:
+    """Return a paragraph using the shared display policy for annotations.
+
+    Literal-only union displays collapse to a literal ``enum`` marker so
+    table cells and fact rows stay compact. All other annotations render
+    through the standard shared annotation-node pipeline.
+
+    Parameters
+    ----------
+    annotation : Any
+        Annotation object or raw string.
+    env : BuildEnvironment | None
+        Sphinx build environment used to create ``pending_xref`` nodes. When
+        omitted, the helper falls back to a plain literal rendering for
+        non-enum displays.
+    strip_none : bool
+        When ``True``, drop ``None`` from ``X | None`` unions.
+    collapse_literal : bool
+        When ``True``, collapse ``Literal[...]`` to its member text before
+        applying the display policy.
+    module_name : str | None
+        Module context used when resolving forward-reference strings.
+    aliases : dict[str, str] | None
+        Explicit alias mapping used to qualify annotation names.
+    qualify_unresolved : bool
+        When ``True``, unqualified non-builtin names are resolved relative to
+        ``module_name``.
+
+    Returns
+    -------
+    nodes.paragraph
+        Paragraph containing either the compact enum marker or the rendered
+        annotation nodes.
+
+    Examples
+    --------
+    >>> paragraph = build_annotation_display_paragraph(
+    ...     "Literal['open', 'closed']",
+    ...     None,
+    ... )
+    >>> paragraph.astext()
+    'enum'
+    >>> build_annotation_display_paragraph("str", None).astext()
+    'str'
+    """
+    display = classify_annotation_display(
+        annotation,
+        strip_none=strip_none,
+        collapse_literal=collapse_literal,
+        module_name=module_name,
+        aliases=aliases,
+        qualify_unresolved=qualify_unresolved,
+    )
+    if display.is_literal_enum:
+        paragraph = nodes.paragraph()
+        paragraph += nodes.literal("", "enum")
+        return paragraph
+    if env is None:
+        paragraph = nodes.paragraph()
+        if display.text:
+            paragraph += nodes.literal("", display.text)
+        return paragraph
+
+    return build_annotation_paragraph(
+        display.text,
+        env,
+        strip_none=False,
+        collapse_literal=False,
+        module_name=module_name,
+        aliases=aliases,
+        qualify_unresolved=qualify_unresolved,
+    )
+
+
 def build_resolved_annotation_paragraph(
     annotation: t.Any,
     app: Sphinx,
@@ -507,3 +590,79 @@ def build_resolved_annotation_paragraph(
     temp_doc += temp_para
     app.env.resolve_references(temp_doc, docname, app.builder)
     return t.cast(nodes.paragraph, temp_doc.children[0])
+
+
+def build_resolved_annotation_display_paragraph(
+    annotation: t.Any,
+    app: Sphinx,
+    docname: str,
+    *,
+    strip_none: bool = False,
+    collapse_literal: bool = True,
+    module_name: str | None = None,
+    aliases: dict[str, str] | None = None,
+    qualify_unresolved: bool = False,
+) -> nodes.paragraph:
+    """Return a resolved paragraph using the shared annotation display policy.
+
+    Parameters
+    ----------
+    annotation : Any
+        Annotation object or raw string.
+    app : Sphinx
+        Sphinx application used for environment and builder access.
+    docname : str
+        Current document name used for reference resolution.
+    strip_none : bool
+        When ``True``, drop ``None`` from ``X | None`` unions.
+    collapse_literal : bool
+        When ``True``, collapse ``Literal[...]`` to its member text before
+        applying the display policy.
+    module_name : str | None
+        Module context used when resolving forward-reference strings.
+    aliases : dict[str, str] | None
+        Explicit alias mapping used to qualify annotation names.
+    qualify_unresolved : bool
+        When ``True``, unqualified non-builtin names are resolved relative to
+        ``module_name``.
+
+    Returns
+    -------
+    nodes.paragraph
+        Paragraph containing either the compact enum marker or resolved
+        annotation nodes.
+
+    Examples
+    --------
+    >>> app = t.cast("Sphinx", object())
+    >>> paragraph = build_resolved_annotation_display_paragraph(
+    ...     "Literal['open', 'closed']",
+    ...     app,
+    ...     "index",
+    ... )
+    >>> paragraph.astext()
+    'enum'
+    """
+    display = classify_annotation_display(
+        annotation,
+        strip_none=strip_none,
+        collapse_literal=collapse_literal,
+        module_name=module_name,
+        aliases=aliases,
+        qualify_unresolved=qualify_unresolved,
+    )
+    if display.is_literal_enum:
+        paragraph = nodes.paragraph()
+        paragraph += nodes.literal("", "enum")
+        return paragraph
+
+    return build_resolved_annotation_paragraph(
+        display.text,
+        app,
+        docname,
+        strip_none=False,
+        collapse_literal=False,
+        module_name=module_name,
+        aliases=aliases,
+        qualify_unresolved=qualify_unresolved,
+    )

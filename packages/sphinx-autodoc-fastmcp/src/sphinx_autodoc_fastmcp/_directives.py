@@ -13,14 +13,17 @@ from sphinx_autodoc_layout import (
     build_api_summary_section,
     build_api_table_section,
 )
-from sphinx_typehints_gp import build_annotation_paragraph, classify_annotation_display
+from sphinx_typehints_gp import (
+    build_annotation_display_paragraph,
+    build_annotation_paragraph,
+    classify_annotation_display,
+)
 
 from sphinx_autodoc_fastmcp._badges import build_tool_badge_group
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._models import ParamInfo, ToolInfo
 from sphinx_autodoc_fastmcp._parsing import (
     first_paragraph,
-    make_literal,
     make_para,
     make_table,
     parse_rst_inline,
@@ -145,19 +148,18 @@ class FastMCPToolInputDirective(SphinxDirective):
             rows: list[list[str | nodes.Node]] = []
             for p in tool.params:
                 desc_node = self._build_description(p)
-                type_display = classify_annotation_display(p.type_str)
 
                 type_cell: str | nodes.Node = "—"
-                if type_display.text:
-                    if type_display.is_literal_enum:
-                        type_cell = make_para(make_literal("enum"))
-                    else:
-                        type_cell = build_annotation_paragraph(
-                            type_display.text,
-                            self.env,
-                        )
+                if p.type_str:
+                    type_cell = build_annotation_display_paragraph(
+                        p.type_str,
+                        self.env,
+                    )
 
-                if type_display.literal_members:
+                type_display = (
+                    classify_annotation_display(p.type_str) if p.type_str else None
+                )
+                if type_display and type_display.literal_members:
                     desc_node += nodes.Text(" One of: ")
                     for i, val in enumerate(type_display.literal_members):
                         if i > 0:

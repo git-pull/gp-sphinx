@@ -8,7 +8,7 @@ import typing as t
 
 from docutils import nodes
 from sphinx.application import Sphinx
-from sphinx_autodoc_layout._nodes import api_component
+from sphinx_autodoc_layout import api_component
 
 from sphinx_autodoc_fastmcp._badges import build_safety_badge
 from sphinx_autodoc_fastmcp._css import _CSS

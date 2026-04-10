@@ -15,10 +15,10 @@ from sphinx_autodoc_layout import (
     build_api_facts_section,
     build_api_summary_section,
     build_api_table_section,
+    inject_signature_slots,
     iter_desc_nodes,
     parse_generated_markup,
 )
-from sphinx_autodoc_layout._slots import inject_signature_slots
 
 from sphinx_autodoc_docutils._badges import build_kind_badge_group
 
