@@ -38,6 +38,7 @@ from sphinx_autodoc_layout._sections import (
     build_api_summary_section,
     build_api_table_section,
 )
+from sphinx_autodoc_layout._slots import inject_signature_slots, is_viewcode_ref
 from sphinx_autodoc_layout._transforms import on_doctree_resolved
 from sphinx_autodoc_layout._visitors import (
     depart_api_component,
@@ -76,6 +77,8 @@ __all__ = [
     "gal_fold",
     "gal_region",
     "gal_sig_fold",
+    "inject_signature_slots",
+    "is_viewcode_ref",
     "iter_desc_nodes",
     "on_doctree_resolved",
     "parse_generated_markup",
