@@ -480,7 +480,15 @@ class AutoDirectiveIndex(SphinxDirective):
             for name, directive_cls in _directive_classes(module_name)
         ]
         markup = _index_markup("Directive Index", rows)
-        return parse_generated_markup(self, markup) if markup else []
+        if not markup:
+            return []
+        rendered = parse_generated_markup(self, markup)
+        return [
+            build_api_table_section("api-summary", node)
+            if isinstance(node, nodes.table)
+            else node
+            for node in rendered
+        ]
 
 
 class AutoRole(SphinxDirective):
@@ -552,4 +560,12 @@ class AutoRoleIndex(SphinxDirective):
             for name, role_fn in _role_callables(module_name)
         ]
         markup = _index_markup("Role Index", rows)
-        return parse_generated_markup(self, markup) if markup else []
+        if not markup:
+            return []
+        rendered = parse_generated_markup(self, markup)
+        return [
+            build_api_table_section("api-summary", node)
+            if isinstance(node, nodes.table)
+            else node
+            for node in rendered
+        ]

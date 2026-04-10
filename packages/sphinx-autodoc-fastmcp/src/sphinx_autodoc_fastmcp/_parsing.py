@@ -7,7 +7,7 @@ import re
 import typing as t
 
 from docutils import nodes
-from sphinx import addnodes
+from sphinx_typehints_gp import normalize_annotation_text
 
 from sphinx_autodoc_fastmcp._models import ParamInfo
 
@@ -91,25 +91,6 @@ def first_paragraph(docstring: str) -> str:
     return paragraphs[0].strip().replace("\n", " ")
 
 
-def format_annotation(ann: t.Any, *, strip_none: bool = False) -> str:
-    """Format a type annotation as a readable string."""
-    if ann is inspect.Parameter.empty:
-        return ""
-    if isinstance(ann, str):
-        result = ann
-        result = re.sub(
-            r"(?:t\.)?Literal\[([^\]]+)\]",
-            lambda m: m.group(1),
-            result,
-        )
-        if strip_none:
-            result = re.sub(r"\s*\|\s*None\b", "", result).strip()
-        return result
-    if hasattr(ann, "__name__"):
-        return str(ann.__name__)
-    return str(ann).replace("typing.", "")
-
-
 def extract_params(func: t.Callable[..., t.Any]) -> list[ParamInfo]:
     """Extract parameter info from function signature and docstring."""
     sig = inspect.signature(func)
@@ -118,9 +99,10 @@ def extract_params(func: t.Callable[..., t.Any]) -> list[ParamInfo]:
 
     for name, param in sig.parameters.items():
         is_optional = param.default != inspect.Parameter.empty
-        type_str = format_annotation(
+        type_str = normalize_annotation_text(
             param.annotation,
             strip_none=is_optional,
+            collapse_literal=True,
         )
 
         if is_optional:
@@ -165,55 +147,6 @@ def extract_enum_values(type_str: str) -> list[str]:
 def make_literal(text: str) -> nodes.literal:
     """Create an inline code literal node."""
     return nodes.literal("", text)
-
-
-def single_type_xref(
-    name: str,
-    *,
-    model_module: str,
-    model_classes: frozenset[str],
-) -> addnodes.pending_xref:
-    """Create a ``pending_xref`` for a single type name."""
-    target = f"{model_module}.{name}" if name in model_classes else name
-    return addnodes.pending_xref(
-        "",
-        nodes.literal("", name),
-        refdomain="py",
-        reftype="class",
-        reftarget=target,
-    )
-
-
-def make_type_xref(
-    type_str: str,
-    *,
-    model_module: str,
-    model_classes: frozenset[str],
-) -> nodes.paragraph:
-    """Render a return type annotation with cross-reference links."""
-    para = nodes.paragraph("")
-    m = re.match(r"^(list|set|tuple)\[(.+)\]$", type_str)
-    if m:
-        container, inner = m.group(1), m.group(2)
-        para += single_type_xref(
-            container,
-            model_module=model_module,
-            model_classes=model_classes,
-        )
-        para += nodes.Text("[")
-        para += single_type_xref(
-            inner,
-            model_module=model_module,
-            model_classes=model_classes,
-        )
-        para += nodes.Text("]")
-    else:
-        para += single_type_xref(
-            type_str,
-            model_module=model_module,
-            model_classes=model_classes,
-        )
-    return para
 
 
 def make_para(*children: nodes.Node | str) -> nodes.paragraph:

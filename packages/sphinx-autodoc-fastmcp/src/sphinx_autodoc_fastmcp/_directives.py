@@ -7,10 +7,12 @@ from sphinx.util.docutils import SphinxDirective
 from sphinx_autodoc_layout import (
     ApiFactRow,
     api_permalink,
-    build_api_component,
     build_api_facts_section,
-    build_api_inline_component,
+    build_api_section,
+    build_api_table_section,
 )
+from sphinx_autodoc_layout._cards import build_api_card_entry
+from sphinx_typehints_gp import build_annotation_paragraph
 
 from sphinx_autodoc_fastmcp._badges import build_tool_badge_group
 from sphinx_autodoc_fastmcp._css import _CSS
@@ -21,7 +23,6 @@ from sphinx_autodoc_fastmcp._parsing import (
     make_para,
     make_table,
     make_type_cell_smart,
-    make_type_xref,
     parse_rst_inline,
 )
 
@@ -60,7 +61,7 @@ class FastMCPToolDirective(SphinxDirective):
 
         section = nodes.section()
         section["ids"].append(section_id)
-        section["classes"].append(_CSS.TOOL_SECTION)
+        section["classes"].extend((_CSS.TOOL_SECTION, "gal-card-shell"))
         document.note_explicit_target(section)
 
         title_node = nodes.title("", "")
@@ -69,62 +70,45 @@ class FastMCPToolDirective(SphinxDirective):
         title_node += nodes.literal("", tool.name)
         section += title_node
 
-        entry = build_api_component(
-            "api-entry",
-            classes=(_CSS.TOOL_ENTRY, "api-profile--fastmcp-tool"),
-        )
-        header = build_api_component("api-header")
-        layout = build_api_component("api-layout")
-        left = build_api_component("api-layout-left")
-        right = build_api_component("api-layout-right", classes=("sab-toolbar",))
-        signature = build_api_component(
-            "api-signature",
-            classes=(_CSS.TOOL_SIGNATURE,),
-        )
-        signature += nodes.literal("", tool.name)
-        left += signature
-
         link = api_permalink(
             href=f"#{section_id}",
             title="Link to this tool",
         )
         link["classes"] = ["headerlink", "api-link"]
-        left += link
-
-        badge_container = build_api_inline_component("api-badge-container")
-        badge_container += build_tool_badge_group(tool.safety)
-        right += badge_container
-
-        layout += left
-        layout += right
-        header += layout
-        entry += header
-
-        content = build_api_component("api-content")
         first_para = first_paragraph(tool.docstring)
-        description = build_api_component(
-            "api-description",
-            classes=(_CSS.BODY_SECTION,),
-        )
-        description += parse_rst_inline(first_para, self.state, self.lineno)
-        content += description
-
-        if tool.return_annotation:
-            content += build_api_facts_section(
-                [
-                    ApiFactRow(
-                        "Returns",
-                        make_type_xref(
-                            tool.return_annotation,
-                            model_module=str(self.config.fastmcp_model_module),
-                            model_classes=frozenset(self.config.fastmcp_model_classes),
-                        ),
-                    )
-                ],
+        content_nodes: list[nodes.Node] = [
+            build_api_section(
+                "api-description",
+                parse_rst_inline(first_para, self.state, self.lineno),
                 classes=(_CSS.BODY_SECTION,),
             )
+        ]
 
-        entry += content
+        if tool.return_annotation:
+            content_nodes.append(
+                build_api_facts_section(
+                    [
+                        ApiFactRow(
+                            "Returns",
+                            build_annotation_paragraph(
+                                tool.return_annotation,
+                                self.env,
+                            ),
+                        )
+                    ],
+                    classes=(_CSS.BODY_SECTION,),
+                )
+            )
+
+        entry = build_api_card_entry(
+            profile_class="api-profile--fastmcp-tool",
+            signature_children=(nodes.literal("", tool.name),),
+            content_children=tuple(content_nodes),
+            badge_group=build_tool_badge_group(tool.safety),
+            permalink=link,
+            entry_classes=(_CSS.TOOL_ENTRY,),
+            signature_classes=(_CSS.TOOL_SIGNATURE,),
+        )
         section += entry
 
         return [section]
@@ -163,6 +147,8 @@ class FastMCPToolInputDirective(SphinxDirective):
                 desc_node = self._build_description(p)
 
                 type_cell, is_enum = make_type_cell_smart(p.type_str)
+                if p.type_str and not is_enum:
+                    type_cell = build_annotation_paragraph(p.type_str, self.env)
 
                 if is_enum and p.type_str:
                     enum_values = extract_enum_values_from_type(p.type_str)
@@ -188,7 +174,10 @@ class FastMCPToolInputDirective(SphinxDirective):
                     ],
                 )
             result.append(
-                make_table(headers, rows, col_widths=[15, 15, 8, 10, 52]),
+                build_api_table_section(
+                    "api-parameters",
+                    make_table(headers, rows, col_widths=[15, 15, 8, 10, 52]),
+                ),
             )
 
         return result
@@ -263,7 +252,10 @@ class FastMCPToolSummaryDirective(SphinxDirective):
                         parse_rst_inline(first_line, self.state, self.lineno),
                     ],
                 )
-            section += make_table(headers, rows, col_widths=[30, 70])
+            section += build_api_table_section(
+                "api-summary",
+                make_table(headers, rows, col_widths=[30, 70]),
+            )
 
             result_nodes.append(section)
 

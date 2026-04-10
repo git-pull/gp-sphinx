@@ -54,7 +54,6 @@ def _make_fixture_meta(
         autouse=autouse,
         kind=kind,
         return_display=return_display,
-        return_xref_target=None,
         deps=(),
         param_reprs=(),
         has_teardown=False,
@@ -253,6 +252,71 @@ def test_build_fixture_index_table_structure_populates_plain_shell() -> None:
     assert "session" in first_flags_entry.astext()
     assert "Server" in first_return_entry.astext()
     assert "Session-scoped test server." in first_desc_entry.astext()
+
+
+def test_resolve_fixture_index_uses_shared_annotation_paragraph(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Fixture index resolution delegates return types to shared helpers."""
+    seen: dict[str, str] = {}
+    store = sphinx_autodoc_pytest_fixtures._store._make_empty_store()
+    store["fixtures"] = {
+        "fixture_mod.server": _make_fixture_meta(
+            canonical_name="fixture_mod.server",
+            return_display="fixture_mod.Server",
+            summary="Server fixture.",
+        )
+    }
+
+    def _fake_build_resolved_annotation_paragraph(
+        annotation: t.Any,
+        app: t.Any,
+        docname: str,
+        *,
+        strip_none: bool = False,
+        collapse_literal: bool = False,
+        module_name: str | None = None,
+        aliases: dict[str, str] | None = None,
+        qualify_unresolved: bool = False,
+    ) -> nodes.paragraph:
+        del (
+            app,
+            docname,
+            strip_none,
+            collapse_literal,
+            module_name,
+            aliases,
+            qualify_unresolved,
+        )
+        seen["annotation"] = t.cast(str, annotation)
+        return nodes.paragraph("", f"shared::{annotation}")
+
+    monkeypatch.setattr(
+        spf_index,
+        "build_resolved_annotation_paragraph",
+        _fake_build_resolved_annotation_paragraph,
+    )
+
+    placeholder = spf_directives.autofixture_index_node(
+        module="fixture_mod",
+        exclude=set(),
+    )
+    container = nodes.section("", placeholder)
+    app = types.SimpleNamespace(env=types.SimpleNamespace(), builder=object())
+    py_domain = types.SimpleNamespace(objects={})
+
+    spf_index._resolve_fixture_index(
+        placeholder,
+        store,
+        py_domain,
+        app,
+        "index",
+    )
+
+    assert seen["annotation"] == "fixture_mod.Server"
+    rendered_section = t.cast(nodes.Element, container.children[0])
+    assert rendered_section.get("name") == "api-summary"
+    assert "shared::fixture_mod.Server" in rendered_section.astext()
 
 
 # ---------------------------------------------------------------------------
@@ -475,6 +539,7 @@ def test_setup_return_value() -> None:
         "sphinx.ext.autodoc",
         "sphinx_autodoc_badges",
         "sphinx_autodoc_layout",
+        "sphinx_typehints_gp",
     ]
 
 
@@ -840,7 +905,6 @@ def _make_meta(
         autouse=False,
         kind="resource",
         return_display="str",
-        return_xref_target=None,
         deps=deps,
         param_reprs=(),
         has_teardown=False,
@@ -1424,7 +1488,6 @@ def test_build_fixture_index_table_structure_contains_headers_badges_and_summary
         autouse=False,
         kind="resource",
         return_display="Server",
-        return_xref_target=None,
         deps=(),
         param_reprs=(),
         has_teardown=False,
@@ -1470,7 +1533,6 @@ def test_env_purge_doc_removes_only_target() -> None:
                         autouse=False,
                         kind="resource",
                         return_display="str",
-                        return_xref_target=None,
                         deps=(),
                         param_reprs=(),
                         has_teardown=False,
@@ -1486,7 +1548,6 @@ def test_env_purge_doc_removes_only_target() -> None:
                         autouse=False,
                         kind="resource",
                         return_display="str",
-                        return_xref_target=None,
                         deps=(),
                         param_reprs=(),
                         has_teardown=False,
@@ -1531,7 +1592,6 @@ def test_fixture_meta_new_fields_accept_values() -> None:
         autouse=False,
         kind="resource",
         return_display="Server",
-        return_xref_target=None,
         deps=(),
         param_reprs=(),
         has_teardown=True,

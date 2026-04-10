@@ -8,10 +8,11 @@ from docutils import nodes
 from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
 from sphinx.util.nodes import make_refnode
+from sphinx_autodoc_layout import build_api_table_section
+from sphinx_typehints_gp import build_resolved_annotation_paragraph
 
 from sphinx_autodoc_pytest_fixtures._badges import _build_badge_group_node
 from sphinx_autodoc_pytest_fixtures._constants import (
-    _IDENTIFIER_PATTERN,
     _INDEX_TABLE_COLUMNS,
     _RST_INLINE_PATTERN,
 )
@@ -121,55 +122,6 @@ def _parse_rst_inline(
         result_nodes = list(temp_para.children)
 
     return result_nodes
-
-
-def _build_return_type_nodes(
-    meta: FixtureMeta,
-    py_domain: PythonDomain,
-    app: Sphinx,
-    docname: str,
-) -> list[nodes.Node]:
-    """Build doctree nodes for the return type, with linked class/builtin names.
-
-    Tokenises the ``return_display`` string and wraps every identifier in a
-    ``:class:`` cross-reference.  ``env.resolve_references()`` then resolves
-    identifiers it knows (``str`` \u2192 Python docs via intersphinx, ``Server`` \u2192
-    local API page) and leaves unknown ones as plain code literals.
-
-    Parameters
-    ----------
-    meta : FixtureMeta
-        Fixture metadata containing ``return_display``.
-    py_domain : PythonDomain
-        Python domain for object lookup.
-    app : Sphinx
-        Sphinx application.
-    docname : str
-        Current document name.
-
-    Returns
-    -------
-    list[nodes.Node]
-        Nodes for the return type cell with cross-referenced identifiers.
-    """
-    display = meta.return_display
-    if not display:
-        return [nodes.Text("")]
-
-    # Tokenise: identifiers (including dotted) vs punctuation/whitespace.
-    # Every identifier gets wrapped in :class:`~name` so intersphinx and
-    # the Python domain can resolve it.  Punctuation passes through as text.
-    rst_parts: list[str] = []
-    for token in _IDENTIFIER_PATTERN.split(display):
-        if not token:
-            continue
-        if _IDENTIFIER_PATTERN.fullmatch(token):
-            rst_parts.append(f":class:`~{token}`")
-        else:
-            rst_parts.append(token)
-
-    rst_text = "".join(rst_parts)
-    return _parse_rst_inline(rst_text, app, docname)
 
 
 def _select_fixture_index_fixtures(
@@ -302,10 +254,13 @@ def _resolve_fixture_index(
         name_entry[:] = [name_para]
 
         # --- Returns: linked type name ---
-        ret_para = nodes.paragraph()
-        for ret_node in _build_return_type_nodes(meta, py_domain, app, docname):
-            ret_para += ret_node
-        ret_entry[:] = [ret_para]
+        ret_entry[:] = [
+            build_resolved_annotation_paragraph(
+                meta.return_display,
+                app,
+                docname,
+            )
+        ]
 
         # --- Description: parsed RST inline markup ---
         desc_para = nodes.paragraph()
@@ -316,4 +271,4 @@ def _resolve_fixture_index(
 
     scroll_wrapper = nodes.container(classes=[_CSS.TABLE_SCROLL])
     scroll_wrapper += table
-    node.replace_self([scroll_wrapper])
+    node.replace_self([build_api_table_section("api-summary", scroll_wrapper)])

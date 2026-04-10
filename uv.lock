@@ -1280,6 +1280,7 @@ dependencies = [
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-layout" },
+    { name = "sphinx-typehints-gp" },
 ]
 
 [package.metadata]
@@ -1287,6 +1288,7 @@ requires-dist = [
     { name = "sphinx" },
     { name = "sphinx-autodoc-badges", editable = "packages/sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-layout", editable = "packages/sphinx-autodoc-layout" },
+    { name = "sphinx-typehints-gp", editable = "packages/sphinx-typehints-gp" },
 ]
 
 [[package]]
@@ -1310,6 +1312,7 @@ dependencies = [
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-layout" },
+    { name = "sphinx-typehints-gp" },
 ]
 
 [package.metadata]
@@ -1317,6 +1320,7 @@ requires-dist = [
     { name = "sphinx" },
     { name = "sphinx-autodoc-badges", editable = "packages/sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-layout", editable = "packages/sphinx-autodoc-layout" },
+    { name = "sphinx-typehints-gp", editable = "packages/sphinx-typehints-gp" },
 ]
 
 [[package]]
@@ -1328,6 +1332,7 @@ dependencies = [
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-layout" },
+    { name = "sphinx-typehints-gp" },
 ]
 
 [package.metadata]
@@ -1335,6 +1340,7 @@ requires-dist = [
     { name = "sphinx" },
     { name = "sphinx-autodoc-badges", editable = "packages/sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-layout", editable = "packages/sphinx-autodoc-layout" },
+    { name = "sphinx-typehints-gp", editable = "packages/sphinx-typehints-gp" },
 ]
 
 [[package]]
@@ -1359,6 +1365,7 @@ dependencies = [
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-layout" },
+    { name = "sphinx-typehints-gp" },
 ]
 
 [package.metadata]
@@ -1367,6 +1374,7 @@ requires-dist = [
     { name = "sphinx" },
     { name = "sphinx-autodoc-badges", editable = "packages/sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-layout", editable = "packages/sphinx-autodoc-layout" },
+    { name = "sphinx-typehints-gp", editable = "packages/sphinx-typehints-gp" },
 ]
 
 [[package]]
@@ -1378,6 +1386,7 @@ dependencies = [
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-layout" },
+    { name = "sphinx-typehints-gp" },
 ]
 
 [package.metadata]
@@ -1385,6 +1394,7 @@ requires-dist = [
     { name = "sphinx" },
     { name = "sphinx-autodoc-badges", editable = "packages/sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-layout", editable = "packages/sphinx-autodoc-layout" },
+    { name = "sphinx-typehints-gp", editable = "packages/sphinx-typehints-gp" },
 ]
 
 [[package]]

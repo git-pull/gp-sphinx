@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import typing as t
+
 from docutils import nodes
 from sphinx_autodoc_badges import BadgeNode
 
 from sphinx_autodoc_fastmcp._badges import build_safety_badge, build_tool_badge_group
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._parsing import (
+    extract_params,
     first_paragraph,
     make_table,
     parse_numpy_params,
@@ -65,6 +68,23 @@ def test_parse_numpy_empty() -> None:
 def test_first_paragraph() -> None:
     """First paragraph is extracted."""
     assert first_paragraph("a\n\nb") == "a"
+
+
+def test_extract_params_uses_shared_literal_collapse() -> None:
+    """FastMCP parameter extraction uses the shared literal normalization."""
+
+    def list_sessions(
+        status: t.Literal["open", "closed"],
+        limit: int | None = None,
+    ) -> str:
+        return "[]"
+
+    params = extract_params(list_sessions)
+
+    assert [(param.name, param.type_str) for param in params] == [
+        ("status", "'open', 'closed'"),
+        ("limit", "int"),
+    ]
 
 
 def test_make_table_minimal() -> None:

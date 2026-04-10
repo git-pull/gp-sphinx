@@ -664,7 +664,6 @@ class PyFixtureDirective(PyFunction):
                 autouse="autouse" in self.options,
                 kind=self.options.get("kind", _DEFAULTS["kind"]),
                 return_display=self.options.get("return-type", ""),
-                return_xref_target=None,
                 deps=tuple(deps),
                 param_reprs=tuple(
                     p.strip()

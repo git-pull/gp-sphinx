@@ -602,6 +602,5 @@ def test_type_checking_alias_qualified_in_fixture_meta(
         f"Expected 'fixture_mod.MyAlias' but got {meta.return_display!r}. "
         "TYPE_CHECKING TypeAlias was not qualified — check _qualify_forward_ref."
     )
-    assert meta.return_xref_target == "fixture_mod.MyAlias"
     assert store["fixtures"]["fixture_mod.my_fixture"] == meta
     assert store["public_to_canon"]["my_fixture"] == "fixture_mod.my_fixture"

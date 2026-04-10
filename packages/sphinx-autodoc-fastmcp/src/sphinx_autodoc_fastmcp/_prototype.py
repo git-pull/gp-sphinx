@@ -37,6 +37,7 @@ from __future__ import annotations
 from docutils import nodes
 from sphinx import addnodes
 from sphinx_autodoc_layout._slots import inject_signature_slots
+from sphinx_typehints_gp import normalize_annotation_text
 
 from sphinx_autodoc_fastmcp._badges import build_tool_badge_group
 from sphinx_autodoc_fastmcp._models import ParamInfo, ToolInfo
@@ -45,7 +46,6 @@ from sphinx_autodoc_fastmcp._parsing import (
     make_para,
     make_table,
     make_type_cell_smart,
-    make_type_xref,
 )
 
 
@@ -61,7 +61,7 @@ def _build_tool_parameter(param: ParamInfo) -> addnodes.desc_parameter:
     if param.type_str:
         node += addnodes.desc_sig_punctuation("", ":")
         node += addnodes.desc_sig_space("", " ")
-        node += nodes.emphasis("", param.type_str)
+        node += nodes.emphasis("", normalize_annotation_text(param.type_str))
     if param.default:
         node += addnodes.desc_sig_space("", " ")
         node += addnodes.desc_sig_operator("", "=")
@@ -75,7 +75,11 @@ def _build_parameter_table(tool: ToolInfo) -> nodes.table:
     headers = ["Parameter", "Type", "Required", "Default", "Description"]
     rows: list[list[str | nodes.Node]] = []
     for param in tool.params:
-        type_cell, _is_enum = make_type_cell_smart(param.type_str)
+        type_cell, is_enum = make_type_cell_smart(param.type_str)
+        if param.type_str and not is_enum:
+            type_cell = make_para(
+                nodes.literal("", normalize_annotation_text(param.type_str)),
+            )
         default_cell: str | nodes.Node = "—"
         if param.default:
             default_cell = make_para(nodes.literal("", param.default))
@@ -111,10 +115,8 @@ def _build_parameter_fields(tool: ToolInfo) -> nodes.field_list:
             nodes.field_name("", "Returns"),
             nodes.field_body(
                 "",
-                make_type_xref(
-                    tool.return_annotation,
-                    model_module="",
-                    model_classes=frozenset(),
+                make_para(
+                    nodes.literal("", normalize_annotation_text(tool.return_annotation))
                 ),
             ),
         )

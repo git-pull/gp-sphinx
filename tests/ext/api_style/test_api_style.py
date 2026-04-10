@@ -5,12 +5,14 @@ from __future__ import annotations
 import types
 import typing as t
 
+import pytest
 from docutils import nodes
 from sphinx import addnodes
 from sphinx_autodoc_badges import BadgeNode
 from sphinx_autodoc_layout._nodes import api_slot
 
 import sphinx_autodoc_api_style
+import sphinx_autodoc_api_style._badges as sas_badges
 from sphinx_autodoc_api_style._badges import (
     _MOD_ORDER,
     _MOD_TOOLTIPS,
@@ -165,6 +167,39 @@ def test_badge_group_all_type_labels() -> None:
         assert len(badges) >= 1
         label = badges[-1].astext()
         assert label == _TYPE_LABELS.get(objtype, objtype)
+
+
+def test_badge_group_builds_shared_badge_specs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """api-style emits BadgeSpec data into the shared badge-group renderer."""
+    seen: dict[str, object] = {}
+
+    def _fake_build_badge_group_from_specs(
+        badges: t.Sequence[object],
+        *,
+        classes: list[str] | None = None,
+    ) -> nodes.inline:
+        seen["badges"] = badges
+        seen["classes"] = classes
+        return nodes.inline("", "", classes=["sab-badge-group"])
+
+    monkeypatch.setattr(
+        sas_badges,
+        "build_badge_group_from_specs",
+        _fake_build_badge_group_from_specs,
+    )
+
+    group = build_badge_group("method", modifiers=frozenset({"async", "abstract"}))
+
+    assert isinstance(group, nodes.inline)
+    assert seen["classes"] == [_CSS.BADGE_GROUP]
+    badge_specs = t.cast(t.Sequence[object], seen["badges"])
+    assert [t.cast(t.Any, spec).text for spec in badge_specs] == [
+        "abstract",
+        "async",
+        "method",
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -531,6 +566,7 @@ def test_setup_auto_loads_layout() -> None:
         "sphinx.ext.autodoc",
         "sphinx_autodoc_badges",
         "sphinx_autodoc_layout",
+        "sphinx_typehints_gp",
     ]
 
 

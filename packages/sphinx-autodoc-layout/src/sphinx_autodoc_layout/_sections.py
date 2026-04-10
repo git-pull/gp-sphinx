@@ -23,6 +23,7 @@ from sphinx_autodoc_layout._nodes import api_component, build_api_component
 _SECTION_KIND_CLASS: dict[str, str] = {
     "api-description": "narrative",
     "api-facts": "facts",
+    "api-summary": "summary",
     "api-parameters": "fields",
     "api-options": "options",
     "api-footer": "members",

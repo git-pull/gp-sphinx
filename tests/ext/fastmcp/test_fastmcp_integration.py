@@ -106,7 +106,11 @@ def test_fastmcp_tool_cards_use_shared_layout(
 ) -> None:
     html = read_output(fastmcp_html_result, "index.html")
 
-    assert 'class="api-entry smf-tool-entry api-profile--fastmcp-tool"' in html
+    assert 'class="smf-tool-section gal-card-shell"' in html
+    assert (
+        'class="api-entry gal-card-entry api-profile--fastmcp-tool smf-tool-entry"'
+        in html
+    )
     assert 'class="api-layout"' in html
     assert 'class="api-badge-container"' in html
     assert 'class="api-facts gal-region gal-region--facts smf-body-section"' in html

@@ -7,7 +7,6 @@ import inspect
 import typing as t
 
 from sphinx.util import logging as sphinx_logging
-from sphinx.util.typing import stringify_annotation
 
 from sphinx_autodoc_pytest_fixtures._constants import (
     _CONFIG_BUILTIN_LINKS,
@@ -286,27 +285,6 @@ def _get_return_annotation(obj: t.Any) -> t.Any:
         args = t.get_args(ret)
         return args[0] if args else inspect.Parameter.empty
     return ret
-
-
-def _format_type_short(annotation: t.Any) -> str:
-    """Format *annotation* to a short display string for docs.
-
-    Parameters
-    ----------
-    annotation : Any
-        A type annotation, possibly ``inspect.Parameter.empty``.
-
-    Returns
-    -------
-    str
-        A human-readable type string, or ``"..."`` when annotation is absent.
-    """
-    if annotation is inspect.Parameter.empty:
-        return "..."
-    try:
-        return stringify_annotation(annotation)
-    except Exception:
-        return str(annotation)
 
 
 def _is_factory(obj: t.Any) -> bool:
