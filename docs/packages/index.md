@@ -14,6 +14,9 @@ Eleven workspace packages in three tiers.
 **Theme, fonts, and CLI** — shared Sphinx configuration and assets:
 - `gp-sphinx`, `sphinx-gptheme`, `sphinx-fonts`, `sphinx-argparse-neo`
 
+`gp-sphinx` is the umbrella entry point: `merge_sphinx_config()` wires up the
+full stack for downstream projects.
+
 Each domain package is independently installable but automatically loads its
 infrastructure dependencies.
 
@@ -23,16 +26,16 @@ infrastructure dependencies.
 ```{toctree}
 :hidden:
 
-gp-sphinx
-sphinx-autodoc-api-style
 sphinx-autodoc-badges
+sphinx-autodoc-layout
+sphinx-typehints-gp
+sphinx-autodoc-api-style
 sphinx-autodoc-docutils
 sphinx-autodoc-fastmcp
-sphinx-autodoc-layout
-sphinx-autodoc-sphinx
 sphinx-autodoc-pytest-fixtures
-sphinx-fonts
+sphinx-autodoc-sphinx
+gp-sphinx
 sphinx-gptheme
+sphinx-fonts
 sphinx-argparse-neo
-sphinx-typehints-gp
 ```
