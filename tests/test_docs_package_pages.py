@@ -144,3 +144,70 @@ def test_fastmcp_docs_page_renders_live_demo_output(
     assert "Inspect" in fastmcp_docs_html
     assert "Act" in fastmcp_docs_html
     assert "Destroy" in fastmcp_docs_html
+
+
+# ---------------------------------------------------------------------------
+# Narrative page tests (pure file-content, no Sphinx build)
+# ---------------------------------------------------------------------------
+
+
+def test_gallery_page_uses_live_eval_rst_demos() -> None:
+    """Gallery page contains live eval-rst directives, not static ASCII art."""
+    text = (DOCS_ROOT / "gallery.md").read_text()
+
+    assert "```{eval-rst}" in text
+    assert "autofunction::" in text or "autoclass::" in text
+    assert "```{sab-badge-demo}" in text
+
+
+def test_architecture_page_names_all_three_tiers() -> None:
+    """Architecture page mentions all three tiers and key infrastructure packages."""
+    text = (DOCS_ROOT / "architecture.md").read_text()
+
+    assert "Shared infrastructure" in text or "Tier 1" in text
+    assert "Domain" in text or "Tier 2" in text
+    assert "Theme" in text or "Tier 3" in text or "Presentation" in text
+    assert "sphinx-autodoc-layout" in text
+    assert "sphinx-autodoc-badges" in text
+    assert "sphinx-typehints-gp" in text
+
+
+def test_whats_new_page_covers_key_advancements() -> None:
+    """What's-new page documents the major branch advancements."""
+    text = (DOCS_ROOT / "whats-new.md").read_text()
+
+    assert "sphinx-autodoc-layout" in text
+    assert "sphinx-typehints-gp" in text
+    assert "badge" in text.lower()
+    assert "9.5" in text
+
+
+def test_homepage_has_six_cards() -> None:
+    """Homepage grid contains at least six cards."""
+    text = (DOCS_ROOT / "index.md").read_text()
+
+    assert text.count("grid-item-card") >= 6
+    assert "gallery" in text
+    assert "architecture" in text
+    assert "whats-new" in text
+
+
+def test_homepage_says_twelve_packages() -> None:
+    """Homepage references the correct package count."""
+    text = (DOCS_ROOT / "index.md").read_text()
+
+    assert "Twelve" in text or "twelve" in text or "12" in text
+
+
+def test_quickstart_has_autodoc_demo() -> None:
+    """Quickstart page includes an autodoc demo section."""
+    text = (DOCS_ROOT / "quickstart.md").read_text()
+
+    assert "autodoc" in text.lower() or "automodule" in text
+
+
+def test_readme_uses_main_branch() -> None:
+    """README references main branch, not master."""
+    text = (REPO_ROOT / "README.md").read_text()
+
+    assert "/blob/master/" not in text
