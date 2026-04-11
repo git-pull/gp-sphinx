@@ -1,8 +1,8 @@
 /* sphinx_autodoc_fastmcp — color layer for FastMCP tool badges.
  *
- * Base metrics come from sphinx_autodoc_badges.css. This file matches
- * sphinx-gptheme custom.css rules for .sd-badge[aria-label^="Safety tier:"]
- * (font metrics, !important colors, theme --badge-safety-* variables).
+ * Base metrics and sizing come from sphinx_autodoc_badges.css (sab-dense class).
+ * This file matches sphinx-gptheme custom.css rules for .sd-badge[aria-label^="Safety tier:"]
+ * (colors and theme --badge-safety-* variables).
  *
  * Safety palette: same tokens as sphinx_gptheme/theme/static/css/custom.css
  * so readonly / mutating / destructive match production regardless of load order.
@@ -23,65 +23,9 @@
   --smf-type-tool-border: #0f766e;
 }
 
-/* ── sphinx-gptheme parity: same box model as .sd-badge + safety tier ──
- * See sphinx_gptheme/theme/static/css/custom.css (.sd-badge, h2/h3 .sd-badge, …)
- */
-.sab-badge.smf-badge--safety {
+/* ── Safety badges: sab-dense provides compact metrics; restore inline-flex for icon gap ── */
+.sab-badge.sab-dense.smf-badge--safety {
   display: inline-flex !important;
-  align-items: center;
-  vertical-align: middle;
-  font-size: 0.67rem;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.01em;
-  padding: 0.16rem 0.4rem;
-  border-radius: 0.22rem;
-  user-select: none;
-  -webkit-user-select: none;
-  gap: 0.28rem;
-  border: 1px solid transparent;
-  box-sizing: border-box;
-}
-
-.sab-badge.smf-badge--safety::before {
-  font-style: normal;
-  font-weight: normal;
-  font-size: 1em;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-/* Tool card titles: match h2/h3 .sd-badge[aria-label^="Safety tier:"] */
-h2.smf-tool-title .sab-badge.smf-badge--safety,
-h3.smf-tool-title .sab-badge.smf-badge--safety,
-h4.smf-tool-title .sab-badge.smf-badge--safety,
-.smf-tool-title .sab-badge.smf-badge--safety {
-  font-size: 0.68rem;
-  padding: 0.17rem 0.4rem;
-}
-
-/* Type badge: same base scale as .sd-badge (custom.css) */
-.sab-badge.smf-badge--type {
-  display: inline-flex !important;
-  align-items: center;
-  vertical-align: middle;
-  font-size: 0.67rem;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  padding: 0.16rem 0.4rem;
-  border-radius: 0.22rem;
-  user-select: none;
-  -webkit-user-select: none;
-  box-sizing: border-box;
-}
-
-h2.smf-tool-title .sab-badge.smf-badge--type,
-h3.smf-tool-title .sab-badge.smf-badge--type,
-h4.smf-tool-title .sab-badge.smf-badge--type,
-.smf-tool-title .sab-badge.smf-badge--type {
-  font-size: 0.68rem;
-  padding: 0.17rem 0.4rem;
 }
 
 /*
@@ -174,7 +118,8 @@ section.smf-tool-section > .smf-tool-entry > .api-content > .smf-body-section + 
   margin-top: 0.75rem;
 }
 
-.toc-tree .smf-badge--type {
+/* Hide the "tool" type badge in TOC sidebar (redundant there). */
+.toc-tree .smf-type-tool {
   display: none !important;
 }
 
