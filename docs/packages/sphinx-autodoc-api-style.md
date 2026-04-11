@@ -116,33 +116,35 @@ Render one class and its members:
 
 ## Badge reference
 
-### Type badges
+All badge classes are drawn from the shared `sphinx_autodoc_badges.SAB` palette.
+This extension uses:
 
-| Object type | CSS class | Color |
-|-------------|-----------|-------|
-| `function` | `gas-type-function` | Blue |
-| `class` | `gas-type-class` | Indigo |
-| `method` | `gas-type-method` | Cyan |
-| `property` | `gas-type-property` | Teal |
-| `attribute` | `gas-type-attribute` | Slate |
-| `data` | `gas-type-data` | Grey |
-| `exception` | `gas-type-exception` | Rose |
+| Object type | `SAB` constant | CSS class |
+|---|---|---|
+| `function` | `SAB.TYPE_FUNCTION` | `sab-type-function` |
+| `class` | `SAB.TYPE_CLASS` | `sab-type-class` |
+| `method` | `SAB.TYPE_METHOD` | `sab-type-method` |
+| `property` | `SAB.TYPE_PROPERTY` | `sab-type-property` |
+| `attribute` | `SAB.TYPE_ATTRIBUTE` | `sab-type-attribute` |
+| `data` | `SAB.TYPE_DATA` | `sab-type-data` |
+| `exception` | `SAB.TYPE_EXCEPTION` | `sab-type-exception` |
 
-### Modifier badges
+| Modifier | `SAB` constant | CSS class |
+|---|---|---|
+| `async` | `SAB.MOD_ASYNC` | `sab-mod-async` |
+| `classmethod` | `SAB.MOD_CLASSMETHOD` | `sab-mod-classmethod` |
+| `staticmethod` | `SAB.MOD_STATICMETHOD` | `sab-mod-staticmethod` |
+| `abstract` | `SAB.MOD_ABSTRACT` | `sab-mod-abstract` |
+| `final` | `SAB.MOD_FINAL` | `sab-mod-final` |
+| `deprecated` | `SAB.STATE_DEPRECATED` | `sab-state-deprecated` |
 
-| Modifier | CSS class | Style |
-|----------|-----------|-------|
-| `async` | `gas-mod-async` | Purple outlined |
-| `classmethod` | `gas-mod-classmethod` | Amber outlined |
-| `staticmethod` | `gas-mod-staticmethod` | Grey outlined |
-| `abstract` | `gas-mod-abstract` | Indigo outlined |
-| `final` | `gas-mod-final` | Emerald outlined |
-| `deprecated` | `gas-deprecated` | Red/grey outlined |
+See {doc}`sphinx-autodoc-badges` for the full shared palette.
 
 ## CSS prefix
 
-All CSS classes use the `gas-` prefix (**g**p-sphinx **a**pi **s**tyle) to avoid
-collision with `spf-` (sphinx pytest fixtures) or other extensions.
+All badge CSS classes use the `sab-` prefix from {doc}`sphinx-autodoc-badges`.
+Layout card classes (borders, headers, field-list rules) are local to this package
+and use `dl.py-*` and `.api-*` selectors.
 
 ```{package-reference} sphinx-autodoc-api-style
 ```
