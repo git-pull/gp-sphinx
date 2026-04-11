@@ -44,6 +44,12 @@ See the package docstrings and `sphinx_autodoc_fastmcp.setup()` for defaults.
 
 - Python 3.10+
 - Sphinx
+- `sphinx-autodoc-badges`, `sphinx-autodoc-layout`, and `sphinx-typehints-gp`
+  are declared dependencies and installed automatically with this package.
+
+`sphinx_autodoc_fastmcp` automatically registers `sphinx_autodoc_badges`,
+`sphinx_autodoc_layout`, and `sphinx_typehints_gp` via `app.setup_extension()`.
+You do not need to add them separately to your `extensions` list.
 
 ## Documentation
 
