@@ -149,7 +149,7 @@ These are injected even though they are not exposed as `DEFAULT_*` constants:
 
 | Constant | Value |
 | --- | --- |
-| `DEFAULT_SUPPRESS_WARNINGS` | `["sphinx_typehints_gp.forward_reference"]` |
+| `DEFAULT_SUPPRESS_WARNINGS` | `[]` |
 
 ## Parameter interactions
 
