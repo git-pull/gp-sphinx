@@ -88,6 +88,51 @@ Rebuild docs on file change: `just watch-docs` (requires [entr(1)])
 
 Rebuild docs and run server via one terminal: `just dev-docs` (requires above)
 
+## Test hierarchy
+
+Pick the **lightest** level that exercises the behavior:
+
+| Level | When to use | Speed |
+|---|---|---|
+| **Pure unit** | Strings, dicts, dataclasses — no nodes, no Sphinx | microseconds |
+| **Docutils tree unit** | Constructing `docutils.nodes.*` or `sphinx.addnodes.*` directly | microseconds |
+| **Snapshot unit** | Large or complex output — assert via `snapshot_doctree` | microseconds |
+| **Sphinx integration** (`@pytest.mark.integration`) | Must verify actual HTML output or Sphinx event wiring | 2–10 s |
+
+The `just test-fast` lane skips integration tests for rapid feedback.
+The full `just test` lane runs everything.
+
+### Scenario caching
+
+Integration tests use the harness in `tests/_sphinx_scenarios.py`.
+`build_shared_sphinx_result()` caches builds by a SHA-256 content-hash
+digest, achieving a **9.5x speedup** (~40 s to ~4.2 s for 916 tests).
+
+Key rules:
+
+- Always `scope="module"` or `scope="session"` on build fixtures — never
+  `scope="function"`
+- Use `purge_modules` to remove synthetic Python modules from `sys.modules`
+  before the initial build
+- Use `SCENARIO_SRCDIR_TOKEN` + `substitute_srcdir=True` for `sys.path`
+  injection in scenario `conf.py` files
+
+### Snapshot testing
+
+The project uses [syrupy](https://github.com/toptal/syrupy) for snapshot
+assertions.  Three custom fixtures (from `tests/_snapshots.py`) normalize
+their inputs before asserting:
+
+- `snapshot_doctree(doctree)` — normalizes a `nodes.Node`
+- `snapshot_html_fragment(html)` — strips ANSI, normalizes whitespace
+- `snapshot_warnings(warnings)` — strips noise lines and ANSI codes
+
+Update stored snapshots after intentional output changes:
+
+```console
+$ uv run pytest --snapshot-update
+```
+
 [git]: https://git-scm.com/
 [uv]: https://github.com/astral-sh/uv
 [entr(1)]: http://eradman.com/entrproject/
