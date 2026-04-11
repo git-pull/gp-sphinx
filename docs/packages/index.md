@@ -1,6 +1,6 @@
 # Packages
 
-Eleven workspace packages in three tiers.
+Twelve workspace packages in three tiers.
 
 **Shared infrastructure** — the rendering pipeline that all domain packages consume:
 - `sphinx-autodoc-badges` — badge primitives and colour palette
@@ -19,6 +19,12 @@ full stack for downstream projects.
 
 Each domain package is independently installable but automatically loads its
 infrastructure dependencies.
+
+Together, the shared infrastructure provides **one autodoc design system**:
+every domain package shares the same badge palette, the same componentized
+HTML output structure, and the same static type annotation pipeline — so
+Python APIs, pytest fixtures, Sphinx config values, docutils directives,
+and FastMCP tools all look like they belong together.
 
 ```{workspace-package-grid}
 ```
