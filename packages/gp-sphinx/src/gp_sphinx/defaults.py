@@ -349,13 +349,11 @@ Examples
 'hide'
 """
 
-DEFAULT_SUPPRESS_WARNINGS: list[str] = [
-    "sphinx_typehints_gp.forward_reference",
-]
+DEFAULT_SUPPRESS_WARNINGS: list[str] = []
 """Warnings to suppress by default.
 
 Examples
 --------
 >>> len(DEFAULT_SUPPRESS_WARNINGS)
-1
+0
 """
