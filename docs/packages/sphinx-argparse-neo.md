@@ -1,6 +1,7 @@
 # sphinx-argparse-neo
 
-{bdg-success-line}`Beta` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-argparse-neo>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-argparse-neo/>`
+```{sab-package-meta} sphinx-argparse-neo
+```
 
 Modern Sphinx extension for documenting `argparse` CLIs. The base package
 registers the `argparse` directive plus renderer config values; the

@@ -10,6 +10,7 @@ from __future__ import annotations
 import typing as t
 
 from docutils import nodes
+from sab_meta import _link_badge, _maturity_badge
 from sphinx.application import Sphinx
 from sphinx.util.docutils import SphinxDirective
 from sphinx_autodoc_badges import SAB, build_badge, build_badge_group, build_toolbar
@@ -796,6 +797,49 @@ class BadgeDemoDirective(SphinxDirective):
                 label="dense",
             )
         )
+
+        # ── Package metadata badges ──────────────────────────────
+
+        result.append(_section("Package metadata — maturity"))
+        result.append(
+            _row(
+                _maturity_badge("Alpha"),
+                _maturity_badge("Beta"),
+                label="sab-meta-alpha / sab-meta-beta (filled)",
+            )
+        )
+
+        result.append(_section("Package metadata — link badges (outline)"))
+        link_row = nodes.paragraph()
+        link_row += _link_badge(
+            "GitHub",
+            "https://github.com/git-pull/gp-sphinx",
+        )
+        link_row += nodes.Text(" ")
+        link_row += _link_badge(
+            "PyPI",
+            "https://pypi.org/project/sphinx-autodoc-badges/",
+        )
+        link_row += nodes.Text(" ")
+        link_row += nodes.literal(
+            text="_link_badge(label, url)  — sab-badge sab-outline sab-meta-link <a>",
+        )
+        result.append(link_row)
+
+        result.append(_section("Package metadata — full header row"))
+        full_row = nodes.paragraph()
+        full_row += _maturity_badge("Alpha")
+        full_row += nodes.Text(" ")
+        full_row += _link_badge(
+            "GitHub",
+            "https://github.com/git-pull/gp-sphinx",
+        )
+        full_row += nodes.Text(" ")
+        full_row += _link_badge(
+            "PyPI",
+            "https://pypi.org/project/sphinx-autodoc-badges/",
+        )
+        result.append(full_row)
 
         return result
 

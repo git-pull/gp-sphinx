@@ -113,6 +113,18 @@
   --sab-docutils-bg:     #f5f3ff;
   --sab-docutils-fg:     #6d28d9;
   --sab-docutils-border: #8b5cf6;
+
+  /* ── Package metadata (maturity + links) ────────────── */
+  --sab-meta-alpha-bg:     #ffedc6;
+  --sab-meta-alpha-fg:     #4e2009;
+  --sab-meta-alpha-border: #ab6400;
+
+  --sab-meta-beta-bg:      #ddf3e4;
+  --sab-meta-beta-fg:      #193b2d;
+  --sab-meta-beta-border:  #218358;
+
+  --sab-meta-link-fg:      #6b7280;
+  --sab-meta-link-border:  #d1d5db;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -209,6 +221,17 @@
     --sab-docutils-bg:     #2e1065;
     --sab-docutils-fg:     #c4b5fd;
     --sab-docutils-border: #a78bfa;
+
+    --sab-meta-alpha-bg:     #3f2700;
+    --sab-meta-alpha-fg:     #ffca16;
+    --sab-meta-alpha-border: #8f6424;
+
+    --sab-meta-beta-bg:      #113b29;
+    --sab-meta-beta-fg:      #3dd68c;
+    --sab-meta-beta-border:  #2f7c57;
+
+    --sab-meta-link-fg:      #9ca3af;
+    --sab-meta-link-border:  #4b5563;
   }
 }
 
@@ -306,6 +329,17 @@ body[data-theme="dark"] {
   --sab-docutils-bg:     #2e1065;
   --sab-docutils-fg:     #c4b5fd;
   --sab-docutils-border: #a78bfa;
+
+  --sab-meta-alpha-bg:     #3f2700;
+  --sab-meta-alpha-fg:     #ffca16;
+  --sab-meta-alpha-border: #8f6424;
+
+  --sab-meta-beta-bg:      #113b29;
+  --sab-meta-beta-fg:      #3dd68c;
+  --sab-meta-beta-border:  #2f7c57;
+
+  --sab-meta-link-fg:      #9ca3af;
+  --sab-meta-link-border:  #4b5563;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -362,3 +396,10 @@ body[data-theme="dark"] {
 .sab-type-directive,
 .sab-type-role,
 .sab-type-option { --sab-bg: var(--sab-docutils-bg); --sab-fg: var(--sab-docutils-fg); --sab-border: var(--sab-docutils-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — package metadata (maturity + links)
+ * ══════════════════════════════════════════════════════════ */
+.sab-meta-alpha { --sab-bg: var(--sab-meta-alpha-bg); --sab-fg: var(--sab-meta-alpha-fg); --sab-border: var(--sab-meta-alpha-border); }
+.sab-meta-beta  { --sab-bg: var(--sab-meta-beta-bg);  --sab-fg: var(--sab-meta-beta-fg);  --sab-border: var(--sab-meta-beta-border); }
+.sab-meta-link  { --sab-fg: var(--sab-meta-link-fg); --sab-border: var(--sab-meta-link-border); }

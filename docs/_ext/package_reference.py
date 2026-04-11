@@ -711,7 +711,11 @@ def package_reference_markdown(package_name: str) -> str:
 
 
 def maturity_badge(maturity: str) -> str:
-    """Return a sphinx-design badge role matching a package maturity label.
+    """Return a sphinx-design badge role for use in grid markdown output.
+
+    Used only in :func:`workspace_package_grid_markdown` which produces raw
+    MyST markdown strings.  Per-page package headers use the ``sab-package-meta``
+    directive (see ``docs/_ext/sab_meta.py``) which emits SAB-native badges.
 
     Examples
     --------

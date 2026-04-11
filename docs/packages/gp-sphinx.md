@@ -1,6 +1,7 @@
 # gp-sphinx
 
-{bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-sphinx>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/gp-sphinx/>`
+```{sab-package-meta} gp-sphinx
+```
 
 :::{admonition} Alpha
 :class: warning

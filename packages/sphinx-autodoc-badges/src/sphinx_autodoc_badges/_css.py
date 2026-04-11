@@ -150,6 +150,11 @@ class SAB:
     TYPE_ROLE = f"{PREFIX}-type-role"
     TYPE_OPTION = f"{PREFIX}-type-option"
 
+    # ── Package metadata (maturity + links) ───────────────
+    META_ALPHA = f"{PREFIX}-meta-alpha"
+    META_BETA = f"{PREFIX}-meta-beta"
+    META_LINK = f"{PREFIX}-meta-link"
+
     @staticmethod
     def obj_type(name: str) -> str:
         """Return the type-specific CSS class for a Python API object.
