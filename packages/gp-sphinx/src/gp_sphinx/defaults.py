@@ -125,7 +125,7 @@ by :func:`~gp_sphinx.config.merge_sphinx_config`.
 Examples
 --------
 >>> DEFAULT_THEME_OPTIONS["source_branch"]
-'master'
+'main'
 
 >>> DEFAULT_THEME_OPTIONS["source_directory"]
 'docs/'
