@@ -1,4 +1,4 @@
-# gp-sphinx &middot; [![Python Package](https://img.shields.io/pypi/v/gp-sphinx.svg)](https://pypi.org/project/gp-sphinx/) [![License](https://img.shields.io/github/license/git-pull/gp-sphinx.svg)](https://github.com/git-pull/gp-sphinx/blob/master/LICENSE)
+# gp-sphinx &middot; [![Python Package](https://img.shields.io/pypi/v/gp-sphinx.svg)](https://pypi.org/project/gp-sphinx/) [![License](https://img.shields.io/github/license/git-pull/gp-sphinx.svg)](https://github.com/git-pull/gp-sphinx/blob/main/LICENSE)
 
 Shared Sphinx documentation platform for [git-pull](https://github.com/git-pull) projects.
 
@@ -53,4 +53,4 @@ globals().update(conf)
 - Changelog: <https://github.com/git-pull/gp-sphinx/blob/master/CHANGES>
 - Issues: <https://github.com/git-pull/gp-sphinx/issues>
 - PyPI: <https://pypi.org/project/gp-sphinx/>
-- License: [MIT](https://github.com/git-pull/gp-sphinx/blob/master/LICENSE)
+- License: [MIT](https://github.com/git-pull/gp-sphinx/blob/main/LICENSE)
