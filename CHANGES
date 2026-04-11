@@ -51,6 +51,11 @@ $ uv add gp-sphinx --prerelease allow
   after `BadgeNode` (`<span>`) replaced `<abbr>` in `sphinx-autodoc-api-style`
   and `sphinx-autodoc-pytest-fixtures`; restored via element-agnostic CSS
   selectors and correct fill defaults (#13)
+- `sphinx-argparse-neo`: Namespace implicit section targets (`section["names"]`)
+  by `id_prefix` in `render_usage_section`, `render_group_section`, and
+  `_create_example_section` so multi-page docs that embed `.. argparse::` via
+  MyST `{eval-rst}` no longer emit `duplicate label` warnings for `usage`,
+  `options`, `positional arguments`, and cross-page `examples` targets (#16)
 
 ### Workspace packages
 
