@@ -77,7 +77,7 @@ Render a summary table grouped by safety tier:
 
 ````myst
 ```{eval-rst}
-.. fastmcp-toolsummary::
+.. fastmcp-tool-summary::
 ```
 ````
 
@@ -112,7 +112,7 @@ for a plain inline reference.
 ### Tool summary
 
 ```{eval-rst}
-.. fastmcp-toolsummary::
+.. fastmcp-tool-summary::
 ```
 
 ## Package reference

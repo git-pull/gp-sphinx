@@ -214,7 +214,7 @@ class FastMCPToolSummaryDirective(SphinxDirective):
         if not tools:
             return [
                 self.state.document.reporter.warning(
-                    "fastmcp-toolsummary: no tools found.",
+                    "fastmcp-tool-summary: no tools found.",
                     line=self.lineno,
                 ),
             ]

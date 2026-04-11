@@ -127,7 +127,7 @@ Tool documentation with safety badges and parameter tables.
 ### Tool summary
 
 ```{eval-rst}
-.. fastmcp-toolsummary::
+.. fastmcp-tool-summary::
    :noindex:
 ```
 
