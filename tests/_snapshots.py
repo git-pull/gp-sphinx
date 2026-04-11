@@ -41,6 +41,10 @@ def normalize_warning_text(
 ) -> str:
     """Return normalized warning text for snapshot assertions."""
     normalized = _ANSI_ESCAPE_RE.sub("", warnings).replace("\r\n", "\n")
+    # Filter known-harmless Sphinx noise:
+    # - "already registered": Sphinx node registration is global; test builds
+    #   in the same process re-register nodes, producing harmless warnings.
+    # - "alabaster": fallback theme loading noise when Furo is the target theme.
     lines = [
         line
         for line in normalized.splitlines()
