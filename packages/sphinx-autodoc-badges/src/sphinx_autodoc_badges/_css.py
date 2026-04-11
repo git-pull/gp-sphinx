@@ -43,9 +43,13 @@ class SAB:
     """CSS class constants (``sab-`` = sphinx autodoc badges).
 
     Covers both structural variants (size, outline, icon-only) and the
-    unified semantic colour palette from ``sab_palettes.css``.  Every
-    ``sphinx-autodoc-*`` package uses these constants instead of defining
-    its own ``gas-*`` / ``spf-*`` / ``sas-*`` / ``sadoc-*`` strings.
+    unified semantic colour palette from ``sab_palettes.css``.
+
+    All ``sphinx-autodoc-*`` packages use these constants for shared badge
+    primitives (group, badge, toolbar, type, modifier, state classes).
+    Extension-specific layout and semantic classes remain under each
+    package's own prefix (e.g. ``smf-`` for FastMCP tool sections and
+    safety tiers, ``spf-`` for pytest-fixture index layout).
 
     Examples
     --------
