@@ -13,6 +13,7 @@ from sphinx.domains.python import PyFunction
 from sphinx.util import logging as sphinx_logging
 from sphinx.util.docfields import Field, GroupedField
 from sphinx.util.docutils import SphinxDirective
+from sphinx_autodoc_badges import SAB
 
 from sphinx_autodoc_pytest_fixtures._constants import (
     _CALLOUT_MESSAGES,
@@ -23,7 +24,6 @@ from sphinx_autodoc_pytest_fixtures._constants import (
     _KNOWN_KINDS,
     PYTEST_BUILTIN_LINKS,
 )
-from sphinx_autodoc_pytest_fixtures._css import _CSS
 from sphinx_autodoc_pytest_fixtures._detection import (
     _get_fixture_fn,
     _get_fixture_marker,
@@ -536,8 +536,8 @@ class PyFixtureDirective(PyFunction):
             for parent in self.state.document.findall(addnodes.desc):
                 for sig in parent.findall(addnodes.desc_signature):
                     if sig.get("spf_deprecated"):
-                        if _CSS.DEPRECATED not in parent["classes"]:
-                            parent["classes"].append(_CSS.DEPRECATED)
+                        if SAB.STATE_DEPRECATED not in parent["classes"]:
+                            parent["classes"].append(SAB.STATE_DEPRECATED)
                         break
 
         # --- Lifecycle callouts (session note + override hook tip) ---
