@@ -54,9 +54,9 @@ Or without `merge_sphinx_config`:
 extensions = ["sphinx_autodoc_api_style"]
 ```
 
-`sphinx_autodoc_api_style` automatically registers `sphinx_autodoc_badges`,
-`sphinx_autodoc_layout`, and `sphinx_typehints_gp` via `app.setup_extension()`.
-You do not need to add them separately to your `extensions` list.
+`sphinx_autodoc_api_style` automatically registers `sphinx_autodoc_badges` and
+`sphinx_autodoc_layout` via `app.setup_extension()`. You do not need to add
+them separately to your `extensions` list.
 
 ## Working usage examples
 

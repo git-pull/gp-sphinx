@@ -566,7 +566,6 @@ def test_setup_auto_loads_layout() -> None:
         "sphinx.ext.autodoc",
         "sphinx_autodoc_badges",
         "sphinx_autodoc_layout",
-        "sphinx_typehints_gp",
     ]
 
 
