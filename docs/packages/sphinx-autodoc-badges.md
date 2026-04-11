@@ -57,6 +57,103 @@ badge_group = build_badge_group(
 toolbar = build_toolbar(badge_group, classes=["my-extension-toolbar"])
 ```
 
+## Colour palette
+
+All semantic badge colours live in `sab_palettes.css` (registered by
+this extension).  Every `sphinx-autodoc-*` package uses the `SAB.*`
+constants instead of its own colour classes.  The live demo below shows
+every variant.
+
+```{list-table}
+:header-rows: 1
+:widths: 30 30 40
+
+* - Colour class
+  - `SAB` constant
+  - Used for
+* - `sab-type-function`
+  - `SAB.TYPE_FUNCTION`
+  - Python functions (blue)
+* - `sab-type-class`
+  - `SAB.TYPE_CLASS`
+  - Python classes (indigo)
+* - `sab-type-method`
+  - `SAB.TYPE_METHOD`
+  - Instance / class / static methods (cyan)
+* - `sab-type-property`
+  - `SAB.TYPE_PROPERTY`
+  - Properties (teal)
+* - `sab-type-attribute`
+  - `SAB.TYPE_ATTRIBUTE`
+  - Attributes (slate)
+* - `sab-type-data`
+  - `SAB.TYPE_DATA`
+  - Module-level data (grey)
+* - `sab-type-exception`
+  - `SAB.TYPE_EXCEPTION`
+  - Exceptions (rose/red)
+* - `sab-type-typealias`
+  - `SAB.TYPE_TYPEALIAS`
+  - Type aliases (violet)
+* - `sab-type-module`
+  - `SAB.TYPE_MODULE`
+  - Modules (green)
+* - `sab-mod-async`
+  - `SAB.MOD_ASYNC`
+  - async modifier (purple outline)
+* - `sab-mod-classmethod`
+  - `SAB.MOD_CLASSMETHOD`
+  - classmethod modifier (amber outline)
+* - `sab-mod-staticmethod`
+  - `SAB.MOD_STATICMETHOD`
+  - staticmethod modifier (grey outline)
+* - `sab-mod-abstract`
+  - `SAB.MOD_ABSTRACT`
+  - abstract modifier (indigo outline)
+* - `sab-mod-final`
+  - `SAB.MOD_FINAL`
+  - final modifier (emerald outline)
+* - `sab-state-deprecated`
+  - `SAB.STATE_DEPRECATED`
+  - deprecated (muted red, shared across domains)
+* - `sab-type-fixture`
+  - `SAB.TYPE_FIXTURE`
+  - pytest fixtures (green)
+* - `sab-scope-session`
+  - `SAB.SCOPE_SESSION`
+  - session-scope fixtures (amber)
+* - `sab-scope-module`
+  - `SAB.SCOPE_MODULE`
+  - module-scope fixtures (teal)
+* - `sab-scope-class`
+  - `SAB.SCOPE_CLASS`
+  - class-scope fixtures (slate)
+* - `sab-state-factory`
+  - `SAB.STATE_FACTORY`
+  - factory fixtures (amber outline)
+* - `sab-state-override`
+  - `SAB.STATE_OVERRIDE`
+  - override hooks (violet outline)
+* - `sab-state-autouse`
+  - `SAB.STATE_AUTOUSE`
+  - autouse fixtures (rose outline)
+* - `sab-type-config`
+  - `SAB.TYPE_CONFIG`
+  - Sphinx config values (amber)
+* - `sab-mod-rebuild`
+  - `SAB.MOD_REBUILD`
+  - Sphinx rebuild mode (grey outline)
+* - `sab-type-directive`
+  - `SAB.TYPE_DIRECTIVE`
+  - docutils directives (violet)
+* - `sab-type-role`
+  - `SAB.TYPE_ROLE`
+  - docutils roles (violet)
+* - `sab-type-option`
+  - `SAB.TYPE_OPTION`
+  - docutils directive options (violet)
+```
+
 ## Live demos
 
 Every variant rendered by the real `build_badge` / `build_badge_group` /
@@ -243,103 +340,6 @@ contextual sizing when present (higher specificity than context rules).
 * - TOC sidebar
   - `0.58rem`
   - `.toc-tree .sab-badge` (compact, with emoji icons)
-```
-
-## Colour palette
-
-All semantic badge colours live in `sab_palettes.css` (registered by
-this extension).  Every `sphinx-autodoc-*` package uses the `SAB.*`
-constants instead of its own colour classes.  The live demo above shows
-every variant.
-
-```{list-table}
-:header-rows: 1
-:widths: 30 30 40
-
-* - Colour class
-  - `SAB` constant
-  - Used for
-* - `sab-type-function`
-  - `SAB.TYPE_FUNCTION`
-  - Python functions (blue)
-* - `sab-type-class`
-  - `SAB.TYPE_CLASS`
-  - Python classes (indigo)
-* - `sab-type-method`
-  - `SAB.TYPE_METHOD`
-  - Instance / class / static methods (cyan)
-* - `sab-type-property`
-  - `SAB.TYPE_PROPERTY`
-  - Properties (teal)
-* - `sab-type-attribute`
-  - `SAB.TYPE_ATTRIBUTE`
-  - Attributes (slate)
-* - `sab-type-data`
-  - `SAB.TYPE_DATA`
-  - Module-level data (grey)
-* - `sab-type-exception`
-  - `SAB.TYPE_EXCEPTION`
-  - Exceptions (rose/red)
-* - `sab-type-typealias`
-  - `SAB.TYPE_TYPEALIAS`
-  - Type aliases (violet)
-* - `sab-type-module`
-  - `SAB.TYPE_MODULE`
-  - Modules (green)
-* - `sab-mod-async`
-  - `SAB.MOD_ASYNC`
-  - async modifier (purple outline)
-* - `sab-mod-classmethod`
-  - `SAB.MOD_CLASSMETHOD`
-  - classmethod modifier (amber outline)
-* - `sab-mod-staticmethod`
-  - `SAB.MOD_STATICMETHOD`
-  - staticmethod modifier (grey outline)
-* - `sab-mod-abstract`
-  - `SAB.MOD_ABSTRACT`
-  - abstract modifier (indigo outline)
-* - `sab-mod-final`
-  - `SAB.MOD_FINAL`
-  - final modifier (emerald outline)
-* - `sab-state-deprecated`
-  - `SAB.STATE_DEPRECATED`
-  - deprecated (muted red, shared across domains)
-* - `sab-type-fixture`
-  - `SAB.TYPE_FIXTURE`
-  - pytest fixtures (green)
-* - `sab-scope-session`
-  - `SAB.SCOPE_SESSION`
-  - session-scope fixtures (amber)
-* - `sab-scope-module`
-  - `SAB.SCOPE_MODULE`
-  - module-scope fixtures (teal)
-* - `sab-scope-class`
-  - `SAB.SCOPE_CLASS`
-  - class-scope fixtures (slate)
-* - `sab-state-factory`
-  - `SAB.STATE_FACTORY`
-  - factory fixtures (amber outline)
-* - `sab-state-override`
-  - `SAB.STATE_OVERRIDE`
-  - override hooks (violet outline)
-* - `sab-state-autouse`
-  - `SAB.STATE_AUTOUSE`
-  - autouse fixtures (rose outline)
-* - `sab-type-config`
-  - `SAB.TYPE_CONFIG`
-  - Sphinx config values (amber)
-* - `sab-mod-rebuild`
-  - `SAB.MOD_REBUILD`
-  - Sphinx rebuild mode (grey outline)
-* - `sab-type-directive`
-  - `SAB.TYPE_DIRECTIVE`
-  - docutils directives (violet)
-* - `sab-type-role`
-  - `SAB.TYPE_ROLE`
-  - docutils roles (violet)
-* - `sab-type-option`
-  - `SAB.TYPE_OPTION`
-  - docutils directive options (violet)
 ```
 
 ## Downstream extensions
