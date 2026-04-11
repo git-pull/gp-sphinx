@@ -251,13 +251,13 @@ def test_merge_sphinx_config_autodoc_class_signature() -> None:
 
 
 def test_merge_sphinx_config_suppress_warnings() -> None:
-    """Default suppress_warnings includes autodoc_typehints forward_reference."""
+    """Default suppress_warnings is an empty list."""
     result = merge_sphinx_config(
         project="test",
         version="1.0",
         copyright="2026",
     )
-    assert "sphinx_typehints_gp.forward_reference" in result["suppress_warnings"]
+    assert result["suppress_warnings"] == []
 
 
 def test_merge_sphinx_config_linkcode_auto_added() -> None:
