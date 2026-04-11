@@ -4,6 +4,14 @@
 
 {bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-badges>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-autodoc-badges/>`
 
+:::{admonition} Alpha
+:class: warning
+
+Rendered output is stable. The Python API, CSS class names, and Sphinx
+config value names may change without a major version bump. Pin your
+dependency to a specific version range in production.
+:::
+
 Shared badge node, HTML visitors, and CSS infrastructure for Sphinx autodoc
 extensions. Provides a single `BadgeNode` and builder API that
 {doc}`sphinx-autodoc-api-style`, {doc}`sphinx-autodoc-pytest-fixtures`, and
@@ -12,6 +20,14 @@ independently.
 
 ```console
 $ pip install sphinx-autodoc-badges
+```
+
+## Live demos
+
+Every variant rendered by the real `build_badge` / `build_badge_group` /
+`build_toolbar` API:
+
+```{sab-badge-demo}
 ```
 
 ## Working usage examples
@@ -152,14 +168,6 @@ every variant.
 * - `sab-type-option`
   - `SAB.TYPE_OPTION`
   - docutils directive options (violet)
-```
-
-## Live demos
-
-Every variant rendered by the real `build_badge` / `build_badge_group` /
-`build_toolbar` API:
-
-```{sab-badge-demo}
 ```
 
 ## API reference
