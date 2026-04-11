@@ -14,6 +14,9 @@ wrappers, and `sphinx_typehints_gp` owns fixture return-type rendering.
 $ pip install sphinx-autodoc-pytest-fixtures
 ```
 
+Installing this package also installs `sphinx-autodoc-badges`,
+`sphinx-autodoc-layout`, and `sphinx-typehints-gp` as declared dependencies.
+
 ## Usage
 
 ```python
