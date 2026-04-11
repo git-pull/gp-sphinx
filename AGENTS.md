@@ -315,14 +315,21 @@ $ uv run pytest --snapshot-update
 
 Use the harness in `tests/_sphinx_scenarios.py`. The key types and helpers:
 
-- `SphinxScenario(files=(...), confoverrides={...})` — describes the synthetic project
+- `SphinxScenario(files=(...), confoverrides={}, buildername="html")` — describes the
+  synthetic project; `buildername` defaults to `"html"`, override for text builds
 - `ScenarioFile(relative_path, contents, substitute_srcdir=False)` — one source file
-- `build_shared_sphinx_result(cache_root, scenario)` — builds once per session digest,
-  returns a read-only `SharedSphinxResult`
-- `build_isolated_sphinx_result(cache_root, tmp_path, scenario)` — fresh build per
-  test, for mutating assertions
-- `get_doctree(result, docname, post_transforms=False)` — deep-copied doctree from the
-  built environment
+- `build_shared_sphinx_result(cache_root, scenario, *, purge_modules=())` — builds
+  once per content-hash digest; `purge_modules` removes named modules from `sys.modules`
+  before the initial build to prevent stale import cache — required when scenario files
+  inject a Python module into `sys.path`
+- `build_isolated_sphinx_result(cache_root, tmp_path, scenario, *, purge_modules=())`
+  — fresh build per test, for mutating assertions
+- `derive_sphinx_scenario_cache_root(tmp_path)` — derives a stable per-session cache
+  root from any `tmp_path` by using its parent directory
+- `copy_scenario_tree(cache_root, scenario, destination_root)` — materialize source
+  files into a directory without running a Sphinx build
+- `get_doctree(result, docname, post_transforms=False)` — deep-copied doctree from
+  the built environment
 - `read_output(result, filename)` — reads a built output file as a string
 
 Always use a **module-scoped** (or session-scoped) fixture for the build — never
@@ -377,7 +384,11 @@ def my_html_result(
             ),
         ),
     )
-    return build_shared_sphinx_result(cache_root, scenario)
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("my_module", "my_extension"),
+    )
 
 
 @pytest.mark.integration
@@ -394,6 +405,9 @@ Rules:
 - Use `textwrap.dedent("""...""")` for inline source strings
 - Use `SCENARIO_SRCDIR_TOKEN` + `substitute_srcdir=True` for `sys.path` injection in
   `conf.py`
+
+> **See also:** `notes/test-analysis.md` — profiling data, 9.5x speedup rationale,
+> and the per-package migration history for the shared autodoc stack.
 
 ### Available Fixtures Reference
 
