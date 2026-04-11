@@ -7,6 +7,12 @@ Shared Sphinx documentation platform for [git-pull](https://github.com/git-pull)
 ::::{grid} 1 1 2 3
 :gutter: 2 2 3 3
 
+:::{grid-item-card} Gallery
+:link: gallery
+:link-type: doc
+Visual showcase of the autodoc design system in action.
+:::
+
 :::{grid-item-card} Quickstart
 :link: quickstart
 :link-type: doc
@@ -56,6 +62,7 @@ globals().update(conf)
 ```{toctree}
 :hidden:
 
+gallery
 quickstart
 configuration
 packages/index
