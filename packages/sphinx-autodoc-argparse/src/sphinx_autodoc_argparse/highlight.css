@@ -176,7 +176,7 @@
 
 /*
  * These styles apply to the argparse directive output which uses custom
- * nodes rendered by sphinx_argparse_neo. The directive adds highlight spans
+ * nodes rendered by sphinx_autodoc_argparse. The directive adds highlight spans
  * directly to the HTML output.
  */
 

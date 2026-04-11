@@ -11,7 +11,7 @@ project_root = cwd.parent
 sys.path.insert(0, str(project_root / "packages" / "gp-sphinx" / "src"))
 sys.path.insert(0, str(project_root / "packages" / "sphinx-fonts" / "src"))
 sys.path.insert(0, str(project_root / "packages" / "sphinx-gp-theme" / "src"))
-sys.path.insert(0, str(project_root / "packages" / "sphinx-argparse-neo" / "src"))
+sys.path.insert(0, str(project_root / "packages" / "sphinx-autodoc-argparse" / "src"))
 sys.path.insert(
     0,
     str(project_root / "packages" / "sphinx-autodoc-pytest-fixtures" / "src"),
@@ -62,7 +62,7 @@ conf = merge_sphinx_config(
         "sphinx_autodoc_docutils",
         "sphinx_autodoc_fastmcp",
         "sphinx_autodoc_sphinx",
-        "sphinx_argparse_neo.exemplar",
+        "sphinx_autodoc_argparse.exemplar",
         "sphinx_autodoc_layout",
     ],
     fastmcp_tool_modules=["fastmcp_demo_tools"],

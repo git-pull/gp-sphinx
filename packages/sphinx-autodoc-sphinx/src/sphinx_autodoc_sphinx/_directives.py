@@ -282,7 +282,8 @@ def discover_config_values(module_name: str) -> list[SphinxConfigValue]:
 
     Examples
     --------
-    >>> names = {value.name for value in discover_config_values("sphinx_argparse_neo")}
+    >>> vals = discover_config_values("sphinx_autodoc_argparse")
+    >>> names = {value.name for value in vals}
     >>> names == {
     ...     "argparse_group_title_prefix",
     ...     "argparse_show_defaults",

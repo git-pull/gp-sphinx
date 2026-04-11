@@ -12,7 +12,7 @@ import typing as t
 from docutils import nodes
 from docutils.statemachine import StringList
 
-from sphinx_argparse_neo.nodes import (
+from sphinx_autodoc_argparse.nodes import (
     argparse_argument,
     argparse_group,
     argparse_program,
@@ -20,13 +20,13 @@ from sphinx_argparse_neo.nodes import (
     argparse_subcommands,
     argparse_usage,
 )
-from sphinx_argparse_neo.utils import escape_rst_emphasis
+from sphinx_autodoc_argparse.utils import escape_rst_emphasis
 
 if t.TYPE_CHECKING:
     from docutils.parsers.rst.states import RSTState
     from sphinx.config import Config
 
-    from sphinx_argparse_neo.parser import (
+    from sphinx_autodoc_argparse.parser import (
         ArgumentGroup,
         ArgumentInfo,
         MutuallyExclusiveGroup,
@@ -90,7 +90,7 @@ class ArgparseRenderer:
 
     Examples
     --------
-    >>> from sphinx_argparse_neo.parser import ParserInfo
+    >>> from sphinx_autodoc_argparse.parser import ParserInfo
     >>> config = RenderConfig()
     >>> renderer = ArgparseRenderer(config)
     >>> info = ParserInfo(
@@ -259,7 +259,7 @@ class ArgparseRenderer:
 
         Examples
         --------
-        >>> from sphinx_argparse_neo.parser import ParserInfo
+        >>> from sphinx_autodoc_argparse.parser import ParserInfo
         >>> renderer = ArgparseRenderer()
         >>> info = ParserInfo(
         ...     prog="myapp",
@@ -326,7 +326,7 @@ class ArgparseRenderer:
 
         Examples
         --------
-        >>> from sphinx_argparse_neo.parser import ArgumentGroup
+        >>> from sphinx_autodoc_argparse.parser import ArgumentGroup
         >>> renderer = ArgparseRenderer()
         >>> group = ArgumentGroup(
         ...     title="positional arguments",

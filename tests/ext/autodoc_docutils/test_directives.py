@@ -26,7 +26,7 @@ def test_directive_classes_discovers_public_directives() -> None:
 
 def test_role_callables_discovers_public_roles() -> None:
     """The helper discovers role callables defined in a module."""
-    roles = _role_callables("sphinx_argparse_neo.roles")
+    roles = _role_callables("sphinx_autodoc_argparse.roles")
     names = {name for name, _role in roles}
     assert "cli_option_role" in names
     assert "cli_choice_role" in names
@@ -62,9 +62,9 @@ def test_role_callables_empty_for_module_with_no_roles() -> None:
 
 def test_role_markup_contains_role_name_and_path() -> None:
     """Rendered role markup includes the displayed role name and summary."""
-    role_fn = dict(_role_callables("sphinx_argparse_neo.roles"))["cli_option_role"]
+    role_fn = dict(_role_callables("sphinx_autodoc_argparse.roles"))["cli_option_role"]
     markup = _role_markup(
-        "sphinx_argparse_neo.roles.cli_option_role", "cli-option", role_fn
+        "sphinx_autodoc_argparse.roles.cli_option_role", "cli-option", role_fn
     )
     assert "cli-option" in markup
     assert "Role for CLI options like --foo or -h." in markup

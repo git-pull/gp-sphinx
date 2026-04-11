@@ -11,9 +11,9 @@ import typing as t
 from docutils.parsers.rst import directives
 from sphinx.util.docutils import SphinxDirective
 
-from sphinx_argparse_neo.compat import get_parser_from_module
-from sphinx_argparse_neo.parser import extract_parser
-from sphinx_argparse_neo.renderer import ArgparseRenderer, RenderConfig
+from sphinx_autodoc_argparse.compat import get_parser_from_module
+from sphinx_autodoc_argparse.parser import extract_parser
+from sphinx_autodoc_argparse.renderer import ArgparseRenderer, RenderConfig
 
 if t.TYPE_CHECKING:
     import argparse

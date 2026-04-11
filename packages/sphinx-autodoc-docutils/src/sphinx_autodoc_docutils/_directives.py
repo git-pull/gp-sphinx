@@ -89,7 +89,7 @@ def _role_callables(
 
     Examples
     --------
-    >>> roles = _role_callables("sphinx_argparse_neo.roles")
+    >>> roles = _role_callables("sphinx_autodoc_argparse.roles")
     >>> any(name == "cli_option_role" for name, _value in roles)
     True
     """

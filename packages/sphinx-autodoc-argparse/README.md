@@ -1,4 +1,4 @@
-# sphinx-argparse-neo
+# sphinx-autodoc-argparse
 
 Modern Sphinx extension for documenting argparse-based CLI tools.
 
@@ -12,7 +12,7 @@ A modernized replacement for `sphinx-argparse` that:
 ## Install
 
 ```console
-$ pip install sphinx-argparse-neo
+$ pip install sphinx-autodoc-argparse
 ```
 
 ## Usage
@@ -20,7 +20,7 @@ $ pip install sphinx-argparse-neo
 In your `docs/conf.py`:
 
 ```python
-extensions = ["sphinx_argparse_neo"]
+extensions = ["sphinx_autodoc_argparse"]
 ```
 
 Then use the `.. argparse::` directive:

@@ -126,7 +126,7 @@ jobs:
           - gp-sphinx
           - sphinx-gp-theme
           - sphinx-fonts
-          - sphinx-argparse-neo
+          - sphinx-autodoc-argparse
           - sphinx-autodoc-docutils
           - sphinx-autodoc-sphinx
           - sphinx-autodoc-pytest-fixtures

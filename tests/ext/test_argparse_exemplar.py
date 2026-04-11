@@ -4,8 +4,8 @@ This tests the examples transformation functionality that converts argparse
 epilog definition lists into proper documentation sections.
 
 Note: Tests for strip_ansi have moved to
-tests/docs/_ext/sphinx_argparse_neo/test_utils.py since that utility
-now lives in sphinx_argparse_neo.utils.
+tests/docs/_ext/sphinx_autodoc_argparse/test_utils.py since that utility
+now lives in sphinx_autodoc_argparse.utils.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ import typing as t
 import pytest
 from docutils import nodes
 
-from sphinx_argparse_neo.exemplar import (
+from sphinx_autodoc_argparse.exemplar import (
     ExemplarConfig,
     _is_examples_section,
     _is_usage_block,

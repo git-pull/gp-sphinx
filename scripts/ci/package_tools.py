@@ -509,7 +509,7 @@ def smoke_sphinx_fonts(dist_dir: pathlib.Path, version: str) -> None:
         )
 
 
-def smoke_sphinx_argparse_neo(dist_dir: pathlib.Path, version: str) -> None:
+def smoke_sphinx_autodoc_argparse(dist_dir: pathlib.Path, version: str) -> None:
     """Verify the argparse extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
         python_path = _create_venv(pathlib.Path(tmp))
@@ -520,9 +520,9 @@ def smoke_sphinx_argparse_neo(dist_dir: pathlib.Path, version: str) -> None:
         _run_python(
             python_path,
             (
-                "import sphinx_argparse_neo; "
-                "from sphinx_argparse_neo import ArgparseDirective; "
-                f"assert sphinx_argparse_neo.__version__ == {version!r}; "
+                "import sphinx_autodoc_argparse; "
+                "from sphinx_autodoc_argparse import ArgparseDirective; "
+                f"assert sphinx_autodoc_argparse.__version__ == {version!r}; "
                 "assert ArgparseDirective is not None"
             ),
         )
@@ -662,7 +662,7 @@ def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
 
 _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "gp-sphinx": smoke_gp_sphinx,
-    "sphinx-argparse-neo": smoke_sphinx_argparse_neo,
+    "sphinx-autodoc-argparse": smoke_sphinx_autodoc_argparse,
     "sphinx-autodoc-api-style": smoke_sphinx_autodoc_api_style,
     "sphinx-autodoc-badges": smoke_sphinx_autodoc_badges,
     "sphinx-autodoc-docutils": smoke_sphinx_autodoc_docutils,

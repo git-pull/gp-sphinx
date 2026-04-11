@@ -1,4 +1,4 @@
-"""Regression tests for section ``names`` scoping in the argparse_neo renderer.
+"""Regression tests for section ``names`` scoping in the argparse renderer.
 
 Prior to the fix, ``render_usage_section`` and ``render_group_section``
 correctly namespaced ``section["ids"]`` by the caller-supplied ``id_prefix``
@@ -16,12 +16,12 @@ import typing as t
 import pytest
 from docutils import nodes
 
-from sphinx_argparse_neo.parser import (
+from sphinx_autodoc_argparse.parser import (
     ArgumentGroup,
     ArgumentInfo,
     ParserInfo,
 )
-from sphinx_argparse_neo.renderer import ArgparseRenderer
+from sphinx_autodoc_argparse.renderer import ArgparseRenderer
 
 
 def _make_parser_info() -> ParserInfo:

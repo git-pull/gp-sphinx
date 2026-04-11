@@ -42,7 +42,7 @@ dependencies = [
 
 [project.optional-dependencies]
 argparse = [
-  "sphinx-argparse-neo==0.0.1a7",
+  "sphinx-autodoc-argparse==0.0.1a7",
 ]
 
 [project.urls]

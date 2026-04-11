@@ -1,4 +1,4 @@
-"""Tests for sphinx_argparse_neo.compat module."""
+"""Tests for sphinx_autodoc_argparse.compat module."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from sphinx_argparse_neo.compat import (
+from sphinx_autodoc_argparse.compat import (
     MockModule,
     get_parser_from_entry_point,
     get_parser_from_module,

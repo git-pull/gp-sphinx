@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 import dataclasses
 
-from sphinx_argparse_neo.utils import strip_ansi
+from sphinx_autodoc_argparse.utils import strip_ansi
 
 # Sentinel for "no default" (distinct from None which is a valid default)
 NO_DEFAULT = object()
