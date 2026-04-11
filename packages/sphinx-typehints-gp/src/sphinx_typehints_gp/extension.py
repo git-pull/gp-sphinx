@@ -525,7 +525,7 @@ def merge_typehints(
         desc = [n for n in contentnode if isinstance(n, addnodes.desc)]
         if desc:
             index = contentnode.index(desc[0])
-            contentnode.insert(index - 1, [field_list])
+            contentnode.insert(index, [field_list])
         else:
             contentnode += field_list
         field_lists.append(field_list)
