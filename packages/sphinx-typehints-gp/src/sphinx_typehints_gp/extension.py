@@ -103,7 +103,21 @@ def get_module_imports(module_name: str) -> dict[str, str]:
 
 
 class _TypeTransformer(ast.NodeTransformer):
-    """AST transformer to resolve type names using import aliases."""
+    """AST transformer that rewrites type annotation names to Sphinx xrefs.
+
+    Each bare name in a type annotation string is replaced with its
+    fully-qualified alias using Sphinx's ``~`` cross-reference prefix.
+    For example, a bare ``List`` becomes ``~typing.List``; a local
+    ``MyClass`` (imported as ``from other import MyClass``) becomes
+    ``~other.MyClass``.  Attribute chains are collapsed: if the alias
+    for ``alias`` is ``~typing``, then ``alias.List`` collapses to
+    ``~typing.List``.
+
+    The import alias map is built by :func:`get_module_imports` from the
+    module's AST, including names guarded by ``if TYPE_CHECKING:`` blocks
+    — so forward references that are only importable at type-check time
+    are resolved correctly without any runtime evaluation.
+    """
 
     def __init__(
         self,
