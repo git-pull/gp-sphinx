@@ -1,4 +1,16 @@
+(sphinx-typehints-gp)=
+
 # sphinx-typehints-gp
+
+{bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-typehints-gp>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-typehints-gp/>`
+
+:::{admonition} Alpha
+:class: warning
+
+Rendered output is stable. The Python API, CSS class names, and Sphinx
+config value names may change without a major version bump. Pin your
+dependency to a specific version range in production.
+:::
 
 Single-package replacement for `sphinx-autodoc-typehints` and `sphinx.ext.napoleon`
 — resolves annotations statically at build time, no monkey-patching required.
@@ -101,3 +113,17 @@ detection heuristics.
 This extension uses `sphinx_stringify_annotation()` to resolve annotations at
 build time, making it safe with `TYPE_CHECKING` blocks and eliminating
 text-processing races with Napoleon.
+
+## Live demos
+
+Type annotations are cross-referenced automatically. The function below uses
+`str`, `int`, and `str` — each becomes a clickable `py:class` link in the
+rendered output.
+
+```{eval-rst}
+.. autofunction:: gal_demo_api.compact_function
+   :noindex:
+```
+
+```{package-reference} sphinx-typehints-gp
+```
