@@ -43,7 +43,7 @@ globals().update(conf)
 Out of the box, `merge_sphinx_config()` activates:
 
 - **Componentized layouts** (`sphinx-autodoc-layout`) — card containers, parameter folding, managed signatures
-- **Clean type hints** (`sphinx-typehints-gp`) — simplified annotations with cross-referenced links, replacing `sphinx-autodoc-typehints` and `sphinx.ext.napoleon`
+- **Clean type hints** (`sphinx-autodoc-typehints-gp`) — simplified annotations with cross-referenced links, replacing `sphinx-autodoc-typehints` and `sphinx.ext.napoleon`
 - **Unified badge system** (`sphinx-autodoc-badges`) — type and modifier badges with a shared colour palette
 - **Five domain autodocumenters** — Python API, pytest fixtures, FastMCP tools, docutils directives, Sphinx config values
 - **IBM Plex fonts** via Fontsource with preloaded web fonts
@@ -55,7 +55,7 @@ See the [Gallery](https://gp-sphinx.git-pull.com/gallery.html) for live demos of
 
 The workspace is organized into three tiers — lower layers never depend on higher ones:
 
-- **Shared infrastructure**: `sphinx-autodoc-badges`, `sphinx-autodoc-layout`, `sphinx-typehints-gp`
+- **Shared infrastructure**: `sphinx-autodoc-badges`, `sphinx-autodoc-layout`, `sphinx-autodoc-typehints-gp`
 - **Domain packages**: `sphinx-autodoc-api-style`, `sphinx-autodoc-docutils`, `sphinx-autodoc-fastmcp`, `sphinx-autodoc-pytest-fixtures`, `sphinx-autodoc-sphinx`
 - **Theme and coordinator**: `gp-sphinx`, `sphinx-gp-theme`, `sphinx-fonts`, `sphinx-argparse-neo`
 

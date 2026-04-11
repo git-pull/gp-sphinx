@@ -33,7 +33,7 @@ sys.path.insert(
 )
 sys.path.insert(
     0,
-    str(project_root / "packages" / "sphinx-typehints-gp" / "src"),
+    str(project_root / "packages" / "sphinx-autodoc-typehints-gp" / "src"),
 )
 sys.path.insert(0, str(cwd / "_ext"))  # docs demo modules
 

@@ -13,7 +13,7 @@ from sphinx_autodoc_layout import (
     build_api_summary_section,
     build_api_table_section,
 )
-from sphinx_typehints_gp import (
+from sphinx_autodoc_typehints_gp import (
     build_annotation_display_paragraph,
     build_annotation_paragraph,
     classify_annotation_display,

@@ -92,7 +92,7 @@ _CONF_PY = textwrap.dedent(
     extensions = [
         "sphinx.ext.autodoc",
         "sphinx.ext.viewcode",
-        "sphinx_typehints_gp",
+        "sphinx_autodoc_typehints_gp",
         "sphinx_autodoc_api_style",
         "sphinx_autodoc_layout",
     ]

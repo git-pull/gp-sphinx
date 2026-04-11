@@ -1,1 +1,1 @@
-"""Tests for sphinx_typehints_gp."""
+"""Tests for sphinx_autodoc_typehints_gp."""

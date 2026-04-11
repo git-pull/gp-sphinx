@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "sphinx-typehints-gp"
+name = "sphinx-autodoc-typehints-gp"
 version = "0.0.1a7"
 description = "Cross-referenced type annotations for Sphinx autodoc"
 readme = "README.md"
@@ -17,4 +17,4 @@ dependencies = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/sphinx_typehints_gp"]
+packages = ["src/sphinx_autodoc_typehints_gp"]

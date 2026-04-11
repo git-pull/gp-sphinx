@@ -448,19 +448,21 @@ def smoke_gp_sphinx(dist_dir: pathlib.Path, version: str) -> None:
         _run_sphinx_build(python_path, docs_dir, tmpdir / "_build")
 
 
-def smoke_sphinx_typehints_gp(dist_dir: pathlib.Path, version: str) -> None:
+def smoke_sphinx_autodoc_typehints_gp(dist_dir: pathlib.Path, version: str) -> None:
     """Build a minimal Sphinx project using the typehints extension."""
     with tempfile.TemporaryDirectory() as tmp:
         tmpdir = pathlib.Path(tmp)
         docs_dir = tmpdir / "docs"
         docs_dir.mkdir()
-        (docs_dir / "conf.py").write_text("extensions = ['sphinx_typehints_gp']\n")
+        (docs_dir / "conf.py").write_text(
+            "extensions = ['sphinx_autodoc_typehints_gp']\n"
+        )
         (docs_dir / "index.rst").write_text("Demo\n====\n")
 
         python_path = _create_venv(tmpdir)
         _install_into_venv(
             python_path,
-            f"sphinx {dist_dir}/sphinx_typehints_gp-{version}-py3-none-any.whl",
+            f"sphinx {dist_dir}/sphinx_autodoc_typehints_gp-{version}-py3-none-any.whl",
         )
         _run_sphinx_build(python_path, docs_dir, tmpdir / "build")
 
@@ -670,7 +672,7 @@ _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-autodoc-sphinx": smoke_sphinx_autodoc_sphinx,
     "sphinx-fonts": smoke_sphinx_fonts,
     "sphinx-gp-theme": smoke_sphinx_gp_theme,
-    "sphinx-typehints-gp": smoke_sphinx_typehints_gp,
+    "sphinx-autodoc-typehints-gp": smoke_sphinx_autodoc_typehints_gp,
 }
 
 

@@ -37,7 +37,7 @@ from __future__ import annotations
 from docutils import nodes
 from sphinx import addnodes
 from sphinx_autodoc_layout import inject_signature_slots
-from sphinx_typehints_gp import (
+from sphinx_autodoc_typehints_gp import (
     build_annotation_display_paragraph,
     normalize_annotation_text,
 )

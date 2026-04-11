@@ -32,7 +32,7 @@ the responsibilities they actually share:
 - `sphinx_autodoc_badges` is the only badge primitive and badge-group renderer
 - `sphinx_autodoc_layout` is the only shared presenter for `api-*` entry
   structure and shared body sections
-- `sphinx_typehints_gp` is the only owner of canonical annotation
+- `sphinx_autodoc_typehints_gp` is the only owner of canonical annotation
   normalization, type text generation, and cross-reference node rendering
 
 The deliberately preserved low-risk parts of the pipeline are:
@@ -85,9 +85,9 @@ package-local duplication:
   repeated in FastMCP
 - `sphinx_autodoc_badges.BadgeSpec` and the shared badge-group builder are now
   the canonical badge pipeline
-- `sphinx_typehints_gp` now provides reusable annotation helpers instead of
+- `sphinx_autodoc_typehints_gp` now provides reusable annotation helpers instead of
   requiring package-local stringification and xref rendering
-- `sphinx_typehints_gp.AnnotationDisplay` and
+- `sphinx_autodoc_typehints_gp.AnnotationDisplay` and
   `classify_annotation_display()` now cover literal-only enum displays so
   FastMCP and other consumers no longer need local enum heuristics
 
@@ -121,7 +121,7 @@ The current rendering path is:
 - non-`desc` shared card-entry builder
 - generic layout CSS for `api-*` regions
 
-`sphinx_typehints_gp`
+`sphinx_autodoc_typehints_gp`
 
 - canonical annotation normalization
 - structured annotation display classification
@@ -167,14 +167,14 @@ The current rendering path is:
 Now fully moved onto the shared badge and type stack for the parts it owns:
 
 - badge creation uses `BadgeSpec`
-- `setup()` auto-loads `sphinx_typehints_gp`
+- `setup()` auto-loads `sphinx_autodoc_typehints_gp`
 - layout composition remains entirely in `sphinx_autodoc_layout`
 
 ### `sphinx_autodoc_pytest_fixtures`
 
 Now uses the shared stack for badge, layout, and type rendering:
 
-- `setup()` auto-loads `sphinx_typehints_gp`
+- `setup()` auto-loads `sphinx_autodoc_typehints_gp`
 - fixture return metadata stores one canonical annotation form
 - fixture index type cells use shared annotation paragraph rendering
 - top-level metadata wraps into shared `api-facts`, `api-parameters`, and
@@ -189,7 +189,7 @@ Removed package-local type duplication:
 
 Now uses the shared stack for layout and type text:
 
-- `setup()` auto-loads `sphinx_typehints_gp`
+- `setup()` auto-loads `sphinx_autodoc_typehints_gp`
 - config type text now comes from shared type normalization
 - config indexes now use the shared summary/index wrapper
 - config facts now use shared fact sections
@@ -204,7 +204,7 @@ Removed package-local type duplication:
 
 Still keeps the semantic markup path, but its visible structure is now shared:
 
-- `setup()` auto-loads `sphinx_typehints_gp`
+- `setup()` auto-loads `sphinx_autodoc_typehints_gp`
 - directives, roles, and options normalize into shared section wrappers
 - index tables now use the shared summary/index wrapper
 
@@ -213,7 +213,7 @@ Still keeps the semantic markup path, but its visible structure is now shared:
 FastMCP remains on the shipped section-card path, but its inner rendering is now
 shared:
 
-- `setup()` auto-loads `sphinx_typehints_gp`
+- `setup()` auto-loads `sphinx_autodoc_typehints_gp`
 - inner card shell uses the shared non-`desc` card-entry builder
 - return and parameter type rendering use shared type helpers
 - summary tables use the shared summary/index wrapper
@@ -333,7 +333,7 @@ Top cumulative costs:
 | `_pytest.tmpdir.mktemp` | `0.313s` |
 | `_pytest.pathlib.make_numbered_dir` | `0.155s` |
 | `sphinx_autodoc_layout._transforms.on_doctree_resolved` | negligible compared with builder setup |
-| `sphinx_typehints_gp.rendering.render_annotation_nodes` | negligible compared with builder setup |
+| `sphinx_autodoc_typehints_gp.rendering.render_annotation_nodes` | negligible compared with builder setup |
 
 Profile total:
 
@@ -379,7 +379,7 @@ The profile does not show hot loops in:
 
 - FastMCP still uses the shipped section-card outer wrapper, so it is aligned
   structurally inside the card but not yet a real shipped `desc` object
-- non-autodoc consumers now auto-load `sphinx_typehints_gp`, so the extension
+- non-autodoc consumers now auto-load `sphinx_autodoc_typehints_gp`, so the extension
   must continue to tolerate missing autodoc hooks and missing autodoc config
   without raising
 
@@ -462,7 +462,7 @@ Reasons:
 - `api_slot` as the only cross-package header handoff
 - `sphinx_autodoc_layout` as the sole shared presenter
 - `sphinx_autodoc_badges` as the sole badge DOM owner
-- `sphinx_typehints_gp` as the sole annotation rendering layer
+- `sphinx_autodoc_typehints_gp` as the sole annotation rendering layer
 - shared scenario caching in `tests/_sphinx_scenarios.py`
 
 ### Defer

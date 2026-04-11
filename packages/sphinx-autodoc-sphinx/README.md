@@ -5,7 +5,7 @@ Sphinx extension for documenting config values registered by
 
 Rendered entries use the shared stack: `sphinx_autodoc_layout` owns the
 visible `api-*` structure, `sphinx_autodoc_badges` owns badge output, and
-`sphinx_typehints_gp` is auto-loaded so displayed config types follow the same
+`sphinx_autodoc_typehints_gp` is auto-loaded so displayed config types follow the same
 annotation rules as the rest of the autodoc family.
 
 ## Install

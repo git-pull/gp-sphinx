@@ -35,7 +35,7 @@ from sphinx_autodoc_layout import (
     iter_desc_nodes,
     parse_generated_markup,
 )
-from sphinx_typehints_gp import normalize_type_collection_text
+from sphinx_autodoc_typehints_gp import normalize_type_collection_text
 
 from sphinx_autodoc_sphinx._badges import build_config_badge_group
 

@@ -10,4 +10,4 @@ extensions/sphinx-autodoc-fastmcp packages/sphinx-autodoc-fastmcp
 extensions/sphinx-autodoc-layout packages/sphinx-autodoc-layout
 extensions/sphinx-fonts packages/sphinx-fonts
 extensions/sphinx-gp-theme packages/sphinx-gp-theme
-extensions/sphinx-typehints-gp packages/sphinx-typehints-gp
+extensions/sphinx-autodoc-typehints-gp packages/sphinx-autodoc-typehints-gp

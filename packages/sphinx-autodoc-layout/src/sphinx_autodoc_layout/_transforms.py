@@ -361,7 +361,7 @@ def _deduplicate_return_type_fields(content: addnodes.desc_content) -> None:
     """Remove duplicate "Return type" fields, keeping the richest one.
 
     Remove duplicate "Return type" fields that can appear when multiple
-    docstring processors each emit a ``:rtype:`` field.  ``sphinx_typehints_gp``
+    docstring processors each emit a ``:rtype:`` field.  ``sphinx_autodoc_typehints_gp``
     inserts its cross-referenced entry at priority 499 before the Sphinx
     built-in runs at 500, but the NumPy docstring parser may also produce a
     plain-text ``:rtype:`` that ``_enhance_existing_type_field`` upgrades in

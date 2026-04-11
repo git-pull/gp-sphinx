@@ -130,7 +130,7 @@ def _inject_badges_and_reorder(sig_node: addnodes.desc_signature) -> None:
 def _strip_rtype_fields(desc_node: addnodes.desc) -> None:
     """Remove redundant "Rtype" fields from fixture descriptions.
 
-    ``sphinx_typehints_gp`` emits these for all autodoc objects; for
+    ``sphinx_autodoc_typehints_gp`` emits these for all autodoc objects; for
     fixtures the return type is already in the signature line (``→ Type``).
     """
     for content_child in desc_node.findall(addnodes.desc_content):

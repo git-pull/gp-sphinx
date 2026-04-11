@@ -1,4 +1,4 @@
-"""Unit tests for sphinx_typehints_gp helpers."""
+"""Unit tests for sphinx_autodoc_typehints_gp helpers."""
 
 from __future__ import annotations
 
@@ -6,10 +6,10 @@ import types
 import typing as t
 
 import pytest
-import sphinx_typehints_gp.rendering as sphinx_typehints_rendering
+import sphinx_autodoc_typehints_gp.rendering as sphinx_typehints_rendering
 from docutils import nodes
 from sphinx import addnodes
-from sphinx_typehints_gp import (
+from sphinx_autodoc_typehints_gp import (
     AnnotationDisplay,
     build_annotation_display_paragraph,
     build_annotation_paragraph,
@@ -20,12 +20,15 @@ from sphinx_typehints_gp import (
     normalize_type_collection_text,
     render_annotation_nodes,
 )
-from sphinx_typehints_gp._numpy_docstring import (
+from sphinx_autodoc_typehints_gp._numpy_docstring import (
     _escape_args_and_kwargs,
     _partition_on_colon,
     process_numpy_docstring,
 )
-from sphinx_typehints_gp.extension import get_module_imports, resolve_annotation_string
+from sphinx_autodoc_typehints_gp.extension import (
+    get_module_imports,
+    resolve_annotation_string,
+)
 
 # ---------------------------------------------------------------------------
 # get_module_imports / resolve_annotation_string  (individual — not fixture-based)
@@ -1055,7 +1058,7 @@ def test_numpy_special_section(
 def test_setup_registers_builder_inited_cache_clearing() -> None:
     """setup() connects builder-inited to _clear_caches."""
     from sphinx.application import Sphinx
-    from sphinx_typehints_gp.extension import _clear_caches, setup
+    from sphinx_autodoc_typehints_gp.extension import _clear_caches, setup
 
     connections: list[tuple[str, t.Any]] = []
 

@@ -13,7 +13,7 @@ Two new foundational packages form the core of the rendering pipeline:
 - {doc}`sphinx-autodoc-layout <packages/sphinx-autodoc-layout>` — componentized
   autodoc output with semantic regions, parameter folding, managed signatures,
   and card containers.
-- {doc}`sphinx-typehints-gp <packages/sphinx-typehints-gp>` — single-package
+- {doc}`sphinx-autodoc-typehints-gp <packages/sphinx-autodoc-typehints-gp>` — single-package
   replacement for `sphinx-autodoc-typehints` and `sphinx.ext.napoleon`.
   Resolves annotations statically at build time with no monkey-patching.
 

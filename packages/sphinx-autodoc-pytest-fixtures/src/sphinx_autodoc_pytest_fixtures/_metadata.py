@@ -10,7 +10,7 @@ import typing as t
 
 from docutils import nodes
 from sphinx.util import logging as sphinx_logging
-from sphinx_typehints_gp import normalize_annotation_text
+from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 from sphinx_autodoc_pytest_fixtures._constants import (
     _CALLOUT_MESSAGES,

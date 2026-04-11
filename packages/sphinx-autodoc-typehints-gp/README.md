@@ -1,4 +1,4 @@
-# sphinx-typehints-gp
+# sphinx-autodoc-typehints-gp
 
 Single-package replacement for `sphinx-autodoc-typehints` and
 `sphinx.ext.napoleon` — resolves annotations statically at build time,
@@ -11,13 +11,13 @@ autodoc stack: annotation normalization, cross-referenced type links, and
 ## Install
 
 ```console
-$ pip install sphinx-typehints-gp
+$ pip install sphinx-autodoc-typehints-gp
 ```
 
 ## Usage
 
 ```python
-extensions = ["sphinx.ext.autodoc", "sphinx_typehints_gp"]
+extensions = ["sphinx.ext.autodoc", "sphinx_autodoc_typehints_gp"]
 
 # Required: makes autodoc insert type annotations into parameter descriptions.
 # Without this, the type cross-referencing pipeline fires but has nothing to attach to.
@@ -33,5 +33,5 @@ autodoc_typehints = "description"
 
 ## Documentation
 
-See the [full documentation](https://gp-sphinx.git-pull.com/packages/sphinx-typehints-gp/)
+See the [full documentation](https://gp-sphinx.git-pull.com/packages/sphinx-autodoc-typehints-gp/)
 for the API reference, helper functions, and the static resolution comparison table.

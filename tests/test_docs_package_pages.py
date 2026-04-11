@@ -169,7 +169,7 @@ def test_architecture_page_names_all_three_tiers() -> None:
     assert "Theme" in text or "Tier 3" in text or "Presentation" in text
     assert "sphinx-autodoc-layout" in text
     assert "sphinx-autodoc-badges" in text
-    assert "sphinx-typehints-gp" in text
+    assert "sphinx-autodoc-typehints-gp" in text
 
 
 def test_whats_new_page_covers_key_advancements() -> None:
@@ -177,7 +177,7 @@ def test_whats_new_page_covers_key_advancements() -> None:
     text = (DOCS_ROOT / "whats-new.md").read_text()
 
     assert "sphinx-autodoc-layout" in text
-    assert "sphinx-typehints-gp" in text
+    assert "sphinx-autodoc-typehints-gp" in text
     assert "badge" in text.lower()
     assert "9.5" in text
 
