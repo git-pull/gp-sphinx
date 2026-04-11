@@ -50,7 +50,7 @@ jobs:
 
       - name: Install just
         if: steps.changes.outputs.publishable == 'true'
-        uses: extractions/setup-just@v3
+        uses: extractions/setup-just@v4
 
       - name: Print Python versions
         if: steps.changes.outputs.publishable == 'true'
