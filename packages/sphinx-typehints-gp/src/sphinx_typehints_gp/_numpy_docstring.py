@@ -416,6 +416,8 @@ def _parse_sa_item(text: str) -> tuple[str, str | None]:
     ('my_func', 'func')
     >>> _parse_sa_item(":py:meth:`Widget.run`")
     ('Widget.run', 'py:meth')
+    >>> _parse_sa_item("")
+    ('', None)
     """
     m = _SA_NAME_RE.match(text.strip())
     if not m:
