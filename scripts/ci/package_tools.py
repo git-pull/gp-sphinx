@@ -244,6 +244,35 @@ def _workspace_wheel_requirements(dist_dir: pathlib.Path) -> list[str]:
     return sorted(str(path) for path in dist_dir.glob("*.whl"))
 
 
+def _target_wheel_path(dist_dir: pathlib.Path, package_name: str) -> str:
+    """Return the wheel path for a specific package in the dist directory.
+
+    Parameters
+    ----------
+    dist_dir : pathlib.Path
+        Directory containing built wheel files.
+    package_name : str
+        Distribution name, e.g. ``"sphinx-autodoc-api-style"``.
+
+    Returns
+    -------
+    str
+        Absolute path to the matching wheel file.
+
+    Raises
+    ------
+    ValueError
+        If exactly one matching wheel is not found.
+    """
+    normalized = package_name.replace("-", "_")
+    prefix = normalized + "-"
+    matches = [path for path in dist_dir.glob("*.whl") if path.name.startswith(prefix)]
+    if len(matches) != 1:
+        msg = f"Expected exactly 1 wheel for {package_name!r}, found {len(matches)}"
+        raise ValueError(msg)
+    return str(matches[0])
+
+
 def _run_python(python_path: pathlib.Path, source: str) -> None:
     """Run inline Python code with the given interpreter."""
     _run([str(python_path), "-c", source])
@@ -542,7 +571,8 @@ def smoke_sphinx_autodoc_pytest_fixtures(dist_dir: pathlib.Path, version: str) -
         python_path = _create_venv(pathlib.Path(tmp))
         _install_into_venv(
             python_path,
-            *_workspace_wheel_requirements(dist_dir),
+            _target_wheel_path(dist_dir, "sphinx-autodoc-pytest-fixtures"),
+            find_links=dist_dir,
         )
         _run_python(
             python_path,
@@ -560,7 +590,8 @@ def smoke_sphinx_autodoc_api_style(dist_dir: pathlib.Path, version: str) -> None
         python_path = _create_venv(pathlib.Path(tmp))
         _install_into_venv(
             python_path,
-            *_workspace_wheel_requirements(dist_dir),
+            _target_wheel_path(dist_dir, "sphinx-autodoc-api-style"),
+            find_links=dist_dir,
         )
         _run_python(
             python_path,
@@ -614,7 +645,8 @@ def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
         python_path = _create_venv(pathlib.Path(tmp))
         _install_into_venv(
             python_path,
-            *_workspace_wheel_requirements(dist_dir),
+            _target_wheel_path(dist_dir, "sphinx-autodoc-fastmcp"),
+            find_links=dist_dir,
         )
         _run_python(
             python_path,
