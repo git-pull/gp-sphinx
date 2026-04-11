@@ -19,3 +19,33 @@ For shared consumers, the public helper surface now includes:
   `api-*` shell without becoming `desc` entries
 - `build_api_summary_section()` for summary/index wrappers such as config and
   fixture tables
+
+## Install
+
+```console
+$ pip install sphinx-autodoc-layout
+```
+
+## Usage
+
+Standalone Sphinx project:
+
+```python
+extensions = ["sphinx.ext.autodoc", "sphinx_autodoc_layout"]
+gal_enabled = True
+```
+
+With `gp-sphinx`:
+
+```python
+conf = merge_sphinx_config(
+    ...,
+    extra_extensions=["sphinx_autodoc_layout"],
+    gal_enabled=True,
+)
+```
+
+## Documentation
+
+See the [full documentation](https://gp-sphinx.git-pull.com/packages/sphinx-autodoc-layout/)
+for configuration reference, CSS classes, and live demos.
