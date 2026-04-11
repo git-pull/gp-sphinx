@@ -9,8 +9,8 @@ import typing as t
 from sphinx_autodoc_sphinx._directives import (
     AutoconfigvalueDirective,
     AutoconfigvalueIndexDirective,
+    AutoconfigvaluePageDirective,
     AutoconfigvaluesDirective,
-    AutoconfigvalueIndexDirective,
 )
 
 if t.TYPE_CHECKING:
@@ -52,7 +52,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.setup_extension("sphinx_typehints_gp")
     app.add_directive("autoconfigvalue", AutoconfigvalueDirective)
     app.add_directive("autoconfigvalues", AutoconfigvaluesDirective)
-    app.add_directive("autoconfigvalue-index", AutoconfigvalueIndexDirective)
+    app.add_directive("autoconfigvalue-page", AutoconfigvaluePageDirective)
     app.add_directive("autoconfigvalue-index", AutoconfigvalueIndexDirective)
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")

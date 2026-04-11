@@ -13,7 +13,7 @@ config value names may change without a major version bump. Pin your
 dependency to a specific version range in production.
 :::
 
-Wraps contiguous `desc_content` runs into semantic `gal_region` nodes
+Wraps contiguous `desc_content` runs into semantic `api_region` nodes
 and rebuilds Python autodoc entries into stable `api-*` components.
 Large field-list parameter sections still use native `<details>/<summary>`,
 while inline signature expansion uses a custom disclosure that reveals
@@ -56,8 +56,8 @@ conf = merge_sphinx_config(
     copyright="2026, Your Name",
     source_repository="https://github.com/your-org/my-project/",
     extra_extensions=["sphinx_autodoc_layout"],
-    gal_enabled=True,
-    gal_collapsed_threshold=10,
+    api_layout_enabled=True,
+    api_collapsed_threshold=10,
 )
 ```
 
@@ -65,7 +65,7 @@ Or without `merge_sphinx_config`:
 
 ```python
 extensions = ["sphinx.ext.autodoc", "sphinx_autodoc_layout"]
-gal_enabled = True
+api_layout_enabled = True
 ```
 
 ## Working usage examples
@@ -115,10 +115,10 @@ The class above renders with:
 
 | Setting | Default | Meaning |
 |---------|---------|---------|
-| `gal_enabled` | `False` | Enables the transform |
-| `gal_fold_parameters` | `True` | Folds large field-list sections |
-| `gal_collapsed_threshold` | `10` | Minimum field count before folding |
-| `gal_signature_show_annotations` | `True` | Shows `name: type` in expanded folded signatures when type data is available |
+| `api_layout_enabled` | `False` | Enables the transform |
+| `api_fold_parameters` | `True` | Folds large field-list sections |
+| `api_collapsed_threshold` | `10` | Minimum field count before folding |
+| `api_signature_show_annotations` | `True` | Shows `name: type` in expanded folded signatures when type data is available |
 
 ## Shared helper surface
 
@@ -144,12 +144,12 @@ The class above renders with:
 | `api-description` | `<div>` | Wraps paragraphs, notes, examples |
 | `api-parameters` | `<div>` | Wraps field lists (Parameters, Returns) |
 | `api-footer` | `<div>` | Wraps nested method/attribute entries |
-| `gal-region` | `<div>` | Compatibility alias on content sections |
-| `gal-region--narrative` | `<div>` | Compatibility alias on narrative sections |
-| `gal-region--fields` | `<div>` | Compatibility alias on parameter sections |
-| `gal-region--members` | `<div>` | Compatibility alias on footer/member sections |
-| `gal-fold` | `<details>` | Disclosure wrapper for large sections |
-| `gal-fold-summary` | `<summary>` | Click target showing field count |
+| `api-region` | `<div>` | Compatibility alias on content sections |
+| `api-region--narrative` | `<div>` | Compatibility alias on narrative sections |
+| `api-region--fields` | `<div>` | Compatibility alias on parameter sections |
+| `api-region--members` | `<div>` | Compatibility alias on footer/member sections |
+| `api-fold` | `<details>` | Disclosure wrapper for large sections |
+| `api-fold-summary` | `<summary>` | Click target showing field count |
 
 ## API reference
 

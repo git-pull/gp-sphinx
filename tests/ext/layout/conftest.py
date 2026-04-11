@@ -97,9 +97,9 @@ _CONF_PY = textwrap.dedent(
         "sphinx_autodoc_layout",
     ]
 
-    gal_enabled = True
-    gal_fold_parameters = True
-    gal_collapsed_threshold = 10
+    api_layout_enabled = True
+    api_fold_parameters = True
+    api_collapsed_threshold = 10
     """
 )
 

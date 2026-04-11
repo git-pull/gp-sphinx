@@ -120,10 +120,10 @@ def _rendered_managed_desc(
         t.Any,
         types.SimpleNamespace(
             config=types.SimpleNamespace(
-                gal_enabled=True,
-                gal_collapsed_threshold=10,
-                gal_fold_parameters=True,
-                gal_signature_show_annotations=show_annotations,
+                api_layout_enabled=True,
+                api_collapsed_threshold=10,
+                api_fold_parameters=True,
+                api_signature_show_annotations=show_annotations,
                 html_permalinks=True,
             ),
             builder=types.SimpleNamespace(format="html", add_permalinks=True),

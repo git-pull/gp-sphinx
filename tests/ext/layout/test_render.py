@@ -58,7 +58,7 @@ def test_build_api_card_entry_uses_shared_component_shell() -> None:
 
     assert entry.get("classes") == [
         "api-entry",
-        "gal-card-entry",
+        "api-card-entry",
         "api-profile--demo",
         "demo-entry",
     ]
@@ -77,5 +77,5 @@ def test_build_api_summary_section_uses_shared_summary_region() -> None:
     summary = build_api_summary_section(nodes.paragraph("", "Summary"))
 
     assert summary.get("name") == "api-summary"
-    assert "gal-region--summary" in summary.get("classes", [])
+    assert "api-region--summary" in summary.get("classes", [])
     assert summary.astext() == "Summary"

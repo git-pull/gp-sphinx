@@ -7,7 +7,7 @@ import typing as t
 
 from docutils import nodes
 from sphinx import addnodes
-from sphinx_autodoc_layout._nodes import api_component, gal_sig_fold
+from sphinx_autodoc_layout._nodes import api_component, api_sig_fold
 from sphinx_autodoc_layout._transforms import on_doctree_resolved
 
 from sphinx_autodoc_fastmcp._models import ParamInfo, ToolInfo
@@ -55,10 +55,10 @@ def _rendered_desc() -> addnodes.desc:
         t.Any,
         types.SimpleNamespace(
             config=types.SimpleNamespace(
-                gal_enabled=True,
-                gal_collapsed_threshold=10,
-                gal_fold_parameters=True,
-                gal_signature_show_annotations=True,
+                api_layout_enabled=True,
+                api_collapsed_threshold=10,
+                api_fold_parameters=True,
+                api_signature_show_annotations=True,
                 html_permalinks=True,
             ),
             builder=types.SimpleNamespace(format="html", add_permalinks=True),
@@ -105,7 +105,7 @@ def test_build_tool_desc_prototype_reflows_under_shared_layout() -> None:
     assert _find_component(left, "api-signature")
     assert "sab-toolbar" in right.get("classes", [])
     assert any(
-        isinstance(node, gal_sig_fold) for node in signature.findall(gal_sig_fold)
+        isinstance(node, api_sig_fold) for node in signature.findall(api_sig_fold)
     )
     assert any(
         isinstance(child, api_component) and child.get("name") == "api-parameters"

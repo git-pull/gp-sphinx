@@ -20,15 +20,15 @@ from sphinx import addnodes
 from sphinx_autodoc_layout._cards import build_api_card_entry
 from sphinx_autodoc_layout._nodes import (
     api_component,
+    api_fold,
     api_inline_component,
     api_permalink,
+    api_region,
+    api_sig_fold,
     api_slot,
     build_api_component,
     build_api_inline_component,
     build_api_slot,
-    gal_fold,
-    gal_region,
-    gal_sig_fold,
 )
 from sphinx_autodoc_layout._render import iter_desc_nodes, parse_generated_markup
 from sphinx_autodoc_layout._sections import (
@@ -42,19 +42,19 @@ from sphinx_autodoc_layout._slots import inject_signature_slots, is_viewcode_ref
 from sphinx_autodoc_layout._transforms import on_doctree_resolved
 from sphinx_autodoc_layout._visitors import (
     depart_api_component,
+    depart_api_fold,
     depart_api_permalink,
+    depart_api_region,
+    depart_api_sig_fold,
     depart_desc_signature_html,
-    depart_gal_fold,
-    depart_gal_region,
-    depart_gal_sig_fold,
     passthrough_depart,
     passthrough_visit,
     visit_api_component,
+    visit_api_fold,
     visit_api_permalink,
+    visit_api_region,
+    visit_api_sig_fold,
     visit_desc_signature_html,
-    visit_gal_fold,
-    visit_gal_region,
-    visit_gal_sig_fold,
 )
 
 if t.TYPE_CHECKING:
@@ -63,8 +63,11 @@ if t.TYPE_CHECKING:
 __all__ = [
     "ApiFactRow",
     "api_component",
+    "api_fold",
     "api_inline_component",
     "api_permalink",
+    "api_region",
+    "api_sig_fold",
     "api_slot",
     "build_api_card_entry",
     "build_api_component",
@@ -74,9 +77,6 @@ __all__ = [
     "build_api_slot",
     "build_api_summary_section",
     "build_api_table_section",
-    "gal_fold",
-    "gal_region",
-    "gal_sig_fold",
     "inject_signature_slots",
     "is_viewcode_ref",
     "iter_desc_nodes",
@@ -105,38 +105,40 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     <function setup at 0x...>
     """
     # Config values
-    app.add_config_value("gal_enabled", default=False, rebuild="env", types=(bool,))
     app.add_config_value(
-        "gal_fold_parameters", default=True, rebuild="env", types=(bool,)
+        "api_layout_enabled", default=False, rebuild="env", types=(bool,)
     )
     app.add_config_value(
-        "gal_collapsed_threshold", default=10, rebuild="env", types=(int,)
+        "api_fold_parameters", default=True, rebuild="env", types=(bool,)
     )
     app.add_config_value(
-        "gal_signature_show_annotations", default=True, rebuild="env", types=(bool,)
+        "api_collapsed_threshold", default=10, rebuild="env", types=(int,)
+    )
+    app.add_config_value(
+        "api_signature_show_annotations", default=True, rebuild="env", types=(bool,)
     )
 
     # Custom nodes with HTML visitors + passthrough for other builders
     _pt = (passthrough_visit, passthrough_depart)
     app.add_node(
-        gal_region,
-        html=(visit_gal_region, depart_gal_region),
+        api_region,
+        html=(visit_api_region, depart_api_region),
         latex=_pt,
         text=_pt,
         man=_pt,
         texinfo=_pt,
     )
     app.add_node(
-        gal_fold,
-        html=(visit_gal_fold, depart_gal_fold),
+        api_fold,
+        html=(visit_api_fold, depart_api_fold),
         latex=_pt,
         text=_pt,
         man=_pt,
         texinfo=_pt,
     )
     app.add_node(
-        gal_sig_fold,
-        html=(visit_gal_sig_fold, depart_gal_sig_fold),
+        api_sig_fold,
+        html=(visit_api_sig_fold, depart_api_sig_fold),
         latex=_pt,
         text=_pt,
         man=_pt,

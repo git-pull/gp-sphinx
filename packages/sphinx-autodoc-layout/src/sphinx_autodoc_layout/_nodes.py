@@ -7,8 +7,8 @@ Two naming prefixes coexist intentionally.  Nodes with the ``api_*``
 prefix carry structural identity for the stable DOM contract
 (``api_component``, ``api_slot``, ``api_permalink``, etc.).  Nodes with
 the ``gal_*`` prefix are either operational disclosure wrappers
-(``gal_fold``, ``gal_sig_fold``) or the legacy region wrapper
-(``gal_region``) preserved for CSS compatibility while the codebase
+(``api_fold``, ``api_sig_fold``) or the legacy region wrapper
+(``api_region``) preserved for CSS compatibility while the codebase
 completes the transition to ``api_component``.
 
 Examples
@@ -16,7 +16,7 @@ Examples
 >>> from sphinx_autodoc_layout._nodes import (
 ...     api_component,
 ...     build_api_component,
-...     gal_fold,
+...     api_fold,
 ... )
 >>> comp = api_component(name="api-layout", tag="div")
 >>> comp.get("name")
@@ -26,7 +26,7 @@ Examples
 >>> built.get("classes")
 ['api-content', 'demo']
 
->>> fold = gal_fold(kind="parameters", summary="Parameters (5)")
+>>> fold = api_fold(kind="parameters", summary="Parameters (5)")
 >>> fold.get("summary")
 'Parameters (5)'
 """
@@ -41,7 +41,7 @@ APISlotName = t.Literal["badges", "source-link"]
 """Stable slot names used to hand structured header content to layout."""
 
 
-class gal_region(nodes.General, nodes.Element):
+class api_region(nodes.General, nodes.Element):
     """Legacy wrapper for a contiguous ``desc_content`` run.
 
     Parameters
@@ -51,15 +51,15 @@ class gal_region(nodes.General, nodes.Element):
 
     Examples
     --------
-    >>> r = gal_region(kind="narrative")
-    >>> isinstance(r, gal_region)
+    >>> r = api_region(kind="narrative")
+    >>> isinstance(r, api_region)
     True
     >>> r.get("kind")
     'narrative'
     """
 
 
-class gal_fold(nodes.General, nodes.Element):
+class api_fold(nodes.General, nodes.Element):
     """Block disclosure wrapper rendered as ``<details>/<summary>``.
 
     Parameters
@@ -73,7 +73,7 @@ class gal_fold(nodes.General, nodes.Element):
 
     Examples
     --------
-    >>> f = gal_fold(kind="parameters", summary="Parameters (3)")
+    >>> f = api_fold(kind="parameters", summary="Parameters (3)")
     >>> f.get("kind")
     'parameters'
     >>> f.get("summary")
@@ -153,7 +153,7 @@ class api_permalink(nodes.General, nodes.Element):
     """
 
 
-class gal_sig_fold(nodes.General, nodes.Element):
+class api_sig_fold(nodes.General, nodes.Element):
     """Inline signature disclosure toggle for large parameter lists.
 
     The preview button lives in the signature row, while the expanded
@@ -171,7 +171,7 @@ class gal_sig_fold(nodes.General, nodes.Element):
 
     Examples
     --------
-    >>> sf = gal_sig_fold(first_param="host", param_count=13, panel_id="sig-panel")
+    >>> sf = api_sig_fold(first_param="host", param_count=13, panel_id="sig-panel")
     >>> sf.get("first_param")
     'host'
     >>> sf.get("param_count")

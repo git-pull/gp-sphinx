@@ -35,7 +35,7 @@
                           Created once per test session and shared across all tests. Requesting this fixture does not create a new instance per test.
                   <paragraph>
                       Use this when you need a long-lived server across the session.
-                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                  <api_component classes="api-facts api-region api-region--facts" name="api-facts" tag="div">
                       <field_list>
                           <field>
                               <field_name>
@@ -73,7 +73,7 @@
                       <emphasis>
                           my_server
                       .
-                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                  <api_component classes="api-facts api-region api-region--facts" name="api-facts" tag="div">
                       <field_list>
                           <field>
                               <field_name>
@@ -142,7 +142,7 @@
                   <note>
                       <paragraph>
                           This is a yield fixture — it runs setup code before yielding the value to the test, then teardown code after the test completes.
-                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                  <api_component classes="api-facts api-region api-region--facts" name="api-facts" tag="div">
                       <field_list>
                           <field>
                               <field_name>
@@ -176,7 +176,7 @@
               <desc_content>
                   <paragraph>
                       Runs automatically before every test — no request needed.
-                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                  <api_component classes="api-facts api-region api-region--facts" name="api-facts" tag="div">
                       <field_list>
                           <field>
                               <field_name>
@@ -265,7 +265,7 @@
       <desc_content>
           <paragraph>
               Uses tmp_path internally.
-          <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+          <api_component classes="api-facts api-region api-region--facts" name="api-facts" tag="div">
               <field_list>
                   <field>
                       <field_name>
@@ -295,7 +295,7 @@
                   <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                       fixture
       <desc_content>
-          <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+          <api_component classes="api-facts api-region api-region--facts" name="api-facts" tag="div">
               <field_list>
                   <field>
                       <field_name>
@@ -365,7 +365,7 @@
               conftest boilerplate.
           <rubric>
               Fixture Summary
-          <api_component classes="api-summary gal-region gal-region--summary" name="api-summary" tag="div">
+          <api_component classes="api-summary api-region api-region--summary" name="api-summary" tag="div">
               <container classes="spf-table-scroll">
                   <table classes="spf-fixture-index">
                       <tgroup cols="4">
@@ -471,7 +471,7 @@
                   <note>
                       <paragraph>
                           Created once per test session and shared across all tests. Requesting this fixture does not create a new instance per test.
-                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                  <api_component classes="api-facts api-region api-region--facts" name="api-facts" tag="div">
                       <field_list>
                           <field>
                               <field_name>
@@ -505,7 +505,7 @@
                       <emphasis>
                           my_server
                       .
-                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                  <api_component classes="api-facts api-region api-region--facts" name="api-facts" tag="div">
                       <field_list>
                           <field>
                               <field_name>
@@ -765,7 +765,7 @@
               <desc_content>
                   <paragraph>
                       Fixture parametrized over shell interpreters.
-                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                  <api_component classes="api-facts api-region api-region--facts" name="api-facts" tag="div">
                       <field_list>
                           <field>
                               <field_name>
@@ -813,7 +813,7 @@
                           <BadgeNode badge_tooltip="pytest fixture — injected by name into test functions" classes="sab-badge sab-badge sab-badge--fixture sab-type-fixture" tabindex="0">
                               fixture
               <desc_content>
-                  <api_component classes="api-facts gal-region gal-region--facts" name="api-facts" tag="div">
+                  <api_component classes="api-facts api-region api-region--facts" name="api-facts" tag="div">
                       <field_list>
                           <field>
                               <field_name>

@@ -10,7 +10,7 @@
 
   function syncSignatureControls(expandedId, expanded) {
     document
-      .querySelectorAll('.api-signature-toggle, .gal-sig-collapse')
+      .querySelectorAll('.api-signature-toggle, .api-sig-collapse')
       .forEach(function (control) {
         if (control.getAttribute('aria-controls') !== expandedId) return;
         control.setAttribute('aria-expanded', expanded ? 'true' : 'false');
@@ -95,7 +95,7 @@
   }
 
   document.addEventListener('click', function (event) {
-    var button = event.target.closest('.api-signature-toggle, .gal-sig-collapse');
+    var button = event.target.closest('.api-signature-toggle, .api-sig-collapse');
     if (!button) return;
 
     event.preventDefault();
