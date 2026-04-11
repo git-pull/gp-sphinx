@@ -11,6 +11,11 @@ https://github.com/git-pull/gp-sphinx/issues/15.
 
 from __future__ import annotations
 
+import typing as t
+
+import pytest
+from docutils import nodes
+
 from sphinx_argparse_neo.parser import (
     ArgumentGroup,
     ArgumentInfo,
@@ -56,51 +61,98 @@ def _make_positional_group() -> ArgumentGroup:
     )
 
 
-def test_usage_section_names_match_ids_without_prefix() -> None:
-    """Without a prefix, usage section ``names`` equal its ``ids``."""
-    section = ArgparseRenderer().render_usage_section(_make_parser_info())
-    assert section["ids"] == ["usage"]
-    assert section["names"] == ["usage"]
-
-
-def test_usage_section_names_match_ids_with_prefix() -> None:
-    """With a prefix, usage section ``names`` are scoped the same as ``ids``."""
-    section = ArgparseRenderer().render_usage_section(
-        _make_parser_info(), id_prefix="load"
+def _render_usage(id_prefix: str) -> nodes.section:
+    return ArgparseRenderer().render_usage_section(
+        _make_parser_info(), id_prefix=id_prefix
     )
-    assert section["ids"] == ["load-usage"]
-    assert section["names"] == ["load-usage"]
 
 
-def test_group_section_names_match_ids_without_prefix() -> None:
-    """Without a prefix, group section ``names`` equal its ``ids``."""
-    section = ArgparseRenderer().render_group_section(_make_positional_group())
-    assert section["ids"] == ["positional-arguments"]
-    assert section["names"] == ["positional-arguments"]
-
-
-def test_group_section_names_match_ids_with_prefix() -> None:
-    """With a prefix, group section ``names`` are scoped the same as ``ids``."""
-    section = ArgparseRenderer().render_group_section(
-        _make_positional_group(), id_prefix="load"
+def _render_group(id_prefix: str) -> nodes.section:
+    return ArgparseRenderer().render_group_section(
+        _make_positional_group(), id_prefix=id_prefix
     )
-    assert section["ids"] == ["load-positional-arguments"]
-    assert section["names"] == ["load-positional-arguments"]
 
 
-def test_multi_page_usage_sections_do_not_collide() -> None:
-    """Two pages' usage sections must produce disjoint implicit targets."""
-    renderer = ArgparseRenderer()
-    page_a = renderer.render_usage_section(_make_parser_info(), id_prefix="page-a")
-    page_b = renderer.render_usage_section(_make_parser_info(), id_prefix="page-b")
-    assert set(page_a["names"]).isdisjoint(page_b["names"])
-    assert set(page_a["ids"]).isdisjoint(page_b["ids"])
+class SectionNameCase(t.NamedTuple):
+    """Inputs and expectations for one names-match-ids assertion."""
+
+    test_id: str
+    make_section: t.Callable[[str], nodes.section]
+    id_prefix: str
+    expected_id: str
 
 
-def test_multi_page_group_sections_do_not_collide() -> None:
-    """Two pages' group sections must produce disjoint implicit targets."""
-    renderer = ArgparseRenderer()
-    page_a = renderer.render_group_section(_make_positional_group(), id_prefix="page-a")
-    page_b = renderer.render_group_section(_make_positional_group(), id_prefix="page-b")
+_SECTION_NAME_CASES: list[SectionNameCase] = [
+    SectionNameCase(
+        test_id="usage-no-prefix",
+        make_section=_render_usage,
+        id_prefix="",
+        expected_id="usage",
+    ),
+    SectionNameCase(
+        test_id="usage-with-prefix",
+        make_section=_render_usage,
+        id_prefix="load",
+        expected_id="load-usage",
+    ),
+    SectionNameCase(
+        test_id="group-no-prefix",
+        make_section=_render_group,
+        id_prefix="",
+        expected_id="positional-arguments",
+    ),
+    SectionNameCase(
+        test_id="group-with-prefix",
+        make_section=_render_group,
+        id_prefix="load",
+        expected_id="load-positional-arguments",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "case",
+    _SECTION_NAME_CASES,
+    ids=[c.test_id for c in _SECTION_NAME_CASES],
+)
+def test_section_names_match_ids(case: SectionNameCase) -> None:
+    """``section["names"]`` mirrors ``section["ids"]`` under every prefix mode.
+
+    This is the core property the fix guarantees: the implicit hyperlink
+    target docutils derives from ``section["names"]`` carries the same
+    scoping that ``section["ids"]`` already had.
+    """
+    section = case.make_section(case.id_prefix)
+    assert section["ids"] == [case.expected_id]
+    assert section["names"] == [case.expected_id]
+
+
+class CollisionCase(t.NamedTuple):
+    """Inputs for one two-page cross-collision assertion."""
+
+    test_id: str
+    make_section: t.Callable[[str], nodes.section]
+
+
+_COLLISION_CASES: list[CollisionCase] = [
+    CollisionCase(test_id="usage-sections", make_section=_render_usage),
+    CollisionCase(test_id="group-sections", make_section=_render_group),
+]
+
+
+@pytest.mark.parametrize(
+    "case",
+    _COLLISION_CASES,
+    ids=[c.test_id for c in _COLLISION_CASES],
+)
+def test_multi_page_sections_do_not_collide(case: CollisionCase) -> None:
+    """Two pages emitting the same helper must produce disjoint targets.
+
+    This is derivable from :func:`test_section_names_match_ids`, but asserting
+    it directly documents the regression-test intent and gives a clearer
+    failure mode when the fix regresses.
+    """
+    page_a = case.make_section("page-a")
+    page_b = case.make_section("page-b")
     assert set(page_a["names"]).isdisjoint(page_b["names"])
     assert set(page_a["ids"]).isdisjoint(page_b["ids"])
