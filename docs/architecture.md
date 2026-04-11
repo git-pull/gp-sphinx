@@ -48,7 +48,7 @@ project-specific rendering logic:
 |---------|--------|------------|
 | {doc}`sphinx-autodoc-api-style <packages/sphinx-autodoc-api-style>` | Standard Python | `autofunction`, `autoclass`, `automodule` |
 | {doc}`sphinx-autodoc-docutils <packages/sphinx-autodoc-docutils>` | docutils | `autodirective`, `autorole` |
-| {doc}`sphinx-autodoc-fastmcp <packages/sphinx-autodoc-fastmcp>` | FastMCP tools | `fastmcp-tool`, `fastmcp-toolsummary` |
+| {doc}`sphinx-autodoc-fastmcp <packages/sphinx-autodoc-fastmcp>` | FastMCP tools | `fastmcp-tool`, `fastmcp-tool-summary` |
 | {doc}`sphinx-autodoc-pytest-fixtures <packages/sphinx-autodoc-pytest-fixtures>` | pytest fixtures | `autofixture`, `autofixture-index` |
 | {doc}`sphinx-autodoc-sphinx <packages/sphinx-autodoc-sphinx>` | Sphinx config | `autoconfigvalue`, `autoconfigvalues` |
 

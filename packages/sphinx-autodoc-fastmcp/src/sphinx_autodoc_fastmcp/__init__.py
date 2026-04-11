@@ -104,7 +104,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
 
     app.add_directive("fastmcp-tool", FastMCPToolDirective)
     app.add_directive("fastmcp-tool-input", FastMCPToolInputDirective)
-    app.add_directive("fastmcp-toolsummary", FastMCPToolSummaryDirective)
+    app.add_directive("fastmcp-tool-summary", FastMCPToolSummaryDirective)
 
     return {
         "version": _EXTENSION_VERSION,

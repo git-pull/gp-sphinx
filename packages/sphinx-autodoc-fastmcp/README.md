@@ -15,7 +15,7 @@ rendering now come from `sphinx_autodoc_layout`, `sphinx_autodoc_badges`, and
   `api-header` / `api-content` regions plus a section target for ToC and
   `{ref}` labels.
 - **`fastmcp-tool-input`**: Parameter table for a tool (place after prose in MyST).
-- **`fastmcp-toolsummary`**: Summary tables grouped by safety tier.
+- **`fastmcp-tool-summary`**: Summary tables grouped by safety tier.
 - **Roles**: `:tool:`, `:toolref:`, `:toolicon` / `:tooliconl` / `:tooliconr` / `:tooliconil` / `:tooliconir:`, `:badge:`
 
 ## Configuration
