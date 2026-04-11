@@ -3,13 +3,10 @@
 The extension keeps Sphinx's outer ``dl / dt / dd`` structure but
 builds an explicit API component tree within those nodes.
 
-Two naming prefixes coexist intentionally.  Nodes with the ``api_*``
-prefix carry structural identity for the stable DOM contract
-(``api_component``, ``api_slot``, ``api_permalink``, etc.).  Nodes with
-the ``gal_*`` prefix are either operational disclosure wrappers
-(``api_fold``, ``api_sig_fold``) or the legacy region wrapper
-(``api_region``) preserved for CSS compatibility while the codebase
-completes the transition to ``api_component``.
+All nodes use the ``api_*`` prefix for the stable DOM contract:
+structural wrappers (``api_component``, ``api_slot``, ``api_permalink``),
+disclosure widgets (``api_fold``, ``api_sig_fold``), and the legacy
+region wrapper (``api_region``).
 
 Examples
 --------
