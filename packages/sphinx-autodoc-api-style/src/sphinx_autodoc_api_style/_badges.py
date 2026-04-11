@@ -12,6 +12,8 @@ True
 
 from __future__ import annotations
 
+import typing as t
+
 from docutils import nodes
 from sphinx_autodoc_badges import SAB, BadgeSpec, build_badge_group_from_specs
 
@@ -133,7 +135,9 @@ def build_badge_group(
     for mod in _MOD_ORDER:
         if mod not in modifiers:
             continue
-        fill = "filled" if mod == "deprecated" else "outline"
+        fill: t.Literal["filled", "outline"] = (
+            "filled" if mod == "deprecated" else "outline"
+        )
         badge_specs.append(
             BadgeSpec(
                 _MOD_LABELS[mod],

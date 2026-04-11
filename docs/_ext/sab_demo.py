@@ -685,7 +685,9 @@ class BadgeDemoDirective(SphinxDirective):
             ("deprecated", SAB.STATE_DEPRECATED, "Deprecated"),
         ]
         for label, css_class, tooltip in states:
-            fill = "filled" if label == "deprecated" else "outline"
+            fill: t.Literal["filled", "outline"] = (
+                "filled" if label == "deprecated" else "outline"
+            )
             state_row += build_badge(
                 label,
                 tooltip=tooltip,

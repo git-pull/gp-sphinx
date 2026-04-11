@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import typing as t
+
 from docutils import nodes
 from sphinx_autodoc_badges import (
     BadgeNode,
@@ -56,7 +58,9 @@ def build_safety_badge(
     """
     label = safety if safety in _SAFETY_LABELS else safety
     text = "" if icon_only else label
-    style = "icon-only" if icon_only else "full"
+    style: t.Literal["full", "icon-only", "inline-icon"] = (
+        "icon-only" if icon_only else "full"
+    )
     classes = [_CSS.BADGE_SAFETY, _CSS.safety_class(safety)]
     return build_badge(
         text,
