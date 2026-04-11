@@ -7,6 +7,12 @@ Shared Sphinx documentation platform for [git-pull](https://github.com/git-pull)
 ::::{grid} 1 1 2 3
 :gutter: 2 2 3 3
 
+:::{grid-item-card} What's New
+:link: whats-new
+:link-type: doc
+The unified autodoc design system — seven major advancements.
+:::
+
 :::{grid-item-card} Gallery
 :link: gallery
 :link-type: doc
@@ -68,6 +74,7 @@ globals().update(conf)
 ```{toctree}
 :hidden:
 
+whats-new
 gallery
 architecture
 quickstart
