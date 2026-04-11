@@ -18,6 +18,24 @@ through the public `build_api_card_entry()` helper.
 $ pip install sphinx-autodoc-layout
 ```
 
+## Pipeline position
+
+Hooks `doctree-resolved` at priority **600**, after `sphinx-autodoc-api-style`
+at 500. Consumes the `api_slot` nodes that producer packages inject into
+`desc_signature` during earlier transforms, and composes them into the final
+`api-layout-right` subcomponent (badges, source link, permalink).
+
+The extension also overrides Sphinx's built-in `desc_signature` HTML visitor
+(`app.add_node(addnodes.desc_signature, override=True, ...)`). This is a
+deliberate platform decision: taking ownership of signature rendering allows
+the `api-link` permalink to be placed inside the managed layout rather than
+appended by Sphinx's default handler.
+
+| Event | Hook | Priority |
+|-------|------|----------|
+| `doctree-resolved` | `on_doctree_resolved` | 600 (after api-style at 500) |
+| `object-description-transform` | — | not used |
+
 ## Downstream `conf.py`
 
 ```python
