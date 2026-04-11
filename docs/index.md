@@ -2,7 +2,7 @@
 
 # gp-sphinx
 
-Shared Sphinx documentation platform for [git-pull](https://github.com/git-pull) projects.
+Integrated autodoc design system for [git-pull](https://github.com/git-pull) Sphinx projects.
 
 ::::{grid} 1 1 2 3
 :gutter: 2 2 3 3
@@ -70,6 +70,19 @@ conf = merge_sphinx_config(
 )
 globals().update(conf)
 ```
+
+## What you get
+
+Out of the box, {py:func}`~gp_sphinx.config.merge_sphinx_config` activates:
+
+- **Unified badge system** — type and modifier badges for functions, classes, fixtures, tools
+- **Componentized layout** — card containers, parameter folding, managed signatures
+- **Clean type hints** — simplified annotations with cross-referenced links
+- **Five domain autodocumenters** — Python API, pytest fixtures, FastMCP tools, docutils, Sphinx config
+- **IBM Plex fonts** — professional typography with preloaded web fonts
+- **Dark mode** — full light/dark theming via CSS custom properties
+
+See the {doc}`gallery` to see these in action.
 
 ```{toctree}
 :hidden:
