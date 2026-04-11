@@ -32,7 +32,6 @@ _SETUP_CASES = (
             "sphinx.ext.autodoc",
             "sphinx_autodoc_badges",
             "sphinx_autodoc_layout",
-            "sphinx_typehints_gp",
         ),
     ),
     _SetupCase(
