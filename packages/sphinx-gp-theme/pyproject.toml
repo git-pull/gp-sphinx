@@ -1,5 +1,5 @@
 [project]
-name = "sphinx-gptheme"
+name = "sphinx-gp-theme"
 version = "0.0.1a7"
 description = "Furo child theme for git-pull project documentation"
 requires-python = ">=3.10,<4.0"
@@ -30,7 +30,7 @@ dependencies = [
 ]
 
 [project.entry-points."sphinx.html_themes"]
-"sphinx-gptheme" = "sphinx_gptheme"
+"sphinx-gp-theme" = "sphinx_gp_theme"
 
 [project.urls]
 Repository = "https://github.com/git-pull/gp-sphinx"
@@ -40,4 +40,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/sphinx_gptheme"]
+packages = ["src/sphinx_gp_theme"]

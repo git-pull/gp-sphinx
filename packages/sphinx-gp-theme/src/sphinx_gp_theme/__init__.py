@@ -1,4 +1,4 @@
-"""sphinx-gptheme — Furo child theme for git-pull projects.
+"""sphinx-gp-theme — Furo child theme for git-pull projects.
 
 Provides a shared visual identity for git-pull project documentation
 by inheriting from Furo and bundling common templates, CSS, and JS.
@@ -27,7 +27,7 @@ __version__ = "0.0.1a7"
 
 
 def get_theme_path() -> pathlib.Path:
-    """Return the path to the sphinx-gptheme theme directory.
+    """Return the path to the sphinx-gp-theme theme directory.
 
     Returns
     -------
@@ -70,11 +70,11 @@ def setup(app: Sphinx) -> dict[str, bool | str]:
     >>> fake = FakeApp()
     >>> metadata = setup(fake)  # type: ignore[arg-type]
     >>> fake.calls[0][0]
-    'sphinx-gptheme'
+    'sphinx-gp-theme'
     >>> metadata["parallel_read_safe"]
     True
     """
-    app.add_html_theme("sphinx-gptheme", get_theme_path())
+    app.add_html_theme("sphinx-gp-theme", get_theme_path())
     return {
         "parallel_read_safe": True,
         "parallel_write_safe": True,

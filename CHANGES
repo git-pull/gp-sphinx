@@ -45,7 +45,7 @@ $ uv add gp-sphinx --prerelease allow
   surrounding context — previously only Sans had the full set)
 - Replace `font-weight: 650` with `700` in badge CSS across
   `sphinx-autodoc-api-style`, `sphinx-autodoc-pytest-fixtures`,
-  `sphinx-gptheme`, and docs (650 is not a standard Fontsource weight,
+  `sphinx-gp-theme`, and docs (650 is not a standard Fontsource weight,
   so browsers were synthesizing bold instead of using the real font file)
 - Badge background colors, border colors, and dotted-underline tooltips lost
   after `BadgeNode` (`<span>`) replaced `<abbr>` in `sphinx-autodoc-api-style`
@@ -78,7 +78,7 @@ $ uv add gp-sphinx --prerelease allow
 - `sphinx-fonts` — Self-hosted web fonts via Fontsource CDN. Downloads at build time,
   caches locally, and injects `@font-face` CSS with preload hints and fallback
   font-metric overrides for zero-CLS loading.
-- `sphinx-gptheme` — Furo child theme for git-pull projects. Custom sidebar, footer
+- `sphinx-gp-theme` — Furo child theme for git-pull projects. Custom sidebar, footer
   icons, SPA navigation, and CSS variable-driven IBM Plex typography.
 - `sphinx-argparse-neo` — Argparse CLI documentation extension with `.. argparse::`
   directive, epilog-to-section transformation, and Pygments lexers for argparse

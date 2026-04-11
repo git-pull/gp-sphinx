@@ -209,7 +209,7 @@ def test_merge_sphinx_config_uses_gp_sphinx_theme() -> None:
         version="1.0",
         copyright="2026",
     )
-    assert result["html_theme"] == "sphinx-gptheme"
+    assert result["html_theme"] == "sphinx-gp-theme"
 
 
 def test_merge_sphinx_config_no_sidebars() -> None:

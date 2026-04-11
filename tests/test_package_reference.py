@@ -30,7 +30,7 @@ def test_workspace_packages_lists_publishable_packages() -> None:
         "sphinx-autodoc-pytest-fixtures",
         "sphinx-autodoc-sphinx",
         "sphinx-fonts",
-        "sphinx-gptheme",
+        "sphinx-gp-theme",
     }
 
 

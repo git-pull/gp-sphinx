@@ -465,13 +465,13 @@ def smoke_sphinx_typehints_gp(dist_dir: pathlib.Path, version: str) -> None:
         _run_sphinx_build(python_path, docs_dir, tmpdir / "build")
 
 
-def smoke_sphinx_gptheme(dist_dir: pathlib.Path, version: str) -> None:
+def smoke_sphinx_gp_theme(dist_dir: pathlib.Path, version: str) -> None:
     """Build a minimal Sphinx project using the standalone theme."""
     with tempfile.TemporaryDirectory() as tmp:
         tmpdir = pathlib.Path(tmp)
         docs_dir = tmpdir / "docs"
         docs_dir.mkdir()
-        (docs_dir / "conf.py").write_text("html_theme = 'sphinx-gptheme'\n")
+        (docs_dir / "conf.py").write_text("html_theme = 'sphinx-gp-theme'\n")
         (docs_dir / "index.rst").write_text("Demo\n====\n")
 
         python_path = _create_venv(tmpdir)
@@ -669,7 +669,7 @@ _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-autodoc-pytest-fixtures": smoke_sphinx_autodoc_pytest_fixtures,
     "sphinx-autodoc-sphinx": smoke_sphinx_autodoc_sphinx,
     "sphinx-fonts": smoke_sphinx_fonts,
-    "sphinx-gptheme": smoke_sphinx_gptheme,
+    "sphinx-gp-theme": smoke_sphinx_gp_theme,
     "sphinx-typehints-gp": smoke_sphinx_typehints_gp,
 }
 

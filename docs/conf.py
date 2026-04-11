@@ -10,7 +10,7 @@ cwd = pathlib.Path(__file__).parent
 project_root = cwd.parent
 sys.path.insert(0, str(project_root / "packages" / "gp-sphinx" / "src"))
 sys.path.insert(0, str(project_root / "packages" / "sphinx-fonts" / "src"))
-sys.path.insert(0, str(project_root / "packages" / "sphinx-gptheme" / "src"))
+sys.path.insert(0, str(project_root / "packages" / "sphinx-gp-theme" / "src"))
 sys.path.insert(0, str(project_root / "packages" / "sphinx-argparse-neo" / "src"))
 sys.path.insert(
     0,

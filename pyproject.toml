@@ -17,7 +17,7 @@ members = ["packages/*"]
 
 [tool.uv.sources]
 sphinx-fonts = { workspace = true }
-sphinx-gptheme = { workspace = true }
+sphinx-gp-theme = { workspace = true }
 sphinx-argparse-neo = { workspace = true }
 sphinx-autodoc-pytest-fixtures = { workspace = true }
 sphinx-autodoc-docutils = { workspace = true }
@@ -134,7 +134,7 @@ pyupgrade.keep-runtime-typing = false
 known-first-party = [
   "gp_sphinx",
   "sphinx_fonts",
-  "sphinx_gptheme",
+  "sphinx_gp_theme",
   "sphinx_argparse_neo",
   "sphinx_autodoc_pytest_fixtures",
   "sphinx_autodoc_docutils",
@@ -178,7 +178,7 @@ testpaths = [
   "docs",
   "packages/gp-sphinx/src",
   "packages/sphinx-fonts/src",
-  "packages/sphinx-gptheme/src",
+  "packages/sphinx-gp-theme/src",
   "packages/sphinx-autodoc-sphinx/src",
   "packages/sphinx-autodoc-api-style/src",
   "packages/sphinx-autodoc-fastmcp/src",

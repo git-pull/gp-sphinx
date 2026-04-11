@@ -101,7 +101,7 @@ Examples
 'sphinx.ext.autodoc'
 """
 
-DEFAULT_THEME: str = "sphinx-gptheme"
+DEFAULT_THEME: str = "sphinx-gp-theme"
 """Default Sphinx HTML theme (Furo child theme bundled in this package)."""
 
 DEFAULT_THEME_OPTIONS: FuroThemeOptions = {

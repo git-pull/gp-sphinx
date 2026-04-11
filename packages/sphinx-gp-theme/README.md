@@ -1,4 +1,4 @@
-# sphinx-gptheme
+# sphinx-gp-theme
 
 Furo child theme for [git-pull](https://github.com/git-pull) project documentation.
 
@@ -9,7 +9,7 @@ JS, and the git-pull project sidebar.
 ## Install
 
 ```console
-$ pip install sphinx-gptheme
+$ pip install sphinx-gp-theme
 ```
 
 ## Usage
@@ -17,7 +17,7 @@ $ pip install sphinx-gptheme
 In your `docs/conf.py`:
 
 ```python
-html_theme = "sphinx-gptheme"
+html_theme = "sphinx-gp-theme"
 ```
 
 Or use with [gp-sphinx](https://gp-sphinx.git-pull.com) which sets the theme automatically.

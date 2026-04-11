@@ -12,7 +12,7 @@ Twelve workspace packages in three tiers.
   `sphinx-autodoc-pytest-fixtures`, `sphinx-autodoc-sphinx`
 
 **Theme, fonts, and CLI** — shared Sphinx configuration and assets:
-- `gp-sphinx`, `sphinx-gptheme`, `sphinx-fonts`, `sphinx-argparse-neo`
+- `gp-sphinx`, `sphinx-gp-theme`, `sphinx-fonts`, `sphinx-argparse-neo`
 
 `gp-sphinx` is the umbrella entry point: `merge_sphinx_config()` wires up the
 full stack for downstream projects.
@@ -54,7 +54,7 @@ sphinx-autodoc-sphinx
 :hidden:
 
 gp-sphinx
-sphinx-gptheme
+sphinx-gp-theme
 sphinx-fonts
 sphinx-argparse-neo
 ```

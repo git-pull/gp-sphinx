@@ -61,7 +61,7 @@ domain package to their `extensions` list.
 | Package | Role |
 |---------|------|
 | {doc}`gp-sphinx <packages/gp-sphinx>` | Coordinator.  `merge_sphinx_config()` wires up the full stack. |
-| {doc}`sphinx-gptheme <packages/sphinx-gptheme>` | Furo-based theme with CSS variables and SPA navigation. |
+| {doc}`sphinx-gp-theme <packages/sphinx-gp-theme>` | Furo-based theme with CSS variables and SPA navigation. |
 | {doc}`sphinx-fonts <packages/sphinx-fonts>` | IBM Plex via Fontsource — preloaded web fonts. |
 | {doc}`sphinx-argparse-neo <packages/sphinx-argparse-neo>` | CLI documentation from `argparse` parsers. |
 
