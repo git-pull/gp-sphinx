@@ -4,6 +4,14 @@
 
 {bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-layout>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-autodoc-layout/>`
 
+:::{admonition} Alpha
+:class: warning
+
+Rendered output is stable. The Python API, CSS class names, and Sphinx
+config value names may change without a major version bump. Pin your
+dependency to a specific version range in production.
+:::
+
 Wraps contiguous `desc_content` runs into semantic `gal_region` nodes
 and rebuilds Python autodoc entries into stable `api-*` components.
 Large field-list parameter sections still use native `<details>/<summary>`,
@@ -38,6 +46,8 @@ appended by Sphinx's default handler.
 
 ## Downstream `conf.py`
 
+With `gp-sphinx`:
+
 ```python
 conf = merge_sphinx_config(
     project="my-project",
@@ -48,6 +58,13 @@ conf = merge_sphinx_config(
     gal_enabled=True,
     gal_collapsed_threshold=10,
 )
+```
+
+Or without `merge_sphinx_config`:
+
+```python
+extensions = ["sphinx.ext.autodoc", "sphinx_autodoc_layout"]
+gal_enabled = True
 ```
 
 ## Working usage examples
@@ -74,12 +91,6 @@ Render a class with grouped content regions and member entries:
 ```{py:module} gal_demo_api
 ```
 
-### Small function (no fold)
-
-```{eval-rst}
-.. autofunction:: gal_demo_api.compact_function
-```
-
 ### Class with members (regions + fold)
 
 ```{eval-rst}
@@ -87,11 +98,17 @@ Render a class with grouped content regions and member entries:
    :members:
 ```
 
-The class above should render with:
+The class above renders with:
 
 - **narrative** region (class docstring)
 - **fields** region with fold (13 parameters > threshold of 10)
 - **members** region (connect, execute, close methods)
+
+### Small function (no fold)
+
+```{eval-rst}
+.. autofunction:: gal_demo_api.compact_function
+```
 
 ## Configuration
 
@@ -132,6 +149,18 @@ The class above should render with:
 | `gal-region--members` | `<div>` | Compatibility alias on footer/member sections |
 | `gal-fold` | `<details>` | Disclosure wrapper for large sections |
 | `gal-fold-summary` | `<summary>` | Click target showing field count |
+
+## API reference
+
+```{eval-rst}
+.. autofunction:: sphinx_autodoc_layout.build_api_card_entry
+
+.. autofunction:: sphinx_autodoc_layout.build_api_summary_section
+
+.. autofunction:: sphinx_autodoc_layout.build_api_table_section
+
+.. autofunction:: sphinx_autodoc_layout.build_api_facts_section
+```
 
 ```{package-reference} sphinx-autodoc-layout
 ```
