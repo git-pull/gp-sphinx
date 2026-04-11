@@ -542,6 +542,8 @@ def _create_example_section(
     >>> section = _create_example_section("examples:", def_node)
     >>> section["ids"]
     ['examples']
+    >>> section["names"]
+    ['examples']
     >>> section[0].astext()
     'Examples'
 
@@ -549,6 +551,8 @@ def _create_example_section(
 
     >>> section = _create_example_section("examples:", def_node, page_prefix="sync")
     >>> section["ids"]
+    ['sync-examples']
+    >>> section["names"]
     ['sync-examples']
 
     Category-prefixed examples create descriptive section IDs:
@@ -569,7 +573,9 @@ def _create_example_section(
 
     section = nodes.section()
     section["ids"] = [section_id]
-    section["names"] = [nodes.fully_normalize_name(section_title)]
+    # Scope section name by section_id so multi-page docs don't collide on
+    # the implicit target docutils creates from section["names"].
+    section["names"] = [nodes.fully_normalize_name(section_id)]
 
     title = nodes.title(text=section_title)
     section += title

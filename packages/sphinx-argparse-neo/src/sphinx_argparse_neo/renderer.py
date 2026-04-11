@@ -274,11 +274,15 @@ class ArgparseRenderer:
         >>> section = renderer.render_usage_section(info)
         >>> section["ids"]
         ['usage']
+        >>> section["names"]
+        ['usage']
 
         With prefix for subcommand pages:
 
         >>> section = renderer.render_usage_section(info, id_prefix="load")
         >>> section["ids"]
+        ['load-usage']
+        >>> section["names"]
         ['load-usage']
         >>> section.children[0].astext()
         'Usage'
@@ -286,7 +290,9 @@ class ArgparseRenderer:
         section_id = f"{id_prefix}-usage" if id_prefix else "usage"
         section = nodes.section()
         section["ids"] = [section_id]
-        section["names"] = [nodes.fully_normalize_name("Usage")]
+        # Scope section name by id_prefix so multi-page docs don't collide
+        # on the implicit "usage" target docutils creates from section["names"].
+        section["names"] = [nodes.fully_normalize_name(section_id)]
         section += nodes.title("Usage", "Usage")
 
         usage_node = argparse_usage()
@@ -331,11 +337,15 @@ class ArgparseRenderer:
         >>> section = renderer.render_group_section(group)
         >>> section["ids"]
         ['positional-arguments']
+        >>> section["names"]
+        ['positional-arguments']
 
         With prefix for subcommand pages:
 
         >>> section = renderer.render_group_section(group, id_prefix="load")
         >>> section["ids"]
+        ['load-positional-arguments']
+        >>> section["names"]
         ['load-positional-arguments']
         >>> section.children[0].astext()
         'Positional Arguments'
@@ -351,10 +361,12 @@ class ArgparseRenderer:
         base_id = title.lower().replace(" ", "-")
         section_id = f"{id_prefix}-{base_id}" if id_prefix else base_id
 
-        # Create section wrapper for TOC discovery
+        # Create section wrapper for TOC discovery. Scope section name by
+        # id_prefix so multi-page docs don't collide on the implicit target
+        # docutils creates from section["names"].
         section = nodes.section()
         section["ids"] = [section_id]
-        section["names"] = [nodes.fully_normalize_name(title)]
+        section["names"] = [nodes.fully_normalize_name(section_id)]
 
         # Add title for TOC - Sphinx's TocTreeCollector looks for this
         section += nodes.title(title, title)
