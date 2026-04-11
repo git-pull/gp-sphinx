@@ -8,7 +8,7 @@ import typing as t
 import pytest
 from docutils import nodes
 from sphinx import addnodes
-from sphinx_autodoc_badges import BadgeNode
+from sphinx_autodoc_badges import SAB, BadgeNode
 from sphinx_autodoc_layout._nodes import api_slot
 
 import sphinx_autodoc_api_style
@@ -20,7 +20,6 @@ from sphinx_autodoc_api_style._badges import (
     _TYPE_TOOLTIPS,
     build_badge_group,
 )
-from sphinx_autodoc_api_style._css import _CSS
 from sphinx_autodoc_api_style._transforms import (
     _HANDLED_OBJTYPES,
     _KEYWORD_TO_MOD,
@@ -33,25 +32,25 @@ from sphinx_autodoc_api_style._transforms import (
 )
 
 # ---------------------------------------------------------------------------
-# _CSS constants
+# SAB constants used by api-style
 # ---------------------------------------------------------------------------
 
 
-def test_css_prefix() -> None:
-    """CSS prefix is now 'sab' (unified palette)."""
-    assert _CSS.PREFIX == "sab"
+def test_sab_prefix() -> None:
+    """SAB prefix is 'sab' (unified palette)."""
+    assert SAB.PREFIX == "sab"
 
 
-def test_css_badge_group_class() -> None:
+def test_sab_badge_group_class() -> None:
     """Badge group class uses the shared sab- prefix."""
-    assert _CSS.BADGE_GROUP == "sab-badge-group"
+    assert SAB.BADGE_GROUP == "sab-badge-group"
 
 
-def test_css_obj_type_class() -> None:
+def test_sab_obj_type_class() -> None:
     """obj_type() returns sab-type-* class (unified palette)."""
-    assert _CSS.obj_type("function") == "sab-type-function"
-    assert _CSS.obj_type("class") == "sab-type-class"
-    assert _CSS.obj_type("method") == "sab-type-method"
+    assert SAB.obj_type("function") == "sab-type-function"
+    assert SAB.obj_type("class") == "sab-type-class"
+    assert SAB.obj_type("method") == "sab-type-method"
 
 
 # ---------------------------------------------------------------------------
@@ -63,7 +62,7 @@ def test_badge_group_returns_inline() -> None:
     """build_badge_group returns a nodes.inline with badge-group class."""
     group = build_badge_group("function", modifiers=frozenset())
     assert isinstance(group, nodes.inline)
-    assert _CSS.BADGE_GROUP in group["classes"]
+    assert SAB.BADGE_GROUP in group["classes"]
 
 
 def test_badge_group_type_badge_present() -> None:
@@ -72,8 +71,8 @@ def test_badge_group_type_badge_present() -> None:
     badges = list(group.findall(BadgeNode))
     assert len(badges) == 1
     assert badges[0].astext() == "class"
-    assert _CSS.BADGE_TYPE in badges[0]["classes"]
-    assert _CSS.obj_type("class") in badges[0]["classes"]
+    assert SAB.BADGE_TYPE in badges[0]["classes"]
+    assert SAB.obj_type("class") in badges[0]["classes"]
 
 
 def test_badge_group_type_badge_suppressed() -> None:
@@ -103,7 +102,7 @@ def test_badge_group_modifier_order() -> None:
     all_mods = frozenset(_MOD_ORDER)
     group = build_badge_group("function", modifiers=all_mods)
     badges = list(group.findall(BadgeNode))
-    mod_labels = [b.astext() for b in badges if _CSS.BADGE_MOD in b["classes"]]
+    mod_labels = [b.astext() for b in badges if SAB.BADGE_MOD in b["classes"]]
     expected = list(_MOD_ORDER)
     assert mod_labels == expected
 
@@ -155,8 +154,8 @@ def test_badge_group_deprecated() -> None:
     group = build_badge_group("class", modifiers=frozenset({"deprecated"}))
     badges = list(group.findall(BadgeNode))
     dep_badge = [b for b in badges if b.astext() == "deprecated"][0]
-    assert _CSS.DEPRECATED in dep_badge["classes"]
-    assert _CSS.BADGE_MOD in dep_badge["classes"]
+    assert SAB.STATE_DEPRECATED in dep_badge["classes"]
+    assert SAB.BADGE_MOD in dep_badge["classes"]
 
 
 def test_badge_group_all_type_labels() -> None:
@@ -193,7 +192,7 @@ def test_badge_group_builds_shared_badge_specs(
     group = build_badge_group("method", modifiers=frozenset({"async", "abstract"}))
 
     assert isinstance(group, nodes.inline)
-    assert seen["classes"] == [_CSS.BADGE_GROUP]
+    assert seen["classes"] == [SAB.BADGE_GROUP]
     badge_specs = t.cast(t.Sequence[object], seen["badges"])
     assert [t.cast(t.Any, spec).text for spec in badge_specs] == [
         "abstract",
@@ -354,7 +353,7 @@ def test_inject_badges_adds_badge_slot_with_badge_group() -> None:
     ]
     assert len(slots) == 1
     groups = list(slots[0].findall(nodes.inline))
-    badge_groups = [g for g in groups if _CSS.BADGE_GROUP in g.get("classes", [])]
+    badge_groups = [g for g in groups if SAB.BADGE_GROUP in g.get("classes", [])]
     assert len(badge_groups) == 1
 
 

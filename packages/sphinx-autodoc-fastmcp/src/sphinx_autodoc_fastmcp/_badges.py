@@ -6,6 +6,7 @@ import typing as t
 
 from docutils import nodes
 from sphinx_autodoc_badges import (
+    SAB,
     BadgeNode,
     BadgeSpec,
     build_badge,
@@ -83,7 +84,7 @@ def build_type_tool_badge() -> BadgeNode:
     return build_badge(
         "tool",
         tooltip=_TYPE_TOOLTIP,
-        classes=[_CSS.BADGE_TYPE, _CSS.TYPE_TOOL],
+        classes=[SAB.BADGE_TYPE, _CSS.TYPE_TOOL],
     )
 
 
@@ -116,7 +117,7 @@ def build_tool_badge_group(safety: str) -> nodes.inline:
             BadgeSpec(
                 "tool",
                 tooltip=_TYPE_TOOLTIP,
-                classes=(_CSS.BADGE_TYPE, _CSS.TYPE_TOOL),
+                classes=(SAB.BADGE_TYPE, _CSS.TYPE_TOOL),
             ),
         ],
     )

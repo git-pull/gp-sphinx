@@ -8,7 +8,7 @@ import typing as t
 
 import pytest
 from docutils import nodes
-from sphinx_autodoc_badges import BadgeNode
+from sphinx_autodoc_badges import SAB, BadgeNode
 
 import sphinx_autodoc_pytest_fixtures
 import sphinx_autodoc_pytest_fixtures._directives as spf_directives
@@ -704,7 +704,7 @@ def test_build_badge_group_node_no_scope_for_function() -> None:
         if hasattr(child, "get")
         for c in child.get("classes", [])
     ]
-    assert sphinx_autodoc_pytest_fixtures._CSS.BADGE_SCOPE not in classes_all
+    assert SAB.BADGE_SCOPE not in classes_all
 
 
 def test_build_badge_group_node_session_scope_badge() -> None:
@@ -718,7 +718,7 @@ def test_build_badge_group_node_session_scope_badge() -> None:
         if hasattr(child, "get")
         for c in child.get("classes", [])
     ]
-    assert sphinx_autodoc_pytest_fixtures._CSS.scope("session") in classes_all
+    assert SAB.scope("session") in classes_all
 
 
 def test_build_badge_group_node_override_kind() -> None:
@@ -734,7 +734,7 @@ def test_build_badge_group_node_override_kind() -> None:
         for c in child.get("classes", [])
     ]
     assert "override" in texts
-    assert sphinx_autodoc_pytest_fixtures._CSS.OVERRIDE in classes_all
+    assert SAB.STATE_OVERRIDE in classes_all
 
 
 def test_build_badge_group_node_autouse_replaces_kind() -> None:
@@ -750,8 +750,8 @@ def test_build_badge_group_node_autouse_replaces_kind() -> None:
         for c in child.get("classes", [])
     ]
     assert "auto" in texts
-    assert sphinx_autodoc_pytest_fixtures._CSS.AUTOUSE in classes_all
-    assert sphinx_autodoc_pytest_fixtures._CSS.BADGE_KIND not in classes_all
+    assert SAB.STATE_AUTOUSE in classes_all
+    assert SAB.BADGE_KIND not in classes_all
 
 
 def test_build_badge_group_node_factory_session() -> None:
@@ -767,8 +767,8 @@ def test_build_badge_group_node_factory_session() -> None:
         for c in child.get("classes", [])
     ]
     assert "factory" in texts
-    assert sphinx_autodoc_pytest_fixtures._CSS.FACTORY in classes_all
-    assert sphinx_autodoc_pytest_fixtures._CSS.scope("session") in classes_all
+    assert SAB.STATE_FACTORY in classes_all
+    assert SAB.scope("session") in classes_all
 
 
 def test_build_badge_group_node_has_tabindex() -> None:
@@ -1621,7 +1621,7 @@ def test_deprecated_badge_renders_at_slot_zero() -> None:
     # First badge should be "deprecated"
     assert badges[0].astext() == "deprecated"
     classes_first: list[str] = badges[0].get("classes", [])
-    assert sphinx_autodoc_pytest_fixtures._CSS.DEPRECATED in classes_first
+    assert SAB.STATE_DEPRECATED in classes_first
 
 
 def test_deprecated_badge_absent_when_not_deprecated() -> None:

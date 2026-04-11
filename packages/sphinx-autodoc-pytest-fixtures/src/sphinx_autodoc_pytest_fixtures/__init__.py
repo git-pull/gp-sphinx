@@ -39,7 +39,6 @@ from sphinx_autodoc_pytest_fixtures._constants import (
     PYTEST_HIDDEN,
     SetupDict,
 )
-from sphinx_autodoc_pytest_fixtures._css import _CSS
 from sphinx_autodoc_pytest_fixtures._detection import (
     _classify_deps,
     _get_fixture_fn,

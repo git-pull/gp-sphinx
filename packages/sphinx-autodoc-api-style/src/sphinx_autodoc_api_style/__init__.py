@@ -21,10 +21,6 @@ Examples
 >>> from sphinx_autodoc_api_style import setup
 >>> callable(setup)
 True
-
->>> from sphinx_autodoc_api_style._css import _CSS
->>> _CSS.BADGE_GROUP
-'sab-badge-group'
 """
 
 from __future__ import annotations
@@ -34,14 +30,12 @@ import pathlib
 import typing as t
 
 from sphinx_autodoc_api_style._badges import build_badge_group
-from sphinx_autodoc_api_style._css import _CSS
 from sphinx_autodoc_api_style._transforms import on_doctree_resolved
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
 __all__ = [
-    "_CSS",
     "build_badge_group",
     "setup",
 ]

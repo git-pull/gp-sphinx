@@ -7,8 +7,8 @@ import textwrap
 
 import pytest
 from sphinx.util.inventory import InventoryFile
+from sphinx_autodoc_badges import SAB
 
-from sphinx_autodoc_pytest_fixtures import _CSS
 from tests._sphinx_scenarios import (
     SCENARIO_SRCDIR_TOKEN,
     ScenarioFile,
@@ -178,13 +178,13 @@ def test_default_html_outputs_smoke(default_html_result) -> None:
     assert any("my_server" in name for name in inv.data["py:fixture"])
 
     for css_class in (
-        _CSS.BADGE_GROUP,
-        _CSS.BADGE,
-        _CSS.BADGE_FIXTURE,
-        _CSS.BADGE_SCOPE,
-        _CSS.scope("session"),
-        _CSS.BADGE_KIND,
-        _CSS.FACTORY,
+        SAB.BADGE_GROUP,
+        SAB.BADGE,
+        SAB.BADGE_FIXTURE,
+        SAB.BADGE_SCOPE,
+        SAB.scope("session"),
+        SAB.BADGE_KIND,
+        SAB.STATE_FACTORY,
     ):
         assert css_class in index_html
     assert 'tabindex="0"' in index_html

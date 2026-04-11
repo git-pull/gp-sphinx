@@ -16,7 +16,9 @@ from sphinx_autodoc_pytest_fixtures._constants import (
     _INDEX_TABLE_COLUMNS,
     _RST_INLINE_PATTERN,
 )
-from sphinx_autodoc_pytest_fixtures._css import _CSS
+
+_FIXTURE_INDEX = "spf-fixture-index"
+_TABLE_SCROLL = "spf-table-scroll"
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -141,7 +143,7 @@ def _build_fixture_index_table_structure(
     fixtures: list[FixtureMeta],
 ) -> tuple[nodes.table, nodes.tbody]:
     """Return the index table shell populated with plain fixture metadata."""
-    table = nodes.table(classes=[_CSS.FIXTURE_INDEX])
+    table = nodes.table(classes=[_FIXTURE_INDEX])
     tgroup = nodes.tgroup(cols=len(_INDEX_TABLE_COLUMNS))
     table += tgroup
     for _header, width in _INDEX_TABLE_COLUMNS:
@@ -269,6 +271,6 @@ def _resolve_fixture_index(
                 desc_para += desc_node
         desc_entry[:] = [desc_para]
 
-    scroll_wrapper = nodes.container(classes=[_CSS.TABLE_SCROLL])
+    scroll_wrapper = nodes.container(classes=[_TABLE_SCROLL])
     scroll_wrapper += table
     node.replace_self([build_api_summary_section(scroll_wrapper)])
