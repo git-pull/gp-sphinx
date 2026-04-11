@@ -74,7 +74,9 @@ _SETUP_CASES = (
 )
 
 
-@pytest.mark.parametrize("case", _SETUP_CASES, ids=[case.test_id for case in _SETUP_CASES])
+@pytest.mark.parametrize(
+    "case", _SETUP_CASES, ids=[case.test_id for case in _SETUP_CASES]
+)
 def test_shared_stack_setup_autoloads_expected_extensions(case: _SetupCase) -> None:
     """Each shipped autodoc extension loads the shared stack explicitly."""
     setup_calls: list[str] = []
