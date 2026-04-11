@@ -30,16 +30,29 @@ and FastMCP tools all look like they belong together.
 ```
 
 ```{toctree}
+:caption: Shared Infrastructure
 :hidden:
 
 sphinx-autodoc-badges
 sphinx-autodoc-layout
 sphinx-typehints-gp
+```
+
+```{toctree}
+:caption: Domain Packages
+:hidden:
+
 sphinx-autodoc-api-style
 sphinx-autodoc-docutils
 sphinx-autodoc-fastmcp
 sphinx-autodoc-pytest-fixtures
 sphinx-autodoc-sphinx
+```
+
+```{toctree}
+:caption: Theme, Fonts & CLI
+:hidden:
+
 gp-sphinx
 sphinx-gptheme
 sphinx-fonts
