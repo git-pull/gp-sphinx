@@ -255,11 +255,11 @@
                   <api_permalink classes="headerlink api-link" href="#list-sessions" title="Link to this definition">
               <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
                   <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
-                      <inline classes="sab-badge-group smf-badge-group">
+                      <inline classes="sab-badge-group">
                           <BadgeNode badge_icon="🔍" badge_tooltip="Read-only — does not modify external state" classes="sab-badge smf-badge--safety smf-safety-readonly" tabindex="0">
                               readonly
                            
-                          <BadgeNode badge_tooltip="MCP tool" classes="sab-badge smf-badge--type smf-type-tool" tabindex="0">
+                          <BadgeNode badge_tooltip="MCP tool" classes="sab-badge sab-badge--type smf-type-tool" tabindex="0">
                               tool
       <desc_content classes="api-content">
           <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">

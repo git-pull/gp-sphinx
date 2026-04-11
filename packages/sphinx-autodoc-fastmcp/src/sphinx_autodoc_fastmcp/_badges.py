@@ -119,7 +119,6 @@ def build_tool_badge_group(safety: str) -> nodes.inline:
                 classes=(_CSS.BADGE_TYPE, _CSS.TYPE_TOOL),
             ),
         ],
-        classes=[_CSS.BADGE_GROUP],
     )
 
 
@@ -132,7 +131,4 @@ def build_toolbar(safety: str) -> nodes.inline:
     >>> "sab-toolbar" in t["classes"]
     True
     """
-    return _sab_build_toolbar(
-        build_tool_badge_group(safety),
-        classes=[_CSS.TOOLBAR],
-    )
+    return _sab_build_toolbar(build_tool_badge_group(safety))
