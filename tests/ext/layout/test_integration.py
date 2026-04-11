@@ -25,11 +25,11 @@ def test_layout_demo_renders_api_component_contract(layout_default_html: str) ->
 
     assert re.search(r'<dl class="[^"]*api-container[^"]*">', html)
     assert re.search(r'<dd class="[^"]*api-content[^"]*">', html)
-    assert 'class="api-description gal-region gal-region--narrative"' in html
-    assert 'class="api-parameters gal-region gal-region--fields"' in html
-    assert 'class="api-footer gal-region gal-region--members"' in html
-    assert '<details class="gal-fold gal-fold--parameters">' in html
-    assert 'class="gal-sig-fold"' not in html
+    assert 'class="api-description api-region api-region--narrative"' in html
+    assert 'class="api-parameters api-region api-region--fields"' in html
+    assert 'class="api-footer api-region api-region--members"' in html
+    assert '<details class="api-fold api-fold--parameters">' in html
+    assert 'class="api-sig-fold"' not in html
 
     init_html = _extract_init_header(html)
 
@@ -46,7 +46,7 @@ def test_layout_demo_renders_api_component_contract(layout_default_html: str) ->
     assert 'class="headerlink api-link"' in init_html
     assert 'class="api-badge-container"' in init_html
     assert 'class="api-source-link"' in init_html
-    assert 'class="api-signature-expanded gal-sig-expanded"' in init_html
+    assert 'class="api-signature-expanded api-sig-expanded"' in init_html
     assert (
         'aria-controls="gal_demo_api.LayoutDemo.__init__--signature-expanded"'
         in init_html
@@ -55,10 +55,10 @@ def test_layout_demo_renders_api_component_contract(layout_default_html: str) ->
     assert "<dl>" in init_html
     assert '<span class="sig-paren">(</span>' in init_html
     assert '<span class="sig-paren">)</span>' in init_html
-    assert 'class="gal-sig-collapse"' in init_html
+    assert 'class="api-sig-collapse"' in init_html
     assert "[collapse]" in init_html
     assert re.search(
-        r'<span class="sig-paren">\)</span>\s*<button[^>]*class="[^"]*gal-sig-collapse[^"]*"',
+        r'<span class="sig-paren">\)</span>\s*<button[^>]*class="[^"]*api-sig-collapse[^"]*"',
         init_html,
     )
     assert "host" in init_html

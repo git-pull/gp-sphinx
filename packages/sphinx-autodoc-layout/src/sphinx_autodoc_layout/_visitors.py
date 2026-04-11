@@ -38,17 +38,17 @@ def _html_attrs(node: nodes.Element) -> dict[str, str]:
     return {str(key): str(value) for key, value in attrs.items()}
 
 
-def visit_gal_region(self: HTML5Translator, node: nodes.Element) -> None:
+def visit_api_region(self: HTML5Translator, node: nodes.Element) -> None:
     """Open a legacy region wrapper ``<div>``."""
     kind = node.get("kind", "narrative")
     component = _LEGACY_SECTION_COMPONENTS.get(kind)
-    classes = ["gal-region", f"gal-region--{kind}"]
+    classes = ["api-region", f"api-region--{kind}"]
     if component is not None:
         classes.insert(0, component)
     self.body.append(self.starttag(node, "div", "", classes=classes))
 
 
-def depart_gal_region(self: HTML5Translator, node: nodes.Element) -> None:
+def depart_api_region(self: HTML5Translator, node: nodes.Element) -> None:
     """Close the legacy region wrapper."""
     self.body.append("</div>")
 
@@ -86,23 +86,23 @@ def depart_api_permalink(self: HTML5Translator, node: nodes.Element) -> None:
     self.body.append("</a>")
 
 
-def visit_gal_fold(self: HTML5Translator, node: nodes.Element) -> None:
+def visit_api_fold(self: HTML5Translator, node: nodes.Element) -> None:
     """Open a ``<details>`` disclosure element."""
     summary = node.get("summary", "")
     kind = node.get("kind", "")
     open_attr = " open" if node.get("open", False) else ""
     self.body.append(
-        f'<details class="gal-fold gal-fold--{kind}"{open_attr}>'
-        f'<summary class="gal-fold-summary">{html.escape(summary)}</summary>'
+        f'<details class="api-fold api-fold--{kind}"{open_attr}>'
+        f'<summary class="api-fold-summary">{html.escape(summary)}</summary>'
     )
 
 
-def depart_gal_fold(self: HTML5Translator, node: nodes.Element) -> None:
+def depart_api_fold(self: HTML5Translator, node: nodes.Element) -> None:
     """Close the ``</details>`` element."""
     self.body.append("</details>")
 
 
-def visit_gal_sig_fold(self: HTML5Translator, node: nodes.Element) -> None:
+def visit_api_sig_fold(self: HTML5Translator, node: nodes.Element) -> None:
     """Open the custom signature disclosure toggle button."""
     first = html.escape(node.get("first_param", ""))
     panel_id = node.get("panel_id", "")
@@ -114,7 +114,7 @@ def visit_gal_sig_fold(self: HTML5Translator, node: nodes.Element) -> None:
             "button",
             "",
             type="button",
-            classes=["api-signature-toggle", "gal-sig-toggle"],
+            classes=["api-signature-toggle", "api-sig-toggle"],
             **{
                 "aria-controls": panel_id,
                 "aria-expanded": "false",
@@ -123,12 +123,12 @@ def visit_gal_sig_fold(self: HTML5Translator, node: nodes.Element) -> None:
     )
     self.body.append('<span class="sig-paren">(</span>')
     self.body.append(
-        f'<span class="api-signature-preview gal-sig-preview">{preview}, [...]</span>'
+        f'<span class="api-signature-preview api-sig-preview">{preview}, [...]</span>'
     )
     self.body.append('<span class="sig-paren">)</span>')
 
 
-def depart_gal_sig_fold(self: HTML5Translator, node: nodes.Element) -> None:
+def depart_api_sig_fold(self: HTML5Translator, node: nodes.Element) -> None:
     """Close the custom signature disclosure toggle button."""
     self.body.append("</button>")
 

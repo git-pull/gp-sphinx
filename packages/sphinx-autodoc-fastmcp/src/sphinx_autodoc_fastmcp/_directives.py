@@ -64,7 +64,7 @@ class FastMCPToolDirective(SphinxDirective):
 
         section = nodes.section()
         section["ids"].append(section_id)
-        section["classes"].extend((_CSS.TOOL_SECTION, "gal-card-shell"))
+        section["classes"].extend((_CSS.TOOL_SECTION, "api-card-shell"))
         document.note_explicit_target(section)
 
         title_node = nodes.title("", "")

@@ -59,7 +59,7 @@ def build_api_section(
 ) -> api_component:
     """Return a shared API body section with stable region classes."""
     kind = _SECTION_KIND_CLASS.get(name)
-    region_classes = ("gal-region", f"gal-region--{kind}") if kind is not None else ()
+    region_classes = ("api-region", f"api-region--{kind}") if kind is not None else ()
     section = build_api_component(name, classes=(*region_classes, *classes))
     for child in children:
         section += child

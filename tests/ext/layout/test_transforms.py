@@ -9,12 +9,12 @@ from docutils import nodes
 from sphinx import addnodes
 from sphinx_autodoc_layout._nodes import (
     api_component,
+    api_fold,
     api_inline_component,
     api_permalink,
+    api_sig_fold,
     api_slot,
     build_api_slot,
-    gal_fold,
-    gal_sig_fold,
 )
 from sphinx_autodoc_layout._sections import ApiFactRow, build_api_facts_section
 from sphinx_autodoc_layout._transforms import (
@@ -230,7 +230,7 @@ def test_wrap_groups_narrative() -> None:
     assert _child_component_names(content) == ["api-description"]
     section = content.children[0]
     assert isinstance(section, api_component)
-    assert "gal-region" in section.get("classes", [])
+    assert "api-region" in section.get("classes", [])
     assert len(section.children) == 2
 
 
@@ -367,14 +367,14 @@ def test_count_collapsed_bullet_list() -> None:
 def test_fold_wraps_large_field_list() -> None:
     content = addnodes.desc_content()
     section = api_component(name="api-parameters", tag="div")
-    section["classes"] = ["api-parameters", "gal-region", "gal-region--fields"]
+    section["classes"] = ["api-parameters", "api-region", "api-region--fields"]
     section += _make_field_list(12)
     content += section
 
     _fold_large_field_regions(content, threshold=10)
 
     fold = section.children[0]
-    assert isinstance(fold, gal_fold)
+    assert isinstance(fold, api_fold)
     assert fold.get("summary") == "Parameters (12)"
     assert isinstance(fold.children[0], nodes.field_list)
 
@@ -382,21 +382,21 @@ def test_fold_wraps_large_field_list() -> None:
 def test_fold_wraps_sphinx_collapsed_field_list() -> None:
     content = addnodes.desc_content()
     section = api_component(name="api-parameters", tag="div")
-    section["classes"] = ["api-parameters", "gal-region", "gal-region--fields"]
+    section["classes"] = ["api-parameters", "api-region", "api-region--fields"]
     section += _make_sphinx_field_list(13)
     content += section
 
     _fold_large_field_regions(content, threshold=10)
 
     fold = section.children[0]
-    assert isinstance(fold, gal_fold)
+    assert isinstance(fold, api_fold)
     assert fold.get("summary") == "Parameters (13)"
 
 
 def test_fold_skips_small_field_list() -> None:
     content = addnodes.desc_content()
     section = api_component(name="api-parameters", tag="div")
-    section["classes"] = ["api-parameters", "gal-region", "gal-region--fields"]
+    section["classes"] = ["api-parameters", "api-region", "api-region--fields"]
     fl = _make_field_list(5)
     section += fl
     content += section
@@ -404,13 +404,13 @@ def test_fold_skips_small_field_list() -> None:
     _fold_large_field_regions(content, threshold=10)
 
     assert isinstance(section.children[0], nodes.field_list)
-    assert not isinstance(section.children[0], gal_fold)
+    assert not isinstance(section.children[0], api_fold)
 
 
 def test_fold_skips_non_parameter_sections() -> None:
     content = addnodes.desc_content()
     section = api_component(name="api-description", tag="div")
-    section["classes"] = ["api-description", "gal-region", "gal-region--narrative"]
+    section["classes"] = ["api-description", "api-region", "api-region--narrative"]
     section += nodes.paragraph("", "text")
     content += section
 
@@ -486,7 +486,7 @@ def test_rebuild_signature_layout_uses_expanded_wrapper_for_large_signature() ->
 
     signature = left.children[0]
     assert isinstance(signature, api_component)
-    assert any(isinstance(child, gal_sig_fold) for child in signature.children)
+    assert any(isinstance(child, api_sig_fold) for child in signature.children)
     expanded = _find_component(signature, "api-signature-expanded")
     html_attrs = t.cast(dict[str, str], expanded.get("html_attrs", {}))
     assert html_attrs.get("id") == ("demo.LayoutDemo.__init__--signature-expanded")
@@ -496,7 +496,7 @@ def test_rebuild_signature_layout_uses_expanded_wrapper_for_large_signature() ->
     assert plist.get("multi_line_trailing_comma") is False
     collapse = expanded.children[1]
     assert isinstance(collapse, api_inline_component)
-    assert collapse.get("name") == "gal-sig-collapse"
+    assert collapse.get("name") == "api-sig-collapse"
     collapse_attrs = t.cast(dict[str, str], collapse.get("html_attrs", {}))
     assert collapse_attrs.get("aria-controls") == (
         "demo.LayoutDemo.__init__--signature-expanded"
@@ -606,10 +606,10 @@ def test_on_doctree_resolved_marks_managed_headers_with_initial_state() -> None:
         t.Any,
         types.SimpleNamespace(
             config=types.SimpleNamespace(
-                gal_enabled=True,
-                gal_collapsed_threshold=10,
-                gal_fold_parameters=True,
-                gal_signature_show_annotations=True,
+                api_layout_enabled=True,
+                api_collapsed_threshold=10,
+                api_fold_parameters=True,
+                api_signature_show_annotations=True,
                 html_permalinks=True,
             ),
             builder=types.SimpleNamespace(format="html", add_permalinks=True),
@@ -633,10 +633,10 @@ def test_on_doctree_resolved_manages_slot_backed_headers_without_gal_enabled() -
         t.Any,
         types.SimpleNamespace(
             config=types.SimpleNamespace(
-                gal_enabled=False,
-                gal_collapsed_threshold=10,
-                gal_fold_parameters=True,
-                gal_signature_show_annotations=True,
+                api_layout_enabled=False,
+                api_collapsed_threshold=10,
+                api_fold_parameters=True,
+                api_signature_show_annotations=True,
                 html_permalinks=True,
             ),
             builder=types.SimpleNamespace(format="html", add_permalinks=True),
@@ -665,10 +665,10 @@ def test_on_doctree_resolved_manages_confval_entries_with_profile_classes() -> N
         t.Any,
         types.SimpleNamespace(
             config=types.SimpleNamespace(
-                gal_enabled=False,
-                gal_collapsed_threshold=10,
-                gal_fold_parameters=True,
-                gal_signature_show_annotations=True,
+                api_layout_enabled=False,
+                api_collapsed_threshold=10,
+                api_fold_parameters=True,
+                api_signature_show_annotations=True,
                 html_permalinks=True,
             ),
             builder=types.SimpleNamespace(format="html", add_permalinks=True),

@@ -99,7 +99,7 @@ def test_autodoc_sphinx_confvals_use_shared_layout(
     assert 'class="std confval api-container api-profile--confval"' in html
     assert 'class="api-layout"' in html
     assert 'class="api-badge-container"' in html
-    assert 'class="api-facts gal-region gal-region--facts"' in html
+    assert 'class="api-facts api-region api-region--facts"' in html
     assert "config" in html
     assert ">env<" in html
     assert ">html<" in html

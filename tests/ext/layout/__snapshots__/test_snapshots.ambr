@@ -23,7 +23,7 @@
                           <inline classes="sas-badge--status">
                               stable
       <desc_content classes="api-content">
-          <api_component classes="api-parameters gal-region gal-region--fields" name="api-parameters" tag="div">
+          <api_component classes="api-parameters api-region api-region--fields" name="api-parameters" tag="div">
               <field_list>
                   <field>
                       <field_name>
@@ -37,7 +37,7 @@
                       <field_body>
                           <literal_block xml:space="preserve">
                               {'accent': 'teal', 'surface': 'paper', 'ink': 'charcoal'}
-          <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
+          <api_component classes="api-description api-region api-region--narrative" name="api-description" tag="div">
               <paragraph>
                   A demo option.
   '''
@@ -51,8 +51,8 @@
                   <api_component classes="api-signature" name="api-signature" tag="div">
                       <desc_name classes="sig-name descname" xml:space="preserve">
                           list_sessions
-                      <gal_sig_fold first_param="server" panel_id="list-sessions--signature-expanded" param_count="12">
-                      <api_component classes="api-signature-expanded gal-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'list-sessions--signature-expanded'}" name="api-signature-expanded" tag="div">
+                      <api_sig_fold first_param="server" panel_id="list-sessions--signature-expanded" param_count="12">
+                      <api_component classes="api-signature-expanded api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'list-sessions--signature-expanded'}" name="api-signature-expanded" tag="div">
                           <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
                               <desc_parameter xml:space="preserve">
                                   <desc_sig_name classes="n">
@@ -250,7 +250,7 @@
                                        
                                   <inline classes="default_value">
                                       None
-                          <api_inline_component classes="gal-sig-collapse" html_attrs="{'aria-controls': 'list-sessions--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gal-sig-collapse" tag="button">
+                          <api_inline_component classes="api-sig-collapse" html_attrs="{'aria-controls': 'list-sessions--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="api-sig-collapse" tag="button">
                               [collapse]
                   <api_permalink classes="headerlink api-link" href="#list-sessions" title="Link to this definition">
               <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
@@ -262,10 +262,10 @@
                           <BadgeNode badge_tooltip="MCP tool" classes="sab-badge sab-dense sab-badge--type smf-type-tool" tabindex="0">
                               tool
       <desc_content classes="api-content">
-          <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
+          <api_component classes="api-description api-region api-region--narrative" name="api-description" tag="div">
               <paragraph>
                   List sessions for one server.
-          <api_component classes="api-parameters gal-region gal-region--fields" name="api-parameters" tag="div">
+          <api_component classes="api-parameters api-region api-region--fields" name="api-parameters" tag="div">
               <field_list>
                   <field>
                       <field_name>
@@ -541,8 +541,8 @@
                   <api_component classes="api-signature" name="api-signature" tag="div">
                       <desc_name classes="sig-name descname" xml:space="preserve">
                           __init__
-                      <gal_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded" param_count="13">
-                      <api_component classes="api-signature-expanded gal-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded'}" name="api-signature-expanded" tag="div">
+                      <api_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded" param_count="13">
+                      <api_component classes="api-signature-expanded api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded'}" name="api-signature-expanded" tag="div">
                           <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
                               <desc_parameter xml:space="preserve">
                                   <desc_sig_name classes="n">
@@ -794,7 +794,7 @@
                                        
                                   <inline classes="default_value">
                                       None
-                          <api_inline_component classes="gal-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gal-sig-collapse" tag="button">
+                          <api_inline_component classes="api-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="api-sig-collapse" tag="button">
                               [collapse]
                   <api_permalink classes="headerlink api-link" href="#demo.Session.__init__" title="Link to this definition">
               <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
@@ -807,11 +807,11 @@
                           <inline classes="viewcode-link">
                               [source]
       <desc_content classes="api-content">
-          <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
+          <api_component classes="api-description api-region api-region--narrative" name="api-description" tag="div">
               <paragraph>
                   Create a richly configurable session.
-          <api_component classes="api-parameters gal-region gal-region--fields" name="api-parameters" tag="div">
-              <gal_fold kind="parameters" summary="Parameters (13)">
+          <api_component classes="api-parameters api-region api-region--fields" name="api-parameters" tag="div">
+              <api_fold kind="parameters" summary="Parameters (13)">
                   <field_list>
                       <field>
                           <field_name>
@@ -933,8 +933,8 @@
                   <api_component classes="api-signature" name="api-signature" tag="div">
                       <desc_name classes="sig-name descname" xml:space="preserve">
                           __init__
-                      <gal_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded" param_count="13">
-                      <api_component classes="api-signature-expanded gal-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded'}" name="api-signature-expanded" tag="div">
+                      <api_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded" param_count="13">
+                      <api_component classes="api-signature-expanded api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded'}" name="api-signature-expanded" tag="div">
                           <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
                               <desc_parameter xml:space="preserve">
                                   <desc_sig_name classes="n">
@@ -1071,7 +1071,7 @@
                                        
                                   <inline classes="default_value">
                                       None
-                          <api_inline_component classes="gal-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gal-sig-collapse" tag="button">
+                          <api_inline_component classes="api-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="api-sig-collapse" tag="button">
                               [collapse]
                   <api_permalink classes="headerlink api-link" href="#demo.Session.__init__" title="Link to this definition">
               <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
@@ -1084,11 +1084,11 @@
                           <inline classes="viewcode-link">
                               [source]
       <desc_content classes="api-content">
-          <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
+          <api_component classes="api-description api-region api-region--narrative" name="api-description" tag="div">
               <paragraph>
                   Create a richly configurable session.
-          <api_component classes="api-parameters gal-region gal-region--fields" name="api-parameters" tag="div">
-              <gal_fold kind="parameters" summary="Parameters (13)">
+          <api_component classes="api-parameters api-region api-region--fields" name="api-parameters" tag="div">
+              <api_fold kind="parameters" summary="Parameters (13)">
                   <field_list>
                       <field>
                           <field_name>
@@ -1217,10 +1217,10 @@
                           <inline classes="sadoc-badge--type">
                               directive
       <desc_content classes="api-content">
-          <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
+          <api_component classes="api-description api-region api-region--narrative" name="api-description" tag="div">
               <paragraph>
                   A demo directive.
-          <api_component classes="api-footer gal-region gal-region--members" name="api-footer" tag="div">
+          <api_component classes="api-footer api-region api-region--members" name="api-footer" tag="div">
               <desc classes="api-container api-profile--rst-directive-option" domain="rst" objtype="directive:option">
                   <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="directive-option-demo-opt">
                       <api_component classes="api-layout" name="api-layout" tag="div">
@@ -1235,7 +1235,7 @@
                                       <inline classes="sadoc-badge--type">
                                           option
                   <desc_content classes="api-content">
-                      <api_component classes="api-description gal-region gal-region--narrative" name="api-description" tag="div">
+                      <api_component classes="api-description api-region api-region--narrative" name="api-description" tag="div">
                           <paragraph>
                               A demo option.
                           <literal_block xml:space="preserve">

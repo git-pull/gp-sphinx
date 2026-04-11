@@ -25,13 +25,13 @@ from sphinx import addnodes
 
 from sphinx_autodoc_layout._nodes import (
     api_component,
+    api_fold,
     api_permalink,
+    api_region,
+    api_sig_fold,
     api_slot,
     build_api_component,
     build_api_inline_component,
-    gal_fold,
-    gal_region,
-    gal_sig_fold,
 )
 from sphinx_autodoc_layout._slots import is_viewcode_ref
 
@@ -264,7 +264,7 @@ def _wrap_content_runs(desc_node: addnodes.desc) -> None:
                 content += current_section
             current_section = build_api_component(
                 _component_name_for_kind(kind),
-                classes=("gal-region", f"gal-region--{kind}"),
+                classes=("api-region", f"api-region--{kind}"),
             )
             current_kind = kind
         assert current_section is not None
@@ -443,7 +443,7 @@ def _is_parameters_section(node: nodes.Node) -> bool:
     """Return ``True`` when *node* is an API parameters section."""
     if isinstance(node, api_component):
         return str(node.get("name", "")) == "api-parameters"
-    if isinstance(node, gal_region):
+    if isinstance(node, api_region):
         return str(node.get("kind", "")) == "fields"
     return False
 
@@ -452,7 +452,7 @@ def _fold_large_field_regions(
     content: addnodes.desc_content,
     threshold: int,
 ) -> None:
-    """Wrap large field-list regions in ``gal_fold`` disclosure blocks."""
+    """Wrap large field-list regions in ``api_fold`` disclosure blocks."""
     for section in content.children:
         if not _is_parameters_section(section):
             continue
@@ -463,7 +463,7 @@ def _fold_large_field_regions(
             entry_count = _count_field_entries(field_list)
             if entry_count < threshold:
                 continue
-            fold = gal_fold(
+            fold = api_fold(
                 kind="parameters",
                 summary=f"Parameters ({entry_count})",
             )
@@ -838,7 +838,7 @@ def _rebuild_signature_layout(
             first_param, param_count = _count_signature_parameters(child)
             if param_count >= threshold:
                 panel_id = _signature_expanded_id(desc_sig)
-                signature += gal_sig_fold(
+                signature += api_sig_fold(
                     first_param=first_param,
                     param_count=param_count,
                     panel_id=panel_id,
@@ -850,7 +850,7 @@ def _rebuild_signature_layout(
                 )
                 expanded = build_api_component(
                     "api-signature-expanded",
-                    classes=("gal-sig-expanded",),
+                    classes=("api-sig-expanded",),
                     html_attrs={
                         "aria-hidden": "true",
                         "data-expanded": "false",
@@ -860,7 +860,7 @@ def _rebuild_signature_layout(
                 )
                 expanded += child
                 collapse = build_api_inline_component(
-                    "gal-sig-collapse",
+                    "api-sig-collapse",
                     tag="button",
                     html_attrs={
                         "aria-controls": panel_id,
@@ -916,13 +916,13 @@ def on_doctree_resolved(
     """
     if getattr(app.builder, "format", "") != "html":
         return
-    gal_enabled = bool(app.config.gal_enabled)
-    if not gal_enabled and next(doctree.findall(api_slot), None) is None:
+    api_layout_enabled = bool(app.config.api_layout_enabled)
+    if not api_layout_enabled and next(doctree.findall(api_slot), None) is None:
         return
 
-    threshold: int = app.config.gal_collapsed_threshold
-    fold_params: bool = app.config.gal_fold_parameters
-    show_annotations: bool = app.config.gal_signature_show_annotations
+    threshold: int = app.config.api_collapsed_threshold
+    fold_params: bool = app.config.api_fold_parameters
+    show_annotations: bool = app.config.api_signature_show_annotations
     include_permalink = bool(
         app.config.html_permalinks and getattr(app.builder, "add_permalinks", False)
     )
@@ -943,7 +943,7 @@ def on_doctree_resolved(
                 _deduplicate_return_type_fields(child)
 
         allow_signature_fold = (
-            gal_enabled and fold_params and profile.allow_signature_fold
+            api_layout_enabled and fold_params and profile.allow_signature_fold
         )
 
         for child in desc_node.children:

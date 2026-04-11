@@ -11,7 +11,7 @@ The extension keeps header composition in a late `doctree-resolved` pass so
 badges, source links, and permalinks can be positioned independently without
 raw HTML mutation. Large signatures can fold into native multiline signature
 markup, and expanded folded signatures show annotations by default via
-`gal_signature_show_annotations`.
+`api_signature_show_annotations`.
 
 For shared consumers, the public helper surface now includes:
 
@@ -32,7 +32,7 @@ Standalone Sphinx project:
 
 ```python
 extensions = ["sphinx.ext.autodoc", "sphinx_autodoc_layout"]
-gal_enabled = True
+api_layout_enabled = True
 ```
 
 With `gp-sphinx`:
@@ -41,7 +41,7 @@ With `gp-sphinx`:
 conf = merge_sphinx_config(
     ...,
     extra_extensions=["sphinx_autodoc_layout"],
-    gal_enabled=True,
+    api_layout_enabled=True,
 )
 ```
 

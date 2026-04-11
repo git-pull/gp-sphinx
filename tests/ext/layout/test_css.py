@@ -66,7 +66,7 @@ def test_expanded_api_header_switches_back_to_top_alignment() -> None:
 def test_signature_multiline_list_uses_padding_indent() -> None:
     css = _LAYOUT_CSS.read_text(encoding="utf-8")
 
-    assert "padding-inline-start: var(--gal-signature-indent, 1rem);" in css
+    assert "padding-inline-start: var(--api-signature-indent, 1rem);" in css
 
 
 def test_signature_multiline_list_clears_theme_dd_indent() -> None:

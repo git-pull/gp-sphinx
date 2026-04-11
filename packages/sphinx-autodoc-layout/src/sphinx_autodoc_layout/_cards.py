@@ -8,7 +8,7 @@ Examples
 ...     signature_children=(nodes.literal("", "demo"),),
 ... )
 >>> entry["classes"][:2]
-['api-entry', 'gal-card-entry']
+['api-entry', 'api-card-entry']
 """
 
 from __future__ import annotations
@@ -63,7 +63,7 @@ def build_api_card_entry(
     """
     entry = build_api_component(
         "api-entry",
-        classes=("gal-card-entry", profile_class, *entry_classes),
+        classes=("api-card-entry", profile_class, *entry_classes),
     )
     header = build_api_component("api-header")
     layout = build_api_component("api-layout")

@@ -5,44 +5,44 @@ from __future__ import annotations
 from docutils import nodes
 from sphinx_autodoc_layout._nodes import (
     api_component,
+    api_fold,
     api_inline_component,
     api_permalink,
+    api_region,
+    api_sig_fold,
     api_slot,
     build_api_component,
     build_api_inline_component,
     build_api_slot,
-    gal_fold,
-    gal_region,
-    gal_sig_fold,
 )
 
 
 def test_gal_region_is_general_element() -> None:
-    r = gal_region(kind="narrative")
+    r = api_region(kind="narrative")
     assert isinstance(r, nodes.General)
     assert isinstance(r, nodes.Element)
 
 
 def test_gal_region_stores_kind() -> None:
-    r = gal_region(kind="fields")
+    r = api_region(kind="fields")
     assert r.get("kind") == "fields"
 
 
 def test_gal_fold_is_general_element() -> None:
-    f = gal_fold(kind="parameters", summary="Parameters (5)")
+    f = api_fold(kind="parameters", summary="Parameters (5)")
     assert isinstance(f, nodes.General)
     assert isinstance(f, nodes.Element)
 
 
 def test_gal_fold_stores_attributes() -> None:
-    f = gal_fold(kind="parameters", summary="Parameters (5)", open=True)
+    f = api_fold(kind="parameters", summary="Parameters (5)", open=True)
     assert f.get("kind") == "parameters"
     assert f.get("summary") == "Parameters (5)"
     assert f.get("open") is True
 
 
 def test_gal_fold_default_open_is_falsy() -> None:
-    f = gal_fold(kind="parameters", summary="P (1)")
+    f = api_fold(kind="parameters", summary="P (1)")
     assert not f.get("open")
 
 
@@ -86,7 +86,7 @@ def test_build_api_slot_adds_slot_classes() -> None:
 
 
 def test_gal_sig_fold_stores_panel_id() -> None:
-    fold = gal_sig_fold(first_param="host", param_count=13, panel_id="sig-panel")
+    fold = api_sig_fold(first_param="host", param_count=13, panel_id="sig-panel")
     assert fold.get("first_param") == "host"
     assert fold.get("param_count") == 13
     assert fold.get("panel_id") == "sig-panel"

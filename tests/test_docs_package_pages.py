@@ -131,9 +131,9 @@ def test_fastmcp_docs_page_renders_live_demo_output(
     """The FastMCP package page renders tool cards, refs, and summary output."""
     fastmcp_docs_html = read_output(fastmcp_docs_result, "api.html")
 
-    assert 'class="smf-tool-section gal-card-shell"' in fastmcp_docs_html
+    assert 'class="smf-tool-section api-card-shell"' in fastmcp_docs_html
     assert (
-        'class="api-entry gal-card-entry api-profile--fastmcp-tool smf-tool-entry"'
+        'class="api-entry api-card-entry api-profile--fastmcp-tool smf-tool-entry"'
         in fastmcp_docs_html
     )
     assert 'class="api-badge-container"' in fastmcp_docs_html
