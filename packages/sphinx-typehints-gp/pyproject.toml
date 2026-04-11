@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sphinx-typehints-gp"
-version = "0.0.1a6"
+version = "0.0.1a7"
 description = "Cross-referenced type annotations for Sphinx autodoc"
 readme = "README.md"
 requires-python = ">=3.10"
