@@ -291,6 +291,19 @@ code.docutils .sab-badge.sab-inline-icon:last-child {
   text-decoration: underline;
 }
 
+/* ── Anchor badges (metadata link badges: GitHub, PyPI, …) ──
+ * <a class="sab-badge …"> inherits all base badge metrics via the
+ * class selector; only suppress underline and add hover feedback.
+ */
+a.sab-badge {
+  text-decoration: none;
+}
+
+a.sab-badge:hover {
+  opacity: 0.85;
+  text-decoration: none;
+}
+
 /* ── TOC sidebar: compact badges ─────────────────────────
  * Smaller badges that still show text (matching production).
  * Container wrappers collapse to inline flow.

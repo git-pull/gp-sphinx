@@ -2,7 +2,8 @@
 
 # sphinx-autodoc-layout
 
-{bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-layout>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-autodoc-layout/>`
+```{sab-package-meta} sphinx-autodoc-layout
+```
 
 :::{admonition} Alpha
 :class: warning

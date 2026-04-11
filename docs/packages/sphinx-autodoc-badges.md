@@ -2,7 +2,8 @@
 
 # sphinx-autodoc-badges
 
-{bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-badges>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-autodoc-badges/>`
+```{sab-package-meta} sphinx-autodoc-badges
+```
 
 :::{admonition} Alpha
 :class: warning

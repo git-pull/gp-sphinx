@@ -1,6 +1,7 @@
 # sphinx-autodoc-docutils
 
-{bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-docutils>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-autodoc-docutils/>`
+```{sab-package-meta} sphinx-autodoc-docutils
+```
 
 :::{admonition} Alpha
 :class: warning

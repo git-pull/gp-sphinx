@@ -2,7 +2,8 @@
 
 # sphinx-typehints-gp
 
-{bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-typehints-gp>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-typehints-gp/>`
+```{sab-package-meta} sphinx-typehints-gp
+```
 
 :::{admonition} Alpha
 :class: warning

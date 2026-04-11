@@ -2,7 +2,8 @@
 
 # sphinx-autodoc-fastmcp
 
-{bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-fastmcp>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-autodoc-fastmcp/>`
+```{sab-package-meta} sphinx-autodoc-fastmcp
+```
 
 :::{admonition} Alpha
 :class: warning
