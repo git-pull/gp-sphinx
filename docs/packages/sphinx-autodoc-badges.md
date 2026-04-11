@@ -165,6 +165,11 @@ Every variant rendered by the real `build_badge` / `build_badge_group` /
 ## API reference
 
 ```{eval-rst}
+.. autoclass:: sphinx_autodoc_badges.BadgeSpec
+   :members:
+
+.. autofunction:: sphinx_autodoc_badges.build_badge_from_spec
+
 .. autofunction:: sphinx_autodoc_badges.build_badge
 
 .. autofunction:: sphinx_autodoc_badges.build_badge_group
@@ -197,7 +202,7 @@ Every variant rendered by the real `build_badge` / `build_badge_group` /
         - Structural variant: ``"full"``, ``"icon-only"``, ``"inline-icon"``.
       * - ``badge_size``
         - ``""``
-        - Optional size: ``"xs"``, ``"sm"``, ``"lg"``, or ``"xl"``. Empty means default.
+        - Optional size: ``"xxs"``, ``"xs"``, ``"sm"``, ``"md"``, ``"lg"``, or ``"xl"``. Empty means default.
       * - ``tabindex``
         - ``"0"``
         - ``"0"`` for keyboard-focusable, ``""`` to skip.
@@ -304,12 +309,18 @@ All classes use the `sab-` prefix (**s**phinx **a**utodoc **b**adges).
 * - `sab-toolbar`
   - `build_toolbar()`
   - Flex push-right (`margin-left: auto`) for title rows.
+* - `sab-xxs`
+  - `build_badge(size="xxs")` / `BadgeNode(..., badge_size="xxs")`
+  - Minimum size (status dots, very tight layouts).
 * - `sab-xs`
   - `build_badge(size="xs")` / `BadgeNode(..., badge_size="xs")`
   - Extra small (dense tables, tight UI).
 * - `sab-sm`
   - `build_badge(size="sm")`
   - Small inline badges.
+* - `sab-md`
+  - `build_badge(size="md")`
+  - Medium — larger than the default but smaller than `lg`.
 * - `sab-lg`
   - `build_badge(size="lg")`
   - Large (section titles, callouts).
