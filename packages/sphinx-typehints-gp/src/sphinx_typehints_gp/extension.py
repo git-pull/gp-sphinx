@@ -22,6 +22,7 @@ from __future__ import annotations
 import ast
 import builtins
 import inspect
+import logging
 import sys
 import typing as t
 
@@ -36,6 +37,8 @@ if t.TYPE_CHECKING:
     from sphinx.ext.autodoc._legacy_class_based._directive_options import (  # type: ignore[import-not-found]
         Options,
     )
+
+logger = logging.getLogger(__name__)
 
 _MODULE_IMPORTS: dict[str, dict[str, str]] = {}
 
@@ -379,8 +382,8 @@ def record_typehints(
                 resolved = stringify_annotation(annotation, "smart")
             doc_annotations[arg_name] = resolved
 
-    except Exception:
-        pass
+    except (TypeError, ValueError, AttributeError):
+        logger.debug("failed to record typehints for %s", name, exc_info=True)
 
 
 def _modify_field_list(
