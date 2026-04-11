@@ -28,6 +28,8 @@ keywords = ["sphinx", "fastmcp", "mcp", "documentation", "badges"]
 dependencies = [
   "sphinx",
   "sphinx-autodoc-badges==0.0.1a7",
+  "sphinx-autodoc-layout==0.0.1a7",
+  "sphinx-typehints-gp==0.0.1a7",
 ]
 
 [project.urls]
