@@ -6,7 +6,7 @@ single self-contained extension.  Two independent pipelines run in sequence:
 1. **NumPy docstring parsing** — ``process_docstring`` hooks
    ``autodoc-process-docstring`` to convert NumPy section-based docstrings
    (Parameters, Returns, Raises, Yields, …) into RST field lists.  Implemented
-   in :mod:`sphinx_typehints_gp._numpy_docstring`.
+   in :mod:`sphinx_autodoc_typehints_gp._numpy_docstring`.
 
 2. **Type cross-referencing** — ``merge_typehints`` hooks
    ``object-description-transform`` at priority 499 (before Sphinx's built-in
@@ -295,7 +295,7 @@ def process_docstring(
 
     Hooks ``autodoc-process-docstring`` to replace ``sphinx.ext.napoleon``
     for NumPy-style docstrings.  Delegates to
-    :func:`sphinx_typehints_gp._numpy_docstring.process_numpy_docstring`.
+    :func:`sphinx_autodoc_typehints_gp._numpy_docstring.process_numpy_docstring`.
 
     Parameters
     ----------
@@ -317,7 +317,7 @@ def process_docstring(
     >>> process_docstring  # doctest: +ELLIPSIS
     <function process_docstring at 0x...>
     """
-    from sphinx_typehints_gp._numpy_docstring import process_numpy_docstring
+    from sphinx_autodoc_typehints_gp._numpy_docstring import process_numpy_docstring
 
     lines[:] = process_numpy_docstring(lines)
 

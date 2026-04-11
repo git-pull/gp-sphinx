@@ -1,8 +1,8 @@
-(sphinx-typehints-gp)=
+(sphinx-autodoc-typehints-gp)=
 
-# sphinx-typehints-gp
+# sphinx-autodoc-typehints-gp
 
-```{sab-package-meta} sphinx-typehints-gp
+```{sab-package-meta} sphinx-autodoc-typehints-gp
 ```
 
 :::{admonition} Alpha
@@ -23,17 +23,17 @@ paragraph helpers all live here.
 ## Installation
 
 ```console
-$ pip install sphinx-typehints-gp
+$ pip install sphinx-autodoc-typehints-gp
 ```
 
-## Usage
+## Working usage examples
 
-Add `sphinx_typehints_gp` to your `extensions` list in `conf.py`:
+Add `sphinx_autodoc_typehints_gp` to your `extensions` list in `conf.py`:
 
 ```python
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx_typehints_gp",
+    "sphinx_autodoc_typehints_gp",
 ]
 
 # Required: makes autodoc insert type annotations into parameter descriptions.
@@ -64,7 +64,7 @@ and skips its own plain-text duplicates — cooperation, not conflict.
 
 ## Shared layer
 
-`sphinx_typehints_gp` serves as the shared internal annotation normalization
+`sphinx_autodoc_typehints_gp` serves as the shared internal annotation normalization
 layer for the `sphinx-autodoc-*` family.  The symbols exported in `__all__`
 are intended for use by other `gp-sphinx` packages and by extension authors
 who want to reuse the same rendering pipeline.  The API is stable within a
@@ -126,5 +126,5 @@ rendered output.
    :noindex:
 ```
 
-```{package-reference} sphinx-typehints-gp
+```{package-reference} sphinx-autodoc-typehints-gp
 ```

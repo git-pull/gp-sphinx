@@ -9,7 +9,7 @@ from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
 from sphinx.util.nodes import make_refnode
 from sphinx_autodoc_layout import build_api_summary_section
-from sphinx_typehints_gp import build_resolved_annotation_paragraph
+from sphinx_autodoc_typehints_gp import build_resolved_annotation_paragraph
 
 from sphinx_autodoc_pytest_fixtures._badges import _build_badge_group_node
 from sphinx_autodoc_pytest_fixtures._constants import (

@@ -21,7 +21,7 @@ from docutils import nodes
 from sphinx import addnodes
 from sphinx.util.typing import stringify_annotation as sphinx_stringify_annotation
 
-from sphinx_typehints_gp.extension import (
+from sphinx_autodoc_typehints_gp.extension import (
     _annotation_to_nodes,
     get_module_imports,
     resolve_annotation_string,

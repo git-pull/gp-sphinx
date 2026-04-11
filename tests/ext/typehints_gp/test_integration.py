@@ -1,4 +1,4 @@
-"""Integration tests for sphinx_typehints_gp HTML output."""
+"""Integration tests for sphinx_autodoc_typehints_gp HTML output."""
 
 from __future__ import annotations
 
@@ -74,7 +74,7 @@ _CONF_PY = textwrap.dedent(
 
     extensions = [
         "sphinx.ext.autodoc",
-        "sphinx_typehints_gp",
+        "sphinx_autodoc_typehints_gp",
     ]
 
     autodoc_typehints = "description"
@@ -98,7 +98,7 @@ _INDEX_RST = textwrap.dedent(
 def typehints_gp_html_result(
     tmp_path_factory: pytest.TempPathFactory,
 ) -> SharedSphinxResult:
-    """Build a minimal Sphinx project using sphinx_typehints_gp."""
+    """Build a minimal Sphinx project using sphinx_autodoc_typehints_gp."""
     cache_root = tmp_path_factory.mktemp("typehints-gp-html")
     scenario = SphinxScenario(
         files=(
@@ -122,7 +122,7 @@ def typehints_gp_html_result(
 def test_typehints_gp_emits_type_fields(
     typehints_gp_html_result: SharedSphinxResult,
 ) -> None:
-    """sphinx_typehints_gp inserts :type: and :rtype: fields in the HTML."""
+    """sphinx_autodoc_typehints_gp inserts :type: and :rtype: fields in the HTML."""
     html = read_output(typehints_gp_html_result, "index.html")
 
     # Field labels should appear in the rendered output
@@ -168,7 +168,7 @@ def test_typehints_gp_setup_registers_handlers(
         html_static_path=[],
     )
 
-    from sphinx_typehints_gp.extension import setup
+    from sphinx_autodoc_typehints_gp.extension import setup
 
     result = setup(app)
 

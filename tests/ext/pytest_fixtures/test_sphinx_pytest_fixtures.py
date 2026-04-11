@@ -539,7 +539,7 @@ def test_setup_return_value() -> None:
         "sphinx.ext.autodoc",
         "sphinx_autodoc_badges",
         "sphinx_autodoc_layout",
-        "sphinx_typehints_gp",
+        "sphinx_autodoc_typehints_gp",
     ]
 
 

@@ -80,7 +80,7 @@ DEFAULT_EXTENSIONS: list[str] = [
     "sphinx.ext.autodoc",
     "sphinx_fonts",
     "sphinx.ext.intersphinx",
-    "sphinx_typehints_gp",
+    "sphinx_autodoc_typehints_gp",
     "sphinx.ext.todo",
     "sphinx_inline_tabs",
     "sphinx_copybutton",

@@ -7,7 +7,7 @@ import re
 import typing as t
 
 from docutils import nodes
-from sphinx_typehints_gp import classify_annotation_display
+from sphinx_autodoc_typehints_gp import classify_annotation_display
 
 from sphinx_autodoc_fastmcp._models import ParamInfo
 

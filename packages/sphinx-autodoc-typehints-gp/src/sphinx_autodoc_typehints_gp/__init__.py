@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from sphinx_typehints_gp.extension import setup
-from sphinx_typehints_gp.rendering import (
+from sphinx_autodoc_typehints_gp.extension import setup
+from sphinx_autodoc_typehints_gp.rendering import (
     AnnotationDisplay,
     build_annotation_display_paragraph,
     build_annotation_paragraph,

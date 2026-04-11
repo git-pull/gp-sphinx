@@ -29,8 +29,8 @@ Structural presenter for `api-*` entry components.
 Parameter folding, managed signatures, card regions.
 :::
 
-:::{grid-item-card} sphinx-typehints-gp
-:link: packages/sphinx-typehints-gp
+:::{grid-item-card} sphinx-autodoc-typehints-gp
+:link: packages/sphinx-autodoc-typehints-gp
 :link-type: doc
 
 Annotation normalization and type rendering.
