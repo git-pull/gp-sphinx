@@ -1,6 +1,7 @@
 # sphinx-typehints-gp
 
-Unconventional typehints extension for gp-sphinx.
+Single-package replacement for `sphinx-autodoc-typehints` and `sphinx.ext.napoleon`
+— resolves annotations statically at build time, no monkey-patching required.
 
 It is also the shared type-rendering layer for the `sphinx-autodoc-*` family:
 annotation normalization, xref-node generation, and late-safe annotation
@@ -18,9 +19,27 @@ Add `sphinx_typehints_gp` to your `extensions` list in `conf.py`:
 
 ```python
 extensions = [
+    "sphinx.ext.autodoc",
     "sphinx_typehints_gp",
 ]
+
+# Required: makes autodoc insert type annotations into parameter descriptions.
+# Without this, the type cross-referencing pipeline fires but has nothing to attach to.
+autodoc_typehints = "description"
 ```
+
+## Pipeline position
+
+Two hooks run independently:
+
+| Event | Hook | Priority |
+|-------|------|----------|
+| `autodoc-process-docstring` | NumPy section parser | default (not priority-controlled) |
+| `object-description-transform` | `merge_typehints` | **499** — before Sphinx's built-in `_merge_typehints` at 500 |
+
+Running at priority 499 means cross-referenced `:type:`/`:rtype:` fields are
+already in place before Sphinx's built-in handler runs. The built-in sees them
+and skips its own plain-text duplicates — cooperation, not conflict.
 
 ## Features
 
