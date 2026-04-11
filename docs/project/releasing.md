@@ -27,11 +27,11 @@ building, and publishing. There is no setup.py or requirements files.
 5. Commit and tag with the repo-wide release format:
 
    ```console
-   $ git commit -m 'build(release): Tag v0.0.1a6'
+   $ git commit -m 'build(release): Tag v0.0.1a7'
    ```
 
    ```console
-   $ git tag v0.0.1a6
+   $ git tag v0.0.1a7
    ```
 
 6. Push:
