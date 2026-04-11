@@ -34,12 +34,13 @@ class BadgeSpec:
         Optional icon rendered via ``::before``.
     classes : tuple[str, ...]
         Additional CSS classes for package-specific color and role styling.
-    style : str
-        Structural variant: ``"full"``, ``"icon-only"``, or ``"inline-icon"``.
-    fill : str
-        Visual fill variant: ``"filled"`` or ``"outline"``.
+    style : {"full", "icon-only", "inline-icon"}
+        Structural variant.
+    fill : {"filled", "outline"}
+        Visual fill variant.
     size : str
-        Optional size token such as ``"sm"`` or ``"lg"``.
+        Optional size token: ``"xxs"``, ``"xs"``, ``"sm"``, ``"md"``,
+        ``"lg"``, or ``"xl"``.
     tabindex : str
         Focus behavior token forwarded to :class:`BadgeNode`.
 
@@ -54,8 +55,8 @@ class BadgeSpec:
     tooltip: str = ""
     icon: str = ""
     classes: tuple[str, ...] = field(default_factory=tuple)
-    style: str = "full"
-    fill: str = "filled"
+    style: t.Literal["full", "icon-only", "inline-icon"] = "full"
+    fill: t.Literal["filled", "outline"] = "filled"
     size: str = ""
     tabindex: str = "0"
 
@@ -66,8 +67,8 @@ def build_badge(
     tooltip: str = "",
     icon: str = "",
     classes: t.Sequence[str] = (),
-    style: str = "full",
-    fill: str = "filled",
+    style: t.Literal["full", "icon-only", "inline-icon"] = "full",
+    fill: t.Literal["filled", "outline"] = "filled",
     size: str = "",
     tabindex: str = "0",
 ) -> BadgeNode:
@@ -83,13 +84,14 @@ def build_badge(
         Emoji character for CSS ``::before``.
     classes : Sequence[str]
         Additional CSS classes (plugin prefix + color class).
-    style : str
-        Structural variant: ``"full"``, ``"icon-only"``, ``"inline-icon"``.
-    fill : str
-        Visual fill: ``"filled"`` (default) or ``"outline"``.
+    style : {"full", "icon-only", "inline-icon"}
+        Structural variant.
+    fill : {"filled", "outline"}
+        Visual fill variant.
     size : str
-        Optional size tier: ``"xs"``, ``"sm"``, ``"lg"``, or ``"xl"``.
-        Empty string uses the default (no extra class).
+        Optional size tier: ``"xxs"``, ``"xs"``, ``"sm"``, ``"md"``,
+        ``"lg"``, or ``"xl"``.  Empty string uses the default (no extra
+        class).
     tabindex : str
         ``"0"`` for focusable, ``""`` to skip.
 
@@ -99,7 +101,7 @@ def build_badge(
 
     Examples
     --------
-    >>> b = build_badge("async", tooltip="Asynchronous", classes=["gas-mod-async"])
+    >>> b = build_badge("async", tooltip="Asynchronous", classes=["sab-mod-async"])
     >>> b.astext()
     'async'
 
