@@ -13,6 +13,12 @@ Shared Sphinx documentation platform for [git-pull](https://github.com/git-pull)
 Visual showcase of the autodoc design system in action.
 :::
 
+:::{grid-item-card} Architecture
+:link: architecture
+:link-type: doc
+Three-tier package organization — infrastructure, domain, and presentation.
+:::
+
 :::{grid-item-card} Quickstart
 :link: quickstart
 :link-type: doc
@@ -63,6 +69,7 @@ globals().update(conf)
 :hidden:
 
 gallery
+architecture
 quickstart
 configuration
 packages/index
