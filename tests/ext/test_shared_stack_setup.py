@@ -19,7 +19,7 @@ import sphinx_autodoc_sphinx
 class _SetupCase(t.NamedTuple):
     """Typed setup-case metadata for shared-stack consumers."""
 
-    name: str
+    test_id: str
     setup: t.Callable[[Sphinx], cabc.Mapping[str, t.Any]]
     expected_extensions: tuple[str, ...]
 
@@ -74,7 +74,7 @@ _SETUP_CASES = (
 )
 
 
-@pytest.mark.parametrize("case", _SETUP_CASES, ids=[case.name for case in _SETUP_CASES])
+@pytest.mark.parametrize("case", _SETUP_CASES, ids=[case.test_id for case in _SETUP_CASES])
 def test_shared_stack_setup_autoloads_expected_extensions(case: _SetupCase) -> None:
     """Each shipped autodoc extension loads the shared stack explicitly."""
     setup_calls: list[str] = []
