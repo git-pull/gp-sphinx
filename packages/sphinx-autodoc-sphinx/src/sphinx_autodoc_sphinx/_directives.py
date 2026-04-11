@@ -530,7 +530,7 @@ class AutoconfigvalueIndexDirective(SphinxDirective):
         ]
 
 
-class AutosphinxconfigIndexDirective(SphinxDirective):
+class AutoconfigvalueIndexDirective(SphinxDirective):
     """Render a drop-in index plus detailed ``confval`` blocks.
 
     This keeps the legacy directive useful on package pages without forcing

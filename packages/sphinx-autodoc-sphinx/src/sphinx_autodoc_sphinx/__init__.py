@@ -10,7 +10,7 @@ from sphinx_autodoc_sphinx._directives import (
     AutoconfigvalueDirective,
     AutoconfigvalueIndexDirective,
     AutoconfigvaluesDirective,
-    AutosphinxconfigIndexDirective,
+    AutoconfigvalueIndexDirective,
 )
 
 if t.TYPE_CHECKING:
@@ -53,7 +53,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.add_directive("autoconfigvalue", AutoconfigvalueDirective)
     app.add_directive("autoconfigvalues", AutoconfigvaluesDirective)
     app.add_directive("autoconfigvalue-index", AutoconfigvalueIndexDirective)
-    app.add_directive("autosphinxconfig-index", AutosphinxconfigIndexDirective)
+    app.add_directive("autoconfigvalue-index", AutoconfigvalueIndexDirective)
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
 
