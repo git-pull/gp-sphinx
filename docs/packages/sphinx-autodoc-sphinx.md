@@ -2,6 +2,14 @@
 
 {bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-sphinx>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-autodoc-sphinx/>`
 
+:::{admonition} Alpha
+:class: warning
+
+Rendered output is stable. The Python API, CSS class names, and Sphinx
+config value names may change without a major version bump. Pin your
+dependency to a specific version range in production.
+:::
+
 Experimental Sphinx extension for documenting config values registered by
 extension `setup()` hooks. It takes the repetitive part of `conf.py`
 reference-writing, records {py:meth}`sphinx:~sphinx.application.Sphinx.add_config_value` calls, and renders them as
@@ -22,8 +30,9 @@ $ pip install sphinx-autodoc-sphinx
 extensions = ["sphinx_autodoc_sphinx"]
 ```
 
-`sphinx_autodoc_sphinx` auto-loads the shared badge, layout, and typehint
-extensions.
+`sphinx_autodoc_sphinx` automatically registers `sphinx_autodoc_badges`,
+`sphinx_autodoc_layout`, and `sphinx_typehints_gp` via `app.setup_extension()`.
+You do not need to add them separately to your `extensions` list.
 
 ## Working usage examples
 

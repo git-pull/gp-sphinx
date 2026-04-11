@@ -2,6 +2,14 @@
 
 {bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-pytest-fixtures>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-autodoc-pytest-fixtures/>`
 
+:::{admonition} Alpha
+:class: warning
+
+Rendered output is stable. The Python API, CSS class names, and Sphinx
+config value names may change without a major version bump. Pin your
+dependency to a specific version range in production.
+:::
+
 Sphinx extension for documenting pytest fixtures as first-class objects. It
 registers a Python-domain fixture directive and role, autodoc helpers for bulk
 fixture discovery, a higher-level pytest plugin page helper, and the
@@ -27,8 +35,9 @@ pytest_external_fixture_links = {
 }
 ```
 
-`sphinx_autodoc_pytest_fixtures` auto-loads the shared badge, layout, and
-typehint extensions.
+`sphinx_autodoc_pytest_fixtures` automatically registers `sphinx_autodoc_badges`,
+`sphinx_autodoc_layout`, and `sphinx_typehints_gp` via `app.setup_extension()`.
+You do not need to add them separately to your `extensions` list.
 
 ## Registered configuration values
 
