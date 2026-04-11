@@ -4,6 +4,14 @@
 
 {bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-api-style>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-autodoc-api-style/>`
 
+:::{admonition} Alpha
+:class: warning
+
+Rendered output is stable. The Python API, CSS class names, and Sphinx
+config value names may change without a major version bump. Pin your
+dependency to a specific version range in production.
+:::
+
 Sphinx extension that adds type and modifier badges to standard Python domain
 entries (functions, classes, methods, properties, attributes, data,
 exceptions). Mirrors the badge system from
@@ -45,6 +53,10 @@ Or without `merge_sphinx_config`:
 ```python
 extensions = ["sphinx_autodoc_api_style"]
 ```
+
+`sphinx_autodoc_api_style` automatically registers `sphinx_autodoc_badges`,
+`sphinx_autodoc_layout`, and `sphinx_typehints_gp` via `app.setup_extension()`.
+You do not need to add them separately to your `extensions` list.
 
 ## Working usage examples
 
