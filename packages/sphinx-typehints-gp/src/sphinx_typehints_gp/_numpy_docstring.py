@@ -44,6 +44,7 @@ _XREF_OR_CODE_RE = re.compile(
     r"(?:`.+?\s*(?<!\x00)<.*?>`))"
 )
 _SINGLE_COLON_RE = re.compile(r"(?<!:):(?!:)")
+_SA_NAME_RE = re.compile(r"\s*(?::(\S+):`([^`]+)`|([^\s,]+))\s*")
 _BULLET_LIST_RE = re.compile(r"^(\*|\+|\-)(\s+\S|\s*$)")
 _ENUM_LIST_RE = re.compile(
     r"^(?P<paren>\()?"
@@ -391,6 +392,40 @@ def _format_field(name: str, type_: str, desc: list[str]) -> list[str]:
     return [header]
 
 
+def _parse_sa_item(text: str) -> tuple[str, str | None]:
+    """Extract a name and optional Sphinx role from a See Also entry.
+
+    Matches ``:role:`name``` (returning the role) or a plain ``name``
+    (returning ``None`` for the role).
+
+    Parameters
+    ----------
+    text : str
+        The text to parse, e.g. ``":func:`my_func`"`` or ``"my_func"``.
+
+    Returns
+    -------
+    tuple[str, str | None]
+        ``(name, role)`` where *role* is ``None`` for plain names.
+
+    Examples
+    --------
+    >>> _parse_sa_item("my_func")
+    ('my_func', None)
+    >>> _parse_sa_item(":func:`my_func`")
+    ('my_func', 'func')
+    >>> _parse_sa_item(":py:meth:`Widget.run`")
+    ('Widget.run', 'py:meth')
+    """
+    m = _SA_NAME_RE.match(text.strip())
+    if not m:
+        return text.strip(), None
+    role, role_name, plain_name = m.group(1), m.group(2), m.group(3)
+    if role is not None:
+        return role_name, role
+    return plain_name, None
+
+
 class _NumpyParser:
     """Line-based NumPy docstring parser.
 
@@ -702,23 +737,27 @@ class _NumpyParser:
 
     def _fmt_see_also(self) -> list[str]:
         lines = self._consume_to_next_section()
-        items: list[tuple[str, list[str]]] = []
+        items: list[tuple[str, list[str], str | None]] = []
         current_name: str | None = None
         current_desc: list[str] = []
+
+        def _push_item(name: str | None, desc: list[str]) -> None:
+            if not name:
+                return
+            parsed_name, role = _parse_sa_item(name)
+            items.append((parsed_name, desc.copy(), role))
 
         for line in lines:
             if not line.strip():
                 continue
             if not line.startswith(" "):
-                if current_name is not None:
-                    items.append((current_name, current_desc))
-                    current_desc = []
+                _push_item(current_name, current_desc)
+                current_desc = []
+                current_name = None
                 if "," in line:
                     for part in line.split(","):
-                        part = part.strip()
-                        if part:
-                            items.append((part, []))
-                    current_name = None
+                        if part.strip():
+                            _push_item(part, [])
                 elif " : " in line:
                     _sa_name, _, _sa_desc = line.partition(" : ")
                     current_name = _sa_name.strip()
@@ -728,16 +767,18 @@ class _NumpyParser:
             elif current_name is not None:
                 current_desc.append(line.strip())
 
-        if current_name is not None:
-            items.append((current_name, current_desc))
+        _push_item(current_name, current_desc)
 
         if not items:
             return []
 
         body: list[str] = []
         last_had_desc = True
-        for item_name, item_desc in items:
-            link = f":py:obj:`{item_name}`"
+        for item_name, item_desc, item_role in items:
+            if item_role:
+                link = f":{item_role}:`{item_name}`"
+            else:
+                link = f":py:obj:`{item_name}`"
             if item_desc or last_had_desc:
                 body.append("")
                 body.append(link)

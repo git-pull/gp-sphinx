@@ -926,6 +926,63 @@ _SPECIAL_SECTION_FIXTURES: list[SpecialSectionFixture] = [
         expected_in_output=[".. seealso::", ":py:obj:`other_func`"],
     ),
     SpecialSectionFixture(
+        test_id="see_also_comma_separated",
+        input_lines=[
+            "Summary.",
+            "",
+            "See Also",
+            "--------",
+            "func1, func2",
+        ],
+        expected_in_output=[
+            ".. seealso::",
+            ":py:obj:`func1`",
+            ":py:obj:`func2`",
+        ],
+    ),
+    SpecialSectionFixture(
+        test_id="see_also_role_ref",
+        input_lines=[
+            "Summary.",
+            "",
+            "See Also",
+            "--------",
+            ":func:`pkg.func` : Does things.",
+        ],
+        expected_in_output=[".. seealso::", ":func:`pkg.func`"],
+    ),
+    SpecialSectionFixture(
+        test_id="see_also_comma_roles",
+        input_lines=[
+            "Summary.",
+            "",
+            "See Also",
+            "--------",
+            ":func:`func1`, :func:`func2`",
+        ],
+        expected_in_output=[
+            ".. seealso::",
+            ":func:`func1`",
+            ":func:`func2`",
+        ],
+    ),
+    SpecialSectionFixture(
+        test_id="see_also_mixed_role_and_plain",
+        input_lines=[
+            "Summary.",
+            "",
+            "See Also",
+            "--------",
+            ":meth:`Widget.run` : Runs the widget.",
+            "plain_func",
+        ],
+        expected_in_output=[
+            ".. seealso::",
+            ":meth:`Widget.run`",
+            ":py:obj:`plain_func`",
+        ],
+    ),
+    SpecialSectionFixture(
         test_id="attributes_section",
         input_lines=[
             "Summary.",
