@@ -76,7 +76,7 @@ The returned config includes a `setup(app)` function from
 
 | Action | Effect |
 | --- | --- |
-| `app.add_js_file("js/spa-nav.js", loading_method="defer")` | Registers the bundled SPA navigation script from `sphinx-gptheme` |
+| `app.add_js_file("js/spa-nav.js", loading_method="defer")` | Registers the bundled SPA navigation script from `sphinx-gp-theme` |
 | `app.connect("build-finished", remove_tabs_js)` | Removes `_static/tabs.js` after HTML builds as a `sphinx-inline-tabs` workaround |
 
 ## Always-set coordinator values
@@ -111,7 +111,7 @@ These are injected even though they are not exposed as `DEFAULT_*` constants:
 
 | Constant | Value |
 | --- | --- |
-| `DEFAULT_THEME` | `"sphinx-gptheme"` |
+| `DEFAULT_THEME` | `"sphinx-gp-theme"` |
 | `DEFAULT_THEME_OPTIONS` | footer GitHub icon, `source_repository=""`, `source_branch="main"`, `source_directory="docs/"` |
 
 ### Font defaults

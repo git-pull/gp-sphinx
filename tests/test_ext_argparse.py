@@ -43,7 +43,7 @@ def test_highlight_css_exists() -> None:
 
 def test_theme_argparse_css_exists() -> None:
     """Argparse highlight CSS is also in theme static."""
-    from sphinx_gptheme import get_theme_path
+    from sphinx_gp_theme import get_theme_path
 
     css = get_theme_path() / "static" / "css" / "argparse-highlight.css"
     assert css.is_file()

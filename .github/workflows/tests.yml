@@ -124,7 +124,7 @@ jobs:
         target:
           - root-install
           - gp-sphinx
-          - sphinx-gptheme
+          - sphinx-gp-theme
           - sphinx-fonts
           - sphinx-argparse-neo
           - sphinx-autodoc-docutils

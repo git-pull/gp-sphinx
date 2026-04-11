@@ -17,7 +17,7 @@ Examples
 'my-project'
 
 >>> conf["html_theme"]
-'sphinx-gptheme'
+'sphinx-gp-theme'
 
 >>> "myst_parser" in conf["extensions"]
 True
@@ -224,7 +224,7 @@ def merge_sphinx_config(
     Returns a flat dictionary suitable for injection into a ``docs/conf.py``
     module namespace via ``globals().update(conf)``.
 
-    The default theme is ``sphinx-gptheme`` (a Furo child theme bundled in this
+    The default theme is ``sphinx-gp-theme`` (a Furo child theme bundled in this
     package). Sidebars, templates, CSS, and JS are provided by the theme
     automatically.
 
@@ -286,7 +286,7 @@ def merge_sphinx_config(
     '1.0'
 
     >>> conf["html_theme"]
-    'sphinx-gptheme'
+    'sphinx-gp-theme'
 
     >>> len(conf["extensions"]) >= 12
     True

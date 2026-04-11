@@ -1,10 +1,10 @@
-"""Tests for sphinx_gptheme package."""
+"""Tests for sphinx_gp_theme package."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from sphinx_gptheme import get_theme_path, setup
+from sphinx_gp_theme import get_theme_path, setup
 
 if TYPE_CHECKING:
     import pathlib
@@ -63,7 +63,7 @@ def test_theme_setup_registers_theme() -> None:
 
     app = FakeApp()
     metadata = setup(app)  # type: ignore[arg-type]
-    assert app.calls == [("sphinx-gptheme", get_theme_path())]
+    assert app.calls == [("sphinx-gp-theme", get_theme_path())]
     assert metadata["parallel_read_safe"] is True
     assert metadata["parallel_write_safe"] is True
 

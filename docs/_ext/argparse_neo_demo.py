@@ -35,7 +35,7 @@ def build_parser() -> argparse.ArgumentParser:
             """
             examples:
                 gp-demo sync packages/sphinx-fonts
-                gp-demo sync packages/sphinx-gptheme
+                gp-demo sync packages/sphinx-gp-theme
 
             Machine-readable output examples:
                 gp-demo sync --format json packages/sphinx-fonts

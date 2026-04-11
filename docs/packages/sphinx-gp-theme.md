@@ -1,6 +1,6 @@
-# sphinx-gptheme
+# sphinx-gp-theme
 
-```{sab-package-meta} sphinx-gptheme
+```{sab-package-meta} sphinx-gp-theme
 ```
 
 Furo child theme for git-pull documentation sites. It keeps Furo’s responsive
@@ -8,14 +8,14 @@ layout and dark mode, then layers in shared sidebars, typography, source-link
 controls, metadata toggles, and SPA-style navigation.
 
 ```console
-$ pip install sphinx-gptheme
+$ pip install sphinx-gp-theme
 ```
 
 ## Downstream `conf.py`
 
 ```python
-extensions = ["sphinx_gptheme"]
-html_theme = "sphinx-gptheme"
+extensions = ["sphinx_gp_theme"]
+html_theme = "sphinx-gp-theme"
 
 html_theme_options = {
     "project_name": "my-project",
@@ -30,7 +30,7 @@ html_theme_options = {
 
 ## Live theme notes
 
-- This site is rendered with `sphinx-gptheme`.
+- This site is rendered with `sphinx-gp-theme`.
 - The package badges, cards, sidebar project list, and deferred page transitions on this page are live theme output.
 - Dark mode is inherited from Furo; the theme options below control the extra git-pull behavior layered on top.
 
@@ -79,7 +79,7 @@ Options declared in `theme.conf` and accepted through `html_theme_options`:
 pre-populates `source_repository`, `source_branch`, `source_directory`, footer
 icons, and the IBM Plex font stacks consumed by the theme templates.
 
-```{package-reference} sphinx-gptheme
+```{package-reference} sphinx-gp-theme
 ```
 
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gptheme) · [PyPI](https://pypi.org/project/sphinx-gptheme/)
+[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-theme) · [PyPI](https://pypi.org/project/sphinx-gp-theme/)

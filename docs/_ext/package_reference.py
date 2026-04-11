@@ -38,7 +38,7 @@ Examples
 >>> package["name"] in {
 ...     "gp-sphinx",
 ...     "sphinx-fonts",
-...     "sphinx-gptheme",
+...     "sphinx-gp-theme",
 ...     "sphinx-argparse-neo",
 ...     "sphinx-autodoc-docutils",
 ...     "sphinx-autodoc-fastmcp",
@@ -521,10 +521,10 @@ def theme_options(package_dir: pathlib.Path) -> list[str]:
 
     Examples
     --------
-    >>> "light_logo" in theme_options(workspace_root() / "packages" / "sphinx-gptheme")
+    >>> "light_logo" in theme_options(workspace_root() / "packages" / "sphinx-gp-theme")
     True
     """
-    theme_conf = package_dir / "src" / "sphinx_gptheme" / "theme" / "theme.conf"
+    theme_conf = package_dir / "src" / "sphinx_gp_theme" / "theme" / "theme.conf"
     if not theme_conf.exists():
         return []
     parser = configparser.ConfigParser()
@@ -693,7 +693,7 @@ def package_reference_markdown(package_name: str) -> str:
                 lines.append(f"| `{row['name']}` | {row['path']} |")
             lines.append("")
 
-    if module_name == "sphinx_gptheme":
+    if module_name == "sphinx_gp_theme":
         options = theme_options(package_dir)
         lines.extend(
             [

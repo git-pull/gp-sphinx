@@ -19,7 +19,7 @@ members = [
     "sphinx-autodoc-pytest-fixtures",
     "sphinx-autodoc-sphinx",
     "sphinx-fonts",
-    "sphinx-gptheme",
+    "sphinx-gp-theme",
     "sphinx-typehints-gp",
 ]
 
@@ -414,7 +414,7 @@ dependencies = [
     { name = "sphinx-design", version = "0.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx-design", version = "0.7.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "sphinx-fonts" },
-    { name = "sphinx-gptheme" },
+    { name = "sphinx-gp-theme" },
     { name = "sphinx-inline-tabs" },
     { name = "sphinx-typehints-gp" },
     { name = "sphinxext-opengraph" },
@@ -437,7 +437,7 @@ requires-dist = [
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
     { name = "sphinx-fonts", editable = "packages/sphinx-fonts" },
-    { name = "sphinx-gptheme", editable = "packages/sphinx-gptheme" },
+    { name = "sphinx-gp-theme", editable = "packages/sphinx-gp-theme" },
     { name = "sphinx-inline-tabs" },
     { name = "sphinx-typehints-gp", editable = "packages/sphinx-typehints-gp" },
     { name = "sphinxext-opengraph" },
@@ -1464,9 +1464,9 @@ dependencies = [
 requires-dist = [{ name = "sphinx" }]
 
 [[package]]
-name = "sphinx-gptheme"
+name = "sphinx-gp-theme"
 version = "0.0.1a7"
-source = { editable = "packages/sphinx-gptheme" }
+source = { editable = "packages/sphinx-gp-theme" }
 dependencies = [
     { name = "furo" },
 ]

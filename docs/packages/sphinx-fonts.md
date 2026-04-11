@@ -77,7 +77,7 @@ The extension injects these values during `html-page-context`:
 
 - Fonts are cached under `~/.cache/sphinx-fonts`.
 - Non-HTML builders return early and do not download assets.
-- `sphinx-gptheme` consumes this template context automatically; `gp-sphinx` preconfigures IBM Plex defaults for it.
+- `sphinx-gp-theme` consumes this template context automatically; `gp-sphinx` preconfigures IBM Plex defaults for it.
 
 ```{package-reference} sphinx-fonts
 ```

@@ -1,10 +1,10 @@
 /* sphinx_autodoc_fastmcp — color layer for FastMCP tool badges.
  *
  * Base metrics and sizing come from sphinx_autodoc_badges.css (sab-dense class).
- * This file matches sphinx-gptheme custom.css rules for .sd-badge[aria-label^="Safety tier:"]
+ * This file matches sphinx-gp-theme custom.css rules for .sd-badge[aria-label^="Safety tier:"]
  * (colors and theme --badge-safety-* variables).
  *
- * Safety palette: same tokens as sphinx_gptheme/theme/static/css/custom.css
+ * Safety palette: same tokens as sphinx_gp_theme/theme/static/css/custom.css
  * so readonly / mutating / destructive match production regardless of load order.
  */
 
