@@ -547,6 +547,22 @@ def merge_typehints(
         _modify_field_list(field_list, annotations[fullname], obj_type, env)
 
 
+def _clear_caches(app: Sphinx) -> None:
+    """Clear module-level caches at the start of each Sphinx build.
+
+    Parameters
+    ----------
+    app : Sphinx
+        The Sphinx application instance.
+
+    Examples
+    --------
+    >>> callable(_clear_caches)
+    True
+    """
+    _MODULE_IMPORTS.clear()
+
+
 def setup(app: Sphinx) -> dict[str, t.Any]:
     """Set up the Sphinx extension.
 
@@ -565,6 +581,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     >>> setup  # doctest: +ELLIPSIS
     <function setup at 0x...>
     """
+    app.connect("builder-inited", _clear_caches)
     try:
         app.connect("autodoc-process-docstring", process_docstring)
         app.connect("autodoc-process-signature", record_typehints)
