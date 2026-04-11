@@ -130,7 +130,7 @@ def autofixtures_usage_result(
 
 @pytest.fixture(scope="module")
 def myst_smoke_result(spf_doctree_root: pathlib.Path) -> SharedSphinxResult:
-    """Build one shared MyST scenario for both doc-pytest-plugin smoke checks."""
+    """Build one shared MyST scenario for both auto-pytest-plugin smoke checks."""
     scenario_root = spf_doctree_root / "shared-myst-smokes"
     conf_text = render_conf_py(
         scenario_root / "src",
@@ -168,7 +168,7 @@ def myst_smoke_result(spf_doctree_root: pathlib.Path) -> SharedSphinxResult:
                     """\
                     # Test fixtures
 
-                    :::{doc-pytest-plugin} fixture_mod
+                    :::{auto-pytest-plugin} fixture_mod
                     :project: fixture-demo
                     :package: fixture-demo
                     :summary: fixture-demo ships a pytest plugin for local test setup.
@@ -568,13 +568,13 @@ def test_doc_pytest_plugin_rst_snapshot(
     spf_doctree_root: pathlib.Path,
     snapshot_doctree,
 ) -> None:
-    """Snapshot the generated RST doc-pytest-plugin page content."""
+    """Snapshot the generated RST auto-pytest-plugin page content."""
     index_rst = textwrap.dedent(
         """\
         Test fixtures
         =============
 
-        .. doc-pytest-plugin:: fixture_mod
+        .. auto-pytest-plugin:: fixture_mod
            :project: fixture-demo
            :package: fixture-demo
            :summary: fixture-demo ships a pytest plugin for local test setup.
@@ -586,7 +586,7 @@ def test_doc_pytest_plugin_rst_snapshot(
         """,
     )
     result = build_fixture_result(
-        spf_doctree_root / "doc-pytest-plugin-rst",
+        spf_doctree_root / "auto-pytest-plugin-rst",
         buildername="dummy",
         fixture_source=_AUTOFIXTURES_SMOKE_SOURCE,
         index_rst=index_rst,
@@ -604,7 +604,7 @@ def test_doc_pytest_plugin_rst_snapshot(
 def test_doc_pytest_plugin_myst_smoke(
     myst_smoke_result: SharedSphinxResult,
 ) -> None:
-    """MyST ``doc-pytest-plugin`` keeps authored Markdown and generated sections."""
+    """MyST ``auto-pytest-plugin`` keeps authored Markdown and generated sections."""
     doctree = get_doctree(myst_smoke_result, "plugin", post_transforms=True)
     doctree_text = doctree.pformat()
 

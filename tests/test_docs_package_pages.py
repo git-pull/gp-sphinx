@@ -25,7 +25,7 @@ LIVE_DEMO_MARKERS = (
     "```{eval-rst}",
     "```{sab-badge-demo}",
     "```{autofixture-index}",
-    ":::{doc-pytest-plugin}",
+    ":::{auto-pytest-plugin}",
     "{tool}`",
     "{toolref}`",
 )

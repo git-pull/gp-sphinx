@@ -66,7 +66,7 @@ Render one fixture index:
 Render a standard pytest plugin page:
 
 ````myst
-:::{doc-pytest-plugin} my_project.pytest_plugin
+:::{auto-pytest-plugin} my_project.pytest_plugin
 :package: my-project
 :::
 ````
@@ -90,14 +90,14 @@ Render a standard pytest plugin page:
 
 ### Plugin page helper
 
-:::{doc-pytest-plugin} spf_demo_fixtures
+:::{auto-pytest-plugin} spf_demo_fixtures
 :package: sphinx-autodoc-pytest-fixtures
 
 Add project-specific usage notes here. The helper renders the install
 section, autodiscovery note, and full fixture summary/reference.
 :::
 
-#### When to use `doc-pytest-plugin`
+#### When to use `auto-pytest-plugin`
 
 Use this directive for a standard pytest plugin page where you want consistent
 house-style: an install section, the `pytest11` autodiscovery note, and a

@@ -32,7 +32,7 @@ Then document fixtures with:
 
 .. autofixture-index:: myproject.conftest
 
-.. doc-pytest-plugin:: myproject.pytest_plugin
+.. auto-pytest-plugin:: myproject.pytest_plugin
    :project: myproject
    :package: myproject
    :summary: Document your pytest plugin with generated install and fixture
