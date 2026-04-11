@@ -366,7 +366,7 @@ contextual sizing when present (higher specificity than context rules).
 
 All colour variants are provided by the shared palette above.  Downstream
 extensions reference `SAB.*` constants instead of maintaining their own
-`gas-*` / `spf-*` / `sas-*` / `sadoc-*` colour classes.
+`sab-*` / `spf-*` / `sas-*` / `sadoc-*` colour classes.
 
 ```{list-table}
 :header-rows: 1

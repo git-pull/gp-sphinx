@@ -50,7 +50,7 @@
 .sab-badge.sab-xl  { font-size: 1.00rem; padding: 0.45rem 0.85rem; }
 
 /* ── Dense variant: compact metrics + always-visible 1px border ── */
-/* Recreates the pre-unification gas-badge / spf-badge look.
+/* Recreates the pre-unification sab-badge / spf-badge look.
  * Fixed 0.67 rem font, tight padding, squarer corners, always-visible
  * 1 px solid border, and the distinctive underline-dotted treatment.
  * Compose with colour classes (sab-type-*, sab-scope-*, …) just like

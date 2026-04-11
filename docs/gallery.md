@@ -13,44 +13,44 @@ is the real autodoc pipeline.
 Badges, type hints, and card layout working together on standard Python domain
 directives.
 
-```{py:module} gas_demo_api
+```{py:module} gp_demo_api
 ```
 
 ### Functions
 
 ```{eval-rst}
-.. autofunction:: gas_demo_api.demo_function
+.. autofunction:: gp_demo_api.demo_function
    :noindex:
 ```
 
 ```{eval-rst}
-.. autofunction:: gas_demo_api.demo_async_function
+.. autofunction:: gp_demo_api.demo_async_function
    :noindex:
 ```
 
 ```{eval-rst}
-.. autofunction:: gas_demo_api.demo_deprecated_function
+.. autofunction:: gp_demo_api.demo_deprecated_function
    :noindex:
 ```
 
 ### Module data
 
 ```{eval-rst}
-.. autodata:: gas_demo_api.DEMO_CONSTANT
+.. autodata:: gp_demo_api.DEMO_CONSTANT
    :noindex:
 ```
 
 ### Exceptions
 
 ```{eval-rst}
-.. autoexception:: gas_demo_api.DemoError
+.. autoexception:: gp_demo_api.DemoError
    :noindex:
 ```
 
 ### Classes
 
 ```{eval-rst}
-.. autoclass:: gas_demo_api.DemoClass
+.. autoclass:: gp_demo_api.DemoClass
    :members:
    :undoc-members:
    :noindex:
@@ -59,7 +59,7 @@ directives.
 ### Abstract base classes
 
 ```{eval-rst}
-.. autoclass:: gas_demo_api.DemoAbstractBase
+.. autoclass:: gp_demo_api.DemoAbstractBase
    :members:
    :noindex:
 ```

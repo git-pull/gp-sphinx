@@ -799,8 +799,8 @@
                   <api_permalink classes="headerlink api-link" href="#demo.Session.__init__" title="Link to this definition">
               <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
                   <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
-                      <inline classes="gas-badge-group">
-                          <inline classes="gas-badge">
+                      <inline classes="sab-badge-group">
+                          <inline classes="sab-badge">
                               method
                   <api_inline_component classes="api-source-link" name="api-source-link" tag="span">
                       <reference internal="False">
@@ -1076,8 +1076,8 @@
                   <api_permalink classes="headerlink api-link" href="#demo.Session.__init__" title="Link to this definition">
               <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
                   <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
-                      <inline classes="gas-badge-group">
-                          <inline classes="gas-badge">
+                      <inline classes="sab-badge-group">
+                          <inline classes="sab-badge">
                               method
                   <api_inline_component classes="api-source-link" name="api-source-link" tag="span">
                       <reference internal="False">

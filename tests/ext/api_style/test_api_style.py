@@ -325,11 +325,11 @@ def test_detect_deprecated_ignores_versionadded() -> None:
 
 
 def test_inject_badges_sets_flag() -> None:
-    """_inject_badges sets gas_badges_injected flag on signature."""
+    """_inject_badges sets sab_badges_injected flag on signature."""
     sig = addnodes.desc_signature()
     sig += addnodes.desc_name("", "my_func")
     _inject_badges(sig, "function")
-    assert sig.get("gas_badges_injected") is True
+    assert sig.get("sab_badges_injected") is True
 
 
 def test_inject_badges_idempotent() -> None:
@@ -504,7 +504,7 @@ def test_on_doctree_resolved_processes_py_desc(monkeypatch: t.Any) -> None:
 
     on_doctree_resolved(app, doc, "index")
 
-    assert sig.get("gas_badges_injected") is True
+    assert sig.get("sab_badges_injected") is True
 
 
 def test_on_doctree_resolved_skips_fixture() -> None:
@@ -523,7 +523,7 @@ def test_on_doctree_resolved_skips_fixture() -> None:
 
     on_doctree_resolved(app, doc, "index")
 
-    assert sig.get("gas_badges_injected") is None
+    assert sig.get("sab_badges_injected") is None
 
 
 def test_on_doctree_resolved_skips_non_py() -> None:
@@ -542,7 +542,7 @@ def test_on_doctree_resolved_skips_non_py() -> None:
 
     on_doctree_resolved(app, doc, "index")
 
-    assert sig.get("gas_badges_injected") is None
+    assert sig.get("sab_badges_injected") is None
 
 
 def test_setup_auto_loads_layout() -> None:
@@ -589,7 +589,7 @@ def test_on_doctree_resolved_handles_multiple() -> None:
 
     for desc in doc.findall(addnodes.desc):
         for sig in desc.findall(addnodes.desc_signature):
-            assert sig.get("gas_badges_injected") is True
+            assert sig.get("sab_badges_injected") is True
 
 
 # ---------------------------------------------------------------------------
