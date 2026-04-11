@@ -180,7 +180,7 @@ def _build_doc_pytest_plugin_intro_nodes(
     install_command: str,
     tests_url: str | None,
 ) -> list[nodes.Node]:
-    """Build the generated doc-pytest-plugin intro nodes."""
+    """Build the generated auto-pytest-plugin intro nodes."""
     intro_nodes: list[nodes.Node] = []
     if summary:
         intro_nodes.append(nodes.paragraph("", summary))
@@ -236,7 +236,7 @@ def _compose_doc_pytest_plugin_nodes(
     body_nodes: list[nodes.Node],
     fixture_section_nodes: list[nodes.Node],
 ) -> list[nodes.Node]:
-    """Compose the final doc-pytest-plugin page nodes in display order."""
+    """Compose the final auto-pytest-plugin page nodes in display order."""
     return [*intro_nodes, *body_nodes, *fixture_section_nodes]
 
 
@@ -740,7 +740,7 @@ class AutofixturesDirective(SphinxDirective):
         )
 
 
-class DocPytestPluginDirective(SphinxDirective):
+class AutoPytestPluginDirective(SphinxDirective):
     """Render a reusable pytest-plugin documentation page block.
 
     Always emits an install section, pytest11 autodiscovery note, and
@@ -820,7 +820,7 @@ class DocPytestPluginDirective(SphinxDirective):
             module = importlib.import_module(modname)
         except ImportError:
             logger.warning(
-                "doc-pytest-plugin could not import module %r; "
+                "auto-pytest-plugin could not import module %r; "
                 "skipping generated fixture sections",
                 modname,
             )
@@ -832,7 +832,7 @@ class DocPytestPluginDirective(SphinxDirective):
             return entries
 
         logger.warning(
-            "doc-pytest-plugin found no pytest fixtures in %r; "
+            "auto-pytest-plugin found no pytest fixtures in %r; "
             "skipping generated fixture sections",
             modname,
         )

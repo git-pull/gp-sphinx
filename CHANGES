@@ -70,7 +70,7 @@ $ uv add gp-sphinx --prerelease allow
   badges, classified dependency lists, reverse-dep tracking, and auto-generated
   usage snippets. Frozen dataclasses for pickle-safe incremental builds, parallel-safe,
   WCAG AA badge contrast, and pytest 9+ compatible.
-  New: `doc-pytest-plugin` directive generates a standard pytest plugin page
+  New: `auto-pytest-plugin` directive generates a standard pytest plugin page
   (install block, `pytest11` autodiscovery note, fixture summary and reference)
   from a single directive call. Optional `:project:`, `:summary:`, `:tests-url:`,
   and `:install-command:` options; body is free-form. Use `autofixture-index` +

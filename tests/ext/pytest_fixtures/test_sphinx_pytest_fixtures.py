@@ -87,7 +87,7 @@ def test_is_pytest_fixture_negative() -> None:
 
 
 # ---------------------------------------------------------------------------
-# autofixtures and doc-pytest-plugin helper generation
+# autofixtures and auto-pytest-plugin helper generation
 # ---------------------------------------------------------------------------
 
 
@@ -1249,7 +1249,7 @@ def test_build_usage_snippet_override_hook_no_return_type() -> None:
 
 
 # ---------------------------------------------------------------------------
-# autofixtures/doc-pytest-plugin helper composition
+# autofixtures/auto-pytest-plugin helper composition
 # ---------------------------------------------------------------------------
 
 
@@ -1407,12 +1407,12 @@ def test_doc_pytest_plugin_require_option_raises_error() -> None:
     """Required options fail fast without a full directive parse."""
     fake_directive = types.SimpleNamespace(
         options={},
-        name="doc-pytest-plugin",
+        name="auto-pytest-plugin",
         error=lambda message: RuntimeError(message),
     )
 
     with pytest.raises(RuntimeError, match="requires the :package: option"):
-        spf_directives.DocPytestPluginDirective._require_option(
+        spf_directives.AutoPytestPluginDirective._require_option(
             fake_directive,
             "package",
         )
@@ -1438,7 +1438,7 @@ def test_doc_pytest_plugin_get_module_fixture_entries_warns_when_no_fixtures(
     monkeypatch.setattr(spf_directives.importlib, "import_module", lambda _name: module)
     monkeypatch.setattr(spf_directives.logger, "warning", _record_warning)
 
-    result = spf_directives.DocPytestPluginDirective._get_module_fixture_entries(
+    result = spf_directives.AutoPytestPluginDirective._get_module_fixture_entries(
         fake_directive,
         "fixture_mod",
     )
@@ -1446,7 +1446,7 @@ def test_doc_pytest_plugin_get_module_fixture_entries_warns_when_no_fixtures(
     assert result is None
     assert warning_calls == [
         (
-            "doc-pytest-plugin found no pytest fixtures in %r; "
+            "auto-pytest-plugin found no pytest fixtures in %r; "
             "skipping generated fixture sections",
             ("fixture_mod",),
         )
