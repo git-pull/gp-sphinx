@@ -915,6 +915,17 @@ class SpecialSectionFixture(t.NamedTuple):
 
 _SPECIAL_SECTION_FIXTURES: list[SpecialSectionFixture] = [
     SpecialSectionFixture(
+        test_id="see_also_bare_name",
+        input_lines=[
+            "Summary.",
+            "",
+            "See Also",
+            "--------",
+            "other_func",
+        ],
+        expected_in_output=[".. seealso::", ":py:obj:`other_func`"],
+    ),
+    SpecialSectionFixture(
         test_id="see_also_with_desc",
         input_lines=[
             "Summary.",
