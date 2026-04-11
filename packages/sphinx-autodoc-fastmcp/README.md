@@ -45,6 +45,11 @@ See the package docstrings and `sphinx_autodoc_fastmcp.setup()` for defaults.
 - Python 3.10+
 - Sphinx
 
+## Documentation
+
+See the [full documentation](https://gp-sphinx.git-pull.com/packages/sphinx-autodoc-fastmcp/)
+for directive options, role reference, and live tool card demos.
+
 ## License
 
 MIT
