@@ -1045,3 +1045,29 @@ def test_numpy_special_section(
     joined = "\n".join(result)
     for fragment in expected_in_output:
         assert fragment in joined, f"[{test_id}] Missing: {fragment!r}"
+
+
+# ---------------------------------------------------------------------------
+# setup() event wiring
+# ---------------------------------------------------------------------------
+
+
+def test_setup_registers_builder_inited_cache_clearing() -> None:
+    """setup() connects builder-inited to _clear_caches."""
+    from sphinx.application import Sphinx
+    from sphinx_typehints_gp.extension import _clear_caches, setup
+
+    connections: list[tuple[str, t.Any]] = []
+
+    app = t.cast(
+        Sphinx,
+        types.SimpleNamespace(
+            connect=lambda event, handler, **kw: connections.append((event, handler)),
+        ),
+    )
+
+    setup(app)
+
+    event_map = dict(connections)
+    assert "builder-inited" in event_map
+    assert event_map["builder-inited"] is _clear_caches
