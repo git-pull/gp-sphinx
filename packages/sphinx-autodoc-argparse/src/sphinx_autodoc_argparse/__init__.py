@@ -1,4 +1,4 @@
-"""sphinx_argparse_neo - Modern sphinx-argparse replacement.
+"""sphinx_autodoc_argparse - Modern sphinx-argparse replacement.
 
 A Sphinx extension for documenting argparse-based CLI tools that:
 - Works with Sphinx 8.x AND 9.x (no autodoc.mock dependency)
@@ -12,8 +12,8 @@ from __future__ import annotations
 
 import typing as t
 
-from sphinx_argparse_neo.directive import ArgparseDirective
-from sphinx_argparse_neo.nodes import (
+from sphinx_autodoc_argparse.directive import ArgparseDirective
+from sphinx_autodoc_argparse.nodes import (
     argparse_argument,
     argparse_group,
     argparse_program,
@@ -33,7 +33,7 @@ from sphinx_argparse_neo.nodes import (
     visit_argparse_subcommands_html,
     visit_argparse_usage_html,
 )
-from sphinx_argparse_neo.utils import strip_ansi
+from sphinx_autodoc_argparse.utils import strip_ansi
 
 __all__ = [
     "ArgparseDirective",

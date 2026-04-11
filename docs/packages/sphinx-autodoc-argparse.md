@@ -1,30 +1,30 @@
-# sphinx-argparse-neo
+# sphinx-autodoc-argparse
 
-```{sab-package-meta} sphinx-argparse-neo
+```{sab-package-meta} sphinx-autodoc-argparse
 ```
 
 Modern Sphinx extension for documenting `argparse` CLIs. The base package
 registers the `argparse` directive plus renderer config values; the
-`sphinx_argparse_neo.exemplar` layer adds example extraction, lexers, and CLI
+`sphinx_autodoc_argparse.exemplar` layer adds example extraction, lexers, and CLI
 inline roles.
 
 ```console
-$ pip install sphinx-argparse-neo
+$ pip install sphinx-autodoc-argparse
 ```
 
-## Downstream `conf.py`
+## Working usage examples
 
 ```python
 extensions = [
-    "sphinx_argparse_neo",
-    "sphinx_argparse_neo.exemplar",
+    "sphinx_autodoc_argparse",
+    "sphinx_autodoc_argparse.exemplar",
 ]
 
 argparse_examples_section_title = "Examples"
 argparse_reorder_usage_before_examples = True
 ```
 
-## Live directive demos
+## Live demos
 
 ### Base parser rendering
 
@@ -56,15 +56,15 @@ The exemplar layer also registers live inline roles for CLI prose:
 ### Base extension
 
 ```{eval-rst}
-.. autoconfigvalue-index:: sphinx_argparse_neo
-.. autoconfigvalues:: sphinx_argparse_neo
+.. autoconfigvalue-index:: sphinx_autodoc_argparse
+.. autoconfigvalues:: sphinx_autodoc_argparse
 ```
 
 ### Exemplar layer
 
 ```{eval-rst}
-.. autoconfigvalue-index:: sphinx_argparse_neo.exemplar
-.. autoconfigvalues:: sphinx_argparse_neo.exemplar
+.. autoconfigvalue-index:: sphinx_autodoc_argparse.exemplar
+.. autoconfigvalues:: sphinx_autodoc_argparse.exemplar
 ```
 
 ## Registered directives and roles
@@ -72,21 +72,21 @@ The exemplar layer also registers live inline roles for CLI prose:
 ### Base `argparse` directive
 
 ```{eval-rst}
-.. autodirective:: sphinx_argparse_neo.directive.ArgparseDirective
+.. autodirective:: sphinx_autodoc_argparse.directive.ArgparseDirective
    :no-index:
 ```
 
 ### Exemplar override
 
 ```{eval-rst}
-.. autodirective:: sphinx_argparse_neo.exemplar.CleanArgParseDirective
+.. autodirective:: sphinx_autodoc_argparse.exemplar.CleanArgParseDirective
 ```
 
 ### CLI role callables
 
 ```{eval-rst}
-.. autorole-index:: sphinx_argparse_neo.roles
-.. autoroles:: sphinx_argparse_neo.roles
+.. autorole-index:: sphinx_autodoc_argparse.roles
+.. autoroles:: sphinx_autodoc_argparse.roles
 ```
 
 ## Downstream usage snippets
@@ -110,7 +110,7 @@ Or reStructuredText:
    :prog: myproject
 ```
 
-```{package-reference} sphinx-argparse-neo
+```{package-reference} sphinx-autodoc-argparse
 ```
 
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-argparse-neo) · [PyPI](https://pypi.org/project/sphinx-argparse-neo/)
+[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-argparse) · [PyPI](https://pypi.org/project/sphinx-autodoc-argparse/)

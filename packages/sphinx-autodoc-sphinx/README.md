@@ -34,7 +34,7 @@ Or generate a full reference section for an extension module:
 .. autoconfigvalue-index:: sphinx_fonts
 .. autoconfigvalues:: sphinx_fonts
 
-.. autoconfigvalue-page:: sphinx_argparse_neo.exemplar
+.. autoconfigvalue-page:: sphinx_autodoc_argparse.exemplar
 ```
 
 ## Documentation

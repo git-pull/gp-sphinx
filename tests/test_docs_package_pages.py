@@ -26,6 +26,7 @@ LIVE_DEMO_MARKERS = (
     "```{sab-badge-demo}",
     "```{autofixture-index}",
     ":::{auto-pytest-plugin}",
+    "```{argparse}",
     "{tool}`",
     "{toolref}`",
 )

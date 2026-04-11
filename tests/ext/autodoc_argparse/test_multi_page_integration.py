@@ -54,10 +54,10 @@ _CONF_PY = textwrap.dedent(
     import sys
     sys.path.insert(0, r"{srcdir}")
 
-    project = "argparse_neo_multipage"
+    project = "argparse_multipage"
     extensions = [
         "myst_parser",
-        "sphinx_argparse_neo",
+        "sphinx_autodoc_argparse",
     ]
     master_doc = "index"
     exclude_patterns = ["_build"]

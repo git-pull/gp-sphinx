@@ -421,7 +421,7 @@ Rules:
 | `snapshot_html_fragment` | `tests/_snapshots.py` | Normalized HTML string snapshot assertion |
 | `snapshot_warnings` | `tests/_snapshots.py` | Normalized Sphinx warning snapshot assertion |
 | `spf_suite_root`, `spf_doctree_root`, `spf_html_root` | `tests/ext/pytest_fixtures/conftest.py` | Session roots for sphinx-pytest-fixture ext tests |
-| `simple_parser`, `parser_with_groups`, … | `tests/ext/argparse_neo/conftest.py` | `ArgumentParser` permutations for argparse_neo tests |
+| `simple_parser`, `parser_with_groups`, … | `tests/ext/argparse/conftest.py` | `ArgumentParser` permutations for argparse tests |
 
 ### Anti-Patterns
 

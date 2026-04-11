@@ -1,10 +1,10 @@
-"""Tests for sphinx_argparse_neo.exemplar.ExemplarConfig."""
+"""Tests for sphinx_autodoc_argparse.exemplar.ExemplarConfig."""
 
 from __future__ import annotations
 
 import types
 
-from sphinx_argparse_neo.exemplar import ExemplarConfig
+from sphinx_autodoc_argparse.exemplar import ExemplarConfig
 
 
 def test_from_sphinx_config_defaults() -> None:

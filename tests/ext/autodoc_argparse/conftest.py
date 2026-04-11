@@ -1,4 +1,4 @@
-"""Fixtures and configuration for sphinx_argparse_neo tests."""
+"""Fixtures and configuration for sphinx_autodoc_argparse tests."""
 
 from __future__ import annotations
 

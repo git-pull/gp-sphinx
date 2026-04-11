@@ -30,7 +30,7 @@ def test_config_markup_contains_default_and_rebuild() -> None:
     """Rendered config markup leaves facts to the shared presenter."""
     value = next(
         item
-        for item in discover_config_values("sphinx_argparse_neo")
+        for item in discover_config_values("sphinx_autodoc_argparse")
         if item.name == "argparse_show_defaults"
     )
     markup = render_config_value_markup(value)

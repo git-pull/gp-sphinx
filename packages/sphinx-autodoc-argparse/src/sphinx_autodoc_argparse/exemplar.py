@@ -1,6 +1,6 @@
 """Transform argparse epilog "examples:" definition lists into documentation sections.
 
-This Sphinx extension post-processes sphinx_argparse_neo output to convert
+This Sphinx extension post-processes sphinx_autodoc_argparse output to convert
 specially-formatted "examples:" definition lists in argparse epilogs into
 proper documentation sections with syntax-highlighted code blocks.
 
@@ -109,9 +109,9 @@ import typing as t
 
 from docutils import nodes
 
-from sphinx_argparse_neo import __version__
-from sphinx_argparse_neo.directive import ArgparseDirective
-from sphinx_argparse_neo.utils import strip_ansi
+from sphinx_autodoc_argparse import __version__
+from sphinx_autodoc_argparse.directive import ArgparseDirective
+from sphinx_autodoc_argparse.utils import strip_ansi
 
 if t.TYPE_CHECKING:
     import sphinx.config
@@ -1153,7 +1153,7 @@ def _extract_sections_from_container(
     Examples
     --------
     >>> from docutils import nodes
-    >>> from sphinx_argparse_neo.nodes import argparse_program
+    >>> from sphinx_autodoc_argparse.nodes import argparse_program
     >>> container = argparse_program()
     >>> para = nodes.paragraph(text="Description")
     >>> examples = nodes.section()
@@ -1283,8 +1283,8 @@ def setup(app: Sphinx) -> SetupDict:
     dict
         Extension metadata.
     """
-    # Load the base sphinx_argparse_neo extension first
-    app.setup_extension("sphinx_argparse_neo")
+    # Load the base sphinx_autodoc_argparse extension first
+    app.setup_extension("sphinx_autodoc_argparse")
 
     # Register configuration options
     app.add_config_value(
@@ -1346,12 +1346,12 @@ def setup(app: Sphinx) -> SetupDict:
     app.add_directive("argparse", CleanArgParseDirective, override=True)
 
     # Register CLI usage lexer for usage block highlighting
-    from sphinx_argparse_neo.cli_usage_lexer import CLIUsageLexer
+    from sphinx_autodoc_argparse.cli_usage_lexer import CLIUsageLexer
 
     app.add_lexer("cli-usage", CLIUsageLexer)
 
     # Register argparse lexers for help output highlighting
-    from sphinx_argparse_neo.lexer import (
+    from sphinx_autodoc_argparse.lexer import (
         ArgparseHelpLexer,
         ArgparseLexer,
         ArgparseUsageLexer,
@@ -1362,7 +1362,7 @@ def setup(app: Sphinx) -> SetupDict:
     app.add_lexer("argparse-help", ArgparseHelpLexer)
 
     # Register CLI inline roles for documentation
-    from sphinx_argparse_neo.roles import register_roles
+    from sphinx_autodoc_argparse.roles import register_roles
 
     register_roles()
 

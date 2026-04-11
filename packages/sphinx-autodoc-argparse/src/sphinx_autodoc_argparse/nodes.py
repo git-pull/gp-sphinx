@@ -10,8 +10,8 @@ import typing as t
 
 from docutils import nodes
 
-from sphinx_argparse_neo.lexer import ArgparseUsageLexer
-from sphinx_argparse_neo.utils import strip_ansi
+from sphinx_autodoc_argparse.lexer import ArgparseUsageLexer
+from sphinx_autodoc_argparse.utils import strip_ansi
 
 if t.TYPE_CHECKING:
     from sphinx.writers.html5 import HTML5Translator

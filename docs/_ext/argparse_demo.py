@@ -1,4 +1,4 @@
-"""Demo parser factories for the sphinx-argparse-neo docs page."""
+"""Demo parser factories for the sphinx-autodoc-argparse docs page."""
 
 from __future__ import annotations
 

@@ -57,7 +57,7 @@ The workspace is organized into three tiers — lower layers never depend on hig
 
 - **Shared infrastructure**: `sphinx-autodoc-badges`, `sphinx-autodoc-layout`, `sphinx-autodoc-typehints-gp`
 - **Domain packages**: `sphinx-autodoc-api-style`, `sphinx-autodoc-docutils`, `sphinx-autodoc-fastmcp`, `sphinx-autodoc-pytest-fixtures`, `sphinx-autodoc-sphinx`
-- **Theme and coordinator**: `gp-sphinx`, `sphinx-gp-theme`, `sphinx-fonts`, `sphinx-argparse-neo`
+- **Theme and coordinator**: `gp-sphinx`, `sphinx-gp-theme`, `sphinx-fonts`, `sphinx-autodoc-argparse`
 
 See the [Architecture](https://gp-sphinx.git-pull.com/architecture.html) page for the full package map.
 

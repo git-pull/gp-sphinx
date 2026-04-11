@@ -1,4 +1,4 @@
-"""Tests for sphinx_argparse_neo.renderer module."""
+"""Tests for sphinx_autodoc_argparse.renderer module."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import argparse
 
 from docutils import nodes
 
-from sphinx_argparse_neo.nodes import (
+from sphinx_autodoc_argparse.nodes import (
     argparse_argument,
     argparse_group,
     argparse_program,
@@ -14,7 +14,7 @@ from sphinx_argparse_neo.nodes import (
     argparse_subcommands,
     argparse_usage,
 )
-from sphinx_argparse_neo.parser import (
+from sphinx_autodoc_argparse.parser import (
     ArgumentGroup,
     ArgumentInfo,
     MutuallyExclusiveGroup,
@@ -22,7 +22,7 @@ from sphinx_argparse_neo.parser import (
     SubcommandInfo,
     extract_parser,
 )
-from sphinx_argparse_neo.renderer import (
+from sphinx_autodoc_argparse.renderer import (
     ArgparseRenderer,
     RenderConfig,
     create_renderer,

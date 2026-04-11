@@ -10,8 +10,8 @@ resolution-markers = [
 members = [
     "gp-sphinx",
     "gp-sphinx-workspace",
-    "sphinx-argparse-neo",
     "sphinx-autodoc-api-style",
+    "sphinx-autodoc-argparse",
     "sphinx-autodoc-badges",
     "sphinx-autodoc-docutils",
     "sphinx-autodoc-fastmcp",
@@ -423,7 +423,7 @@ dependencies = [
 
 [package.optional-dependencies]
 argparse = [
-    { name = "sphinx-argparse-neo" },
+    { name = "sphinx-autodoc-argparse" },
 ]
 
 [package.metadata]
@@ -433,7 +433,7 @@ requires-dist = [
     { name = "linkify-it-py" },
     { name = "myst-parser" },
     { name = "sphinx", specifier = "<9" },
-    { name = "sphinx-argparse-neo", marker = "extra == 'argparse'", editable = "packages/sphinx-argparse-neo" },
+    { name = "sphinx-autodoc-argparse", marker = "extra == 'argparse'", editable = "packages/sphinx-autodoc-argparse" },
     { name = "sphinx-autodoc-typehints-gp", editable = "packages/sphinx-autodoc-typehints-gp" },
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
@@ -465,10 +465,10 @@ dev = [
     { name = "pytest-rerunfailures" },
     { name = "pytest-watcher" },
     { name = "ruff" },
-    { name = "sphinx-argparse-neo" },
     { name = "sphinx-autobuild", version = "2024.10.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx-autobuild", version = "2025.8.25", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "sphinx-autodoc-api-style" },
+    { name = "sphinx-autodoc-argparse" },
     { name = "sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-docutils" },
     { name = "sphinx-autodoc-fastmcp" },
@@ -497,9 +497,9 @@ dev = [
     { name = "pytest-rerunfailures" },
     { name = "pytest-watcher" },
     { name = "ruff" },
-    { name = "sphinx-argparse-neo", editable = "packages/sphinx-argparse-neo" },
     { name = "sphinx-autobuild" },
     { name = "sphinx-autodoc-api-style", editable = "packages/sphinx-autodoc-api-style" },
+    { name = "sphinx-autodoc-argparse", editable = "packages/sphinx-autodoc-argparse" },
     { name = "sphinx-autodoc-badges", editable = "packages/sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-docutils", editable = "packages/sphinx-autodoc-docutils" },
     { name = "sphinx-autodoc-fastmcp", editable = "packages/sphinx-autodoc-fastmcp" },
@@ -1214,24 +1214,6 @@ wheels = [
 ]
 
 [[package]]
-name = "sphinx-argparse-neo"
-version = "0.0.1a7"
-source = { editable = "packages/sphinx-argparse-neo" }
-dependencies = [
-    { name = "docutils" },
-    { name = "pygments" },
-    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "docutils" },
-    { name = "pygments" },
-    { name = "sphinx" },
-]
-
-[[package]]
 name = "sphinx-autobuild"
 version = "2024.10.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1287,6 +1269,24 @@ requires-dist = [
     { name = "sphinx" },
     { name = "sphinx-autodoc-badges", editable = "packages/sphinx-autodoc-badges" },
     { name = "sphinx-autodoc-layout", editable = "packages/sphinx-autodoc-layout" },
+]
+
+[[package]]
+name = "sphinx-autodoc-argparse"
+version = "0.0.1a7"
+source = { editable = "packages/sphinx-autodoc-argparse" }
+dependencies = [
+    { name = "docutils" },
+    { name = "pygments" },
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "docutils" },
+    { name = "pygments" },
+    { name = "sphinx" },
 ]
 
 [[package]]

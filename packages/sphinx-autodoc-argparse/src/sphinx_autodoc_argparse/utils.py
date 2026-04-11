@@ -1,4 +1,4 @@
-"""Text processing utilities for sphinx_argparse_neo.
+"""Text processing utilities for sphinx_autodoc_argparse.
 
 This module provides utilities for cleaning argparse output before rendering:
 - strip_ansi: Remove ANSI escape codes (for when FORCE_COLOR is set)

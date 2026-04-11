@@ -1,4 +1,4 @@
-"""Tests for sphinx_argparse_neo text processing utilities."""
+"""Tests for sphinx_autodoc_argparse text processing utilities."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import typing as t
 
 import pytest
 
-from sphinx_argparse_neo.utils import escape_rst_emphasis, strip_ansi
+from sphinx_autodoc_argparse.utils import escape_rst_emphasis, strip_ansi
 
 # --- strip_ansi tests ---
 

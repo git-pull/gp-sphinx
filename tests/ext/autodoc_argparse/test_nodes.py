@@ -1,4 +1,4 @@
-"""Tests for sphinx_argparse_neo.nodes module."""
+"""Tests for sphinx_autodoc_argparse.nodes module."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import typing as t
 import pytest
 from docutils import nodes
 
-from sphinx_argparse_neo.nodes import (
+from sphinx_autodoc_argparse.nodes import (
     _generate_argument_id,
     argparse_argument,
     argparse_group,
@@ -420,7 +420,7 @@ def render_argument_to_html(
     str
         HTML string from the mock translator's body.
     """
-    from sphinx_argparse_neo.nodes import (
+    from sphinx_autodoc_argparse.nodes import (
         depart_argparse_argument_html,
         visit_argparse_argument_html,
     )

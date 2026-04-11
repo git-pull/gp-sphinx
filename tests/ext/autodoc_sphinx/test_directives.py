@@ -37,7 +37,7 @@ def test_config_blocks_render_confval_entries() -> None:
     """Detailed rendering produces confval blocks for downstream docs."""
     value = next(
         item
-        for item in discover_config_values("sphinx_argparse_neo")
+        for item in discover_config_values("sphinx_autodoc_argparse")
         if item.name == "argparse_show_defaults"
     )
     markup = render_config_value_markup(value)

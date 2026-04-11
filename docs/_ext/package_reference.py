@@ -39,7 +39,7 @@ Examples
 ...     "gp-sphinx",
 ...     "sphinx-fonts",
 ...     "sphinx-gp-theme",
-...     "sphinx-argparse-neo",
+...     "sphinx-autodoc-argparse",
 ...     "sphinx-autodoc-docutils",
 ...     "sphinx-autodoc-fastmcp",
 ...     "sphinx-autodoc-pytest-fixtures",
@@ -172,9 +172,9 @@ def extension_modules(module_name: str) -> list[str]:
 
     Examples
     --------
-    >>> "sphinx_argparse_neo" in extension_modules("sphinx_argparse_neo")
+    >>> "sphinx_autodoc_argparse" in extension_modules("sphinx_autodoc_argparse")
     True
-    >>> "sphinx_argparse_neo.exemplar" in extension_modules("sphinx_argparse_neo")
+    >>> "sphinx_autodoc_argparse.exemplar" in extension_modules("sphinx_autodoc_argparse")
     True
     """
     ensure_workspace_imports()
@@ -499,7 +499,7 @@ def directive_options_markdown(directive_cls: object) -> str:
 
     Examples
     --------
-    >>> from sphinx_argparse_neo.directive import ArgparseDirective
+    >>> from sphinx_autodoc_argparse.directive import ArgparseDirective
     >>> "module" in directive_options_markdown(ArgparseDirective)
     True
     """
