@@ -73,7 +73,7 @@ class _FakeConfig:
         default_factory=frozenset
     )
     pytest_fixture_builtin_links: dict[str, str] = field(default_factory=dict)
-    pytest_external_fixture_links: dict[str, str] = field(default_factory=dict)
+    pytest_fixture_external_links: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass

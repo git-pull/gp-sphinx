@@ -31,7 +31,7 @@ $ pip install sphinx-autodoc-pytest-fixtures
 extensions = ["sphinx_autodoc_pytest_fixtures"]
 
 pytest_fixture_lint_level = "warning"
-pytest_external_fixture_links = {
+pytest_fixture_external_links = {
     "db": "https://docs.example.com/testing#db",
 }
 ```

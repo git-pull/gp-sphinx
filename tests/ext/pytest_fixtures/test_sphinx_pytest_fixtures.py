@@ -1080,7 +1080,7 @@ def test_infer_kind_custom_warning(caplog: pytest.LogCaptureFixture) -> None:
             config=types.SimpleNamespace(
                 pytest_fixture_hidden_dependencies=frozenset(),
                 pytest_fixture_builtin_links={},
-                pytest_external_fixture_links={},
+                pytest_fixture_external_links={},
             ),
         ),
     )

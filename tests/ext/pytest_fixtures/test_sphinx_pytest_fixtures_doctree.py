@@ -371,7 +371,7 @@ def test_dependency_rendering_snapshot(
             "pytest_fixture_hidden_dependencies": frozenset(
                 {"pytestconfig", "my_server"}
             ),
-            "pytest_external_fixture_links": {
+            "pytest_fixture_external_links": {
                 "special_dep": "https://example.com/fixtures/special_dep",
             },
         },
