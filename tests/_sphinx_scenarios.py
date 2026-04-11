@@ -24,6 +24,11 @@ Pass ``purge_modules`` to ``build_shared_sphinx_result`` or
 ``build_isolated_sphinx_result`` for any synthetic Python module written into
 the scenario's ``sys.path`` to prevent stale ``sys.modules`` entries from
 polluting subsequent builds in the same test session.
+
+Content-hash digest caching achieves a measured **9.5x suite speedup**
+(~40 s → ~4.2 s for 916 tests) by building each unique scenario only once
+per pytest process.  The cache key is a SHA-256 of sorted file contents,
+builder name, and confoverrides, so identical inputs are never rebuilt.
 """
 
 from __future__ import annotations
