@@ -11,6 +11,19 @@ provides two conservative reuse modes:
 ``build_isolated_sphinx_result``
     Copy a cached source tree into an isolated temporary directory and build
     there when a test needs stronger file-level isolation.
+
+``derive_sphinx_scenario_cache_root``
+    Derives a stable per-session cache root from any ``tmp_path`` by using its
+    parent directory.
+
+``copy_scenario_tree``
+    Materialize a scenario's source files into a directory without running a
+    Sphinx build.
+
+Pass ``purge_modules`` to ``build_shared_sphinx_result`` or
+``build_isolated_sphinx_result`` for any synthetic Python module written into
+the scenario's ``sys.path`` to prevent stale ``sys.modules`` entries from
+polluting subsequent builds in the same test session.
 """
 
 from __future__ import annotations
@@ -28,6 +41,19 @@ from docutils import nodes
 from sphinx.application import Sphinx
 
 SCENARIO_SRCDIR_TOKEN = "__SCENARIO_SRCDIR__"
+
+__all__ = [
+    "SCENARIO_SRCDIR_TOKEN",
+    "ScenarioFile",
+    "SharedSphinxResult",
+    "SphinxScenario",
+    "build_isolated_sphinx_result",
+    "build_shared_sphinx_result",
+    "copy_scenario_tree",
+    "derive_sphinx_scenario_cache_root",
+    "get_doctree",
+    "read_output",
+]
 
 ScenarioInputValue: t.TypeAlias = (
     str
