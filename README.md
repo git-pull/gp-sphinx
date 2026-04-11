@@ -1,8 +1,8 @@
 # gp-sphinx &middot; [![Python Package](https://img.shields.io/pypi/v/gp-sphinx.svg)](https://pypi.org/project/gp-sphinx/) [![License](https://img.shields.io/github/license/git-pull/gp-sphinx.svg)](https://github.com/git-pull/gp-sphinx/blob/main/LICENSE)
 
-Shared Sphinx documentation platform for [git-pull](https://github.com/git-pull) projects.
-
-Consolidates duplicated docs configuration, extensions, theme settings, and workarounds from 14+ repositories into a single reusable package.
+Integrated autodoc design system for Sphinx.  Twelve packages in three tiers
+that replace ~300 lines of duplicated `docs/conf.py` with ~10 lines and
+produce beautiful, consistent API documentation.
 
 ## Install
 
@@ -16,7 +16,7 @@ $ uv add gp-sphinx
 
 ## Usage
 
-Replace ~300 lines of duplicated `docs/conf.py` with ~10 lines:
+Replace your `docs/conf.py` with:
 
 ```python
 """Sphinx configuration for my-project."""
@@ -38,13 +38,28 @@ conf = merge_sphinx_config(
 globals().update(conf)
 ```
 
-## Features
+## The autodoc design system
 
-- `merge_sphinx_config()` API for shared defaults with per-project overrides
-- Shared extension list (autodoc, intersphinx, myst_parser, sphinx_design, etc.)
-- Shared Furo theme configuration (CSS variables, fonts, sidebar, footer)
-- Bundled workarounds (tabs.js removal, spa-nav.js injection)
-- Shared font configuration (IBM Plex via Fontsource)
+Out of the box, `merge_sphinx_config()` activates:
+
+- **Componentized layouts** (`sphinx-autodoc-layout`) — card containers, parameter folding, managed signatures
+- **Clean type hints** (`sphinx-typehints-gp`) — simplified annotations with cross-referenced links, replacing `sphinx-autodoc-typehints` and `sphinx.ext.napoleon`
+- **Unified badge system** (`sphinx-autodoc-badges`) — type and modifier badges with a shared colour palette
+- **Five domain autodocumenters** — Python API, pytest fixtures, FastMCP tools, docutils directives, Sphinx config values
+- **IBM Plex fonts** via Fontsource with preloaded web fonts
+- **Full dark mode** theming via CSS custom properties
+
+See the [Gallery](https://gp-sphinx.git-pull.com/gallery.html) for live demos of every component.
+
+## Three-tier architecture
+
+The workspace is organized into three tiers — lower layers never depend on higher ones:
+
+- **Shared infrastructure**: `sphinx-autodoc-badges`, `sphinx-autodoc-layout`, `sphinx-typehints-gp`
+- **Domain packages**: `sphinx-autodoc-api-style`, `sphinx-autodoc-docutils`, `sphinx-autodoc-fastmcp`, `sphinx-autodoc-pytest-fixtures`, `sphinx-autodoc-sphinx`
+- **Theme and coordinator**: `gp-sphinx`, `sphinx-gptheme`, `sphinx-fonts`, `sphinx-argparse-neo`
+
+See the [Architecture](https://gp-sphinx.git-pull.com/architecture.html) page for the full package map.
 
 ## More information
 
