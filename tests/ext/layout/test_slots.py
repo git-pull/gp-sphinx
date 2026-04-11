@@ -22,8 +22,8 @@ def test_inject_signature_slots_moves_viewcode_into_source_slot() -> None:
     sig = addnodes.desc_signature()
     sig += addnodes.desc_name("", "demo")
     sig += _make_viewcode_ref()
-    badge_group = nodes.inline(classes=["gas-badge-group"])
-    badge_group += nodes.inline("", "function", classes=["gas-badge"])
+    badge_group = nodes.inline(classes=["sab-badge-group"])
+    badge_group += nodes.inline("", "function", classes=["sab-badge"])
 
     injected = inject_signature_slots(
         sig,

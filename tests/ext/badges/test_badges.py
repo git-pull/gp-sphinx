@@ -110,9 +110,9 @@ def test_build_badge_icon_only() -> None:
 
 def test_build_badge_outline() -> None:
     """build_badge with outline fill adds sab-outline class."""
-    b = build_badge("function", fill="outline", classes=["gas-type-function"])
+    b = build_badge("function", fill="outline", classes=["sab-type-function"])
     assert SAB.OUTLINE in b["classes"]
-    assert "gas-type-function" in b["classes"]
+    assert "sab-type-function" in b["classes"]
 
 
 def test_badge_node_size() -> None:

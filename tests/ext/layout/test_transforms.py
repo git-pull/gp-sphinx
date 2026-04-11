@@ -105,8 +105,8 @@ def _make_parameter_list(
 
 
 def _make_badge_slot() -> api_slot:
-    badge_group = nodes.inline(classes=["gas-badge-group"])
-    badge_group += nodes.inline("", "method", classes=["gas-badge"])
+    badge_group = nodes.inline(classes=["sab-badge-group"])
+    badge_group += nodes.inline("", "method", classes=["sab-badge"])
     return build_api_slot("badges", badge_group)
 
 

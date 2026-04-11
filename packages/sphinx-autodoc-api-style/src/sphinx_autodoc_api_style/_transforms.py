@@ -134,7 +134,7 @@ def _detect_deprecated(desc_node: addnodes.desc) -> bool:
 def _inject_badges(sig_node: addnodes.desc_signature, objtype: str) -> None:
     """Inject structured layout slots containing badges and source links.
 
-    Guarded by ``gas_badges_injected`` flag.
+    Guarded by ``sab_badges_injected`` flag.
 
     Parameters
     ----------
@@ -149,7 +149,7 @@ def _inject_badges(sig_node: addnodes.desc_signature, objtype: str) -> None:
     >>> sig = addnodes.desc_signature()
     >>> sig += addnodes.desc_name("", "my_func")
     >>> _inject_badges(sig, "function")
-    >>> sig.get("gas_badges_injected")
+    >>> sig.get("sab_badges_injected")
     True
     """
     mods = _detect_modifiers(sig_node)
@@ -160,7 +160,7 @@ def _inject_badges(sig_node: addnodes.desc_signature, objtype: str) -> None:
     badge_group = build_badge_group(objtype, modifiers=mods)
     inject_signature_slots(
         sig_node,
-        marker_attr="gas_badges_injected",
+        marker_attr="sab_badges_injected",
         badge_node=badge_group,
     )
 

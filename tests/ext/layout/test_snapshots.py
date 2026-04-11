@@ -67,8 +67,8 @@ def _make_large_signature_desc() -> addnodes.desc:
     parameter_list += _make_parameter("socket_path", default="None")
     parameter_list += _make_parameter("config_file", default="None")
     signature += parameter_list
-    badge_group = nodes.inline(classes=["gas-badge-group"])
-    badge_group += nodes.inline("", "method", classes=["gas-badge"])
+    badge_group = nodes.inline(classes=["sab-badge-group"])
+    badge_group += nodes.inline("", "method", classes=["sab-badge"])
     signature += build_api_slot("badges", badge_group)
     source_span = nodes.inline(classes=["viewcode-link"])
     source_span += nodes.Text("[source]")
