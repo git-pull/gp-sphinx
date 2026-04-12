@@ -27,7 +27,7 @@ classifiers = [
 readme = "README.md"
 keywords = ["sphinx", "argparse", "cli", "documentation"]
 dependencies = [
-  "sphinx",
+  "sphinx>=8.1",
   "pygments",
   "docutils",
 ]

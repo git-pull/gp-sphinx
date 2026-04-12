@@ -26,7 +26,7 @@ classifiers = [
 readme = "README.md"
 keywords = ["sphinx", "configuration", "conf.py", "documentation", "autodoc"]
 dependencies = [
-  "sphinx",
+  "sphinx>=8.1",
   "sphinx-ux-badges==0.0.1a7",
   "sphinx-ux-autodoc-layout==0.0.1a7",
   "sphinx-autodoc-typehints-gp==0.0.1a7",
