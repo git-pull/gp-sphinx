@@ -89,13 +89,13 @@ Render a class with grouped content regions and member entries:
 
 ## Live demos
 
-```{py:module} gal_demo_api
+```{py:module} api_demo_layout
 ```
 
 ### Class with members (regions + fold)
 
 ```{eval-rst}
-.. autoclass:: gal_demo_api.LayoutDemo
+.. autoclass:: api_demo_layout.LayoutDemo
    :members:
 ```
 
@@ -108,7 +108,7 @@ The class above renders with:
 ### Small function (no fold)
 
 ```{eval-rst}
-.. autofunction:: gal_demo_api.compact_function
+.. autofunction:: api_demo_layout.compact_function
 ```
 
 ## Configuration

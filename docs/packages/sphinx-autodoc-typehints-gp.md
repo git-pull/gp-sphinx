@@ -122,7 +122,7 @@ Type annotations are cross-referenced automatically. The function below uses
 rendered output.
 
 ```{eval-rst}
-.. autofunction:: gal_demo_api.compact_function
+.. autofunction:: api_demo_layout.compact_function
    :noindex:
 ```
 

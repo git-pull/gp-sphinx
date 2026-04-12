@@ -108,7 +108,7 @@ _INDEX_RST = textwrap.dedent(
     Layout Demo
     ===========
 
-    .. autoclass:: gal_demo_api.LayoutDemo
+    .. autoclass:: api_demo_layout.LayoutDemo
        :members:
        :special-members: __init__
     """
@@ -131,7 +131,7 @@ def _build_layout_demo_result(
         conf_text = f"{conf_text.rstrip()}\n{extra_conf}\n"
     scenario = SphinxScenario(
         files=(
-            ScenarioFile("gal_demo_api.py", _MODULE_SOURCE),
+            ScenarioFile("api_demo_layout.py", _MODULE_SOURCE),
             ScenarioFile(
                 "conf.py",
                 conf_text.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN),
@@ -143,7 +143,7 @@ def _build_layout_demo_result(
     return build_shared_sphinx_result(
         cache_root,
         scenario,
-        purge_modules=("gal_demo_api",),
+        purge_modules=("api_demo_layout",),
     )
 
 
