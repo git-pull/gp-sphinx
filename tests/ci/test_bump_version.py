@@ -1,5 +1,9 @@
 """Tests for the workspace version-bump CLI."""
 
+# bump-version: skip-file
+# Version literals below describe bump scenarios ("bump FROM 0.0.1a7"),
+# not live workspace state, so bump_version.py must leave them frozen.
+
 from __future__ import annotations
 
 import pathlib
@@ -68,6 +72,25 @@ def test_bump_skips_files_without_old_version(tmp_path: pathlib.Path) -> None:
     changes = bump_version.bump_workspace_version("0.0.1a8", root=tmp_path)
     assert unrelated.read_text() == 'UNRELATED = "something-else"\n'
     assert all(path != unrelated for path, _ in changes)
+
+
+def test_bump_skips_files_with_sentinel_marker(tmp_path: pathlib.Path) -> None:
+    """Files carrying the skip-file sentinel comment are left untouched."""
+    _seed_workspace(tmp_path, version="0.0.1a7")
+    frozen = tmp_path / "tests" / "test_frozen.py"
+    frozen_contents = textwrap.dedent(
+        """\
+        # bump-version: skip-file
+        SCENARIO_OLD = "0.0.1a7"
+        SCENARIO_NEW = "0.0.1a8"
+        """,
+    )
+    frozen.write_text(frozen_contents)
+
+    changes = bump_version.bump_workspace_version("0.0.1a8", root=tmp_path)
+
+    assert frozen.read_text() == frozen_contents
+    assert all(path != frozen for path, _ in changes)
 
 
 def test_bump_rejects_same_version(tmp_path: pathlib.Path) -> None:

@@ -51,6 +51,11 @@ EXCLUDE_FRAGMENTS: t.Final[tuple[str, ...]] = (
     "__pycache__/",
 )
 
+#: File-level opt-out sentinel. A line whose stripped content equals this
+#: marker freezes the file's version literals — use in scenario fixtures
+#: where the literal describes a bump relationship, not workspace state.
+SKIP_FILE_MARKER: t.Final[str] = "# bump-version: skip-file"
+
 
 def _workspace_root() -> pathlib.Path:
     """Return the repository root."""
@@ -135,6 +140,8 @@ def _rewrite_file(
         Number of occurrences replaced. Zero if the file did not change.
     """
     original = path.read_text()
+    if any(line.strip() == SKIP_FILE_MARKER for line in original.splitlines()):
+        return 0
     if old_version not in original:
         return 0
     updated = original.replace(old_version, new_version)
