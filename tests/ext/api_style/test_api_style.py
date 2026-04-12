@@ -47,7 +47,7 @@ def test_sab_badge_group_class() -> None:
 
 
 def test_sab_obj_type_class() -> None:
-    """obj_type() returns sab-type-* class (unified palette)."""
+    """obj_type() returns gp-sphinx-badge--type-* class (unified palette)."""
     assert SAB.obj_type("function") == "gp-sphinx-badge--type-function"
     assert SAB.obj_type("class") == "gp-sphinx-badge--type-class"
     assert SAB.obj_type("method") == "gp-sphinx-badge--type-method"
