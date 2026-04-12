@@ -8,12 +8,12 @@ import typing as t
 
 import pytest
 from docutils import nodes
-from sphinx_autodoc_badges import SAB, BadgeNode
 
 import sphinx_autodoc_pytest_fixtures
 import sphinx_autodoc_pytest_fixtures._directives as spf_directives
 import sphinx_autodoc_pytest_fixtures._index as spf_index
 import sphinx_autodoc_pytest_fixtures._store
+from sphinx_autodoc_badges import SAB, BadgeNode
 from sphinx_autodoc_pytest_fixtures._models import FixtureMeta
 
 try:

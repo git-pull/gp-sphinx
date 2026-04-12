@@ -13,6 +13,7 @@ from docutils import nodes
 from sab_meta import _link_badge, _maturity_badge
 from sphinx.application import Sphinx
 from sphinx.util.docutils import SphinxDirective
+
 from sphinx_autodoc_badges import SAB, build_badge, build_badge_group, build_toolbar
 
 

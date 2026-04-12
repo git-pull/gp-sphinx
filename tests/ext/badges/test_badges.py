@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 from docutils import nodes
+
 from sphinx_autodoc_badges import (
     BadgeNode,
     BadgeSpec,

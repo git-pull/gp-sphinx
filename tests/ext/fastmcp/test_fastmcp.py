@@ -5,8 +5,8 @@ from __future__ import annotations
 import typing as t
 
 from docutils import nodes
-from sphinx_autodoc_badges import BadgeNode
 
+from sphinx_autodoc_badges import BadgeNode
 from sphinx_autodoc_fastmcp._badges import build_safety_badge, build_tool_badge_group
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._parsing import (

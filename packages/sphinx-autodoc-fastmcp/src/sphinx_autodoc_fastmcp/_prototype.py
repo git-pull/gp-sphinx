@@ -36,11 +36,6 @@ from __future__ import annotations
 
 from docutils import nodes
 from sphinx import addnodes
-from sphinx_autodoc_layout import inject_signature_slots
-from sphinx_autodoc_typehints_gp import (
-    build_annotation_display_paragraph,
-    normalize_annotation_text,
-)
 
 from sphinx_autodoc_fastmcp._badges import build_tool_badge_group
 from sphinx_autodoc_fastmcp._models import ParamInfo, ToolInfo
@@ -48,6 +43,11 @@ from sphinx_autodoc_fastmcp._parsing import (
     first_paragraph,
     make_para,
     make_table,
+)
+from sphinx_autodoc_layout import inject_signature_slots
+from sphinx_autodoc_typehints_gp import (
+    build_annotation_display_paragraph,
+    normalize_annotation_text,
 )
 
 

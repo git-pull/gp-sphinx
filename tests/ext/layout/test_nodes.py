@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from docutils import nodes
+
 from sphinx_autodoc_layout._nodes import (
     api_component,
     api_fold,

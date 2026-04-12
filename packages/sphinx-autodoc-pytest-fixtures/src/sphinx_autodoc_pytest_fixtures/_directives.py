@@ -13,8 +13,8 @@ from sphinx.domains.python import PyFunction
 from sphinx.util import logging as sphinx_logging
 from sphinx.util.docfields import Field, GroupedField
 from sphinx.util.docutils import SphinxDirective
-from sphinx_autodoc_badges import SAB
 
+from sphinx_autodoc_badges import SAB
 from sphinx_autodoc_pytest_fixtures._constants import (
     _CALLOUT_MESSAGES,
     _CONFIG_BUILTIN_LINKS,

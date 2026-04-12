@@ -15,6 +15,7 @@ from __future__ import annotations
 import typing as t
 
 from docutils import nodes
+
 from sphinx_autodoc_badges import SAB, BadgeSpec, build_badge_group_from_specs
 
 _TYPE_TOOLTIPS: dict[str, str] = {

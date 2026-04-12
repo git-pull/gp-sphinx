@@ -8,8 +8,6 @@ import typing as t
 import pytest
 from docutils import nodes
 from sphinx import addnodes
-from sphinx_autodoc_badges import SAB, BadgeNode
-from sphinx_autodoc_layout._nodes import api_slot
 
 import sphinx_autodoc_api_style
 import sphinx_autodoc_api_style._badges as sas_badges
@@ -30,6 +28,8 @@ from sphinx_autodoc_api_style._transforms import (
     _prune_empty_desc_content,
     on_doctree_resolved,
 )
+from sphinx_autodoc_badges import SAB, BadgeNode
+from sphinx_autodoc_layout._nodes import api_slot
 
 # ---------------------------------------------------------------------------
 # SAB constants used by api-style

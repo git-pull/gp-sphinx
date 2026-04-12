@@ -27,6 +27,7 @@ from docutils import nodes
 from docutils.parsers.rst import directives
 from sphinx import addnodes
 from sphinx.util.docutils import SphinxDirective
+
 from sphinx_autodoc_layout import (
     ApiFactRow,
     build_api_facts_section,
@@ -35,9 +36,8 @@ from sphinx_autodoc_layout import (
     iter_desc_nodes,
     parse_generated_markup,
 )
-from sphinx_autodoc_typehints_gp import normalize_type_collection_text
-
 from sphinx_autodoc_sphinx._badges import build_config_badge_group
+from sphinx_autodoc_typehints_gp import normalize_type_collection_text
 
 if t.TYPE_CHECKING:
     from sphinx.util.typing import OptionSpec

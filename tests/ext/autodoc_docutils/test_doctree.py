@@ -7,12 +7,12 @@ import typing as t
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from sphinx import addnodes
-from sphinx_autodoc_layout._nodes import api_component
 
 from sphinx_autodoc_docutils._directives import (
     _normalize_directive_nodes,
     _normalize_role_nodes,
 )
+from sphinx_autodoc_layout._nodes import api_component
 
 
 class _DemoDirective(Directive):

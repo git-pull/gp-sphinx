@@ -7,6 +7,7 @@ import typing as t
 
 from docutils import nodes
 from sphinx import addnodes
+
 from sphinx_autodoc_layout._nodes import (
     api_component,
     api_fold,

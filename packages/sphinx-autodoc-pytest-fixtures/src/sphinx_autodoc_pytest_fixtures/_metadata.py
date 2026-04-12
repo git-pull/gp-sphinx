@@ -10,7 +10,6 @@ import typing as t
 
 from docutils import nodes
 from sphinx.util import logging as sphinx_logging
-from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 from sphinx_autodoc_pytest_fixtures._constants import (
     _CALLOUT_MESSAGES,
@@ -25,6 +24,7 @@ from sphinx_autodoc_pytest_fixtures._detection import (
 )
 from sphinx_autodoc_pytest_fixtures._models import FixtureDep, FixtureMeta
 from sphinx_autodoc_pytest_fixtures._store import _get_spf_store
+from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 if t.TYPE_CHECKING:
     from sphinx import addnodes

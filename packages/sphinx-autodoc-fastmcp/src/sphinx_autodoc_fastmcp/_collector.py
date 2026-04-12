@@ -8,10 +8,10 @@ import logging
 import typing as t
 
 from sphinx.application import Sphinx
-from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 from sphinx_autodoc_fastmcp._models import ToolInfo
 from sphinx_autodoc_fastmcp._parsing import extract_params
+from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 logger = logging.getLogger(__name__)
 
