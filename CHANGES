@@ -22,11 +22,11 @@ $ uv add gp-sphinx --prerelease allow
 
 - `sphinx-autodoc-fastmcp`: new Sphinx extension for FastMCP tool docs (card-style
   `desc` layouts, safety badges, MyST directives, cross-reference roles)
-- `sphinx-autodoc-badges`: shared badge node (`BadgeNode`), builder API
+- `sphinx-ux-badges`: shared badge node (`BadgeNode`), builder API
   (`build_badge`, `build_badge_group`, `build_toolbar`), and base CSS
   layer shared by `sphinx-autodoc-fastmcp`, `sphinx-autodoc-api-style`,
   and `sphinx-autodoc-pytest-fixtures` (#13)
-- `sphinx-autodoc-badges`: explicit size variants `xs` / `sm` / `lg` / `xl` via
+- `sphinx-ux-badges`: explicit size variants `xs` / `sm` / `lg` / `xl` via
   `build_badge(size=...)` and `BadgeNode(badge_size=...)` — compose with any
   fill, style, or color class (#13)
 - Initial release of `gp_sphinx` shared documentation platform
@@ -59,7 +59,7 @@ $ uv add gp-sphinx --prerelease allow
 
 ### Workspace packages
 
-- `sphinx-autodoc-badges` — Shared badge node, builders, and base CSS for
+- `sphinx-ux-badges` — Shared badge node, builders, and base CSS for
   safety tiers, scope, and kind labels. Extensions add color layers on top;
   TOC sidebar shows compact badges with emoji icons and subtle inset depth on
   solid pills (#13)

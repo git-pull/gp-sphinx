@@ -1,4 +1,4 @@
-"""Shared CSS class name constants for sphinx_autodoc_badges.
+"""Shared CSS class name constants for sphinx_ux_badges.
 
 Examples
 --------

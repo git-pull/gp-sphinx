@@ -1,4 +1,4 @@
-"""Live badge demo directive for the sphinx-autodoc-badges docs page.
+"""Live badge demo directive for the sphinx-ux-badges docs page.
 
 Renders every badge variant using the real ``build_badge`` /
 ``build_badge_group`` / ``build_toolbar`` API so the page exercises
@@ -14,7 +14,7 @@ from sab_meta import _link_badge, _maturity_badge
 from sphinx.application import Sphinx
 from sphinx.util.docutils import SphinxDirective
 
-from sphinx_autodoc_badges import SAB, build_badge, build_badge_group, build_toolbar
+from sphinx_ux_badges import SAB, build_badge, build_badge_group, build_toolbar
 
 
 class BadgeDemoDirective(SphinxDirective):
@@ -819,7 +819,7 @@ class BadgeDemoDirective(SphinxDirective):
         link_row += nodes.Text(" ")
         link_row += _link_badge(
             "PyPI",
-            "https://pypi.org/project/sphinx-autodoc-badges/",
+            "https://pypi.org/project/sphinx-ux-badges/",
         )
         link_row += nodes.Text(" ")
         link_row += nodes.literal(
@@ -838,7 +838,7 @@ class BadgeDemoDirective(SphinxDirective):
         full_row += nodes.Text(" ")
         full_row += _link_badge(
             "PyPI",
-            "https://pypi.org/project/sphinx-autodoc-badges/",
+            "https://pypi.org/project/sphinx-ux-badges/",
         )
         result.append(full_row)
 

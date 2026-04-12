@@ -1,6 +1,6 @@
 """Badge group rendering helpers for sphinx_autodoc_api_style.
 
-Uses shared ``BadgeNode`` from ``sphinx_autodoc_badges`` instead of
+Uses shared ``BadgeNode`` from ``sphinx_ux_badges`` instead of
 ``nodes.abbreviation`` -- avoids global abbreviation visitor override.
 
 Examples
@@ -16,7 +16,7 @@ import typing as t
 
 from docutils import nodes
 
-from sphinx_autodoc_badges import SAB, BadgeSpec, build_badge_group_from_specs
+from sphinx_ux_badges import SAB, BadgeSpec, build_badge_group_from_specs
 
 _TYPE_TOOLTIPS: dict[str, str] = {
     "function": "Python function",
@@ -118,7 +118,7 @@ def build_badge_group(
     True
 
     >>> group = build_badge_group("method", modifiers=frozenset({"async"}))
-    >>> from sphinx_autodoc_badges import BadgeNode
+    >>> from sphinx_ux_badges import BadgeNode
     >>> len(list(group.findall(BadgeNode))) == 2
     True
 
@@ -126,7 +126,7 @@ def build_badge_group(
     ...     "class",
     ...     modifiers=frozenset({"abstract", "deprecated"}),
     ... )
-    >>> from sphinx_autodoc_badges import BadgeNode
+    >>> from sphinx_ux_badges import BadgeNode
     >>> labels = [n.astext() for n in group.findall(BadgeNode)]
     >>> "deprecated" in labels and "abstract" in labels and "class" in labels
     True

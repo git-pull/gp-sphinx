@@ -6,7 +6,7 @@ import typing as t
 
 from docutils import nodes
 
-from sphinx_autodoc_badges import SAB, BadgeSpec, build_badge_group_from_specs
+from sphinx_ux_badges import SAB, BadgeSpec, build_badge_group_from_specs
 
 if t.TYPE_CHECKING:
     from sphinx_autodoc_sphinx._directives import SphinxConfigValue

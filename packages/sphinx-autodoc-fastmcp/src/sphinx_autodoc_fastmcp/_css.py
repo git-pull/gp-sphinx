@@ -2,7 +2,7 @@
 
 All constants use the ``smf-`` prefix for FastMCP-specific layout
 and safety semantics.  For shared badge primitives, import ``SAB``
-from ``sphinx_autodoc_badges`` directly.
+from ``sphinx_ux_badges`` directly.
 
 Examples
 --------

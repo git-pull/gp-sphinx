@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 
 from docutils import nodes
 
-from sphinx_autodoc_badges._nodes import BadgeNode
+from sphinx_ux_badges._nodes import BadgeNode
 
 
 @dataclass(frozen=True, slots=True)
@@ -172,7 +172,7 @@ def build_badge_group(
 
     Examples
     --------
-    >>> from sphinx_autodoc_badges._nodes import BadgeNode
+    >>> from sphinx_ux_badges._nodes import BadgeNode
     >>> g = build_badge_group([BadgeNode("a"), BadgeNode("b")])
     >>> "sab-badge-group" in g["classes"]
     True
@@ -230,7 +230,7 @@ def build_toolbar(
 
     Examples
     --------
-    >>> from sphinx_autodoc_badges._nodes import BadgeNode
+    >>> from sphinx_ux_badges._nodes import BadgeNode
     >>> g = build_badge_group([BadgeNode("x")])
     >>> t = build_toolbar(g, classes=["smf-toolbar"])
     >>> "sab-toolbar" in t["classes"]

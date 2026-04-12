@@ -47,7 +47,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     >>> metadata["parallel_read_safe"]
     True
     """
-    app.setup_extension("sphinx_autodoc_badges")
+    app.setup_extension("sphinx_ux_badges")
     app.setup_extension("sphinx_autodoc_layout")
     app.setup_extension("sphinx_autodoc_typehints_gp")
     app.add_directive("autoconfigvalue", AutoconfigvalueDirective)

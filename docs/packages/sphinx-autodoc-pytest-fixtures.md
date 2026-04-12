@@ -17,7 +17,7 @@ fixture discovery, a higher-level pytest plugin page helper, and the
 badge/index UI used throughout the page below.
 
 Fixture pages now use the shared stack end-to-end: badge output comes from
-`sphinx-autodoc-badges`, visible `api-*` structure comes from
+`sphinx-ux-badges`, visible `api-*` structure comes from
 `sphinx-autodoc-layout`, and fixture return types use the shared
 `sphinx-autodoc-typehints-gp` rendering helpers.
 
@@ -36,7 +36,7 @@ pytest_fixture_external_links = {
 }
 ```
 
-`sphinx_autodoc_pytest_fixtures` automatically registers `sphinx_autodoc_badges`,
+`sphinx_autodoc_pytest_fixtures` automatically registers `sphinx_ux_badges`,
 `sphinx_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via `app.setup_extension()`.
 You do not need to add them separately to your `extensions` list.
 

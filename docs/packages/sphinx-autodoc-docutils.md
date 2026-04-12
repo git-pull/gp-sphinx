@@ -30,7 +30,7 @@ $ pip install sphinx-autodoc-docutils
 extensions = ["sphinx_autodoc_docutils"]
 ```
 
-`sphinx_autodoc_docutils` automatically registers `sphinx_autodoc_badges`,
+`sphinx_autodoc_docutils` automatically registers `sphinx_ux_badges`,
 `sphinx_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via `app.setup_extension()`.
 You do not need to add them separately to your `extensions` list.
 

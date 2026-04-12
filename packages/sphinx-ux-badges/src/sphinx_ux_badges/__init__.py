@@ -5,11 +5,11 @@ Provides :class:`BadgeNode`, HTML visitors, and builder helpers that all
 
 Examples
 --------
->>> from sphinx_autodoc_badges import BadgeNode, build_badge
+>>> from sphinx_ux_badges import BadgeNode, build_badge
 >>> callable(build_badge)
 True
 
->>> from sphinx_autodoc_badges import setup
+>>> from sphinx_ux_badges import setup
 >>> callable(setup)
 True
 """
@@ -22,7 +22,7 @@ import typing as t
 
 from sphinx.application import Sphinx
 
-from sphinx_autodoc_badges._builders import (
+from sphinx_ux_badges._builders import (
     BadgeSpec,
     build_badge,
     build_badge_from_spec,
@@ -30,9 +30,9 @@ from sphinx_autodoc_badges._builders import (
     build_badge_group_from_specs,
     build_toolbar,
 )
-from sphinx_autodoc_badges._css import SAB
-from sphinx_autodoc_badges._nodes import BadgeNode
-from sphinx_autodoc_badges._visitors import depart_badge_html, visit_badge_html
+from sphinx_ux_badges._css import SAB
+from sphinx_ux_badges._nodes import BadgeNode
+from sphinx_ux_badges._visitors import depart_badge_html, visit_badge_html
 
 __all__ = [
     "SAB",
@@ -66,7 +66,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
 
     Examples
     --------
-    >>> from sphinx_autodoc_badges import setup
+    >>> from sphinx_ux_badges import setup
     >>> callable(setup)
     True
     """
@@ -79,7 +79,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
             app.config.html_static_path.append(_static_dir)
 
     app.connect("builder-inited", _add_static_path)
-    app.add_css_file("css/sphinx_autodoc_badges.css")
+    app.add_css_file("css/sphinx_ux_badges.css")
     app.add_css_file("css/sab_palettes.css")
 
     return {

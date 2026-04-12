@@ -13,8 +13,8 @@ The rendering pipeline that all domain packages consume:
 ::::{grid} 1 1 3 3
 :gutter: 2
 
-:::{grid-item-card} sphinx-autodoc-badges
-:link: packages/sphinx-autodoc-badges
+:::{grid-item-card} sphinx-ux-badges
+:link: packages/sphinx-ux-badges
 :link-type: doc
 
 Badge primitives, colour palette, and CSS infrastructure.

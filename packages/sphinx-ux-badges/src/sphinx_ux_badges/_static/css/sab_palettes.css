@@ -1,4 +1,4 @@
-/* sphinx_autodoc_badges — unified badge colour palette.
+/* sphinx_ux_badges — unified badge colour palette.
  *
  * Single source of truth for every semantic badge colour across all
  * sphinx-autodoc-* extensions.  Packages no longer ship their own colour
@@ -6,7 +6,7 @@
  * classes defined here.
  *
  * All classes set --sab-bg, --sab-fg, --sab-border so the shared
- * sab-badge base layer in sphinx_autodoc_badges.css picks them up.
+ * sab-badge base layer in sphinx_ux_badges.css picks them up.
  * Outlined variants (modifiers, rebuild, factory, etc.) only set fg/border;
  * they rely on the .sab-outline rule for a transparent background.
  */

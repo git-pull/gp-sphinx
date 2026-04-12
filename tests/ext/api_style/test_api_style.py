@@ -28,8 +28,8 @@ from sphinx_autodoc_api_style._transforms import (
     _prune_empty_desc_content,
     on_doctree_resolved,
 )
-from sphinx_autodoc_badges import SAB, BadgeNode
 from sphinx_autodoc_layout._nodes import api_slot
+from sphinx_ux_badges import SAB, BadgeNode
 
 # ---------------------------------------------------------------------------
 # SAB constants used by api-style
@@ -563,7 +563,7 @@ def test_setup_auto_loads_layout() -> None:
 
     assert setup_extensions == [
         "sphinx.ext.autodoc",
-        "sphinx_autodoc_badges",
+        "sphinx_ux_badges",
         "sphinx_autodoc_layout",
     ]
 

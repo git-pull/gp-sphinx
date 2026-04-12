@@ -29,7 +29,7 @@ from docutils import nodes
 from sphinx.application import Sphinx
 from sphinx.util.docutils import SphinxDirective
 
-from sphinx_autodoc_badges import SAB, BadgeNode, build_badge
+from sphinx_ux_badges import SAB, BadgeNode, build_badge
 
 _MATURITY_CLASS: dict[str, str] = {
     "Alpha": SAB.META_ALPHA,

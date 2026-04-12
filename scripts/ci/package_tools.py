@@ -605,7 +605,7 @@ def smoke_sphinx_autodoc_api_style(dist_dir: pathlib.Path, version: str) -> None
         )
 
 
-def smoke_sphinx_autodoc_badges(dist_dir: pathlib.Path, version: str) -> None:
+def smoke_sphinx_ux_badges(dist_dir: pathlib.Path, version: str) -> None:
     """Verify the autodoc-badges extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
         python_path = _create_venv(pathlib.Path(tmp))
@@ -616,8 +616,8 @@ def smoke_sphinx_autodoc_badges(dist_dir: pathlib.Path, version: str) -> None:
         _run_python(
             python_path,
             (
-                "import sphinx_autodoc_badges; "
-                "from sphinx_autodoc_badges import setup; "
+                "import sphinx_ux_badges; "
+                "from sphinx_ux_badges import setup; "
                 "assert callable(setup)"
             ),
         )
@@ -664,7 +664,7 @@ _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "gp-sphinx": smoke_gp_sphinx,
     "sphinx-autodoc-argparse": smoke_sphinx_autodoc_argparse,
     "sphinx-autodoc-api-style": smoke_sphinx_autodoc_api_style,
-    "sphinx-autodoc-badges": smoke_sphinx_autodoc_badges,
+    "sphinx-ux-badges": smoke_sphinx_ux_badges,
     "sphinx-autodoc-docutils": smoke_sphinx_autodoc_docutils,
     "sphinx-autodoc-fastmcp": smoke_sphinx_autodoc_fastmcp,
     "sphinx-autodoc-layout": smoke_sphinx_autodoc_layout,

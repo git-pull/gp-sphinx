@@ -29,7 +29,7 @@ The dominant conclusions did not change in this wave:
 The shipped `sphinx-autodoc-*` packages now converge on three shared layers for
 the responsibilities they actually share:
 
-- `sphinx_autodoc_badges` is the only badge primitive and badge-group renderer
+- `sphinx_ux_badges` is the only badge primitive and badge-group renderer
 - `sphinx_autodoc_layout` is the only shared presenter for `api-*` entry
   structure and shared body sections
 - `sphinx_autodoc_typehints_gp` is the only owner of canonical annotation
@@ -83,7 +83,7 @@ package-local duplication:
   footer, and summary/index table wrappers
 - generic card-shell CSS now lives in `sphinx_autodoc_layout` instead of being
   repeated in FastMCP
-- `sphinx_autodoc_badges.BadgeSpec` and the shared badge-group builder are now
+- `sphinx_ux_badges.BadgeSpec` and the shared badge-group builder are now
   the canonical badge pipeline
 - `sphinx_autodoc_typehints_gp` now provides reusable annotation helpers instead of
   requiring package-local stringification and xref rendering
@@ -105,7 +105,7 @@ The current rendering path is:
 
 ### What each shared layer owns
 
-`sphinx_autodoc_badges`
+`sphinx_ux_badges`
 
 - `BadgeSpec`
 - badge node construction
@@ -461,7 +461,7 @@ Reasons:
 
 - `api_slot` as the only cross-package header handoff
 - `sphinx_autodoc_layout` as the sole shared presenter
-- `sphinx_autodoc_badges` as the sole badge DOM owner
+- `sphinx_ux_badges` as the sole badge DOM owner
 - `sphinx_autodoc_typehints_gp` as the sole annotation rendering layer
 - shared scenario caching in `tests/_sphinx_scenarios.py`
 

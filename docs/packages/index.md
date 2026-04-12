@@ -3,7 +3,7 @@
 Twelve workspace packages in three tiers.
 
 **Shared infrastructure** — the rendering pipeline that all domain packages consume:
-- `sphinx-autodoc-badges` — badge primitives and colour palette
+- `sphinx-ux-badges` — badge primitives and colour palette
 - `sphinx-autodoc-layout` — structural presenter for `api-*` entry components
 - `sphinx-autodoc-typehints-gp` — annotation normalization and type rendering
 
@@ -33,7 +33,7 @@ and FastMCP tools all look like they belong together.
 :caption: Shared Infrastructure
 :hidden:
 
-sphinx-autodoc-badges
+sphinx-ux-badges
 sphinx-autodoc-layout
 sphinx-autodoc-typehints-gp
 ```

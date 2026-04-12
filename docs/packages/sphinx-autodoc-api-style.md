@@ -55,7 +55,7 @@ Or without `merge_sphinx_config`:
 extensions = ["sphinx_autodoc_api_style"]
 ```
 
-`sphinx_autodoc_api_style` automatically registers `sphinx_autodoc_badges` and
+`sphinx_autodoc_api_style` automatically registers `sphinx_ux_badges` and
 `sphinx_autodoc_layout` via `app.setup_extension()`. You do not need to add
 them separately to your `extensions` list.
 
@@ -129,7 +129,7 @@ Render one class and its members:
 
 ## Badge reference
 
-All badge classes are drawn from the shared `sphinx_autodoc_badges.SAB` palette.
+All badge classes are drawn from the shared `sphinx_ux_badges.SAB` palette.
 This extension uses:
 
 | Object type | `SAB` constant | CSS class |
@@ -151,11 +151,11 @@ This extension uses:
 | `final` | `SAB.MOD_FINAL` | `sab-mod-final` |
 | `deprecated` | `SAB.STATE_DEPRECATED` | `sab-state-deprecated` |
 
-See {doc}`sphinx-autodoc-badges` for the full shared palette.
+See {doc}`sphinx-ux-badges` for the full shared palette.
 
 ## CSS prefix
 
-All badge CSS classes use the `sab-` prefix from {doc}`sphinx-autodoc-badges`.
+All badge CSS classes use the `sab-` prefix from {doc}`sphinx-ux-badges`.
 Layout card classes (borders, headers, field-list rules) are local to this package
 and use `dl.py-*` and `.api-*` selectors.
 

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from docutils import nodes
 
-from sphinx_autodoc_badges import SAB, BadgeSpec, build_badge_group_from_specs
 from sphinx_autodoc_pytest_fixtures._constants import _SUPPRESSED_SCOPES
+from sphinx_ux_badges import SAB, BadgeSpec, build_badge_group_from_specs
 
 _BADGE_TOOLTIPS: dict[str, str] = {
     "session": "Scope: session \u2014 created once per test session",

@@ -39,7 +39,7 @@ fastmcp_area_map = {
 fastmcp_collector_mode = "introspect"
 ```
 
-`sphinx_autodoc_fastmcp` automatically registers `sphinx_autodoc_badges`,
+`sphinx_autodoc_fastmcp` automatically registers `sphinx_ux_badges`,
 `sphinx_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via `app.setup_extension()`.
 You do not need to add them separately to your `extensions` list.
 

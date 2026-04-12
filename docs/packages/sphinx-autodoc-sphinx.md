@@ -17,7 +17,7 @@ reference-writing, records {py:meth}`sphinx:~sphinx.application.Sphinx.add_confi
 live `confval` entries and summary indexes.
 
 Config entries now share the same badge, layout, and type-rendering stack as
-the rest of the autodoc family: badges come from `sphinx-autodoc-badges`,
+the rest of the autodoc family: badges come from `sphinx-ux-badges`,
 entry structure comes from `sphinx-autodoc-layout`, and displayed config types
 come from `sphinx-autodoc-typehints-gp`.
 
@@ -31,7 +31,7 @@ $ pip install sphinx-autodoc-sphinx
 extensions = ["sphinx_autodoc_sphinx"]
 ```
 
-`sphinx_autodoc_sphinx` automatically registers `sphinx_autodoc_badges`,
+`sphinx_autodoc_sphinx` automatically registers `sphinx_ux_badges`,
 `sphinx_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via `app.setup_extension()`.
 You do not need to add them separately to your `extensions` list.
 

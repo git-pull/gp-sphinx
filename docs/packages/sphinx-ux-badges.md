@@ -1,8 +1,8 @@
-(sphinx-autodoc-badges)=
+(sphinx-ux-badges)=
 
-# sphinx-autodoc-badges
+# sphinx-ux-badges
 
-```{sab-package-meta} sphinx-autodoc-badges
+```{sab-package-meta} sphinx-ux-badges
 ```
 
 :::{admonition} Alpha
@@ -20,7 +20,7 @@ extensions. Provides a single `BadgeNode` and builder API that
 independently.
 
 ```console
-$ pip install sphinx-autodoc-badges
+$ pip install sphinx-ux-badges
 ```
 
 ## Live demos
@@ -38,14 +38,14 @@ Every variant rendered by the real `build_badge` / `build_badge_group` /
 1. {py:meth}`~sphinx.application.Sphinx.add_node` registers `BadgeNode` with
    HTML visitors (`visit_badge_html` / `depart_badge_html`).
 2. {py:meth}`~sphinx.application.Sphinx.add_css_file` injects the shared
-   `sphinx_autodoc_badges.css` stylesheet.
+   `sphinx_ux_badges.css` stylesheet.
 3. Downstream extensions call
    {py:meth}`~sphinx.application.Sphinx.setup_extension` to load the badge
    layer:
 
 ```python
 def setup(app: Sphinx) -> dict[str, Any]:
-    app.setup_extension("sphinx_autodoc_badges")
+    app.setup_extension("sphinx_ux_badges")
 ```
 
 `BadgeNode` subclasses {py:class}`docutils.nodes.inline`, so unregistered
@@ -55,7 +55,7 @@ MRO-based dispatch — no special handling needed.
 Build a grouped toolbar in your own directive or transform:
 
 ```python
-from sphinx_autodoc_badges import build_badge, build_badge_group, build_toolbar
+from sphinx_ux_badges import build_badge, build_badge_group, build_toolbar
 
 badge_group = build_badge_group(
     [
@@ -174,18 +174,18 @@ every variant.
 ## API reference
 
 ```{eval-rst}
-.. autoclass:: sphinx_autodoc_badges.BadgeSpec
+.. autoclass:: sphinx_ux_badges.BadgeSpec
    :members:
 
-.. autofunction:: sphinx_autodoc_badges.build_badge_from_spec
+.. autofunction:: sphinx_ux_badges.build_badge_from_spec
 
-.. autofunction:: sphinx_autodoc_badges.build_badge
+.. autofunction:: sphinx_ux_badges.build_badge
 
-.. autofunction:: sphinx_autodoc_badges.build_badge_group
+.. autofunction:: sphinx_ux_badges.build_badge_group
 
-.. autofunction:: sphinx_autodoc_badges.build_toolbar
+.. autofunction:: sphinx_ux_badges.build_toolbar
 
-.. autoclass:: sphinx_autodoc_badges.BadgeNode
+.. autoclass:: sphinx_ux_badges.BadgeNode
    :no-members:
 
    .. rubric:: Constructor parameters
@@ -219,11 +219,11 @@ every variant.
         - ``None``
         - Additional CSS classes (plugin prefix + color class).
 
-.. autoclass:: sphinx_autodoc_badges._css.SAB
+.. autoclass:: sphinx_ux_badges._css.SAB
    :members:
    :undoc-members:
 
-.. autofunction:: sphinx_autodoc_badges.setup
+.. autofunction:: sphinx_ux_badges.setup
 ```
 
 ## CSS custom properties
@@ -388,7 +388,7 @@ extensions reference `SAB.*` constants instead of maintaining their own
 
 ## Package reference
 
-```{package-reference} sphinx-autodoc-badges
+```{package-reference} sphinx-ux-badges
 ```
 
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-badges) · [PyPI](https://pypi.org/project/sphinx-autodoc-badges/)
+[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-ux-badges) · [PyPI](https://pypi.org/project/sphinx-ux-badges/)
