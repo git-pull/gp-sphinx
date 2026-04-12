@@ -7,12 +7,16 @@ Twelve workspace packages in three tiers.
 - `sphinx-ux-autodoc-layout` — structural presenter for `api-*` entry components
 - `sphinx-autodoc-typehints-gp` — annotation normalization and type rendering
 
-**Autodoc domain packages** — domain-specific autodoc extensions:
-- `sphinx-autodoc-api-style`, `sphinx-autodoc-docutils`, `sphinx-autodoc-fastmcp`,
+**Domain packages** — domain-specific autodoc extensions.  Each either
+ships its own Sphinx domain or extends an existing one with new
+directives, roles, and per-domain indices:
+- `sphinx-autodoc-api-style`, `sphinx-autodoc-argparse`,
+  `sphinx-autodoc-docutils`, `sphinx-autodoc-fastmcp`,
   `sphinx-autodoc-pytest-fixtures`, `sphinx-autodoc-sphinx`
 
-**Theme, fonts, and CLI** — shared Sphinx configuration and assets:
-- `gp-sphinx`, `sphinx-gp-theme`, `sphinx-fonts`, `sphinx-autodoc-argparse`
+**Theme and coordinator** — shared Sphinx configuration and presentation
+assets:
+- `gp-sphinx`, `sphinx-gp-theme`, `sphinx-fonts`
 
 `gp-sphinx` is the umbrella entry point: `merge_sphinx_config()` wires up the
 full stack for downstream projects.
