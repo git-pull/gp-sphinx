@@ -25,6 +25,7 @@ from sphinx_autodoc_argparse.utils import escape_rst_emphasis
 if t.TYPE_CHECKING:
     from docutils.parsers.rst.states import RSTState
     from sphinx.config import Config
+    from sphinx.environment import BuildEnvironment
 
     from sphinx_autodoc_argparse.parser import (
         ArgumentGroup,
@@ -87,6 +88,10 @@ class ArgparseRenderer:
         Rendering configuration.
     state : RSTState | None
         RST state for parsing nested RST content.
+    env : BuildEnvironment | None
+        Sphinx build environment.  When provided the renderer registers
+        CLI options with the ``std`` domain so that ``:option:`` cross
+        references and ``objects.inv`` entries work.
 
     Examples
     --------
@@ -112,10 +117,12 @@ class ArgparseRenderer:
         self,
         config: RenderConfig | None = None,
         state: RSTState | None = None,
+        env: BuildEnvironment | None = None,
     ) -> None:
         """Initialize the renderer."""
         self.config = config or RenderConfig()
         self.state = state
+        self.env = env
 
     @staticmethod
     def _extract_id_prefix(prog: str) -> str:
@@ -148,13 +155,18 @@ class ArgparseRenderer:
         # Join remaining parts with hyphen for multi-level subcommands
         return "-".join(parts[1:])
 
-    def render(self, parser_info: ParserInfo) -> list[nodes.Node]:
+    def render(
+        self, parser_info: ParserInfo, *, prog_name: str = ""
+    ) -> list[nodes.Node]:
         """Render a complete parser to docutils nodes.
 
         Parameters
         ----------
         parser_info : ParserInfo
             The parsed parser information.
+        prog_name : str
+            Full program path for domain registration (e.g. ``"myapp sync"``).
+            Derived from *parser_info.prog* when empty.
 
         Returns
         -------
@@ -178,6 +190,9 @@ class ArgparseRenderer:
         The "examples:" definition list in descriptions is left for
         argparse_exemplar.py to transform into a proper Examples section.
         """
+        if not prog_name:
+            prog_name = parser_info.prog
+
         result: list[nodes.Node] = []
 
         # Create program container for description only
@@ -202,12 +217,19 @@ class ArgparseRenderer:
 
         # Add argument groups as sibling sections (for TOC visibility)
         for group in parser_info.argument_groups:
-            group_section = self.render_group_section(group, id_prefix=id_prefix)
+            group_section = self.render_group_section(
+                group,
+                id_prefix=id_prefix,
+                prog_name=prog_name,
+            )
             result.append(group_section)
 
         # Add subcommands
         if parser_info.subcommands:
-            subcommands_node = self.render_subcommands(parser_info.subcommands)
+            subcommands_node = self.render_subcommands(
+                parser_info.subcommands,
+                parent_prog=prog_name,
+            )
             result.append(subcommands_node)
 
         # Add epilog
@@ -302,7 +324,11 @@ class ArgparseRenderer:
         return section
 
     def render_group_section(
-        self, group: ArgumentGroup, *, id_prefix: str = ""
+        self,
+        group: ArgumentGroup,
+        *,
+        id_prefix: str = "",
+        prog_name: str = "",
     ) -> nodes.section:
         """Render an argument group wrapped in a section for TOC visibility.
 
@@ -373,7 +399,12 @@ class ArgparseRenderer:
 
         # Create the styled group container (with empty title - section provides it)
         # Pass id_prefix to render_group so arguments get unique IDs
-        group_node = self.render_group(group, include_title=False, id_prefix=id_prefix)
+        group_node = self.render_group(
+            group,
+            include_title=False,
+            id_prefix=id_prefix,
+            prog_name=prog_name,
+        )
         section += group_node
 
         return section
@@ -384,6 +415,7 @@ class ArgparseRenderer:
         include_title: bool = True,
         *,
         id_prefix: str = "",
+        prog_name: str = "",
     ) -> argparse_group:
         """Render an argument group.
 
@@ -420,18 +452,30 @@ class ArgparseRenderer:
 
         # Add individual arguments
         for arg in group.arguments:
-            arg_node = self.render_argument(arg, id_prefix=id_prefix)
+            arg_node = self.render_argument(
+                arg,
+                id_prefix=id_prefix,
+                prog_name=prog_name,
+            )
             group_node.append(arg_node)
 
         # Add mutually exclusive groups
         for mutex in group.mutually_exclusive:
-            mutex_nodes = self.render_mutex_group(mutex, id_prefix=id_prefix)
+            mutex_nodes = self.render_mutex_group(
+                mutex,
+                id_prefix=id_prefix,
+                prog_name=prog_name,
+            )
             group_node.extend(mutex_nodes)
 
         return group_node
 
     def render_argument(
-        self, arg: ArgumentInfo, *, id_prefix: str = ""
+        self,
+        arg: ArgumentInfo,
+        *,
+        id_prefix: str = "",
+        prog_name: str = "",
     ) -> argparse_argument:
         """Render a single argument.
 
@@ -443,6 +487,8 @@ class ArgparseRenderer:
             Optional prefix for the argument ID (e.g., "shell" -> "shell-L").
             Used to ensure unique IDs when multiple argparse directives exist
             on the same page.
+        prog_name : str
+            Full program path for domain registration (e.g. ``"myapp sync"``).
 
         Returns
         -------
@@ -468,7 +514,11 @@ class ArgparseRenderer:
         return arg_node
 
     def render_mutex_group(
-        self, mutex: MutuallyExclusiveGroup, *, id_prefix: str = ""
+        self,
+        mutex: MutuallyExclusiveGroup,
+        *,
+        id_prefix: str = "",
+        prog_name: str = "",
     ) -> list[argparse_argument]:
         """Render a mutually exclusive group.
 
@@ -478,6 +528,8 @@ class ArgparseRenderer:
             The mutually exclusive group.
         id_prefix : str
             Optional prefix for argument IDs (e.g., "shell" -> "shell-h").
+        prog_name : str
+            Full program path for domain registration.
 
         Returns
         -------
@@ -486,7 +538,11 @@ class ArgparseRenderer:
         """
         result: list[argparse_argument] = []
         for arg in mutex.arguments:
-            arg_node = self.render_argument(arg, id_prefix=id_prefix)
+            arg_node = self.render_argument(
+                arg,
+                id_prefix=id_prefix,
+                prog_name=prog_name,
+            )
             # Mark as part of mutex group
             arg_node["mutex"] = True
             arg_node["mutex_required"] = mutex.required
@@ -494,7 +550,10 @@ class ArgparseRenderer:
         return result
 
     def render_subcommands(
-        self, subcommands: list[SubcommandInfo]
+        self,
+        subcommands: list[SubcommandInfo],
+        *,
+        parent_prog: str = "",
     ) -> argparse_subcommands:
         """Render subcommands section.
 
@@ -502,6 +561,8 @@ class ArgparseRenderer:
         ----------
         subcommands : list[SubcommandInfo]
             List of subcommand information.
+        parent_prog : str
+            Parent program path for building full subcommand paths.
 
         Returns
         -------
@@ -512,18 +573,25 @@ class ArgparseRenderer:
         container["title"] = "Sub-commands"
 
         for subcmd in subcommands:
-            subcmd_node = self.render_subcommand(subcmd)
+            subcmd_node = self.render_subcommand(subcmd, parent_prog=parent_prog)
             container.append(subcmd_node)
 
         return container
 
-    def render_subcommand(self, subcmd: SubcommandInfo) -> argparse_subcommand:
+    def render_subcommand(
+        self,
+        subcmd: SubcommandInfo,
+        *,
+        parent_prog: str = "",
+    ) -> argparse_subcommand:
         """Render a single subcommand.
 
         Parameters
         ----------
         subcmd : SubcommandInfo
             The subcommand information.
+        parent_prog : str
+            Parent program path (e.g. ``"myapp"``).
 
         Returns
         -------
@@ -537,7 +605,8 @@ class ArgparseRenderer:
 
         # Recursively render the subcommand's parser
         if subcmd.parser:
-            nested_nodes = self.render(subcmd.parser)
+            new_prog = f"{parent_prog} {subcmd.name}".strip()
+            nested_nodes = self.render(subcmd.parser, prog_name=new_prog)
             subcmd_node.extend(nested_nodes)
 
         return subcmd_node
@@ -597,6 +666,7 @@ def create_renderer(
     config: RenderConfig | None = None,
     state: RSTState | None = None,
     renderer_class: type[ArgparseRenderer] | None = None,
+    env: BuildEnvironment | None = None,
 ) -> ArgparseRenderer:
     """Create a renderer instance.
 
@@ -608,6 +678,8 @@ def create_renderer(
         RST state for parsing.
     renderer_class : type[ArgparseRenderer] | None
         Custom renderer class to use.
+    env : BuildEnvironment | None
+        Sphinx build environment for domain registration.
 
     Returns
     -------
@@ -615,4 +687,4 @@ def create_renderer(
         Configured renderer instance.
     """
     cls = renderer_class or ArgparseRenderer
-    return cls(config=config, state=state)
+    return cls(config=config, state=state, env=env)

@@ -178,7 +178,7 @@ class ArgparseDirective(SphinxDirective):
             )
 
         # Render to nodes
-        renderer = ArgparseRenderer(config=config, state=self.state)
+        renderer = ArgparseRenderer(config=config, state=self.state, env=self.env)
         return renderer.render(parser_info)
 
     def _build_render_config(self) -> RenderConfig:
