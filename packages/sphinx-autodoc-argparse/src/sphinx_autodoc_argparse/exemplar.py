@@ -1364,7 +1364,7 @@ def setup(app: Sphinx) -> SetupDict:
     # Register CLI inline roles for documentation
     from sphinx_autodoc_argparse.roles import register_roles
 
-    register_roles()
+    register_roles(app)
 
     return {
         "version": __version__,
