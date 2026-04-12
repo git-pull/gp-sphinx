@@ -4,6 +4,11 @@ Integrated autodoc design system for Sphinx.  Twelve packages in three tiers
 that replace ~300 lines of duplicated `docs/conf.py` with ~10 lines and
 produce beautiful, consistent API documentation.
 
+## Requirements
+
+- Python 3.10+
+- Sphinx 8.1+
+
 ## Install
 
 ```console
