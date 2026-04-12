@@ -13,6 +13,7 @@ from __future__ import annotations
 import typing as t
 
 from sphinx_autodoc_argparse.directive import ArgparseDirective
+from sphinx_autodoc_argparse.domain import ArgparseDomain
 from sphinx_autodoc_argparse.nodes import (
     argparse_argument,
     argparse_group,
@@ -118,6 +119,13 @@ def setup(app: Sphinx) -> SetupDict:
         argparse_subcommand,
         html=(visit_argparse_subcommand_html, depart_argparse_subcommand_html),
     )
+
+    # Register the argparse domain so :argparse:program: / :argparse:option: /
+    # :argparse:subcommand: / :argparse:positional: xrefs resolve and the two
+    # auto-generated indices (argparse-programsindex, argparse-optionsindex)
+    # are available.  The renderer populates this domain via note_* helpers
+    # in parallel with the existing std:cmdoption emission.
+    app.add_domain(ArgparseDomain)
 
     # Register directive
     app.add_directive("argparse", ArgparseDirective)
