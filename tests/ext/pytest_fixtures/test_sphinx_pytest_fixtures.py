@@ -315,7 +315,7 @@ def test_resolve_fixture_index_uses_shared_annotation_paragraph(
 
     assert seen["annotation"] == "fixture_mod.Server"
     rendered_section = t.cast(nodes.Element, container.children[0])
-    assert rendered_section.get("name") == "api-summary"
+    assert rendered_section.get("name") == "gp-sphinx-api-summary"
     assert "shared::fixture_mod.Server" in rendered_section.astext()
 
 
@@ -708,7 +708,7 @@ def test_build_badge_group_node_no_scope_for_function() -> None:
 
 
 def test_build_badge_group_node_session_scope_badge() -> None:
-    """Session-scope produces a scope badge with class spf-scope-session."""
+    """Session-scope produces a scope badge with class gp-sphinx-badge--scope-session."""
     node = sphinx_autodoc_pytest_fixtures._build_badge_group_node(
         "session", "resource", False
     )
@@ -722,7 +722,7 @@ def test_build_badge_group_node_session_scope_badge() -> None:
 
 
 def test_build_badge_group_node_override_kind() -> None:
-    """override_hook produces a badge with class spf-override."""
+    """override_hook produces a badge with class gp-sphinx-badge--state-override."""
     node = sphinx_autodoc_pytest_fixtures._build_badge_group_node(
         "function", "override_hook", False
     )
@@ -738,7 +738,7 @@ def test_build_badge_group_node_override_kind() -> None:
 
 
 def test_build_badge_group_node_autouse_replaces_kind() -> None:
-    """autouse=True shows AUTO badge with spf-autouse class, no kind badge."""
+    """autouse=True shows AUTO badge with gp-sphinx-badge--state-autouse class, no kind badge."""
     node = sphinx_autodoc_pytest_fixtures._build_badge_group_node(
         "function", "resource", True
     )

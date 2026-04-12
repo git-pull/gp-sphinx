@@ -2,13 +2,14 @@
  *
  * Single source of truth for every semantic badge colour across all
  * sphinx-autodoc-* extensions.  Packages no longer ship their own colour
- * CSS; they use the sab-type-*, sab-mod-*, sab-scope-*, and sab-state-*
- * classes defined here.
+ * CSS; they use the ``.gp-sphinx-badge--type-*``, ``--mod-*``, ``--scope-*``,
+ * ``--state-*``, and ``--meta-*`` classes defined here.
  *
- * All classes set --sab-bg, --sab-fg, --sab-border so the shared
- * sab-badge base layer in sphinx_ux_badges.css picks them up.
- * Outlined variants (modifiers, rebuild, factory, etc.) only set fg/border;
- * they rely on the .sab-outline rule for a transparent background.
+ * All classes set --gp-sphinx-badge-bg, --gp-sphinx-badge-fg, --gp-sphinx-badge-border (internal CSS variables)
+ * so the shared .gp-sphinx-badge base layer in sphinx_ux_badges.css picks
+ * them up.  Outlined variants (modifiers, rebuild, factory, etc.) only set
+ * fg/border; they rely on .gp-sphinx-badge--outline for a transparent
+ * background.
  */
 
 /* ══════════════════════════════════════════════════════════
@@ -16,115 +17,115 @@
  * ══════════════════════════════════════════════════════════ */
 :root {
   /* ── Python API type badges ─────────────────────────── */
-  --sab-py-function-bg:     #e8f0fe;
-  --sab-py-function-fg:     #1a56db;
-  --sab-py-function-border: #3b82f6;
+  --gp-sphinx-badge-py-function-bg:     #e8f0fe;
+  --gp-sphinx-badge-py-function-fg:     #1a56db;
+  --gp-sphinx-badge-py-function-border: #3b82f6;
 
-  --sab-py-class-bg:     #eef2ff;
-  --sab-py-class-fg:     #4338ca;
-  --sab-py-class-border: #6366f1;
+  --gp-sphinx-badge-py-class-bg:     #eef2ff;
+  --gp-sphinx-badge-py-class-fg:     #4338ca;
+  --gp-sphinx-badge-py-class-border: #6366f1;
 
-  --sab-py-method-bg:     #ecfeff;
-  --sab-py-method-fg:     #0e7490;
-  --sab-py-method-border: #06b6d4;
+  --gp-sphinx-badge-py-method-bg:     #ecfeff;
+  --gp-sphinx-badge-py-method-fg:     #0e7490;
+  --gp-sphinx-badge-py-method-border: #06b6d4;
 
-  --sab-py-property-bg:     #f0fdfa;
-  --sab-py-property-fg:     #0f766e;
-  --sab-py-property-border: #14b8a6;
+  --gp-sphinx-badge-py-property-bg:     #f0fdfa;
+  --gp-sphinx-badge-py-property-fg:     #0f766e;
+  --gp-sphinx-badge-py-property-border: #14b8a6;
 
-  --sab-py-attribute-bg:     #f1f5f9;
-  --sab-py-attribute-fg:     #475569;
-  --sab-py-attribute-border: #94a3b8;
+  --gp-sphinx-badge-py-attribute-bg:     #f1f5f9;
+  --gp-sphinx-badge-py-attribute-fg:     #475569;
+  --gp-sphinx-badge-py-attribute-border: #94a3b8;
 
-  --sab-py-data-bg:     #f5f5f5;
-  --sab-py-data-fg:     #525252;
-  --sab-py-data-border: #a3a3a3;
+  --gp-sphinx-badge-py-data-bg:     #f5f5f5;
+  --gp-sphinx-badge-py-data-fg:     #525252;
+  --gp-sphinx-badge-py-data-border: #a3a3a3;
 
-  --sab-py-exception-bg:     #fff1f2;
-  --sab-py-exception-fg:     #be123c;
-  --sab-py-exception-border: #f43f5e;
+  --gp-sphinx-badge-py-exception-bg:     #fff1f2;
+  --gp-sphinx-badge-py-exception-fg:     #be123c;
+  --gp-sphinx-badge-py-exception-border: #f43f5e;
 
-  --sab-py-typealias-bg:     #f5f3ff;
-  --sab-py-typealias-fg:     #6d28d9;
-  --sab-py-typealias-border: #8b5cf6;
+  --gp-sphinx-badge-py-typealias-bg:     #f5f3ff;
+  --gp-sphinx-badge-py-typealias-fg:     #6d28d9;
+  --gp-sphinx-badge-py-typealias-border: #8b5cf6;
 
-  --sab-py-module-bg:     #f0fdf4;
-  --sab-py-module-fg:     #166534;
-  --sab-py-module-border: #22c55e;
+  --gp-sphinx-badge-py-module-bg:     #f0fdf4;
+  --gp-sphinx-badge-py-module-fg:     #166534;
+  --gp-sphinx-badge-py-module-border: #22c55e;
 
   /* ── Python API modifier badges (outlined) ──────────── */
-  --sab-mod-async-fg:          #7c3aed;
-  --sab-mod-async-border:      #a78bfa;
+  --gp-sphinx-badge-mod-async-fg:          #7c3aed;
+  --gp-sphinx-badge-mod-async-border:      #a78bfa;
 
-  --sab-mod-classmethod-fg:    #b45309;
-  --sab-mod-classmethod-border: #f59e0b;
+  --gp-sphinx-badge-mod-classmethod-fg:    #b45309;
+  --gp-sphinx-badge-mod-classmethod-border: #f59e0b;
 
-  --sab-mod-staticmethod-fg:    #475569;
-  --sab-mod-staticmethod-border: #94a3b8;
+  --gp-sphinx-badge-mod-staticmethod-fg:    #475569;
+  --gp-sphinx-badge-mod-staticmethod-border: #94a3b8;
 
-  --sab-mod-abstract-fg:       #4338ca;
-  --sab-mod-abstract-border:   #818cf8;
+  --gp-sphinx-badge-mod-abstract-fg:       #4338ca;
+  --gp-sphinx-badge-mod-abstract-border:   #818cf8;
 
-  --sab-mod-final-fg:          #047857;
-  --sab-mod-final-border:      #34d399;
+  --gp-sphinx-badge-mod-final-fg:          #047857;
+  --gp-sphinx-badge-mod-final-border:      #34d399;
 
-  --sab-mod-rebuild-fg:        #6b7280;
-  --sab-mod-rebuild-border:    #d1d5db;
+  --gp-sphinx-badge-mod-rebuild-fg:        #6b7280;
+  --gp-sphinx-badge-mod-rebuild-border:    #d1d5db;
 
   /* ── Shared deprecated (filled muted) ───────────────── */
-  --sab-state-deprecated-bg:     transparent;
-  --sab-state-deprecated-fg:     #8a4040;
-  --sab-state-deprecated-border: #c07070;
+  --gp-sphinx-badge-state-deprecated-bg:     transparent;
+  --gp-sphinx-badge-state-deprecated-fg:     #8a4040;
+  --gp-sphinx-badge-state-deprecated-border: #c07070;
 
   /* ── pytest fixture types ───────────────────────────── */
-  --sab-fixture-bg:     #e6f7ed;
-  --sab-fixture-fg:     #1a5c2e;
-  --sab-fixture-border: #3aad65;
+  --gp-sphinx-badge-fixture-bg:     #e6f7ed;
+  --gp-sphinx-badge-fixture-fg:     #1a5c2e;
+  --gp-sphinx-badge-fixture-border: #3aad65;
 
   /* ── pytest fixture scopes ──────────────────────────── */
-  --sab-scope-session-bg:     #fff3cd;
-  --sab-scope-session-fg:     #7a5200;
-  --sab-scope-session-border: #d4a017;
+  --gp-sphinx-badge-scope-session-bg:     #fff3cd;
+  --gp-sphinx-badge-scope-session-fg:     #7a5200;
+  --gp-sphinx-badge-scope-session-border: #d4a017;
 
-  --sab-scope-module-bg:     #e0f4f4;
-  --sab-scope-module-fg:     #1a5c5c;
-  --sab-scope-module-border: #3aabab;
+  --gp-sphinx-badge-scope-module-bg:     #e0f4f4;
+  --gp-sphinx-badge-scope-module-fg:     #1a5c5c;
+  --gp-sphinx-badge-scope-module-border: #3aabab;
 
-  --sab-scope-class-bg:     #eeedf6;
-  --sab-scope-class-fg:     #3c3670;
-  --sab-scope-class-border: #7b76c0;
+  --gp-sphinx-badge-scope-class-bg:     #eeedf6;
+  --gp-sphinx-badge-scope-class-fg:     #3c3670;
+  --gp-sphinx-badge-scope-class-border: #7b76c0;
 
   /* ── pytest fixture kinds / states (outlined) ───────── */
-  --sab-state-factory-fg:     #7a4200;
-  --sab-state-factory-border: #c87f35;
+  --gp-sphinx-badge-state-factory-fg:     #7a4200;
+  --gp-sphinx-badge-state-factory-border: #c87f35;
 
-  --sab-state-override-fg:    #5a1a7a;
-  --sab-state-override-border: #9b59c8;
+  --gp-sphinx-badge-state-override-fg:    #5a1a7a;
+  --gp-sphinx-badge-state-override-border: #9b59c8;
 
-  --sab-state-autouse-fg:     #7a1a2a;
-  --sab-state-autouse-border: #c85070;
+  --gp-sphinx-badge-state-autouse-fg:     #7a1a2a;
+  --gp-sphinx-badge-state-autouse-border: #c85070;
 
   /* ── Sphinx config (filled amber) ───────────────────── */
-  --sab-config-bg:     #fff7ed;
-  --sab-config-fg:     #c2410c;
-  --sab-config-border: #f97316;
+  --gp-sphinx-badge-config-bg:     #fff7ed;
+  --gp-sphinx-badge-config-fg:     #c2410c;
+  --gp-sphinx-badge-config-border: #f97316;
 
   /* ── docutils (filled violet) ───────────────────────── */
-  --sab-docutils-bg:     #f5f3ff;
-  --sab-docutils-fg:     #6d28d9;
-  --sab-docutils-border: #8b5cf6;
+  --gp-sphinx-badge-docutils-bg:     #f5f3ff;
+  --gp-sphinx-badge-docutils-fg:     #6d28d9;
+  --gp-sphinx-badge-docutils-border: #8b5cf6;
 
   /* ── Package metadata (maturity + links) ────────────── */
-  --sab-meta-alpha-bg:     #ffedc6;
-  --sab-meta-alpha-fg:     #4e2009;
-  --sab-meta-alpha-border: #ab6400;
+  --gp-sphinx-badge-meta-alpha-bg:     #ffedc6;
+  --gp-sphinx-badge-meta-alpha-fg:     #4e2009;
+  --gp-sphinx-badge-meta-alpha-border: #ab6400;
 
-  --sab-meta-beta-bg:      #ddf3e4;
-  --sab-meta-beta-fg:      #193b2d;
-  --sab-meta-beta-border:  #218358;
+  --gp-sphinx-badge-meta-beta-bg:      #ddf3e4;
+  --gp-sphinx-badge-meta-beta-fg:      #193b2d;
+  --gp-sphinx-badge-meta-beta-border:  #218358;
 
-  --sab-meta-link-fg:      #6b7280;
-  --sab-meta-link-border:  #d1d5db;
+  --gp-sphinx-badge-meta-link-fg:      #6b7280;
+  --gp-sphinx-badge-meta-link-border:  #d1d5db;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -132,106 +133,106 @@
  * ══════════════════════════════════════════════════════════ */
 @media (prefers-color-scheme: dark) {
   body:not([data-theme="light"]) {
-    --sab-py-function-bg:     #172554;
-    --sab-py-function-fg:     #93c5fd;
-    --sab-py-function-border: #3b82f6;
+    --gp-sphinx-badge-py-function-bg:     #172554;
+    --gp-sphinx-badge-py-function-fg:     #93c5fd;
+    --gp-sphinx-badge-py-function-border: #3b82f6;
 
-    --sab-py-class-bg:     #1e1b4b;
-    --sab-py-class-fg:     #a5b4fc;
-    --sab-py-class-border: #6366f1;
+    --gp-sphinx-badge-py-class-bg:     #1e1b4b;
+    --gp-sphinx-badge-py-class-fg:     #a5b4fc;
+    --gp-sphinx-badge-py-class-border: #6366f1;
 
-    --sab-py-method-bg:     #083344;
-    --sab-py-method-fg:     #67e8f9;
-    --sab-py-method-border: #22d3ee;
+    --gp-sphinx-badge-py-method-bg:     #083344;
+    --gp-sphinx-badge-py-method-fg:     #67e8f9;
+    --gp-sphinx-badge-py-method-border: #22d3ee;
 
-    --sab-py-property-bg:     #042f2e;
-    --sab-py-property-fg:     #5eead4;
-    --sab-py-property-border: #2dd4bf;
+    --gp-sphinx-badge-py-property-bg:     #042f2e;
+    --gp-sphinx-badge-py-property-fg:     #5eead4;
+    --gp-sphinx-badge-py-property-border: #2dd4bf;
 
-    --sab-py-attribute-bg:     #1e293b;
-    --sab-py-attribute-fg:     #cbd5e1;
-    --sab-py-attribute-border: #64748b;
+    --gp-sphinx-badge-py-attribute-bg:     #1e293b;
+    --gp-sphinx-badge-py-attribute-fg:     #cbd5e1;
+    --gp-sphinx-badge-py-attribute-border: #64748b;
 
-    --sab-py-data-bg:     #262626;
-    --sab-py-data-fg:     #d4d4d4;
-    --sab-py-data-border: #737373;
+    --gp-sphinx-badge-py-data-bg:     #262626;
+    --gp-sphinx-badge-py-data-fg:     #d4d4d4;
+    --gp-sphinx-badge-py-data-border: #737373;
 
-    --sab-py-exception-bg:     #4c0519;
-    --sab-py-exception-fg:     #fda4af;
-    --sab-py-exception-border: #fb7185;
+    --gp-sphinx-badge-py-exception-bg:     #4c0519;
+    --gp-sphinx-badge-py-exception-fg:     #fda4af;
+    --gp-sphinx-badge-py-exception-border: #fb7185;
 
-    --sab-py-typealias-bg:     #2e1065;
-    --sab-py-typealias-fg:     #c4b5fd;
-    --sab-py-typealias-border: #a78bfa;
+    --gp-sphinx-badge-py-typealias-bg:     #2e1065;
+    --gp-sphinx-badge-py-typealias-fg:     #c4b5fd;
+    --gp-sphinx-badge-py-typealias-border: #a78bfa;
 
-    --sab-py-module-bg:     #052e16;
-    --sab-py-module-fg:     #86efac;
-    --sab-py-module-border: #4ade80;
+    --gp-sphinx-badge-py-module-bg:     #052e16;
+    --gp-sphinx-badge-py-module-fg:     #86efac;
+    --gp-sphinx-badge-py-module-border: #4ade80;
 
-    --sab-mod-async-fg:          #c4b5fd;
-    --sab-mod-async-border:      #7c3aed;
+    --gp-sphinx-badge-mod-async-fg:          #c4b5fd;
+    --gp-sphinx-badge-mod-async-border:      #7c3aed;
 
-    --sab-mod-classmethod-fg:    #fcd34d;
-    --sab-mod-classmethod-border: #d97706;
+    --gp-sphinx-badge-mod-classmethod-fg:    #fcd34d;
+    --gp-sphinx-badge-mod-classmethod-border: #d97706;
 
-    --sab-mod-staticmethod-fg:    #94a3b8;
-    --sab-mod-staticmethod-border: #475569;
+    --gp-sphinx-badge-mod-staticmethod-fg:    #94a3b8;
+    --gp-sphinx-badge-mod-staticmethod-border: #475569;
 
-    --sab-mod-abstract-fg:       #a5b4fc;
-    --sab-mod-abstract-border:   #4338ca;
+    --gp-sphinx-badge-mod-abstract-fg:       #a5b4fc;
+    --gp-sphinx-badge-mod-abstract-border:   #4338ca;
 
-    --sab-mod-final-fg:          #6ee7b7;
-    --sab-mod-final-border:      #059669;
+    --gp-sphinx-badge-mod-final-fg:          #6ee7b7;
+    --gp-sphinx-badge-mod-final-border:      #059669;
 
-    --sab-mod-rebuild-fg:        #9ca3af;
-    --sab-mod-rebuild-border:    #4b5563;
+    --gp-sphinx-badge-mod-rebuild-fg:        #9ca3af;
+    --gp-sphinx-badge-mod-rebuild-border:    #4b5563;
 
-    --sab-state-deprecated-fg:     #e08080;
-    --sab-state-deprecated-border: #c06060;
+    --gp-sphinx-badge-state-deprecated-fg:     #e08080;
+    --gp-sphinx-badge-state-deprecated-border: #c06060;
 
-    --sab-fixture-bg:     #0d2e1a;
-    --sab-fixture-fg:     #70dd90;
-    --sab-fixture-border: #309050;
+    --gp-sphinx-badge-fixture-bg:     #0d2e1a;
+    --gp-sphinx-badge-fixture-fg:     #70dd90;
+    --gp-sphinx-badge-fixture-border: #309050;
 
-    --sab-scope-session-bg:     #3a2800;
-    --sab-scope-session-fg:     #f5d580;
-    --sab-scope-session-border: #c89030;
+    --gp-sphinx-badge-scope-session-bg:     #3a2800;
+    --gp-sphinx-badge-scope-session-fg:     #f5d580;
+    --gp-sphinx-badge-scope-session-border: #c89030;
 
-    --sab-scope-module-bg:     #0d2a2a;
-    --sab-scope-module-fg:     #70dddd;
-    --sab-scope-module-border: #309090;
+    --gp-sphinx-badge-scope-module-bg:     #0d2a2a;
+    --gp-sphinx-badge-scope-module-fg:     #70dddd;
+    --gp-sphinx-badge-scope-module-border: #309090;
 
-    --sab-scope-class-bg:     #1a1838;
-    --sab-scope-class-fg:     #b0acee;
-    --sab-scope-class-border: #6060b0;
+    --gp-sphinx-badge-scope-class-bg:     #1a1838;
+    --gp-sphinx-badge-scope-class-fg:     #b0acee;
+    --gp-sphinx-badge-scope-class-border: #6060b0;
 
-    --sab-state-factory-fg:     #f0b060;
-    --sab-state-factory-border: #d08040;
+    --gp-sphinx-badge-state-factory-fg:     #f0b060;
+    --gp-sphinx-badge-state-factory-border: #d08040;
 
-    --sab-state-override-fg:    #d090f0;
-    --sab-state-override-border: #a060d0;
+    --gp-sphinx-badge-state-override-fg:    #d090f0;
+    --gp-sphinx-badge-state-override-border: #a060d0;
 
-    --sab-state-autouse-fg:     #f080a0;
-    --sab-state-autouse-border: #d05070;
+    --gp-sphinx-badge-state-autouse-fg:     #f080a0;
+    --gp-sphinx-badge-state-autouse-border: #d05070;
 
-    --sab-config-bg:     #431407;
-    --sab-config-fg:     #fdba74;
-    --sab-config-border: #f97316;
+    --gp-sphinx-badge-config-bg:     #431407;
+    --gp-sphinx-badge-config-fg:     #fdba74;
+    --gp-sphinx-badge-config-border: #f97316;
 
-    --sab-docutils-bg:     #2e1065;
-    --sab-docutils-fg:     #c4b5fd;
-    --sab-docutils-border: #a78bfa;
+    --gp-sphinx-badge-docutils-bg:     #2e1065;
+    --gp-sphinx-badge-docutils-fg:     #c4b5fd;
+    --gp-sphinx-badge-docutils-border: #a78bfa;
 
-    --sab-meta-alpha-bg:     #3f2700;
-    --sab-meta-alpha-fg:     #ffca16;
-    --sab-meta-alpha-border: #8f6424;
+    --gp-sphinx-badge-meta-alpha-bg:     #3f2700;
+    --gp-sphinx-badge-meta-alpha-fg:     #ffca16;
+    --gp-sphinx-badge-meta-alpha-border: #8f6424;
 
-    --sab-meta-beta-bg:      #113b29;
-    --sab-meta-beta-fg:      #3dd68c;
-    --sab-meta-beta-border:  #2f7c57;
+    --gp-sphinx-badge-meta-beta-bg:      #113b29;
+    --gp-sphinx-badge-meta-beta-fg:      #3dd68c;
+    --gp-sphinx-badge-meta-beta-border:  #2f7c57;
 
-    --sab-meta-link-fg:      #9ca3af;
-    --sab-meta-link-border:  #4b5563;
+    --gp-sphinx-badge-meta-link-fg:      #9ca3af;
+    --gp-sphinx-badge-meta-link-border:  #4b5563;
   }
 }
 
@@ -240,166 +241,166 @@
  * Identical values to the @media block above.
  * ══════════════════════════════════════════════════════════ */
 body[data-theme="dark"] {
-  --sab-py-function-bg:     #172554;
-  --sab-py-function-fg:     #93c5fd;
-  --sab-py-function-border: #3b82f6;
+  --gp-sphinx-badge-py-function-bg:     #172554;
+  --gp-sphinx-badge-py-function-fg:     #93c5fd;
+  --gp-sphinx-badge-py-function-border: #3b82f6;
 
-  --sab-py-class-bg:     #1e1b4b;
-  --sab-py-class-fg:     #a5b4fc;
-  --sab-py-class-border: #6366f1;
+  --gp-sphinx-badge-py-class-bg:     #1e1b4b;
+  --gp-sphinx-badge-py-class-fg:     #a5b4fc;
+  --gp-sphinx-badge-py-class-border: #6366f1;
 
-  --sab-py-method-bg:     #083344;
-  --sab-py-method-fg:     #67e8f9;
-  --sab-py-method-border: #22d3ee;
+  --gp-sphinx-badge-py-method-bg:     #083344;
+  --gp-sphinx-badge-py-method-fg:     #67e8f9;
+  --gp-sphinx-badge-py-method-border: #22d3ee;
 
-  --sab-py-property-bg:     #042f2e;
-  --sab-py-property-fg:     #5eead4;
-  --sab-py-property-border: #2dd4bf;
+  --gp-sphinx-badge-py-property-bg:     #042f2e;
+  --gp-sphinx-badge-py-property-fg:     #5eead4;
+  --gp-sphinx-badge-py-property-border: #2dd4bf;
 
-  --sab-py-attribute-bg:     #1e293b;
-  --sab-py-attribute-fg:     #cbd5e1;
-  --sab-py-attribute-border: #64748b;
+  --gp-sphinx-badge-py-attribute-bg:     #1e293b;
+  --gp-sphinx-badge-py-attribute-fg:     #cbd5e1;
+  --gp-sphinx-badge-py-attribute-border: #64748b;
 
-  --sab-py-data-bg:     #262626;
-  --sab-py-data-fg:     #d4d4d4;
-  --sab-py-data-border: #737373;
+  --gp-sphinx-badge-py-data-bg:     #262626;
+  --gp-sphinx-badge-py-data-fg:     #d4d4d4;
+  --gp-sphinx-badge-py-data-border: #737373;
 
-  --sab-py-exception-bg:     #4c0519;
-  --sab-py-exception-fg:     #fda4af;
-  --sab-py-exception-border: #fb7185;
+  --gp-sphinx-badge-py-exception-bg:     #4c0519;
+  --gp-sphinx-badge-py-exception-fg:     #fda4af;
+  --gp-sphinx-badge-py-exception-border: #fb7185;
 
-  --sab-py-typealias-bg:     #2e1065;
-  --sab-py-typealias-fg:     #c4b5fd;
-  --sab-py-typealias-border: #a78bfa;
+  --gp-sphinx-badge-py-typealias-bg:     #2e1065;
+  --gp-sphinx-badge-py-typealias-fg:     #c4b5fd;
+  --gp-sphinx-badge-py-typealias-border: #a78bfa;
 
-  --sab-py-module-bg:     #052e16;
-  --sab-py-module-fg:     #86efac;
-  --sab-py-module-border: #4ade80;
+  --gp-sphinx-badge-py-module-bg:     #052e16;
+  --gp-sphinx-badge-py-module-fg:     #86efac;
+  --gp-sphinx-badge-py-module-border: #4ade80;
 
-  --sab-mod-async-fg:          #c4b5fd;
-  --sab-mod-async-border:      #7c3aed;
+  --gp-sphinx-badge-mod-async-fg:          #c4b5fd;
+  --gp-sphinx-badge-mod-async-border:      #7c3aed;
 
-  --sab-mod-classmethod-fg:    #fcd34d;
-  --sab-mod-classmethod-border: #d97706;
+  --gp-sphinx-badge-mod-classmethod-fg:    #fcd34d;
+  --gp-sphinx-badge-mod-classmethod-border: #d97706;
 
-  --sab-mod-staticmethod-fg:    #94a3b8;
-  --sab-mod-staticmethod-border: #475569;
+  --gp-sphinx-badge-mod-staticmethod-fg:    #94a3b8;
+  --gp-sphinx-badge-mod-staticmethod-border: #475569;
 
-  --sab-mod-abstract-fg:       #a5b4fc;
-  --sab-mod-abstract-border:   #4338ca;
+  --gp-sphinx-badge-mod-abstract-fg:       #a5b4fc;
+  --gp-sphinx-badge-mod-abstract-border:   #4338ca;
 
-  --sab-mod-final-fg:          #6ee7b7;
-  --sab-mod-final-border:      #059669;
+  --gp-sphinx-badge-mod-final-fg:          #6ee7b7;
+  --gp-sphinx-badge-mod-final-border:      #059669;
 
-  --sab-mod-rebuild-fg:        #9ca3af;
-  --sab-mod-rebuild-border:    #4b5563;
+  --gp-sphinx-badge-mod-rebuild-fg:        #9ca3af;
+  --gp-sphinx-badge-mod-rebuild-border:    #4b5563;
 
-  --sab-state-deprecated-fg:     #e08080;
-  --sab-state-deprecated-border: #c06060;
+  --gp-sphinx-badge-state-deprecated-fg:     #e08080;
+  --gp-sphinx-badge-state-deprecated-border: #c06060;
 
-  --sab-fixture-bg:     #0d2e1a;
-  --sab-fixture-fg:     #70dd90;
-  --sab-fixture-border: #309050;
+  --gp-sphinx-badge-fixture-bg:     #0d2e1a;
+  --gp-sphinx-badge-fixture-fg:     #70dd90;
+  --gp-sphinx-badge-fixture-border: #309050;
 
-  --sab-scope-session-bg:     #3a2800;
-  --sab-scope-session-fg:     #f5d580;
-  --sab-scope-session-border: #c89030;
+  --gp-sphinx-badge-scope-session-bg:     #3a2800;
+  --gp-sphinx-badge-scope-session-fg:     #f5d580;
+  --gp-sphinx-badge-scope-session-border: #c89030;
 
-  --sab-scope-module-bg:     #0d2a2a;
-  --sab-scope-module-fg:     #70dddd;
-  --sab-scope-module-border: #309090;
+  --gp-sphinx-badge-scope-module-bg:     #0d2a2a;
+  --gp-sphinx-badge-scope-module-fg:     #70dddd;
+  --gp-sphinx-badge-scope-module-border: #309090;
 
-  --sab-scope-class-bg:     #1a1838;
-  --sab-scope-class-fg:     #b0acee;
-  --sab-scope-class-border: #6060b0;
+  --gp-sphinx-badge-scope-class-bg:     #1a1838;
+  --gp-sphinx-badge-scope-class-fg:     #b0acee;
+  --gp-sphinx-badge-scope-class-border: #6060b0;
 
-  --sab-state-factory-fg:     #f0b060;
-  --sab-state-factory-border: #d08040;
+  --gp-sphinx-badge-state-factory-fg:     #f0b060;
+  --gp-sphinx-badge-state-factory-border: #d08040;
 
-  --sab-state-override-fg:    #d090f0;
-  --sab-state-override-border: #a060d0;
+  --gp-sphinx-badge-state-override-fg:    #d090f0;
+  --gp-sphinx-badge-state-override-border: #a060d0;
 
-  --sab-state-autouse-fg:     #f080a0;
-  --sab-state-autouse-border: #d05070;
+  --gp-sphinx-badge-state-autouse-fg:     #f080a0;
+  --gp-sphinx-badge-state-autouse-border: #d05070;
 
-  --sab-config-bg:     #431407;
-  --sab-config-fg:     #fdba74;
-  --sab-config-border: #f97316;
+  --gp-sphinx-badge-config-bg:     #431407;
+  --gp-sphinx-badge-config-fg:     #fdba74;
+  --gp-sphinx-badge-config-border: #f97316;
 
-  --sab-docutils-bg:     #2e1065;
-  --sab-docutils-fg:     #c4b5fd;
-  --sab-docutils-border: #a78bfa;
+  --gp-sphinx-badge-docutils-bg:     #2e1065;
+  --gp-sphinx-badge-docutils-fg:     #c4b5fd;
+  --gp-sphinx-badge-docutils-border: #a78bfa;
 
-  --sab-meta-alpha-bg:     #3f2700;
-  --sab-meta-alpha-fg:     #ffca16;
-  --sab-meta-alpha-border: #8f6424;
+  --gp-sphinx-badge-meta-alpha-bg:     #3f2700;
+  --gp-sphinx-badge-meta-alpha-fg:     #ffca16;
+  --gp-sphinx-badge-meta-alpha-border: #8f6424;
 
-  --sab-meta-beta-bg:      #113b29;
-  --sab-meta-beta-fg:      #3dd68c;
-  --sab-meta-beta-border:  #2f7c57;
+  --gp-sphinx-badge-meta-beta-bg:      #113b29;
+  --gp-sphinx-badge-meta-beta-fg:      #3dd68c;
+  --gp-sphinx-badge-meta-beta-border:  #2f7c57;
 
-  --sab-meta-link-fg:      #9ca3af;
-  --sab-meta-link-border:  #4b5563;
+  --gp-sphinx-badge-meta-link-fg:      #9ca3af;
+  --gp-sphinx-badge-meta-link-border:  #4b5563;
 }
 
 /* ══════════════════════════════════════════════════════════
  * Colour classes — Python API types (filled)
  * ══════════════════════════════════════════════════════════ */
-.sab-type-function  { --sab-bg: var(--sab-py-function-bg);  --sab-fg: var(--sab-py-function-fg);  --sab-border: var(--sab-py-function-border); }
-.sab-type-class     { --sab-bg: var(--sab-py-class-bg);     --sab-fg: var(--sab-py-class-fg);     --sab-border: var(--sab-py-class-border); }
-.sab-type-method    { --sab-bg: var(--sab-py-method-bg);    --sab-fg: var(--sab-py-method-fg);    --sab-border: var(--sab-py-method-border); }
-.sab-type-property  { --sab-bg: var(--sab-py-property-bg);  --sab-fg: var(--sab-py-property-fg);  --sab-border: var(--sab-py-property-border); }
-.sab-type-attribute { --sab-bg: var(--sab-py-attribute-bg); --sab-fg: var(--sab-py-attribute-fg); --sab-border: var(--sab-py-attribute-border); }
-.sab-type-data      { --sab-bg: var(--sab-py-data-bg);      --sab-fg: var(--sab-py-data-fg);      --sab-border: var(--sab-py-data-border); }
-.sab-type-exception { --sab-bg: var(--sab-py-exception-bg); --sab-fg: var(--sab-py-exception-fg); --sab-border: var(--sab-py-exception-border); }
-.sab-type-typealias { --sab-bg: var(--sab-py-typealias-bg); --sab-fg: var(--sab-py-typealias-fg); --sab-border: var(--sab-py-typealias-border); }
-.sab-type-module    { --sab-bg: var(--sab-py-module-bg);    --sab-fg: var(--sab-py-module-fg);    --sab-border: var(--sab-py-module-border); }
+.gp-sphinx-badge--type-function  { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-py-function-bg);  --gp-sphinx-badge-fg: var(--gp-sphinx-badge-py-function-fg);  --gp-sphinx-badge-border: var(--gp-sphinx-badge-py-function-border); }
+.gp-sphinx-badge--type-class     { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-py-class-bg);     --gp-sphinx-badge-fg: var(--gp-sphinx-badge-py-class-fg);     --gp-sphinx-badge-border: var(--gp-sphinx-badge-py-class-border); }
+.gp-sphinx-badge--type-method    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-py-method-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-py-method-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-py-method-border); }
+.gp-sphinx-badge--type-property  { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-py-property-bg);  --gp-sphinx-badge-fg: var(--gp-sphinx-badge-py-property-fg);  --gp-sphinx-badge-border: var(--gp-sphinx-badge-py-property-border); }
+.gp-sphinx-badge--type-attribute { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-py-attribute-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-py-attribute-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-py-attribute-border); }
+.gp-sphinx-badge--type-data      { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-py-data-bg);      --gp-sphinx-badge-fg: var(--gp-sphinx-badge-py-data-fg);      --gp-sphinx-badge-border: var(--gp-sphinx-badge-py-data-border); }
+.gp-sphinx-badge--type-exception { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-py-exception-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-py-exception-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-py-exception-border); }
+.gp-sphinx-badge--type-typealias { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-py-typealias-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-py-typealias-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-py-typealias-border); }
+.gp-sphinx-badge--type-module    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-py-module-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-py-module-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-py-module-border); }
 
 /* ══════════════════════════════════════════════════════════
  * Colour classes — Python API modifiers (outlined)
  * ══════════════════════════════════════════════════════════ */
-.sab-mod-async        { --sab-fg: var(--sab-mod-async-fg);          --sab-border: var(--sab-mod-async-border); }
-.sab-mod-classmethod  { --sab-fg: var(--sab-mod-classmethod-fg);    --sab-border: var(--sab-mod-classmethod-border); }
-.sab-mod-staticmethod { --sab-fg: var(--sab-mod-staticmethod-fg);   --sab-border: var(--sab-mod-staticmethod-border); }
-.sab-mod-abstract     { --sab-fg: var(--sab-mod-abstract-fg);       --sab-border: var(--sab-mod-abstract-border); }
-.sab-mod-final        { --sab-fg: var(--sab-mod-final-fg);          --sab-border: var(--sab-mod-final-border); }
-.sab-mod-rebuild      { --sab-fg: var(--sab-mod-rebuild-fg);        --sab-border: var(--sab-mod-rebuild-border); }
+.gp-sphinx-badge--mod-async        { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-mod-async-fg);          --gp-sphinx-badge-border: var(--gp-sphinx-badge-mod-async-border); }
+.gp-sphinx-badge--mod-classmethod  { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-mod-classmethod-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-mod-classmethod-border); }
+.gp-sphinx-badge--mod-staticmethod { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-mod-staticmethod-fg);   --gp-sphinx-badge-border: var(--gp-sphinx-badge-mod-staticmethod-border); }
+.gp-sphinx-badge--mod-abstract     { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-mod-abstract-fg);       --gp-sphinx-badge-border: var(--gp-sphinx-badge-mod-abstract-border); }
+.gp-sphinx-badge--mod-final        { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-mod-final-fg);          --gp-sphinx-badge-border: var(--gp-sphinx-badge-mod-final-border); }
+.gp-sphinx-badge--mod-rebuild      { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-mod-rebuild-fg);        --gp-sphinx-badge-border: var(--gp-sphinx-badge-mod-rebuild-border); }
 
 /* ══════════════════════════════════════════════════════════
  * Colour classes — pytest fixture types (filled)
  * ══════════════════════════════════════════════════════════ */
-.sab-type-fixture   { --sab-bg: var(--sab-fixture-bg); --sab-fg: var(--sab-fixture-fg); --sab-border: var(--sab-fixture-border); }
+.gp-sphinx-badge--type-fixture   { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-fixture-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-fixture-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-fixture-border); }
 
 /* ══════════════════════════════════════════════════════════
  * Colour classes — pytest fixture scopes (filled)
  * ══════════════════════════════════════════════════════════ */
-.sab-scope-session { --sab-bg: var(--sab-scope-session-bg); --sab-fg: var(--sab-scope-session-fg); --sab-border: var(--sab-scope-session-border); }
-.sab-scope-module  { --sab-bg: var(--sab-scope-module-bg);  --sab-fg: var(--sab-scope-module-fg);  --sab-border: var(--sab-scope-module-border); }
-.sab-scope-class   { --sab-bg: var(--sab-scope-class-bg);   --sab-fg: var(--sab-scope-class-fg);   --sab-border: var(--sab-scope-class-border); }
+.gp-sphinx-badge--scope-session { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-scope-session-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-scope-session-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-scope-session-border); }
+.gp-sphinx-badge--scope-module  { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-scope-module-bg);  --gp-sphinx-badge-fg: var(--gp-sphinx-badge-scope-module-fg);  --gp-sphinx-badge-border: var(--gp-sphinx-badge-scope-module-border); }
+.gp-sphinx-badge--scope-class   { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-scope-class-bg);   --gp-sphinx-badge-fg: var(--gp-sphinx-badge-scope-class-fg);   --gp-sphinx-badge-border: var(--gp-sphinx-badge-scope-class-border); }
 
 /* ══════════════════════════════════════════════════════════
  * Colour classes — fixture kinds / states
  * ══════════════════════════════════════════════════════════ */
-.sab-state-factory    { --sab-fg: var(--sab-state-factory-fg);    --sab-border: var(--sab-state-factory-border); }
-.sab-state-override   { --sab-fg: var(--sab-state-override-fg);   --sab-border: var(--sab-state-override-border); }
-.sab-state-autouse    { --sab-fg: var(--sab-state-autouse-fg);    --sab-border: var(--sab-state-autouse-border); }
-.sab-state-deprecated { --sab-bg: var(--sab-state-deprecated-bg); --sab-fg: var(--sab-state-deprecated-fg); --sab-border: var(--sab-state-deprecated-border); }
+.gp-sphinx-badge--state-factory    { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-state-factory-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-state-factory-border); }
+.gp-sphinx-badge--state-override   { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-state-override-fg);   --gp-sphinx-badge-border: var(--gp-sphinx-badge-state-override-border); }
+.gp-sphinx-badge--state-autouse    { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-state-autouse-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-state-autouse-border); }
+.gp-sphinx-badge--state-deprecated { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-state-deprecated-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-state-deprecated-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-state-deprecated-border); }
 
 /* ══════════════════════════════════════════════════════════
  * Colour classes — Sphinx config (filled amber)
  * ══════════════════════════════════════════════════════════ */
-.sab-type-config { --sab-bg: var(--sab-config-bg); --sab-fg: var(--sab-config-fg); --sab-border: var(--sab-config-border); }
+.gp-sphinx-badge--type-config { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-config-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-config-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-config-border); }
 
 /* ══════════════════════════════════════════════════════════
  * Colour classes — docutils (filled violet, all three kinds)
  * ══════════════════════════════════════════════════════════ */
-.sab-type-directive,
-.sab-type-role,
-.sab-type-option { --sab-bg: var(--sab-docutils-bg); --sab-fg: var(--sab-docutils-fg); --sab-border: var(--sab-docutils-border); }
+.gp-sphinx-badge--type-directive,
+.gp-sphinx-badge--type-role,
+.gp-sphinx-badge--type-option { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-docutils-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-docutils-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-docutils-border); }
 
 /* ══════════════════════════════════════════════════════════
  * Colour classes — package metadata (maturity + links)
  * ══════════════════════════════════════════════════════════ */
-.sab-meta-alpha { --sab-bg: var(--sab-meta-alpha-bg); --sab-fg: var(--sab-meta-alpha-fg); --sab-border: var(--sab-meta-alpha-border); }
-.sab-meta-beta  { --sab-bg: var(--sab-meta-beta-bg);  --sab-fg: var(--sab-meta-beta-fg);  --sab-border: var(--sab-meta-beta-border); }
-.sab-meta-link  { --sab-fg: var(--sab-meta-link-fg); --sab-border: var(--sab-meta-link-border); }
+.gp-sphinx-badge--meta-alpha { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-meta-alpha-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-meta-alpha-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-meta-alpha-border); }
+.gp-sphinx-badge--meta-beta  { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-meta-beta-bg);  --gp-sphinx-badge-fg: var(--gp-sphinx-badge-meta-beta-fg);  --gp-sphinx-badge-border: var(--gp-sphinx-badge-meta-beta-border); }
+.gp-sphinx-badge--meta-link  { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-meta-link-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-meta-link-border); }

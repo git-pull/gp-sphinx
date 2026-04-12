@@ -28,7 +28,7 @@ PACKAGE_PAGES = sorted(
 )
 LIVE_DEMO_MARKERS = (
     "```{eval-rst}",
-    "```{sab-badge-demo}",
+    "```{gp-sphinx-badge-demo}",
     "```{autofixture-index}",
     ":::{auto-pytest-plugin}",
     "```{argparse}",
@@ -137,12 +137,17 @@ def test_fastmcp_docs_page_renders_live_demo_output(
     """The FastMCP package page renders tool cards, refs, and summary output."""
     fastmcp_docs_html = read_output(fastmcp_docs_result, "api.html")
 
-    assert 'class="smf-tool-section api-card-shell"' in fastmcp_docs_html
     assert (
-        'class="api-entry api-card-entry api-profile--fastmcp-tool smf-tool-entry"'
+        'class="gp-sphinx-fastmcp__tool-section gp-sphinx-api-card-shell"'
         in fastmcp_docs_html
     )
-    assert 'class="api-badge-container"' in fastmcp_docs_html
+    expected_tool_entry_classes = (
+        'class="gp-sphinx-api-entry gp-sphinx-api-card-entry'
+        " gp-sphinx-api-profile--fastmcp-tool"
+        ' gp-sphinx-fastmcp__tool-entry"'
+    )
+    assert expected_tool_entry_classes in fastmcp_docs_html
+    assert 'class="gp-sphinx-api-badge-container"' in fastmcp_docs_html
     assert "list_sessions" in fastmcp_docs_html
     assert "create_session" in fastmcp_docs_html
     assert "delete_session" in fastmcp_docs_html
@@ -163,7 +168,7 @@ def test_gallery_page_uses_live_eval_rst_demos() -> None:
 
     assert "```{eval-rst}" in text
     assert "autofunction::" in text or "autoclass::" in text
-    assert "```{sab-badge-demo}" in text
+    assert "```{gp-sphinx-badge-demo}" in text
 
 
 def test_architecture_page_names_all_three_tiers() -> None:

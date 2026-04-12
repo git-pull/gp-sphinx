@@ -1,6 +1,6 @@
 # sphinx-autodoc-sphinx
 
-```{sab-package-meta} sphinx-autodoc-sphinx
+```{gp-sphinx-package-meta} sphinx-autodoc-sphinx
 ```
 
 :::{admonition} Alpha

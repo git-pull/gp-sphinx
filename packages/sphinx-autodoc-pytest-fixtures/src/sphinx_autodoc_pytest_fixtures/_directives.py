@@ -532,7 +532,7 @@ class PyFixtureDirective(PyFunction):
                 dep_para.extend(ref_ns)
                 dep_para += nodes.Text(" instead.")
             warning += dep_para
-            # Add spf-deprecated class to the parent desc node for CSS muting
+            # Add state-deprecated badge class to the parent desc node for CSS muting
             for parent in self.state.document.findall(addnodes.desc):
                 for sig in parent.findall(addnodes.desc_signature):
                     if sig.get("spf_deprecated"):

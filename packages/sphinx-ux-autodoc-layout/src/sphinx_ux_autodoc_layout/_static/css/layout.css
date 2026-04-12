@@ -3,33 +3,33 @@
  */
 
 /* ── Content sections ───────────────────────────────── */
-.api-region + .api-region {
+.gp-sphinx-api-region + .gp-sphinx-api-region {
   margin-top: 1rem;
 }
 
-.api-footer,
-.api-region--members {
+.gp-sphinx-api-footer,
+.gp-sphinx-api-region--members {
   margin-top: 1.5rem;
 }
 
-.api-summary table {
+.gp-sphinx-api-summary table {
   margin-top: 0;
 }
 
 /* ── API shell ──────────────────────────────────────── */
-dl.api-container > dt.api-header {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header {
   display: flex;
   align-items: center;
 }
 
-dl.api-container > dt.api-header > .api-layout {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout {
   display: flex;
   align-items: center;
   gap: 1rem;
   width: 100%;
 }
 
-dl.api-container > dt.api-header .api-layout-left {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-left {
   flex: 1 1 auto;
   display: flex;
   align-items: center;
@@ -37,7 +37,7 @@ dl.api-container > dt.api-header .api-layout-left {
   min-width: 0;
 }
 
-dl.api-container > dt.api-header .api-layout-right {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -46,51 +46,51 @@ dl.api-container > dt.api-header .api-layout-right {
   flex: 0 0 auto;
 }
 
-dl.api-container > dt.api-header[data-signature-expanded="true"] {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header[data-signature-expanded="true"] {
   display: flex;
   align-items: flex-start;
 }
 
-dl.api-container > dt.api-header[data-signature-expanded="true"] > .api-layout {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header[data-signature-expanded="true"] > .gp-sphinx-api-layout {
   align-items: flex-start;
 }
 
-dl.api-container > dt.api-header[data-signature-expanded="true"] .api-layout-left {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header[data-signature-expanded="true"] .gp-sphinx-api-layout-left {
   align-items: flex-start;
 }
 
-dl.api-container > dt.api-header[data-signature-expanded="true"] .api-layout-right {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header[data-signature-expanded="true"] .gp-sphinx-api-layout-right {
   align-items: flex-start;
 }
 
-dl.api-container > dt.api-header .api-layout-right:empty {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right:empty {
   display: none;
 }
 
-dl.api-container > dt.api-header .api-source-link {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-source-link {
   display: inline-flex;
   align-items: center;
 }
 
 /* ── Signature row ──────────────────────────────────── */
-dl.api-container > dt.api-header .api-signature {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-signature {
   flex: 1 1 auto;
   font-family: var(--font-stack--monospace);
   min-width: 0;
 }
 
-dl.api-container > dt.api-header .api-link {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-link {
   margin-left: 0.1rem;
   flex: 0 0 auto;
   visibility: hidden;
 }
 
-dl.api-container > dt.api-header:hover .api-link,
-dl.api-container > dt.api-header .api-link:focus-visible {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:hover .gp-sphinx-api-link,
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-link:focus-visible {
   visibility: visible;
 }
 
-.api-signature-toggle {
+.gp-sphinx-api-signature-toggle {
   appearance: none;
   border: 0;
   background: none;
@@ -103,44 +103,44 @@ dl.api-container > dt.api-header .api-link:focus-visible {
   padding: 0;
 }
 
-.api-signature-toggle .api-signature-preview {
+.gp-sphinx-api-signature-toggle .gp-sphinx-api-signature-preview {
   color: var(--color-foreground-muted);
 }
 
-.api-signature-toggle:hover .api-signature-preview,
-.api-signature-toggle:focus-visible .api-signature-preview {
+.gp-sphinx-api-signature-toggle:hover .gp-sphinx-api-signature-preview,
+.gp-sphinx-api-signature-toggle:focus-visible .gp-sphinx-api-signature-preview {
   color: var(--color-link);
 }
 
-.api-signature-toggle[aria-expanded="true"] {
+.gp-sphinx-api-signature-toggle[aria-expanded="true"] {
   display: none;
 }
 
 /* ── Expanded signature wrapper ─────────────────────── */
-.api-signature-expanded {
+.gp-sphinx-api-signature-expanded {
   display: contents;
 }
 
-.api-signature-expanded[hidden] {
+.gp-sphinx-api-signature-expanded[hidden] {
   display: none;
 }
 
-.api-signature-expanded > dl {
+.gp-sphinx-api-signature-expanded > dl {
   margin: 0;
-  padding-inline-start: var(--api-signature-indent, 1rem);
+  padding-inline-start: var(--gp-sphinx-api-signature-indent, 1rem);
 }
 
-.api-signature-expanded > dl > dd {
+.gp-sphinx-api-signature-expanded > dl > dd {
   margin: 0;
   margin-inline-start: 0 !important;
   margin-left: 0 !important;
 }
 
-.api-signature-expanded > .sig-paren:last-of-type {
+.gp-sphinx-api-signature-expanded > .sig-paren:last-of-type {
   margin-right: 0.35rem;
 }
 
-.api-sig-collapse {
+.gp-sphinx-api-sig-collapse {
   appearance: none;
   background: none;
   border: 0;
@@ -151,42 +151,42 @@ dl.api-container > dt.api-header .api-link:focus-visible {
   padding: 0;
 }
 
-.api-sig-collapse:hover,
-.api-sig-collapse:focus-visible {
+.gp-sphinx-api-sig-collapse:hover,
+.gp-sphinx-api-sig-collapse:focus-visible {
   color: var(--color-link);
 }
 
 /* ── Field-list grid ────────────────────────────────── */
-dl.api-container > dd.api-content .api-parameters dl.field-list {
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   gap: 0 1rem;
 }
 
-dl.api-container > dd.api-content .api-facts dl.field-list {
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   gap: 0.25rem 1rem;
 }
 
-dl.api-container > dd.api-content .api-facts dl.field-list > dt {
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dt {
   font-weight: 600;
 }
 
-dl.api-container > dd.api-content .api-facts dl.field-list > dd {
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd {
   margin-left: 0;
 }
 
-dl.api-container > dd.api-content .api-options > .rst.directive-option + .rst.directive-option {
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-options > .rst.directive-option + .rst.directive-option {
   margin-top: 1rem;
 }
 
 /* ── Fold (block disclosure) ────────────────────────── */
-details.api-fold {
+details.gp-sphinx-api-fold {
   margin: 0;
 }
 
-details.api-fold > summary.api-fold-summary {
+details.gp-sphinx-api-fold > summary.gp-sphinx-api-fold-summary {
   cursor: pointer;
   color: var(--color-foreground-muted);
   font-size: 0.85em;
@@ -195,25 +195,25 @@ details.api-fold > summary.api-fold-summary {
   list-style: none;
 }
 
-details.api-fold > summary.api-fold-summary::-webkit-details-marker {
+details.gp-sphinx-api-fold > summary.gp-sphinx-api-fold-summary::-webkit-details-marker {
   display: none;
 }
 
-details.api-fold > summary.api-fold-summary::before {
+details.gp-sphinx-api-fold > summary.gp-sphinx-api-fold-summary::before {
   content: "\25B8  ";
 }
 
-details.api-fold[open] > summary.api-fold-summary::before {
+details.gp-sphinx-api-fold[open] > summary.gp-sphinx-api-fold-summary::before {
   content: "\25BE  ";
 }
 
-details.api-fold > summary.api-fold-summary:hover {
+details.gp-sphinx-api-fold > summary.gp-sphinx-api-fold-summary:hover {
   color: var(--color-link);
 }
 
 /* ── Card box for non-Python managed entries ────────── */
 /* rst:directive, rst:role, std:confval — Furo only cards dl.py.*  */
-dl.api-container:not(.py) {
+dl.gp-sphinx-api-container:not(.py) {
   border: 1px solid var(--color-background-border);
   border-radius: 0.5rem;
   padding: 0;
@@ -222,7 +222,7 @@ dl.api-container:not(.py) {
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
-dl.api-container:not(.py) > dt.api-header {
+dl.gp-sphinx-api-container:not(.py) > dt.gp-sphinx-api-header {
   background: var(--color-background-secondary);
   border-bottom: 1px solid var(--color-background-border);
   padding: 0.5rem 0.75rem 0.5rem 1rem;
@@ -232,16 +232,16 @@ dl.api-container:not(.py) > dt.api-header {
   transition: background 100ms ease-out;
 }
 
-dl.api-container:not(.py) > dt.api-header:hover {
+dl.gp-sphinx-api-container:not(.py) > dt.gp-sphinx-api-header:hover {
   background: var(--color-api-background-hover);
 }
 
-dl.api-container:not(.py) > dd.api-content {
+dl.gp-sphinx-api-container:not(.py) > dd.gp-sphinx-api-content {
   padding: 0.75rem 1rem;
   margin-left: 0 !important;
 }
 
-.api-card-shell {
+.gp-sphinx-api-card-shell {
   border: 1px solid var(--color-background-border);
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
@@ -249,25 +249,25 @@ dl.api-container:not(.py) > dd.api-content {
   overflow: clip;
 }
 
-.api-card-shell > .api-card-entry > .api-header {
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header {
   background: var(--color-background-secondary);
   border-bottom: 1px solid var(--color-background-border);
   padding: 0.5rem 0.75rem 0.5rem 1rem;
   transition: background 100ms ease-out;
 }
 
-.api-card-shell > .api-card-entry > .api-header:hover {
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header:hover {
   background: var(--color-api-background-hover);
 }
 
-.api-card-shell > .api-card-entry > .api-header > .api-layout {
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout {
   display: flex;
   align-items: center;
   gap: 0.45rem;
   width: 100%;
 }
 
-.api-card-shell > .api-card-entry > .api-header .api-layout-left {
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-layout-left {
   display: flex;
   align-items: center;
   gap: 0.35rem;
@@ -275,12 +275,12 @@ dl.api-container:not(.py) > dd.api-content {
   flex: 1 1 auto;
 }
 
-.api-card-shell > .api-card-entry > .api-header .api-signature {
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-signature {
   min-width: 0;
   font-family: var(--font-stack--monospace);
 }
 
-.api-card-shell > .api-card-entry > .api-header .api-layout-right {
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-layout-right {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -288,39 +288,39 @@ dl.api-container:not(.py) > dd.api-content {
   white-space: nowrap;
 }
 
-.api-card-shell > .api-card-entry > .api-content {
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-content {
   padding: 0.75rem 1rem;
 }
 
-.api-card-shell > .api-card-entry > .api-content > * + * {
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-content > * + * {
   margin-top: 0.75rem;
 }
 
 /* Nested entries — lighter (e.g. rst:directive:option inside rst:directive) */
-dl.api-container:not(.py) .api-footer dl.api-container:not(.py) {
+dl.gp-sphinx-api-container:not(.py) .gp-sphinx-api-footer dl.gp-sphinx-api-container:not(.py) {
   border-color: var(--color-background-border);
   box-shadow: none;
   margin-bottom: 1rem;
 }
 
-dl.api-container:not(.py) .api-footer dl.api-container:not(.py) > dt.api-header {
+dl.gp-sphinx-api-container:not(.py) .gp-sphinx-api-footer dl.gp-sphinx-api-container:not(.py) > dt.gp-sphinx-api-header {
   background: transparent;
   border-bottom-color: var(--color-background-border);
   padding-left: 0.75rem;
 }
 
-dl.api-container:not(.py) .api-footer dl.api-container:not(.py) > dt.api-header:hover {
+dl.gp-sphinx-api-container:not(.py) .gp-sphinx-api-footer dl.gp-sphinx-api-container:not(.py) > dt.gp-sphinx-api-header:hover {
   background: var(--color-api-background-hover);
 }
 
 /* ── Mobile adjustments ─────────────────────────────── */
 @media (max-width: 52rem) {
-  dl.api-container > dt.api-header > .api-layout {
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout {
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  dl.api-container > dt.api-header .api-layout-right {
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right {
     margin-left: 0;
     white-space: normal;
     width: 100%;
@@ -328,12 +328,12 @@ dl.api-container:not(.py) .api-footer dl.api-container:not(.py) > dt.api-header:
     flex-wrap: wrap;
   }
 
-  .api-card-shell > .api-card-entry > .api-header > .api-layout {
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .api-card-shell > .api-card-entry > .api-header .api-layout-right {
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-layout-right {
     margin-left: 0;
     white-space: normal;
     width: 100%;

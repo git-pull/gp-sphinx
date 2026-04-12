@@ -1,6 +1,6 @@
 # sphinx-autodoc-docutils
 
-```{sab-package-meta} sphinx-autodoc-docutils
+```{gp-sphinx-package-meta} sphinx-autodoc-docutils
 ```
 
 :::{admonition} Alpha

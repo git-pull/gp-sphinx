@@ -93,21 +93,22 @@ def test_build_tool_desc_prototype_uses_mcp_tool_shape() -> None:
 def test_build_tool_desc_prototype_reflows_under_shared_layout() -> None:
     desc = _rendered_desc()
 
-    assert "api-profile--mcp-tool" in desc.get("classes", [])
+    assert "gp-sphinx-api-profile--mcp-tool" in desc.get("classes", [])
     signature = desc.children[0]
     assert isinstance(signature, addnodes.desc_signature)
-    layout = _find_component(signature, "api-layout")
-    left = _find_component(layout, "api-layout-left")
-    right = _find_component(layout, "api-layout-right")
+    layout = _find_component(signature, "gp-sphinx-api-layout")
+    left = _find_component(layout, "gp-sphinx-api-layout-left")
+    right = _find_component(layout, "gp-sphinx-api-layout-right")
     body = desc.children[1]
     assert isinstance(body, addnodes.desc_content)
 
-    assert _find_component(left, "api-signature")
-    assert "sab-toolbar" in right.get("classes", [])
+    assert _find_component(left, "gp-sphinx-api-signature")
+    assert "gp-sphinx-toolbar" in right.get("classes", [])
     assert any(
         isinstance(node, api_sig_fold) for node in signature.findall(api_sig_fold)
     )
     assert any(
-        isinstance(child, api_component) and child.get("name") == "api-parameters"
+        isinstance(child, api_component)
+        and child.get("name") == "gp-sphinx-api-parameters"
         for child in body.children
     )

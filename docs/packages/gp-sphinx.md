@@ -1,6 +1,6 @@
 # gp-sphinx
 
-```{sab-package-meta} gp-sphinx
+```{gp-sphinx-package-meta} gp-sphinx
 ```
 
 :::{admonition} Alpha

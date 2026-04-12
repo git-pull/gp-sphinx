@@ -96,10 +96,16 @@ def test_autodoc_sphinx_confvals_use_shared_layout(
 ) -> None:
     html = read_output(autodoc_sphinx_html_result, "index.html")
 
-    assert 'class="std confval api-container api-profile--confval"' in html
-    assert 'class="api-layout"' in html
-    assert 'class="api-badge-container"' in html
-    assert 'class="api-facts api-region api-region--facts"' in html
+    assert (
+        'class="std confval gp-sphinx-api-container gp-sphinx-api-profile--confval"'
+        in html
+    )
+    assert 'class="gp-sphinx-api-layout"' in html
+    assert 'class="gp-sphinx-api-badge-container"' in html
+    assert (
+        'class="gp-sphinx-api-facts gp-sphinx-api-region gp-sphinx-api-region--facts"'
+        in html
+    )
     assert "config" in html
     assert ">env<" in html
     assert ">html<" in html

@@ -34,7 +34,7 @@ class _DummyTranslator:
 
 def test_visit_desc_signature_html_emits_managed_header_attrs() -> None:
     sig = addnodes.desc_signature(ids=["demo.func"])
-    sig["classes"] = ["sig", "api-header"]
+    sig["classes"] = ["sig", "gp-sphinx-api-header"]
     sig["api_managed"] = True
     sig["html_attrs"] = {"data-signature-expanded": "false"}
 
@@ -49,7 +49,7 @@ def test_visit_desc_signature_html_emits_managed_header_attrs() -> None:
 
 def test_visit_api_component_emits_generic_header_attrs() -> None:
     header = build_api_component(
-        "api-header",
+        "gp-sphinx-api-header",
         html_attrs={"data-profile": "confval"},
     )
 

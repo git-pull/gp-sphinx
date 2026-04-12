@@ -12,9 +12,9 @@ Examples
 ...     [ApiFactRow("Type", nodes.paragraph("", "", nodes.literal("", "bool")))]
 ... )
 >>> section.get("name")
-'api-facts'
+'gp-sphinx-api-facts'
 >>> build_api_summary_section(nodes.paragraph("", "Summary")).get("name")
-'api-summary'
+'gp-sphinx-api-summary'
 """
 
 from __future__ import annotations
@@ -24,21 +24,22 @@ from dataclasses import dataclass
 
 from docutils import nodes
 
+from sphinx_ux_autodoc_layout._css import API
 from sphinx_ux_autodoc_layout._nodes import api_component, build_api_component
 
 _SECTION_KIND_CLASS: dict[str, str] = {
-    "api-description": "narrative",
-    "api-facts": "facts",
-    "api-summary": "summary",
-    "api-parameters": "fields",
-    "api-options": "options",
-    "api-footer": "members",
+    API.DESCRIPTION: "narrative",
+    API.FACTS: "facts",
+    API.SUMMARY: "summary",
+    API.PARAMETERS: "fields",
+    API.OPTIONS: "options",
+    API.FOOTER: "members",
 }
 
 
 @dataclass(frozen=True, slots=True)
 class ApiFactRow:
-    """Typed fact row rendered inside a shared ``api-facts`` section.
+    """Typed fact row rendered inside a shared ``gp-sphinx-api-facts`` section.
 
     Parameters
     ----------
@@ -59,7 +60,7 @@ def build_api_section(
 ) -> api_component:
     """Return a shared API body section with stable region classes."""
     kind = _SECTION_KIND_CLASS.get(name)
-    region_classes = ("api-region", f"api-region--{kind}") if kind is not None else ()
+    region_classes = (API.REGION, API.region_modifier(kind)) if kind is not None else ()
     section = build_api_component(name, classes=(*region_classes, *classes))
     for child in children:
         section += child
@@ -71,8 +72,8 @@ def build_api_facts_section(
     *,
     classes: tuple[str, ...] = (),
 ) -> api_component:
-    """Render a shared ``api-facts`` section from typed fact rows."""
-    field_list = nodes.field_list(classes=["api-facts-list"])
+    """Render a shared ``gp-sphinx-api-facts`` section from typed fact rows."""
+    field_list = nodes.field_list(classes=[API.FACTS_LIST])
     for row in rows:
         field_body = nodes.field_body()
         field_body += row.body
@@ -81,7 +82,7 @@ def build_api_facts_section(
             nodes.field_name("", row.label),
             field_body,
         )
-    return build_api_section("api-facts", field_list, classes=classes)
+    return build_api_section(API.FACTS, field_list, classes=classes)
 
 
 def build_api_table_section(
@@ -97,7 +98,7 @@ def build_api_summary_section(
     *children: nodes.Node,
     classes: tuple[str, ...] = (),
 ) -> api_component:
-    """Wrap summary or index content in the shared ``api-summary`` region.
+    """Wrap summary or index content in the shared ``gp-sphinx-api-summary`` region.
 
     Parameters
     ----------
@@ -116,6 +117,6 @@ def build_api_summary_section(
     >>> from docutils import nodes
     >>> section = build_api_summary_section(nodes.paragraph("", "Summary"))
     >>> section.get("name")
-    'api-summary'
+    'gp-sphinx-api-summary'
     """
-    return build_api_table_section("api-summary", *children, classes=classes)
+    return build_api_table_section(API.SUMMARY, *children, classes=classes)

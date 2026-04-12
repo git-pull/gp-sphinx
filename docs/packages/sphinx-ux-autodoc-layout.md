@@ -2,7 +2,7 @@
 
 # sphinx-ux-autodoc-layout
 
-```{sab-package-meta} sphinx-ux-autodoc-layout
+```{gp-sphinx-package-meta} sphinx-ux-autodoc-layout
 ```
 
 :::{admonition} Alpha
@@ -32,12 +32,12 @@ $ pip install sphinx-ux-autodoc-layout
 Hooks `doctree-resolved` at priority **600**, after `sphinx-autodoc-api-style`
 at 500. Consumes the `api_slot` nodes that producer packages inject into
 `desc_signature` during earlier transforms, and composes them into the final
-`api-layout-right` subcomponent (badges, source link, permalink).
+`gp-sphinx-api-layout-right` subcomponent (badges, source link, permalink).
 
 The extension also overrides Sphinx's built-in `desc_signature` HTML visitor
 (`app.add_node(addnodes.desc_signature, override=True, ...)`). This is a
 deliberate platform decision: taking ownership of signature rendering allows
-the `api-link` permalink to be placed inside the managed layout rather than
+the `gp-sphinx-api-link` permalink to be placed inside the managed layout rather than
 appended by Sphinx's default handler.
 
 | Event | Hook | Priority |
@@ -125,31 +125,31 @@ The class above renders with:
 - `build_api_card_entry()` builds the shared inner `api-*` shell for
   section-card consumers such as FastMCP.
 - `build_api_summary_section()` wraps summary and index tables in the shared
-  `api-summary` region.
+  `gp-sphinx-api-summary` region.
 
 ## CSS classes
 
 | Class | Element | Purpose |
 |-------|---------|---------|
-| `api-container` | `<dl>` | Managed autodoc shell |
-| `api-header` | `<dt>` | Signature row shell |
-| `api-content` | `<dd>` | Description/content shell |
-| `api-layout` | `<div>` | Header split between left and right |
-| `api-layout-left` | `<div>` | Signature text, custom disclosure, permalink |
-| `api-layout-right` | `<div>` | Badge container and source link |
-| `api-signature` | `<div>` | Compact signature row |
-| `api-link` | `<a>` | Managed permalink in the left layout |
-| `api-badge-container` | `<span>` | Wrapper for badge group output |
-| `api-source-link` | `<span>` | Wrapper for the `[source]` link |
-| `api-description` | `<div>` | Wraps paragraphs, notes, examples |
-| `api-parameters` | `<div>` | Wraps field lists (Parameters, Returns) |
-| `api-footer` | `<div>` | Wraps nested method/attribute entries |
-| `api-region` | `<div>` | Compatibility alias on content sections |
-| `api-region--narrative` | `<div>` | Compatibility alias on narrative sections |
-| `api-region--fields` | `<div>` | Compatibility alias on parameter sections |
-| `api-region--members` | `<div>` | Compatibility alias on footer/member sections |
-| `api-fold` | `<details>` | Disclosure wrapper for large sections |
-| `api-fold-summary` | `<summary>` | Click target showing field count |
+| `gp-sphinx-api-container` | `<dl>` | Managed autodoc shell |
+| `gp-sphinx-api-header` | `<dt>` | Signature row shell |
+| `gp-sphinx-api-content` | `<dd>` | Description/content shell |
+| `gp-sphinx-api-layout` | `<div>` | Header split between left and right |
+| `gp-sphinx-api-layout-left` | `<div>` | Signature text, custom disclosure, permalink |
+| `gp-sphinx-api-layout-right` | `<div>` | Badge container and source link |
+| `gp-sphinx-api-signature` | `<div>` | Compact signature row |
+| `gp-sphinx-api-link` | `<a>` | Managed permalink in the left layout |
+| `gp-sphinx-api-badge-container` | `<span>` | Wrapper for badge group output |
+| `gp-sphinx-api-source-link` | `<span>` | Wrapper for the `[source]` link |
+| `gp-sphinx-api-description` | `<div>` | Wraps paragraphs, notes, examples |
+| `gp-sphinx-api-parameters` | `<div>` | Wraps field lists (Parameters, Returns) |
+| `gp-sphinx-api-footer` | `<div>` | Wraps nested method/attribute entries |
+| `gp-sphinx-api-region` | `<div>` | Compatibility alias on content sections |
+| `gp-sphinx-api-region--narrative` | `<div>` | Compatibility alias on narrative sections |
+| `gp-sphinx-api-region--fields` | `<div>` | Compatibility alias on parameter sections |
+| `gp-sphinx-api-region--members` | `<div>` | Compatibility alias on footer/member sections |
+| `gp-sphinx-api-fold` | `<details>` | Disclosure wrapper for large sections |
+| `gp-sphinx-api-fold-summary` | `<summary>` | Click target showing field count |
 
 ## API reference
 

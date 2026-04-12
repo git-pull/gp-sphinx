@@ -3,163 +3,170 @@
 Examples
 --------
 >>> SAB.BADGE
-'sab-badge'
+'gp-sphinx-badge'
 
 >>> SAB.BADGE_GROUP
-'sab-badge-group'
+'gp-sphinx-badge-group'
 
 >>> SAB.TOOLBAR
-'sab-toolbar'
+'gp-sphinx-toolbar'
 
 >>> SAB.ICON_ONLY
-'sab-icon-only'
+'gp-sphinx-badge--icon-only'
 
 >>> SAB.XXS
-'sab-xxs'
+'gp-sphinx-badge--size-xxs'
 
 >>> SAB.MD
-'sab-md'
+'gp-sphinx-badge--size-md'
 
 >>> SAB.SM
-'sab-sm'
+'gp-sphinx-badge--size-sm'
 
 >>> SAB.TYPE_FUNCTION
-'sab-type-function'
+'gp-sphinx-badge--type-function'
 
 >>> SAB.TYPE_FIXTURE
-'sab-type-fixture'
+'gp-sphinx-badge--type-fixture'
 
 >>> SAB.SCOPE_SESSION
-'sab-scope-session'
+'gp-sphinx-badge--scope-session'
 
 >>> SAB.TYPE_CONFIG
-'sab-type-config'
+'gp-sphinx-badge--type-config'
 """
 
 from __future__ import annotations
 
 
 class SAB:
-    """CSS class constants under the ``sab-`` namespace.
+    """CSS class constants under the ``gp-sphinx-`` namespace.
 
-    The ``sab-`` prefix is a stable, opaque namespace owned by
-    ``sphinx-ux-badges``.  It is preserved across the package rename
-    (formerly ``sphinx-autodoc-badges``) so downstream CSS overrides
-    continue to work.
+    The ``gp-sphinx-`` prefix identifies these classes as part of the
+    gp-sphinx workspace.  The badge block (``gp-sphinx-badge``) and its
+    sibling blocks (``gp-sphinx-badge-group``, ``gp-sphinx-toolbar``) are
+    tier-A shared concepts — any extension may consume them directly,
+    and the theme may restyle them once for every consumer.
 
     Covers both structural variants (size, outline, icon-only) and the
-    unified semantic colour palette from ``sab_palettes.css``.
+    unified semantic colour palette from ``sab_palettes.css`` (filename
+    is historical).
 
     All consuming ``sphinx-autodoc-*`` packages use these constants for
     shared badge primitives (group, badge, toolbar, type, modifier,
     state classes).  Extension-specific layout and semantic classes
-    remain under each package's own prefix (e.g. ``smf-`` for FastMCP
-    tool sections and safety tiers, ``spf-`` for pytest-fixture index
-    layout).
+    live under each package's own namespace (e.g.
+    ``gp-sphinx-fastmcp__*`` for FastMCP tool sections,
+    ``gp-sphinx-pytest-fixtures__*`` for fixture-index layout).
 
     Examples
     --------
     >>> SAB.PREFIX
-    'sab'
+    'gp-sphinx-badge'
 
     >>> SAB.OUTLINE
-    'sab-outline'
+    'gp-sphinx-badge--outline'
 
     >>> SAB.TYPE_METHOD
-    'sab-type-method'
+    'gp-sphinx-badge--type-method'
 
     >>> SAB.STATE_AUTOUSE
-    'sab-state-autouse'
+    'gp-sphinx-badge--state-autouse'
     """
 
-    PREFIX = "sab"
+    PREFIX = "gp-sphinx-badge"
 
-    # ── Structural / layout ──────────────────────────────
-    BADGE = f"{PREFIX}-badge"
-    BADGE_GROUP = f"{PREFIX}-badge-group"
-    TOOLBAR = f"{PREFIX}-toolbar"
-    ICON_ONLY = f"{PREFIX}-icon-only"
-    INLINE_ICON = f"{PREFIX}-inline-icon"
-    OUTLINE = f"{PREFIX}-outline"
-    FILLED = f"{PREFIX}-filled"
-    ICON_RIGHT = f"{PREFIX}-icon-right"
+    # ── Structural / layout blocks ───────────────────────
+    BADGE = "gp-sphinx-badge"
+    BADGE_GROUP = "gp-sphinx-badge-group"
+    TOOLBAR = "gp-sphinx-toolbar"
 
-    # Underline control (compose with sab-dense or any badge)
-    NO_UNDERLINE = f"{PREFIX}-no-underline"
-    UNDERLINE = f"{PREFIX}-underline"
-    UNDERLINE_DOTTED = f"{PREFIX}-underline-dotted"
-    UNDERLINE_SOLID = f"{PREFIX}-underline-solid"
+    # Inner label span (BEM element on badge)
+    BADGE_LABEL = "gp-sphinx-badge__label"
 
-    # Size variants
-    XXS = f"{PREFIX}-xxs"
-    XS = f"{PREFIX}-xs"
-    SM = f"{PREFIX}-sm"
-    MD = f"{PREFIX}-md"
-    LG = f"{PREFIX}-lg"
-    XL = f"{PREFIX}-xl"
+    # ── Badge variants ───────────────────────────────────
+    ICON_ONLY = "gp-sphinx-badge--icon-only"
+    INLINE_ICON = "gp-sphinx-badge--inline-icon"
+    OUTLINE = "gp-sphinx-badge--outline"
+    FILLED = "gp-sphinx-badge--filled"
+    ICON_RIGHT = "gp-sphinx-badge--icon-right"
+
+    # Underline control (compose with dense or any badge)
+    NO_UNDERLINE = "gp-sphinx-badge--underline-none"
+    UNDERLINE = "gp-sphinx-badge--underline-solid"
+    UNDERLINE_DOTTED = "gp-sphinx-badge--underline-dotted"
+    UNDERLINE_SOLID = "gp-sphinx-badge--underline-solid"
+
+    # Size axis
+    XXS = "gp-sphinx-badge--size-xxs"
+    XS = "gp-sphinx-badge--size-xs"
+    SM = "gp-sphinx-badge--size-sm"
+    MD = "gp-sphinx-badge--size-md"
+    LG = "gp-sphinx-badge--size-lg"
+    XL = "gp-sphinx-badge--size-xl"
 
     # Dense variant (compact, always-bordered, dotted-underline)
-    DENSE = f"{PREFIX}-dense"
+    DENSE = "gp-sphinx-badge--dense"
 
     # ── Python API type badges (filled) ──────────────────
-    TYPE_FUNCTION = f"{PREFIX}-type-function"
-    TYPE_CLASS = f"{PREFIX}-type-class"
-    TYPE_METHOD = f"{PREFIX}-type-method"
-    TYPE_PROPERTY = f"{PREFIX}-type-property"
-    TYPE_ATTRIBUTE = f"{PREFIX}-type-attribute"
-    TYPE_DATA = f"{PREFIX}-type-data"
-    TYPE_EXCEPTION = f"{PREFIX}-type-exception"
-    TYPE_TYPEALIAS = f"{PREFIX}-type-typealias"
-    TYPE_MODULE = f"{PREFIX}-type-module"
+    TYPE_FUNCTION = "gp-sphinx-badge--type-function"
+    TYPE_CLASS = "gp-sphinx-badge--type-class"
+    TYPE_METHOD = "gp-sphinx-badge--type-method"
+    TYPE_PROPERTY = "gp-sphinx-badge--type-property"
+    TYPE_ATTRIBUTE = "gp-sphinx-badge--type-attribute"
+    TYPE_DATA = "gp-sphinx-badge--type-data"
+    TYPE_EXCEPTION = "gp-sphinx-badge--type-exception"
+    TYPE_TYPEALIAS = "gp-sphinx-badge--type-typealias"
+    TYPE_MODULE = "gp-sphinx-badge--type-module"
 
     # Slot markers (filled / outlined) for Python API badges
-    BADGE_TYPE = f"{PREFIX}-badge--type"
-    BADGE_MOD = f"{PREFIX}-badge--mod"
+    BADGE_TYPE = "gp-sphinx-badge--slot-type"
+    BADGE_MOD = "gp-sphinx-badge--slot-mod"
 
     # ── Python API modifier badges (outlined) ────────────
-    MOD_ASYNC = f"{PREFIX}-mod-async"
-    MOD_CLASSMETHOD = f"{PREFIX}-mod-classmethod"
-    MOD_STATICMETHOD = f"{PREFIX}-mod-staticmethod"
-    MOD_ABSTRACT = f"{PREFIX}-mod-abstract"
-    MOD_FINAL = f"{PREFIX}-mod-final"
+    MOD_ASYNC = "gp-sphinx-badge--mod-async"
+    MOD_CLASSMETHOD = "gp-sphinx-badge--mod-classmethod"
+    MOD_STATICMETHOD = "gp-sphinx-badge--mod-staticmethod"
+    MOD_ABSTRACT = "gp-sphinx-badge--mod-abstract"
+    MOD_FINAL = "gp-sphinx-badge--mod-final"
 
     # Sphinx config rebuild-mode badge (outlined)
-    MOD_REBUILD = f"{PREFIX}-mod-rebuild"
+    MOD_REBUILD = "gp-sphinx-badge--mod-rebuild"
 
     # ── Shared deprecated state ───────────────────────────
-    STATE_DEPRECATED = f"{PREFIX}-state-deprecated"
+    STATE_DEPRECATED = "gp-sphinx-badge--state-deprecated"
 
     # ── pytest fixture type (filled green) ───────────────
-    TYPE_FIXTURE = f"{PREFIX}-type-fixture"
+    TYPE_FIXTURE = "gp-sphinx-badge--type-fixture"
 
     # Slot markers for fixture badges
-    BADGE_FIXTURE = f"{PREFIX}-badge--fixture"
-    BADGE_SCOPE = f"{PREFIX}-badge--scope"
-    BADGE_KIND = f"{PREFIX}-badge--kind"
-    BADGE_STATE = f"{PREFIX}-badge--state"
+    BADGE_FIXTURE = "gp-sphinx-badge--slot-fixture"
+    BADGE_SCOPE = "gp-sphinx-badge--slot-scope"
+    BADGE_KIND = "gp-sphinx-badge--slot-kind"
+    BADGE_STATE = "gp-sphinx-badge--slot-state"
 
     # ── pytest fixture scopes (filled) ───────────────────
-    SCOPE_SESSION = f"{PREFIX}-scope-session"
-    SCOPE_MODULE = f"{PREFIX}-scope-module"
-    SCOPE_CLASS = f"{PREFIX}-scope-class"
+    SCOPE_SESSION = "gp-sphinx-badge--scope-session"
+    SCOPE_MODULE = "gp-sphinx-badge--scope-module"
+    SCOPE_CLASS = "gp-sphinx-badge--scope-class"
 
     # ── pytest fixture kinds / states (outlined) ─────────
-    STATE_FACTORY = f"{PREFIX}-state-factory"
-    STATE_OVERRIDE = f"{PREFIX}-state-override"
-    STATE_AUTOUSE = f"{PREFIX}-state-autouse"
+    STATE_FACTORY = "gp-sphinx-badge--state-factory"
+    STATE_OVERRIDE = "gp-sphinx-badge--state-override"
+    STATE_AUTOUSE = "gp-sphinx-badge--state-autouse"
 
     # ── Sphinx config (filled amber) ─────────────────────
-    TYPE_CONFIG = f"{PREFIX}-type-config"
+    TYPE_CONFIG = "gp-sphinx-badge--type-config"
 
     # ── docutils (filled violet) ─────────────────────────
-    TYPE_DIRECTIVE = f"{PREFIX}-type-directive"
-    TYPE_ROLE = f"{PREFIX}-type-role"
-    TYPE_OPTION = f"{PREFIX}-type-option"
+    TYPE_DIRECTIVE = "gp-sphinx-badge--type-directive"
+    TYPE_ROLE = "gp-sphinx-badge--type-role"
+    TYPE_OPTION = "gp-sphinx-badge--type-option"
 
     # ── Package metadata (maturity + links) ───────────────
-    META_ALPHA = f"{PREFIX}-meta-alpha"
-    META_BETA = f"{PREFIX}-meta-beta"
-    META_LINK = f"{PREFIX}-meta-link"
+    META_ALPHA = "gp-sphinx-badge--meta-alpha"
+    META_BETA = "gp-sphinx-badge--meta-beta"
+    META_LINK = "gp-sphinx-badge--meta-link"
 
     @staticmethod
     def obj_type(name: str) -> str:
@@ -173,17 +180,17 @@ class SAB:
         Returns
         -------
         str
-            CSS class string, e.g. ``"sab-type-function"``.
+            CSS class string, e.g. ``"gp-sphinx-badge--type-function"``.
 
         Examples
         --------
         >>> SAB.obj_type("method")
-        'sab-type-method'
+        'gp-sphinx-badge--type-method'
 
         >>> SAB.obj_type("exception")
-        'sab-type-exception'
+        'gp-sphinx-badge--type-exception'
         """
-        return f"{SAB.PREFIX}-type-{name}"
+        return f"gp-sphinx-badge--type-{name}"
 
     @staticmethod
     def scope(name: str) -> str:
@@ -197,14 +204,14 @@ class SAB:
         Returns
         -------
         str
-            CSS class string, e.g. ``"sab-scope-session"``.
+            CSS class string, e.g. ``"gp-sphinx-badge--scope-session"``.
 
         Examples
         --------
         >>> SAB.scope("session")
-        'sab-scope-session'
+        'gp-sphinx-badge--scope-session'
 
         >>> SAB.scope("module")
-        'sab-scope-module'
+        'gp-sphinx-badge--scope-module'
         """
-        return f"{SAB.PREFIX}-scope-{name}"
+        return f"gp-sphinx-badge--scope-{name}"

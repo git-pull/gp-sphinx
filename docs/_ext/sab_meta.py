@@ -12,7 +12,7 @@ In any ``docs/packages/*.md`` page, replace the sphinx-design role line::
 
 with::
 
-    ```{sab-package-meta} sphinx-autodoc-api-style
+    ```{gp-sphinx-package-meta} sphinx-autodoc-api-style
     ```
 
 The directive looks up the package's maturity, GitHub URL, and PyPI URL
@@ -47,7 +47,8 @@ def _link_badge(label: str, url: str) -> nodes.reference:
     """Return an anchor node styled as an outline SAB badge."""
     ref = nodes.reference("", label, refuri=url, internal=False)
     # Apply badge classes directly on the anchor node so it renders as
-    # <a class="sab-badge sab-outline sab-meta-link …" href="…">label</a>
+    # <a class="gp-sphinx-badge gp-sphinx-badge--outline
+    #           gp-sphinx-badge--meta-link …" href="…">label</a>
     ref["classes"].extend([SAB.BADGE, SAB.OUTLINE, SAB.META_LINK])
     return ref
 
@@ -97,6 +98,6 @@ class PackageMetaBadgesDirective(SphinxDirective):
 
 
 def setup(app: Sphinx) -> dict[str, t.Any]:
-    """Register the ``sab-package-meta`` directive."""
-    app.add_directive("sab-package-meta", PackageMetaBadgesDirective)
+    """Register the ``gp-sphinx-package-meta`` directive."""
+    app.add_directive("gp-sphinx-package-meta", PackageMetaBadgesDirective)
     return {"version": "0.1", "parallel_read_safe": True, "parallel_write_safe": True}

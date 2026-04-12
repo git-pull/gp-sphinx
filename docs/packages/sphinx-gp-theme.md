@@ -1,6 +1,6 @@
 # sphinx-gp-theme
 
-```{sab-package-meta} sphinx-gp-theme
+```{gp-sphinx-package-meta} sphinx-gp-theme
 ```
 
 Furo child theme for git-pull documentation sites. It keeps Furo’s responsive

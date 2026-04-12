@@ -99,7 +99,7 @@ disclosure widget.
 The full badge system — types, modifiers, sizes, and variants — rendered by
 the real `build_badge` / `build_badge_group` / `build_toolbar` API:
 
-```{sab-badge-demo}
+```{gp-sphinx-badge-demo}
 ```
 
 ---

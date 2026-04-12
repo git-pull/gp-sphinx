@@ -1,6 +1,6 @@
 # sphinx-fonts
 
-```{sab-package-meta} sphinx-fonts
+```{gp-sphinx-package-meta} sphinx-fonts
 ```
 
 Sphinx extension for self-hosted web fonts via Fontsource. It downloads font

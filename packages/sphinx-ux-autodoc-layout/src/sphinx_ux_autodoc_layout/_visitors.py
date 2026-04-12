@@ -22,13 +22,15 @@ from docutils import nodes
 from sphinx.locale import _
 from sphinx.writers.html5 import HTML5Translator as SphinxHTML5Translator
 
+from sphinx_ux_autodoc_layout._css import API
+
 if t.TYPE_CHECKING:
     from sphinx.writers.html5 import HTML5Translator
 
 _LEGACY_SECTION_COMPONENTS: dict[str, str] = {
-    "narrative": "api-description",
-    "fields": "api-parameters",
-    "members": "api-footer",
+    "narrative": API.DESCRIPTION,
+    "fields": API.PARAMETERS,
+    "members": API.FOOTER,
 }
 
 
@@ -42,7 +44,7 @@ def visit_api_region(self: HTML5Translator, node: nodes.Element) -> None:
     """Open a legacy region wrapper ``<div>``."""
     kind = node.get("kind", "narrative")
     component = _LEGACY_SECTION_COMPONENTS.get(kind)
-    classes = ["api-region", f"api-region--{kind}"]
+    classes = [API.REGION, API.region_modifier(kind)]
     if component is not None:
         classes.insert(0, component)
     self.body.append(self.starttag(node, "div", "", classes=classes))
@@ -92,8 +94,8 @@ def visit_api_fold(self: HTML5Translator, node: nodes.Element) -> None:
     kind = node.get("kind", "")
     open_attr = " open" if node.get("open", False) else ""
     self.body.append(
-        f'<details class="api-fold api-fold--{kind}"{open_attr}>'
-        f'<summary class="api-fold-summary">{html.escape(summary)}</summary>'
+        f'<details class="{API.FOLD} {API.fold_modifier(kind)}"{open_attr}>'
+        f'<summary class="{API.FOLD_SUMMARY}">{html.escape(summary)}</summary>'
     )
 
 
@@ -114,7 +116,7 @@ def visit_api_sig_fold(self: HTML5Translator, node: nodes.Element) -> None:
             "button",
             "",
             type="button",
-            classes=["api-signature-toggle", "api-sig-toggle"],
+            classes=[API.SIGNATURE_TOGGLE, API.SIG_TOGGLE],
             **{
                 "aria-controls": panel_id,
                 "aria-expanded": "false",
@@ -122,9 +124,8 @@ def visit_api_sig_fold(self: HTML5Translator, node: nodes.Element) -> None:
         )
     )
     self.body.append('<span class="sig-paren">(</span>')
-    self.body.append(
-        f'<span class="api-signature-preview api-sig-preview">{preview}, [...]</span>'
-    )
+    preview_classes = f"{API.SIGNATURE_PREVIEW} {API.SIG_PREVIEW}"
+    self.body.append(f'<span class="{preview_classes}">{preview}, [...]</span>')
     self.body.append('<span class="sig-paren">)</span>')
 
 

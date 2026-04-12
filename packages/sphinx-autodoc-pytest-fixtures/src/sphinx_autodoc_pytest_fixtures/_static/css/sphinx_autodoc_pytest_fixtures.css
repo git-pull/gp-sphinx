@@ -7,14 +7,14 @@
  * ────────────────────────────────────────────────────────── */
 
 /* "fixture" keyword prefix — keep Furo's default keyword colour */
-dl.py.fixture.api-container > dt.api-header .api-signature em.property {
+dl.py.fixture.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-signature em.property {
   color: var(--color-api-keyword);
   font-style: normal;
 }
 
 /* Fixture cards keep their package-specific chrome while layout owns header
  * structure and positioning. */
-dl.py.fixture.api-container > dt.api-header {
+dl.py.fixture.gp-sphinx-api-container > dt.gp-sphinx-api-header {
   background: var(--color-background-secondary);
   border-bottom: 1px solid var(--color-background-border);
   padding: 0.5rem 0.75rem;
@@ -84,16 +84,16 @@ dl.py.fixture > dd > dl.field-list + dl.field-list {
 }
 
 /* Horizontal scroll wrapper for the fixture index table */
-.spf-fixture-index .sab-badge-group {
+.gp-sphinx-pytest-fixtures__fixture-index .gp-sphinx-badge-group {
   display: inline-flex;
   gap: 0.3rem;
 }
 
-.spf-table-scroll {
+.gp-sphinx-pytest-fixtures__table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
-.spf-table-scroll table {
+.gp-sphinx-pytest-fixtures__table-scroll table {
   min-width: 40rem;
   width: 100%;
 }

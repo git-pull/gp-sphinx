@@ -7,7 +7,7 @@
  * ────────────────────────────────────────────────────────── */
 
 /* ── Deprecated entry muting ───────────────────────────── */
-dl.py.sab-deprecated > dt {
+dl.py.gp-sphinx-badge--state-deprecated > dt {
   opacity: 0.7;
 }
 

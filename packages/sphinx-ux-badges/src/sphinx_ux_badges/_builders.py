@@ -2,11 +2,15 @@
 
 Examples
 --------
->>> b = build_badge("readonly", tooltip="Read-only", classes=["smf-safety-readonly"])
+>>> b = build_badge(
+...     "readonly",
+...     tooltip="Read-only",
+...     classes=["gp-sphinx-fastmcp__safety-readonly"],
+... )
 >>> b.astext()
 'readonly'
 
->>> "sab-badge" in b["classes"]
+>>> "gp-sphinx-badge" in b["classes"]
 True
 """
 
@@ -17,6 +21,7 @@ from dataclasses import dataclass, field
 
 from docutils import nodes
 
+from sphinx_ux_badges._css import SAB
 from sphinx_ux_badges._nodes import BadgeNode
 
 
@@ -101,21 +106,25 @@ def build_badge(
 
     Examples
     --------
-    >>> b = build_badge("async", tooltip="Asynchronous", classes=["sab-mod-async"])
+    >>> b = build_badge("async", tooltip="Asynchronous", classes=[SAB.MOD_ASYNC])
     >>> b.astext()
     'async'
 
-    >>> b = build_badge("", style="icon-only", classes=["smf-safety-readonly"])
-    >>> "sab-icon-only" in b["classes"]
+    >>> b = build_badge(
+    ...     "",
+    ...     style="icon-only",
+    ...     classes=["gp-sphinx-fastmcp__safety-readonly"],
+    ... )
+    >>> SAB.ICON_ONLY in b["classes"]
     True
 
     >>> b = build_badge("big", size="lg")
-    >>> "sab-lg" in b["classes"]
+    >>> SAB.LG in b["classes"]
     True
     """
     extra_classes = list(classes)
     if fill == "outline":
-        extra_classes.append("sab-outline")
+        extra_classes.append(SAB.OUTLINE)
     return BadgeNode(
         text,
         badge_tooltip=tooltip,
@@ -174,10 +183,10 @@ def build_badge_group(
     --------
     >>> from sphinx_ux_badges._nodes import BadgeNode
     >>> g = build_badge_group([BadgeNode("a"), BadgeNode("b")])
-    >>> "sab-badge-group" in g["classes"]
+    >>> SAB.BADGE_GROUP in g["classes"]
     True
     """
-    group = nodes.inline(classes=["sab-badge-group", *classes])
+    group = nodes.inline(classes=[SAB.BADGE_GROUP, *classes])
     for i, badge in enumerate(badges):
         if i > 0:
             group += nodes.Text(" ")
@@ -232,10 +241,10 @@ def build_toolbar(
     --------
     >>> from sphinx_ux_badges._nodes import BadgeNode
     >>> g = build_badge_group([BadgeNode("x")])
-    >>> t = build_toolbar(g, classes=["smf-toolbar"])
-    >>> "sab-toolbar" in t["classes"]
+    >>> t = build_toolbar(g, classes=["gp-sphinx-fastmcp__toolbar"])
+    >>> SAB.TOOLBAR in t["classes"]
     True
     """
-    toolbar = nodes.inline(classes=["sab-toolbar", *classes])
+    toolbar = nodes.inline(classes=[SAB.TOOLBAR, *classes])
     toolbar += badge_group
     return toolbar

@@ -302,7 +302,7 @@ def test_default_fixture_sections_use_shared_fact_region(
     doctree = get_doctree(default_dummy_result, "index", post_transforms=True)
     fixture_desc = _find_fixture_desc(doctree, "fixture_mod.my_server")
 
-    assert "api-facts" in _content_section_names(fixture_desc)
+    assert "gp-sphinx-api-facts" in _content_section_names(fixture_desc)
 
 
 def test_manual_directive_without_module_registers_unqualified_name(
@@ -530,7 +530,7 @@ def test_autofixture_index_resolution_smoke(
     table_text = table.pformat()
 
     assert "autofixture_index_node" not in doctree.pformat()
-    assert "spf-fixture-index" in table.get("classes", [])
+    assert "gp-sphinx-pytest-fixtures__fixture-index" in table.get("classes", [])
     assert 'refid="fixture_mod.my_server"' in table_text
     assert "plain_fixture" in table_text
     assert ":fixture:" not in table_text

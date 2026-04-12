@@ -106,8 +106,8 @@ def _make_parameter_list(
 
 
 def _make_badge_slot() -> api_slot:
-    badge_group = nodes.inline(classes=["sab-badge-group"])
-    badge_group += nodes.inline("", "method", classes=["sab-badge"])
+    badge_group = nodes.inline(classes=["gp-sphinx-badge-group"])
+    badge_group += nodes.inline("", "method", classes=["gp-sphinx-badge"])
     return build_api_slot("badges", badge_group)
 
 
@@ -176,7 +176,7 @@ def test_desc_layout_profile_matches_confval_entries() -> None:
         slug="confval",
         allow_signature_fold=False,
     )
-    assert profile.class_name == "api-profile--confval"
+    assert profile.class_name == "gp-sphinx-api-profile--confval"
 
 
 def test_desc_layout_profile_matches_rst_directive_option_entries() -> None:
@@ -205,12 +205,12 @@ def test_desc_layout_profile_matches_mcp_tool_entries() -> None:
 
 def test_desc_layout_profile_covers_all_managed_non_python_entries() -> None:
     expected = {
-        ("py", "fixture"): "api-profile--py-fixture",
-        ("std", "confval"): "api-profile--confval",
-        ("rst", "directive"): "api-profile--rst-directive",
-        ("rst", "role"): "api-profile--rst-role",
-        ("rst", "directive:option"): "api-profile--rst-directive-option",
-        ("mcp", "tool"): "api-profile--mcp-tool",
+        ("py", "fixture"): "gp-sphinx-api-profile--py-fixture",
+        ("std", "confval"): "gp-sphinx-api-profile--confval",
+        ("rst", "directive"): "gp-sphinx-api-profile--rst-directive",
+        ("rst", "role"): "gp-sphinx-api-profile--rst-role",
+        ("rst", "directive:option"): "gp-sphinx-api-profile--rst-directive-option",
+        ("mcp", "tool"): "gp-sphinx-api-profile--mcp-tool",
     }
 
     for (domain, objtype), class_name in expected.items():
@@ -228,10 +228,10 @@ def test_wrap_groups_narrative() -> None:
 
     content = desc.children[-1]
     assert isinstance(content, addnodes.desc_content)
-    assert _child_component_names(content) == ["api-description"]
+    assert _child_component_names(content) == ["gp-sphinx-api-description"]
     section = content.children[0]
     assert isinstance(section, api_component)
-    assert "api-region" in section.get("classes", [])
+    assert "gp-sphinx-api-region" in section.get("classes", [])
     assert len(section.children) == 2
 
 
@@ -251,7 +251,10 @@ def test_wrap_preserves_prebuilt_fact_sections() -> None:
 
     _wrap_content_runs(desc)
 
-    assert _child_component_names(content) == ["api-description", "api-facts"]
+    assert _child_component_names(content) == [
+        "gp-sphinx-api-description",
+        "gp-sphinx-api-facts",
+    ]
 
 
 def test_wrap_groups_contiguous_types() -> None:
@@ -265,9 +268,9 @@ def test_wrap_groups_contiguous_types() -> None:
     content = desc.children[-1]
     assert isinstance(content, addnodes.desc_content)
     assert _child_component_names(content) == [
-        "api-description",
-        "api-parameters",
-        "api-footer",
+        "gp-sphinx-api-description",
+        "gp-sphinx-api-parameters",
+        "gp-sphinx-api-footer",
     ]
 
 
@@ -283,10 +286,10 @@ def test_wrap_preserves_order() -> None:
     content = desc.children[-1]
     assert isinstance(content, addnodes.desc_content)
     assert _child_component_names(content) == [
-        "api-description",
-        "api-parameters",
-        "api-description",
-        "api-footer",
+        "gp-sphinx-api-description",
+        "gp-sphinx-api-parameters",
+        "gp-sphinx-api-description",
+        "gp-sphinx-api-footer",
     ]
 
 
@@ -295,7 +298,7 @@ def test_wrap_empty_content_noop() -> None:
     _wrap_content_runs(desc)
     content = desc.children[-1]
     assert isinstance(content, addnodes.desc_content)
-    assert content.get("classes") == ["api-content"]
+    assert content.get("classes") == ["gp-sphinx-api-content"]
     assert len(content.children) == 0
 
 
@@ -308,7 +311,7 @@ def test_wrap_non_python_noop() -> None:
     _wrap_content_runs(desc)
     content = desc.children[-1]
     assert isinstance(content, addnodes.desc_content)
-    assert _child_component_names(content) == ["api-description"]
+    assert _child_component_names(content) == ["gp-sphinx-api-description"]
 
 
 def test_nest_python_members_moves_siblings_into_class_content() -> None:
@@ -346,12 +349,12 @@ def test_wrap_places_nested_members_in_api_footer() -> None:
     class_content = class_desc.children[-1]
     assert isinstance(class_content, addnodes.desc_content)
     assert _child_component_names(class_content) == [
-        "api-description",
-        "api-footer",
+        "gp-sphinx-api-description",
+        "gp-sphinx-api-footer",
     ]
     footer = class_content.children[1]
     assert isinstance(footer, api_component)
-    assert footer.get("name") == "api-footer"
+    assert footer.get("name") == "gp-sphinx-api-footer"
     assert list(footer.children) == [method_desc]
 
 
@@ -367,8 +370,12 @@ def test_count_collapsed_bullet_list() -> None:
 
 def test_fold_wraps_large_field_list() -> None:
     content = addnodes.desc_content()
-    section = api_component(name="api-parameters", tag="div")
-    section["classes"] = ["api-parameters", "api-region", "api-region--fields"]
+    section = api_component(name="gp-sphinx-api-parameters", tag="div")
+    section["classes"] = [
+        "gp-sphinx-api-parameters",
+        "gp-sphinx-api-region",
+        "gp-sphinx-api-region--fields",
+    ]
     section += _make_field_list(12)
     content += section
 
@@ -382,8 +389,12 @@ def test_fold_wraps_large_field_list() -> None:
 
 def test_fold_wraps_sphinx_collapsed_field_list() -> None:
     content = addnodes.desc_content()
-    section = api_component(name="api-parameters", tag="div")
-    section["classes"] = ["api-parameters", "api-region", "api-region--fields"]
+    section = api_component(name="gp-sphinx-api-parameters", tag="div")
+    section["classes"] = [
+        "gp-sphinx-api-parameters",
+        "gp-sphinx-api-region",
+        "gp-sphinx-api-region--fields",
+    ]
     section += _make_sphinx_field_list(13)
     content += section
 
@@ -396,8 +407,12 @@ def test_fold_wraps_sphinx_collapsed_field_list() -> None:
 
 def test_fold_skips_small_field_list() -> None:
     content = addnodes.desc_content()
-    section = api_component(name="api-parameters", tag="div")
-    section["classes"] = ["api-parameters", "api-region", "api-region--fields"]
+    section = api_component(name="gp-sphinx-api-parameters", tag="div")
+    section["classes"] = [
+        "gp-sphinx-api-parameters",
+        "gp-sphinx-api-region",
+        "gp-sphinx-api-region--fields",
+    ]
     fl = _make_field_list(5)
     section += fl
     content += section
@@ -410,8 +425,12 @@ def test_fold_skips_small_field_list() -> None:
 
 def test_fold_skips_non_parameter_sections() -> None:
     content = addnodes.desc_content()
-    section = api_component(name="api-description", tag="div")
-    section["classes"] = ["api-description", "api-region", "api-region--narrative"]
+    section = api_component(name="gp-sphinx-api-description", tag="div")
+    section["classes"] = [
+        "gp-sphinx-api-description",
+        "gp-sphinx-api-region",
+        "gp-sphinx-api-region--narrative",
+    ]
     section += nodes.paragraph("", "text")
     content += section
 
@@ -440,24 +459,27 @@ def test_rebuild_signature_layout_splits_slots_and_permalink() -> None:
     assert len(sig.children) == 1
     layout = sig.children[0]
     assert isinstance(layout, api_component)
-    assert layout.get("name") == "api-layout"
+    assert layout.get("name") == "gp-sphinx-api-layout"
     assert layout.get("html_attrs") is None
 
     left, right = layout.children
     assert isinstance(left, api_component)
-    assert left.get("name") == "api-layout-left"
+    assert left.get("name") == "gp-sphinx-api-layout-left"
     assert isinstance(right, api_component)
-    assert right.get("name") == "api-layout-right"
+    assert right.get("name") == "gp-sphinx-api-layout-right"
 
     signature = left.children[0]
     assert isinstance(signature, api_component)
-    assert signature.get("name") == "api-signature"
+    assert signature.get("name") == "gp-sphinx-api-signature"
     assert isinstance(left.children[1], api_permalink)
     assert any(
         isinstance(child, addnodes.desc_parameterlist) for child in signature.children
     )
 
-    assert _child_component_names(right) == ["api-badge-container", "api-source-link"]
+    assert _child_component_names(right) == [
+        "gp-sphinx-api-badge-container",
+        "gp-sphinx-api-source-link",
+    ]
 
 
 def test_rebuild_signature_layout_uses_expanded_wrapper_for_large_signature() -> None:
@@ -488,7 +510,7 @@ def test_rebuild_signature_layout_uses_expanded_wrapper_for_large_signature() ->
     signature = left.children[0]
     assert isinstance(signature, api_component)
     assert any(isinstance(child, api_sig_fold) for child in signature.children)
-    expanded = _find_component(signature, "api-signature-expanded")
+    expanded = _find_component(signature, "gp-sphinx-api-signature-expanded")
     html_attrs = t.cast(dict[str, str], expanded.get("html_attrs", {}))
     assert html_attrs.get("id") == ("demo.LayoutDemo.__init__--signature-expanded")
     plist = expanded.children[0]
@@ -497,7 +519,7 @@ def test_rebuild_signature_layout_uses_expanded_wrapper_for_large_signature() ->
     assert plist.get("multi_line_trailing_comma") is False
     collapse = expanded.children[1]
     assert isinstance(collapse, api_inline_component)
-    assert collapse.get("name") == "api-sig-collapse"
+    assert collapse.get("name") == "gp-sphinx-api-sig-collapse"
     collapse_attrs = t.cast(dict[str, str], collapse.get("html_attrs", {}))
     assert collapse_attrs.get("aria-controls") == (
         "demo.LayoutDemo.__init__--signature-expanded"
@@ -533,7 +555,7 @@ def test_rebuild_signature_layout_enriches_annotations_from_field_list() -> None
     assert isinstance(left, api_component)
     signature = left.children[0]
     assert isinstance(signature, api_component)
-    expanded = _find_component(signature, "api-signature-expanded")
+    expanded = _find_component(signature, "gp-sphinx-api-signature-expanded")
     expanded_plist = expanded.children[0]
     assert isinstance(expanded_plist, addnodes.desc_parameterlist)
     params = list(expanded_plist.findall(addnodes.desc_parameter))
@@ -566,7 +588,7 @@ def test_rebuild_signature_layout_strips_annotations_when_disabled() -> None:
     assert isinstance(left, api_component)
     signature = left.children[0]
     assert isinstance(signature, api_component)
-    expanded = _find_component(signature, "api-signature-expanded")
+    expanded = _find_component(signature, "gp-sphinx-api-signature-expanded")
     expanded_plist = expanded.children[0]
     assert isinstance(expanded_plist, addnodes.desc_parameterlist)
     assert expanded_plist.get("multi_line_parameter_list") is True
@@ -647,12 +669,12 @@ def test_on_doctree_resolved_manages_slot_backed_headers_without_gal_enabled() -
 
     on_doctree_resolved(app, doctree, "index")
 
-    assert "api-container" in desc.get("classes", [])
+    assert "gp-sphinx-api-container" in desc.get("classes", [])
     layout = sig.children[0]
     assert isinstance(layout, api_component)
     right = layout.children[1]
     assert isinstance(right, api_component)
-    assert _child_component_names(right) == ["api-badge-container"]
+    assert _child_component_names(right) == ["gp-sphinx-api-badge-container"]
 
 
 def test_on_doctree_resolved_manages_confval_entries_with_profile_classes() -> None:
@@ -679,10 +701,10 @@ def test_on_doctree_resolved_manages_confval_entries_with_profile_classes() -> N
 
     on_doctree_resolved(app, doctree, "index")
 
-    assert "api-container" in desc.get("classes", [])
-    assert "api-profile--confval" in desc.get("classes", [])
+    assert "gp-sphinx-api-container" in desc.get("classes", [])
+    assert "gp-sphinx-api-profile--confval" in desc.get("classes", [])
     layout = sig.children[0]
     assert isinstance(layout, api_component)
     right = layout.children[1]
     assert isinstance(right, api_component)
-    assert _child_component_names(right) == ["api-badge-container"]
+    assert _child_component_names(right) == ["gp-sphinx-api-badge-container"]

@@ -14,11 +14,12 @@ from sphinx_autodoc_pytest_fixtures._constants import (
     _INDEX_TABLE_COLUMNS,
     _RST_INLINE_PATTERN,
 )
+from sphinx_autodoc_pytest_fixtures._css import SPF
 from sphinx_autodoc_typehints_gp import build_resolved_annotation_paragraph
 from sphinx_ux_autodoc_layout import build_api_summary_section
 
-_FIXTURE_INDEX = "spf-fixture-index"
-_TABLE_SCROLL = "spf-table-scroll"
+_FIXTURE_INDEX = SPF.FIXTURE_INDEX
+_TABLE_SCROLL = SPF.TABLE_SCROLL
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx

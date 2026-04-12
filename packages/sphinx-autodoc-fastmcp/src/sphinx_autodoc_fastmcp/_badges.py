@@ -108,7 +108,7 @@ def build_tool_badge_group(safety: str) -> nodes.inline:
     Examples
     --------
     >>> g = build_tool_badge_group("readonly")
-    >>> "sab-badge-group" in g["classes"]
+    >>> "gp-sphinx-badge-group" in g["classes"]
     True
     """
     return build_badge_group_from_specs(
@@ -139,7 +139,7 @@ def build_toolbar(safety: str) -> nodes.inline:
     Examples
     --------
     >>> t = build_toolbar("readonly")
-    >>> "sab-toolbar" in t["classes"]
+    >>> "gp-sphinx-toolbar" in t["classes"]
     True
     """
     return _sab_build_toolbar(build_tool_badge_group(safety))

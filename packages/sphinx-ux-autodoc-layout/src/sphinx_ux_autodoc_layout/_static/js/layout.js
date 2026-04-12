@@ -2,7 +2,7 @@
  * sphinx_ux_autodoc_layout — layout.js
  *
  * Hash-based auto-expansion for both block <details> folds and the
- * custom api-signature disclosure wrapper.
+ * custom gp-sphinx-api-signature disclosure wrapper.
  */
 
 (function () {
@@ -10,7 +10,9 @@
 
   function syncSignatureControls(expandedId, expanded) {
     document
-      .querySelectorAll('.api-signature-toggle, .api-sig-collapse')
+      .querySelectorAll(
+        '.gp-sphinx-api-signature-toggle, .gp-sphinx-api-sig-collapse'
+      )
       .forEach(function (control) {
         if (control.getAttribute('aria-controls') !== expandedId) return;
         control.setAttribute('aria-expanded', expanded ? 'true' : 'false');
@@ -23,12 +25,12 @@
     var expandedPanel = document.getElementById(expandedId);
     if (!expandedPanel) return;
 
-    var signature = expandedPanel.closest('.api-signature');
+    var signature = expandedPanel.closest('.gp-sphinx-api-signature');
     if (signature) {
       signature.setAttribute('data-expanded', expanded ? 'true' : 'false');
     }
 
-    var header = expandedPanel.closest('.api-header');
+    var header = expandedPanel.closest('.gp-sphinx-api-header');
     if (header) {
       header.setAttribute('data-signature-expanded', expanded ? 'true' : 'false');
     }
@@ -64,15 +66,15 @@
   function expandSignatureForTarget(target) {
     var header = null;
 
-    if (target.classList && target.classList.contains('api-header')) {
+    if (target.classList && target.classList.contains('gp-sphinx-api-header')) {
       header = target;
     } else if (target.closest) {
-      header = target.closest('.api-header');
+      header = target.closest('.gp-sphinx-api-header');
     }
 
     if (!header) return;
 
-    var expandedPanel = header.querySelector('.api-signature-expanded');
+    var expandedPanel = header.querySelector('.gp-sphinx-api-signature-expanded');
     if (!expandedPanel || !expandedPanel.id) return;
 
     setSignatureExpandedById(expandedPanel.id, true);
@@ -95,7 +97,9 @@
   }
 
   document.addEventListener('click', function (event) {
-    var button = event.target.closest('.api-signature-toggle, .api-sig-collapse');
+    var button = event.target.closest(
+      '.gp-sphinx-api-signature-toggle, .gp-sphinx-api-sig-collapse'
+    );
     if (!button) return;
 
     event.preventDefault();

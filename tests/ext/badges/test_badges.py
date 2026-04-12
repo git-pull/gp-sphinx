@@ -25,7 +25,7 @@ def test_badge_node_is_inline_subclass() -> None:
 
 
 def test_badge_node_has_base_class() -> None:
-    """BadgeNode always gets sab-badge class."""
+    """BadgeNode always gets gp-sphinx-badge class."""
     b = BadgeNode("readonly")
     assert SAB.BADGE in b["classes"]
 
@@ -55,13 +55,13 @@ def test_badge_node_icon() -> None:
 
 
 def test_badge_node_style_icon_only() -> None:
-    """Icon-only style adds sab-icon-only class."""
+    """Icon-only style adds gp-sphinx-badge--icon-only class."""
     b = BadgeNode("", badge_style="icon-only")
     assert SAB.ICON_ONLY in b["classes"]
 
 
 def test_badge_node_style_inline_icon() -> None:
-    """Inline-icon style adds sab-inline-icon class."""
+    """Inline-icon style adds gp-sphinx-badge--inline-icon class."""
     b = BadgeNode("", badge_style="inline-icon")
     assert SAB.INLINE_ICON in b["classes"]
 
@@ -74,8 +74,10 @@ def test_badge_node_tabindex() -> None:
 
 def test_badge_node_extra_classes() -> None:
     """Extra classes are appended."""
-    b = BadgeNode("x", classes=["smf-safety-readonly", "smf-badge--safety"])
-    assert "smf-safety-readonly" in b["classes"]
+    b = BadgeNode(
+        "x", classes=["gp-sphinx-fastmcp__safety-readonly", "gp-sphinx-fastmcp__safety"]
+    )
+    assert "gp-sphinx-fastmcp__safety-readonly" in b["classes"]
     assert SAB.BADGE in b["classes"]
 
 
@@ -103,17 +105,21 @@ def test_build_badge_from_spec() -> None:
 
 def test_build_badge_icon_only() -> None:
     """build_badge with icon-only style."""
-    b = build_badge("", style="icon-only", classes=["smf-safety-readonly"])
+    b = build_badge(
+        "", style="icon-only", classes=["gp-sphinx-fastmcp__safety-readonly"]
+    )
     assert SAB.ICON_ONLY in b["classes"]
-    assert "smf-safety-readonly" in b["classes"]
+    assert "gp-sphinx-fastmcp__safety-readonly" in b["classes"]
     assert b.astext() == ""
 
 
 def test_build_badge_outline() -> None:
-    """build_badge with outline fill adds sab-outline class."""
-    b = build_badge("function", fill="outline", classes=["sab-type-function"])
+    """build_badge with outline fill adds gp-sphinx-badge--outline class."""
+    b = build_badge(
+        "function", fill="outline", classes=["gp-sphinx-badge--type-function"]
+    )
     assert SAB.OUTLINE in b["classes"]
-    assert "sab-type-function" in b["classes"]
+    assert "gp-sphinx-badge--type-function" in b["classes"]
 
 
 def test_badge_node_size() -> None:
@@ -138,40 +144,44 @@ def test_build_badge_group() -> None:
     """build_badge_group wraps badges with spacing."""
     b1 = build_badge("a")
     b2 = build_badge("b")
-    g = build_badge_group([b1, b2], classes=["smf-badge-group"])
+    g = build_badge_group([b1, b2], classes=["gp-sphinx-fastmcp__badge-group"])
     assert SAB.BADGE_GROUP in g["classes"]
-    assert "smf-badge-group" in g["classes"]
+    assert "gp-sphinx-fastmcp__badge-group" in g["classes"]
     badges = list(g.findall(BadgeNode))
     assert len(badges) == 2
 
 
 def test_build_badge_group_from_specs() -> None:
-    """Typed badge groups keep the shared sab-badge-group wrapper."""
+    """Typed badge groups keep the shared gp-sphinx-badge-group wrapper."""
     group = build_badge_group_from_specs(
         [
-            BadgeSpec("config", classes=("sas-badge--type",)),
-            BadgeSpec("env", classes=("sas-badge--rebuild",), fill="outline"),
+            BadgeSpec("config", classes=("gp-sphinx-api-style__badge--type",)),
+            BadgeSpec(
+                "env",
+                classes=("gp-sphinx-api-style__badge--rebuild",),
+                fill="outline",
+            ),
         ],
-        classes=["sas-badge-group"],
+        classes=["gp-sphinx-api-style__badge-group"],
     )
 
     assert SAB.BADGE_GROUP in group["classes"]
-    assert "sas-badge-group" in group["classes"]
+    assert "gp-sphinx-api-style__badge-group" in group["classes"]
     assert [badge.astext() for badge in group.findall(BadgeNode)] == ["config", "env"]
 
 
 def test_build_toolbar() -> None:
     """build_toolbar wraps a group in a toolbar container."""
     g = build_badge_group([build_badge("x")])
-    t = build_toolbar(g, classes=["smf-toolbar"])
+    t = build_toolbar(g, classes=["gp-sphinx-fastmcp__toolbar"])
     assert SAB.TOOLBAR in t["classes"]
-    assert "smf-toolbar" in t["classes"]
+    assert "gp-sphinx-fastmcp__toolbar" in t["classes"]
 
 
 def test_badge_inside_reference() -> None:
     """BadgeNode can be nested inside a reference node."""
     ref = nodes.reference("", "", internal=True, refuri="#test")
-    badge = build_badge("readonly", classes=["smf-safety-readonly"])
+    badge = build_badge("readonly", classes=["gp-sphinx-fastmcp__safety-readonly"])
     ref += badge
     found = list(ref.findall(BadgeNode))
     assert len(found) == 1
@@ -180,7 +190,9 @@ def test_badge_inside_reference() -> None:
 def test_badge_inside_literal() -> None:
     """BadgeNode can be nested inside a literal (code chip)."""
     code = nodes.literal("", "")
-    badge = build_badge("", style="inline-icon", classes=["smf-safety-readonly"])
+    badge = build_badge(
+        "", style="inline-icon", classes=["gp-sphinx-fastmcp__safety-readonly"]
+    )
     code += badge
     code += nodes.Text("capture_pane")
     found = list(code.findall(BadgeNode))
@@ -190,7 +202,9 @@ def test_badge_inside_literal() -> None:
 def test_badge_next_to_literal_in_reference() -> None:
     """Icon-only badge + literal side by side inside a reference."""
     ref = nodes.reference("", "", internal=True, refuri="#test")
-    badge = build_badge("", style="icon-only", classes=["smf-safety-readonly"])
+    badge = build_badge(
+        "", style="icon-only", classes=["gp-sphinx-fastmcp__safety-readonly"]
+    )
     ref += badge
     ref += nodes.literal("", "capture_pane")
     assert len(list(ref.findall(BadgeNode))) == 1
@@ -198,13 +212,13 @@ def test_badge_next_to_literal_in_reference() -> None:
 
 
 def test_css_constants() -> None:
-    """CSS constants use sab- prefix."""
-    assert SAB.PREFIX == "sab"
-    assert SAB.BADGE == "sab-badge"
-    assert SAB.ICON_ONLY == "sab-icon-only"
-    assert SAB.XXS == "sab-xxs"
-    assert SAB.XS == "sab-xs"
-    assert SAB.SM == "sab-sm"
-    assert SAB.MD == "sab-md"
-    assert SAB.LG == "sab-lg"
-    assert SAB.XL == "sab-xl"
+    """CSS constants use the gp-sphinx-badge namespace."""
+    assert SAB.PREFIX == "gp-sphinx-badge"
+    assert SAB.BADGE == "gp-sphinx-badge"
+    assert SAB.ICON_ONLY == "gp-sphinx-badge--icon-only"
+    assert SAB.XXS == "gp-sphinx-badge--size-xxs"
+    assert SAB.XS == "gp-sphinx-badge--size-xs"
+    assert SAB.SM == "gp-sphinx-badge--size-sm"
+    assert SAB.MD == "gp-sphinx-badge--size-md"
+    assert SAB.LG == "gp-sphinx-badge--size-lg"
+    assert SAB.XL == "gp-sphinx-badge--size-xl"

@@ -2,7 +2,7 @@
 
 # sphinx-ux-badges
 
-```{sab-package-meta} sphinx-ux-badges
+```{gp-sphinx-package-meta} sphinx-ux-badges
 ```
 
 :::{admonition} Alpha
@@ -28,7 +28,7 @@ $ pip install sphinx-ux-badges
 Every variant rendered by the real `build_badge` / `build_badge_group` /
 `build_toolbar` API:
 
-```{sab-badge-demo}
+```{gp-sphinx-badge-demo}
 ```
 
 ## Working usage examples
@@ -62,12 +62,12 @@ badge_group = build_badge_group(
         build_badge(
             "readonly",
             tooltip="Read-only operation",
-            classes=["smf-safety-readonly"],
+            classes=["gp-sphinx-fastmcp__safety-readonly"],
         ),
         build_badge(
             "tool",
             tooltip="FastMCP tool entry",
-            classes=["smf-type-tool"],
+            classes=["gp-sphinx-fastmcp__type-tool"],
         ),
     ],
 )
@@ -88,85 +88,85 @@ every variant.
 * - Colour class
   - `SAB` constant
   - Used for
-* - `sab-type-function`
+* - `gp-sphinx-badge--type-function`
   - `SAB.TYPE_FUNCTION`
   - Python functions (blue)
-* - `sab-type-class`
+* - `gp-sphinx-badge--type-class`
   - `SAB.TYPE_CLASS`
   - Python classes (indigo)
-* - `sab-type-method`
+* - `gp-sphinx-badge--type-method`
   - `SAB.TYPE_METHOD`
   - Instance / class / static methods (cyan)
-* - `sab-type-property`
+* - `gp-sphinx-badge--type-property`
   - `SAB.TYPE_PROPERTY`
   - Properties (teal)
-* - `sab-type-attribute`
+* - `gp-sphinx-badge--type-attribute`
   - `SAB.TYPE_ATTRIBUTE`
   - Attributes (slate)
-* - `sab-type-data`
+* - `gp-sphinx-badge--type-data`
   - `SAB.TYPE_DATA`
   - Module-level data (grey)
-* - `sab-type-exception`
+* - `gp-sphinx-badge--type-exception`
   - `SAB.TYPE_EXCEPTION`
   - Exceptions (rose/red)
-* - `sab-type-typealias`
+* - `gp-sphinx-badge--type-typealias`
   - `SAB.TYPE_TYPEALIAS`
   - Type aliases (violet)
-* - `sab-type-module`
+* - `gp-sphinx-badge--type-module`
   - `SAB.TYPE_MODULE`
   - Modules (green)
-* - `sab-mod-async`
+* - `gp-sphinx-badge--mod-async`
   - `SAB.MOD_ASYNC`
   - async modifier (purple outline)
-* - `sab-mod-classmethod`
+* - `gp-sphinx-badge--mod-classmethod`
   - `SAB.MOD_CLASSMETHOD`
   - classmethod modifier (amber outline)
-* - `sab-mod-staticmethod`
+* - `gp-sphinx-badge--mod-staticmethod`
   - `SAB.MOD_STATICMETHOD`
   - staticmethod modifier (grey outline)
-* - `sab-mod-abstract`
+* - `gp-sphinx-badge--mod-abstract`
   - `SAB.MOD_ABSTRACT`
   - abstract modifier (indigo outline)
-* - `sab-mod-final`
+* - `gp-sphinx-badge--mod-final`
   - `SAB.MOD_FINAL`
   - final modifier (emerald outline)
-* - `sab-state-deprecated`
+* - `gp-sphinx-badge--state-deprecated`
   - `SAB.STATE_DEPRECATED`
   - deprecated (muted red, shared across domains)
-* - `sab-type-fixture`
+* - `gp-sphinx-badge--type-fixture`
   - `SAB.TYPE_FIXTURE`
   - pytest fixtures (green)
-* - `sab-scope-session`
+* - `gp-sphinx-badge--scope-session`
   - `SAB.SCOPE_SESSION`
   - session-scope fixtures (amber)
-* - `sab-scope-module`
+* - `gp-sphinx-badge--scope-module`
   - `SAB.SCOPE_MODULE`
   - module-scope fixtures (teal)
-* - `sab-scope-class`
+* - `gp-sphinx-badge--scope-class`
   - `SAB.SCOPE_CLASS`
   - class-scope fixtures (slate)
-* - `sab-state-factory`
+* - `gp-sphinx-badge--state-factory`
   - `SAB.STATE_FACTORY`
   - factory fixtures (amber outline)
-* - `sab-state-override`
+* - `gp-sphinx-badge--state-override`
   - `SAB.STATE_OVERRIDE`
   - override hooks (violet outline)
-* - `sab-state-autouse`
+* - `gp-sphinx-badge--state-autouse`
   - `SAB.STATE_AUTOUSE`
   - autouse fixtures (rose outline)
-* - `sab-type-config`
+* - `gp-sphinx-badge--type-config`
   - `SAB.TYPE_CONFIG`
   - Sphinx config values (amber)
-* - `sab-mod-rebuild`
+* - `gp-sphinx-badge--mod-rebuild`
   - `SAB.MOD_REBUILD`
   - Sphinx rebuild mode (grey outline)
-* - `sab-type-directive`
+* - `gp-sphinx-badge--type-directive`
   - `SAB.TYPE_DIRECTIVE`
   - docutils directives (violet)
-* - `sab-type-role`
+* - `gp-sphinx-badge--type-role`
   - `SAB.TYPE_ROLE`
   - docutils roles (violet)
-* - `sab-type-option`
+* - `gp-sphinx-badge--type-option`
   - `SAB.TYPE_OPTION`
   - docutils directive options (violet)
 ```
@@ -237,23 +237,23 @@ Override them in your project's `custom.css` or via
 ```css
 :root {
   /* ── Color hooks (set by downstream extensions) ────── */
-  --sab-bg: transparent;        /* badge background */
-  --sab-fg: inherit;            /* badge text color */
-  --sab-border: none;           /* badge border shorthand */
+  --gp-sphinx-badge-bg: transparent;        /* badge background */
+  --gp-sphinx-badge-fg: inherit;            /* badge text color */
+  --gp-sphinx-badge-border: none;           /* badge border shorthand */
 
   /* ── Metrics ───────────────────────────────────────── */
-  --sab-font-size: 0.75em;
-  --sab-font-weight: 700;
-  --sab-padding-v: 0.35em;      /* vertical padding */
-  --sab-padding-h: 0.65em;      /* horizontal padding */
-  --sab-radius: 0.25rem;        /* border-radius */
-  --sab-icon-gap: 0.28rem;      /* gap between icon and label */
+  --gp-sphinx-badge-font-size: 0.75em;
+  --gp-sphinx-badge-font-weight: 700;
+  --gp-sphinx-badge-padding-v: 0.35em;      /* vertical padding */
+  --gp-sphinx-badge-padding-h: 0.65em;      /* horizontal padding */
+  --gp-sphinx-badge-radius: 0.25rem;        /* border-radius */
+  --gp-sphinx-badge-icon-gap: 0.28rem;      /* gap between icon and label */
 
   /* ── Depth (inset shadow on solid badges) ──────────── */
-  --sab-buff-shadow:
+  --gp-sphinx-badge-buff-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     inset 0 -1px 2px rgba(0, 0, 0, 0.12);
-  --sab-buff-shadow-dark-ui:
+  --gp-sphinx-badge-buff-shadow-dark-ui:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     inset 0 -1px 2px rgba(0, 0, 0, 0.28);
 }
@@ -267,25 +267,25 @@ Override them in your project's `custom.css` or via
 
 * - Property
   - Purpose
-* - `--sab-bg`
+* - `--gp-sphinx-badge-bg`
   - Badge background color. Extensions set this per badge class (e.g. green for "readonly").
-* - `--sab-fg`
+* - `--gp-sphinx-badge-fg`
   - Badge text color. Falls back to `inherit` when unset.
-* - `--sab-border`
+* - `--gp-sphinx-badge-border`
   - Border shorthand (`1px solid #...`). Defaults to `none`.
-* - `--sab-font-size`
+* - `--gp-sphinx-badge-font-size`
   - Font size. Context-aware sizing (headings, body, TOC) overrides this.
-* - `--sab-font-weight`
+* - `--gp-sphinx-badge-font-weight`
   - Font weight. Default `700` (bold).
-* - `--sab-padding-v` / `--sab-padding-h`
+* - `--gp-sphinx-badge-padding-v` / `--gp-sphinx-badge-padding-h`
   - Vertical and horizontal padding.
-* - `--sab-radius`
+* - `--gp-sphinx-badge-radius`
   - Border radius for pill shape.
-* - `--sab-icon-gap`
+* - `--gp-sphinx-badge-icon-gap`
   - Gap between the `::before` icon and the label text.
-* - `--sab-buff-shadow`
+* - `--gp-sphinx-badge-buff-shadow`
   - Subtle inset highlight + shadow for depth on light backgrounds.
-* - `--sab-buff-shadow-dark-ui`
+* - `--gp-sphinx-badge-buff-shadow-dark-ui`
   - Stronger inset shadow variant for dark theme / `prefers-color-scheme: dark`.
 ```
 
@@ -300,40 +300,40 @@ All classes use the `sab-` prefix (**s**phinx **a**utodoc **b**adges).
 * - Class
   - Applied by
   - Description
-* - `sab-badge`
+* - `gp-sphinx-badge`
   - `BadgeNode`
   - Base class. Always present on every badge.
-* - `sab-outline`
+* - `gp-sphinx-badge--outline`
   - `build_badge(fill="outline")`
   - Transparent background, inherits text color.
-* - `sab-icon-only`
+* - `gp-sphinx-badge--icon-only`
   - `build_badge(style="icon-only")`
   - 16 × 16 colored box with emoji `::before`.
-* - `sab-inline-icon`
+* - `gp-sphinx-badge--inline-icon`
   - `build_badge(style="inline-icon")`
   - Bare emoji inside a code chip, no background.
-* - `sab-badge-group`
+* - `gp-sphinx-badge-group`
   - `build_badge_group()`
   - Flex container with `gap: 0.3rem` between badges.
-* - `sab-toolbar`
+* - `gp-sphinx-toolbar`
   - `build_toolbar()`
   - Flex push-right (`margin-left: auto`) for title rows.
-* - `sab-xxs`
+* - `gp-sphinx-badge--size-xxs`
   - `build_badge(size="xxs")` / `BadgeNode(..., badge_size="xxs")`
   - Minimum size (status dots, very tight layouts).
-* - `sab-xs`
+* - `gp-sphinx-badge--size-xs`
   - `build_badge(size="xs")` / `BadgeNode(..., badge_size="xs")`
   - Extra small (dense tables, tight UI).
-* - `sab-sm`
+* - `gp-sphinx-badge--size-sm`
   - `build_badge(size="sm")`
   - Small inline badges.
-* - `sab-md`
+* - `gp-sphinx-badge--size-md`
   - `build_badge(size="md")`
   - Medium — larger than the default but smaller than `lg`.
-* - `sab-lg`
+* - `gp-sphinx-badge--size-lg`
   - `build_badge(size="lg")`
   - Large (section titles, callouts).
-* - `sab-xl`
+* - `gp-sphinx-badge--size-xl`
   - `build_badge(size="xl")`
   - Extra large (hero / landing emphasis).
 ```
@@ -341,7 +341,7 @@ All classes use the `sab-` prefix (**s**phinx **a**utodoc **b**adges).
 ## Context-aware sizing
 
 Badge size adapts automatically based on where it appears in the document.
-CSS selectors handle it. Explicit size classes (`sab-xs` … `sab-xl`) override
+CSS selectors handle it. Explicit size classes (`gp-sphinx-badge--size-xs` … `gp-sphinx-badge--size-xl`) override
 contextual sizing when present (higher specificity than context rules).
 
 ```{list-table}
@@ -353,13 +353,13 @@ contextual sizing when present (higher specificity than context rules).
   - Selectors
 * - Heading (`h2`, `h3`)
   - `0.68rem`
-  - `.body h2 .sab-badge`, `[role="main"] h3 .sab-badge`
+  - `.body h2 .gp-sphinx-badge`, `[role="main"] h3 .gp-sphinx-badge`
 * - Body (`p`, `li`, `td`, `a`)
   - `0.62rem`
-  - `.body p .sab-badge`, `[role="main"] li .sab-badge`, etc.
+  - `.body p .gp-sphinx-badge`, `[role="main"] li .gp-sphinx-badge`, etc.
 * - TOC sidebar
   - `0.58rem`
-  - `.toc-tree .sab-badge` (compact, with emoji icons)
+  - `.toc-tree .gp-sphinx-badge` (compact, with emoji icons)
 ```
 
 ## Downstream extensions

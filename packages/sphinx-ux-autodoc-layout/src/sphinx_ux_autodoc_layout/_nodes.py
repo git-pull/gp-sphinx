@@ -3,10 +3,10 @@
 The extension keeps Sphinx's outer ``dl / dt / dd`` structure but
 builds an explicit API component tree within those nodes.
 
-All nodes use the ``api_*`` prefix for the stable DOM contract:
-structural wrappers (``api_component``, ``api_slot``, ``api_permalink``),
-disclosure widgets (``api_fold``, ``api_sig_fold``), and the legacy
-region wrapper (``api_region``).
+All nodes use the ``gp-sphinx-api-*`` prefix for the stable DOM
+contract: structural wrappers (``api_component``, ``api_slot``,
+``api_permalink``), disclosure widgets (``api_fold``, ``api_sig_fold``),
+and the legacy region wrapper (``api_region``).
 
 Examples
 --------
@@ -15,13 +15,13 @@ Examples
 ...     build_api_component,
 ...     api_fold,
 ... )
->>> comp = api_component(name="api-layout", tag="div")
+>>> comp = api_component(name="gp-sphinx-api-layout", tag="div")
 >>> comp.get("name")
-'api-layout'
+'gp-sphinx-api-layout'
 
->>> built = build_api_component("api-content", classes=("demo",))
+>>> built = build_api_component("gp-sphinx-api-content", classes=("demo",))
 >>> built.get("classes")
-['api-content', 'demo']
+['gp-sphinx-api-content', 'demo']
 
 >>> fold = api_fold(kind="parameters", summary="Parameters (5)")
 >>> fold.get("summary")
@@ -33,6 +33,8 @@ from __future__ import annotations
 import typing as t
 
 from docutils import nodes
+
+from sphinx_ux_autodoc_layout._css import API
 
 APISlotName = t.Literal["badges", "source-link"]
 """Stable slot names used to hand structured header content to layout."""
@@ -84,15 +86,15 @@ class api_component(nodes.General, nodes.Element):
     Parameters
     ----------
     name : str
-        Stable DOM contract name such as ``"api-layout"``.
+        Stable DOM contract name such as ``"gp-sphinx-api-layout"``.
     tag : str
         HTML tag to emit. Defaults to ``"div"``.
 
     Examples
     --------
-    >>> node = api_component(name="api-content", tag="div")
+    >>> node = api_component(name="gp-sphinx-api-content", tag="div")
     >>> node.get("name")
-    'api-content'
+    'gp-sphinx-api-content'
     >>> node.get("tag")
     'div'
     """
@@ -104,15 +106,15 @@ class api_inline_component(nodes.General, nodes.Inline, nodes.TextElement):
     Parameters
     ----------
     name : str
-        Stable DOM contract name such as ``"api-source-link"``.
+        Stable DOM contract name such as ``"gp-sphinx-api-source-link"``.
     tag : str
         HTML tag to emit. Defaults to ``"span"``.
 
     Examples
     --------
-    >>> node = api_inline_component(name="api-source-link", tag="span")
+    >>> node = api_inline_component(name="gp-sphinx-api-source-link", tag="span")
     >>> node.get("name")
-    'api-source-link'
+    'gp-sphinx-api-source-link'
     """
 
 
@@ -133,7 +135,7 @@ class api_slot(nodes.General, nodes.Element):
 
 
 class api_permalink(nodes.General, nodes.Element):
-    """Permalink anchor rendered inside ``api-layout-left``.
+    """Permalink anchor rendered inside ``gp-sphinx-api-layout-left``.
 
     Parameters
     ----------
@@ -155,7 +157,7 @@ class api_sig_fold(nodes.General, nodes.Element):
 
     The preview button lives in the signature row, while the expanded
     multiline signature content is rendered in a controlled wrapper
-    inside ``api-signature``.
+    inside ``gp-sphinx-api-signature``.
 
     Parameters
     ----------
@@ -190,7 +192,7 @@ def build_api_component(
     Parameters
     ----------
     name : str
-        Stable DOM contract name such as ``"api-layout"``.
+        Stable DOM contract name such as ``"gp-sphinx-api-layout"``.
     tag : str
         HTML tag emitted by the visitor.
     classes : tuple[str, ...]
@@ -205,9 +207,9 @@ def build_api_component(
 
     Examples
     --------
-    >>> wrapper = build_api_component("api-content", classes=("legacy",))
+    >>> wrapper = build_api_component("gp-sphinx-api-content", classes=("legacy",))
     >>> wrapper.get("classes")
-    ['api-content', 'legacy']
+    ['gp-sphinx-api-content', 'legacy']
     """
     component = api_component(name=name, tag=tag)
     component["classes"] = [name, *classes]
@@ -228,7 +230,7 @@ def build_api_inline_component(
     Parameters
     ----------
     name : str
-        Stable DOM contract name such as ``"api-source-link"``.
+        Stable DOM contract name such as ``"gp-sphinx-api-source-link"``.
     tag : str
         HTML tag emitted by the visitor.
     classes : tuple[str, ...]
@@ -273,12 +275,12 @@ def build_api_slot(
     --------
     >>> slot = build_api_slot("badges", nodes.inline("", "demo"))
     >>> slot.get("classes")
-    ['api-slot', 'api-slot--badges']
+    ['gp-sphinx-api-slot', 'gp-sphinx-api-slot--badges']
     >>> slot.astext()
     'demo'
     """
     slot = api_slot(slot=slot_name)
-    slot["classes"] = ["api-slot", f"api-slot--{slot_name}", *classes]
+    slot["classes"] = [API.SLOT, API.slot_modifier(slot_name), *classes]
     for child in children:
         slot += child
     return slot

@@ -19,14 +19,14 @@ from sphinx_ux_badges import BadgeNode
 
 
 def test_css_prefix() -> None:
-    """CSS prefix is smf."""
-    assert _CSS.PREFIX == "smf"
+    """CSS prefix is gp-sphinx-fastmcp."""
+    assert _CSS.PREFIX == "gp-sphinx-fastmcp"
 
 
 def test_badge_group_contains_tool_type() -> None:
     """Tool badge group includes safety + type badge."""
     group = build_tool_badge_group("readonly")
-    assert "sab-badge-group" in group["classes"]
+    assert "gp-sphinx-badge-group" in group["classes"]
     badges = list(group.findall(BadgeNode))
     assert len(badges) == 2
     assert "tool" in badges[-1].astext()
@@ -41,16 +41,16 @@ def test_safety_badge_is_badge_node() -> None:
 
 
 def test_safety_badge_has_classes() -> None:
-    """Safety badge has sab-badge + smf safety classes."""
+    """Safety badge has gp-sphinx-badge + smf safety classes."""
     b = build_safety_badge("readonly")
-    assert "sab-badge" in b["classes"]
-    assert "smf-safety-readonly" in b["classes"]
+    assert "gp-sphinx-badge" in b["classes"]
+    assert "gp-sphinx-fastmcp__safety-readonly" in b["classes"]
 
 
 def test_safety_badge_icon_only() -> None:
-    """Icon-only safety badge has sab-icon-only class and empty text."""
+    """Icon-only safety badge has gp-sphinx-badge--icon-only class and empty text."""
     b = build_safety_badge("readonly", icon_only=True)
-    assert "sab-icon-only" in b["classes"]
+    assert "gp-sphinx-badge--icon-only" in b["classes"]
     assert b.astext() == ""
 
 

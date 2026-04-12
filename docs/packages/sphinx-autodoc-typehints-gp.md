@@ -2,7 +2,7 @@
 
 # sphinx-autodoc-typehints-gp
 
-```{sab-package-meta} sphinx-autodoc-typehints-gp
+```{gp-sphinx-package-meta} sphinx-autodoc-typehints-gp
 ```
 
 :::{admonition} Alpha

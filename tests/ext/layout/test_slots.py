@@ -23,8 +23,8 @@ def test_inject_signature_slots_moves_viewcode_into_source_slot() -> None:
     sig = addnodes.desc_signature()
     sig += addnodes.desc_name("", "demo")
     sig += _make_viewcode_ref()
-    badge_group = nodes.inline(classes=["sab-badge-group"])
-    badge_group += nodes.inline("", "function", classes=["sab-badge"])
+    badge_group = nodes.inline(classes=["gp-sphinx-badge-group"])
+    badge_group += nodes.inline("", "function", classes=["gp-sphinx-badge"])
 
     injected = inject_signature_slots(
         sig,
