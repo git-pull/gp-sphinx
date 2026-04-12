@@ -606,7 +606,7 @@ def smoke_sphinx_autodoc_api_style(dist_dir: pathlib.Path, version: str) -> None
 
 
 def smoke_sphinx_ux_badges(dist_dir: pathlib.Path, version: str) -> None:
-    """Verify the autodoc-badges extension installs and imports cleanly."""
+    """Verify the ux-badges extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
         python_path = _create_venv(pathlib.Path(tmp))
         _install_into_venv(
@@ -624,7 +624,7 @@ def smoke_sphinx_ux_badges(dist_dir: pathlib.Path, version: str) -> None:
 
 
 def smoke_sphinx_ux_autodoc_layout(dist_dir: pathlib.Path, version: str) -> None:
-    """Verify the autodoc-layout extension installs and imports cleanly."""
+    """Verify the ux-autodoc-layout extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
         python_path = _create_venv(pathlib.Path(tmp))
         _install_into_venv(
