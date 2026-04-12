@@ -283,7 +283,7 @@ def test_default_fixture_store_and_domain_contract(
 
 def test_default_fixture_post_transform_snapshot(
     default_dummy_result: SharedSphinxResult,
-    snapshot_doctree,
+    snapshot_doctree: t.Callable[..., None],
 ) -> None:
     """Snapshot the transformed default fixture page contract."""
     doctree = get_doctree(default_dummy_result, "index", post_transforms=True)
@@ -332,7 +332,7 @@ def test_manual_directive_without_module_registers_unqualified_name(
 
 def test_dependency_rendering_snapshot(
     spf_doctree_root: pathlib.Path,
-    snapshot_doctree,
+    snapshot_doctree: t.Callable[..., None],
 ) -> None:
     """Hidden, builtin, and external dependencies render via resolved references."""
     fixture_source = FIXTURE_MOD_SOURCE + textwrap.dedent(
@@ -395,8 +395,8 @@ def test_dependency_rendering_snapshot(
 
 def test_warning_and_manual_option_snapshot(
     spf_doctree_root: pathlib.Path,
-    snapshot_doctree,
-    snapshot_warnings,
+    snapshot_doctree: t.Callable[..., None],
+    snapshot_warnings: t.Callable[..., None],
 ) -> None:
     """Yield, async, deprecated, replacement, and manual options share one scenario."""
     fixture_source = FIXTURE_MOD_SOURCE + textwrap.dedent(
@@ -564,7 +564,7 @@ def test_short_name_fixture_reference_resolves(
 
 def test_doc_pytest_plugin_rst_snapshot(
     spf_doctree_root: pathlib.Path,
-    snapshot_doctree,
+    snapshot_doctree: t.Callable[..., None],
 ) -> None:
     """Snapshot the generated RST auto-pytest-plugin page content."""
     index_rst = textwrap.dedent(
