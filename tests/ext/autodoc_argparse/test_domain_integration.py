@@ -144,14 +144,22 @@ def domain_result(tmp_path_factory: pytest.TempPathFactory) -> _Result:
 @pytest.mark.integration
 def test_option_xrefs_resolve_without_warnings(domain_result: _Result) -> None:
     """Cross-references to argparse options resolve without warnings."""
-    # Filter for "undefined label" or "unknown option" warnings
-    option_warnings = [
+    # Filter narrowly for actual xref-resolution failures: "undefined label",
+    # "unknown option", or "reference target not found".  Earlier filters
+    # matched any "option" substring, which false-matched `desc_optional`
+    # node re-registration noise when another test suite runs a Sphinx
+    # build earlier in the same process.
+    xref_warnings = [
         line
         for line in domain_result.warnings.splitlines()
-        if "option" in line.lower() or "undefined" in line.lower()
+        if (
+            "undefined label" in line.lower()
+            or "unknown option" in line.lower()
+            or "reference target not found" in line.lower()
+        )
     ]
-    assert option_warnings == [], (
-        "Option cross-references produced warnings:\n" + "\n".join(option_warnings)
+    assert xref_warnings == [], (
+        "Option cross-references produced warnings:\n" + "\n".join(xref_warnings)
     )
 
 
