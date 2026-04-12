@@ -40,16 +40,22 @@ from __future__ import annotations
 
 
 class SAB:
-    """CSS class constants (``sab-`` = sphinx autodoc badges).
+    """CSS class constants under the ``sab-`` namespace.
+
+    The ``sab-`` prefix is a stable, opaque namespace owned by
+    ``sphinx-ux-badges``.  It is preserved across the package rename
+    (formerly ``sphinx-autodoc-badges``) so downstream CSS overrides
+    continue to work.
 
     Covers both structural variants (size, outline, icon-only) and the
     unified semantic colour palette from ``sab_palettes.css``.
 
-    All ``sphinx-autodoc-*`` packages use these constants for shared badge
-    primitives (group, badge, toolbar, type, modifier, state classes).
-    Extension-specific layout and semantic classes remain under each
-    package's own prefix (e.g. ``smf-`` for FastMCP tool sections and
-    safety tiers, ``spf-`` for pytest-fixture index layout).
+    All consuming ``sphinx-autodoc-*`` packages use these constants for
+    shared badge primitives (group, badge, toolbar, type, modifier,
+    state classes).  Extension-specific layout and semantic classes
+    remain under each package's own prefix (e.g. ``smf-`` for FastMCP
+    tool sections and safety tiers, ``spf-`` for pytest-fixture index
+    layout).
 
     Examples
     --------
