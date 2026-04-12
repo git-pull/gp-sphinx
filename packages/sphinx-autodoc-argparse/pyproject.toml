@@ -11,6 +11,7 @@ classifiers = [
   "Development Status :: 3 - Alpha",
   "License :: OSI Approved :: MIT License",
   "Framework :: Sphinx",
+  "Framework :: Sphinx :: Domain",
   "Framework :: Sphinx :: Extension",
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
