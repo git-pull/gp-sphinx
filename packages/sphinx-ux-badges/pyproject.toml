@@ -1,5 +1,5 @@
 [project]
-name = "sphinx-autodoc-badges"
+name = "sphinx-ux-badges"
 version = "0.0.1a7"
 description = "Shared badge node and CSS for Sphinx autodoc extensions"
 requires-python = ">=3.10,<4.0"
@@ -37,4 +37,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/sphinx_autodoc_badges"]
+packages = ["src/sphinx_ux_badges"]

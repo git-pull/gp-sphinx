@@ -13,8 +13,8 @@ import sphinx_autodoc_pytest_fixtures
 import sphinx_autodoc_pytest_fixtures._directives as spf_directives
 import sphinx_autodoc_pytest_fixtures._index as spf_index
 import sphinx_autodoc_pytest_fixtures._store
-from sphinx_autodoc_badges import SAB, BadgeNode
 from sphinx_autodoc_pytest_fixtures._models import FixtureMeta
+from sphinx_ux_badges import SAB, BadgeNode
 
 try:
     import libtmux  # noqa: F401
@@ -537,7 +537,7 @@ def test_setup_return_value() -> None:
     assert result["parallel_write_safe"] is True
     assert setup_extensions == [
         "sphinx.ext.autodoc",
-        "sphinx_autodoc_badges",
+        "sphinx_ux_badges",
         "sphinx_autodoc_layout",
         "sphinx_autodoc_typehints_gp",
     ]

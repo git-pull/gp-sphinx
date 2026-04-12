@@ -7,7 +7,7 @@ import typing as t
 from sphinx.writers.html5 import HTML5Translator
 
 if t.TYPE_CHECKING:
-    from sphinx_autodoc_badges._nodes import BadgeNode
+    from sphinx_ux_badges._nodes import BadgeNode
 
 
 def visit_badge_html(self: HTML5Translator, node: BadgeNode) -> None:
@@ -24,7 +24,7 @@ def visit_badge_html(self: HTML5Translator, node: BadgeNode) -> None:
 
     Examples
     --------
-    >>> from sphinx_autodoc_badges._nodes import BadgeNode
+    >>> from sphinx_ux_badges._nodes import BadgeNode
     >>> b = BadgeNode("ok", badge_tooltip="tip")
     >>> b["badge_tooltip"]
     'tip'

@@ -6,7 +6,6 @@ import typing as t
 
 from docutils import nodes
 
-from sphinx_autodoc_badges import BadgeNode
 from sphinx_autodoc_fastmcp._badges import build_safety_badge, build_tool_badge_group
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._parsing import (
@@ -16,6 +15,7 @@ from sphinx_autodoc_fastmcp._parsing import (
     parse_numpy_params,
 )
 from sphinx_autodoc_fastmcp._roles import _tool_ref_placeholder
+from sphinx_ux_badges import BadgeNode
 
 
 def test_css_prefix() -> None:

@@ -30,7 +30,7 @@ _SETUP_CASES = (
         sphinx_autodoc_api_style.setup,
         (
             "sphinx.ext.autodoc",
-            "sphinx_autodoc_badges",
+            "sphinx_ux_badges",
             "sphinx_autodoc_layout",
         ),
     ),
@@ -39,7 +39,7 @@ _SETUP_CASES = (
         sphinx_autodoc_pytest_fixtures.setup,
         (
             "sphinx.ext.autodoc",
-            "sphinx_autodoc_badges",
+            "sphinx_ux_badges",
             "sphinx_autodoc_layout",
             "sphinx_autodoc_typehints_gp",
         ),
@@ -48,7 +48,7 @@ _SETUP_CASES = (
         "autodoc_sphinx",
         sphinx_autodoc_sphinx.setup,
         (
-            "sphinx_autodoc_badges",
+            "sphinx_ux_badges",
             "sphinx_autodoc_layout",
             "sphinx_autodoc_typehints_gp",
         ),
@@ -57,7 +57,7 @@ _SETUP_CASES = (
         "autodoc_docutils",
         sphinx_autodoc_docutils.setup,
         (
-            "sphinx_autodoc_badges",
+            "sphinx_ux_badges",
             "sphinx_autodoc_layout",
             "sphinx_autodoc_typehints_gp",
         ),
@@ -66,7 +66,7 @@ _SETUP_CASES = (
         "fastmcp",
         sphinx_autodoc_fastmcp.setup,
         (
-            "sphinx_autodoc_badges",
+            "sphinx_ux_badges",
             "sphinx_autodoc_layout",
             "sphinx_autodoc_typehints_gp",
         ),

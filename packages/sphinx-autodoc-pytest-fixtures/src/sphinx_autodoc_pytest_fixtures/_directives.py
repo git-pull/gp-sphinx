@@ -14,7 +14,6 @@ from sphinx.util import logging as sphinx_logging
 from sphinx.util.docfields import Field, GroupedField
 from sphinx.util.docutils import SphinxDirective
 
-from sphinx_autodoc_badges import SAB
 from sphinx_autodoc_pytest_fixtures._constants import (
     _CALLOUT_MESSAGES,
     _CONFIG_BUILTIN_LINKS,
@@ -40,6 +39,7 @@ from sphinx_autodoc_pytest_fixtures._models import (
     autofixture_index_node,
 )
 from sphinx_autodoc_pytest_fixtures._store import _get_spf_store, _resolve_builtin_url
+from sphinx_ux_badges import SAB
 
 logger = sphinx_logging.getLogger(__name__)
 AutofixtureEntry: t.TypeAlias = tuple[str, str, t.Any]

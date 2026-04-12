@@ -20,7 +20,7 @@ Two new foundational packages form the core of the rendering pipeline:
 ## Unified badge system
 
 All badge colours have been consolidated into
-{doc}`sphinx-autodoc-badges <packages/sphinx-autodoc-badges>`.  Every
+{doc}`sphinx-ux-badges <packages/sphinx-ux-badges>`.  Every
 downstream package references `SAB.*` constants instead of maintaining its
 own colour classes — one palette, thirty-plus colour variants, full
 light/dark theming.

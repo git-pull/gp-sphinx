@@ -1,11 +1,11 @@
-"""Tests for sphinx_autodoc_badges."""
+"""Tests for sphinx_ux_badges."""
 
 from __future__ import annotations
 
 import pytest
 from docutils import nodes
 
-from sphinx_autodoc_badges import (
+from sphinx_ux_badges import (
     BadgeNode,
     BadgeSpec,
     build_badge,
@@ -14,7 +14,7 @@ from sphinx_autodoc_badges import (
     build_badge_group_from_specs,
     build_toolbar,
 )
-from sphinx_autodoc_badges._css import SAB
+from sphinx_ux_badges._css import SAB
 
 
 def test_badge_node_is_inline_subclass() -> None:

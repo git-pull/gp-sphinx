@@ -22,7 +22,7 @@ def test_workspace_packages_lists_publishable_packages() -> None:
         "gp-sphinx",
         "sphinx-autodoc-argparse",
         "sphinx-autodoc-api-style",
-        "sphinx-autodoc-badges",
+        "sphinx-ux-badges",
         "sphinx-autodoc-docutils",
         "sphinx-autodoc-fastmcp",
         "sphinx-autodoc-layout",

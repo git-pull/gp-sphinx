@@ -98,7 +98,7 @@ def setup(app: Sphinx) -> SetupDict:
         Extension metadata dict.
     """
     app.setup_extension("sphinx.ext.autodoc")
-    app.setup_extension("sphinx_autodoc_badges")
+    app.setup_extension("sphinx_ux_badges")
     app.setup_extension("sphinx_autodoc_layout")
     app.setup_extension("sphinx_autodoc_typehints_gp")
 

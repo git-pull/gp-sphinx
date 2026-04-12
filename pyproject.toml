@@ -25,7 +25,7 @@ sphinx-autodoc-sphinx = { workspace = true }
 sphinx-autodoc-api-style = { workspace = true }
 sphinx-autodoc-fastmcp = { workspace = true }
 sphinx-autodoc-typehints-gp = { workspace = true }
-sphinx-autodoc-badges = { workspace = true }
+sphinx-ux-badges = { workspace = true }
 sphinx-autodoc-layout = { workspace = true }
 gp-sphinx = { workspace = true }
 
@@ -38,7 +38,7 @@ dev = [
   "sphinx-autodoc-sphinx",
   "sphinx-autodoc-api-style",
   "sphinx-autodoc-fastmcp",
-  "sphinx-autodoc-badges",
+  "sphinx-ux-badges",
   "sphinx-autodoc-layout",
   # Docs
   "sphinx-autobuild",
@@ -142,7 +142,7 @@ known-first-party = [
   "sphinx_autodoc_api_style",
   "sphinx_autodoc_fastmcp",
   "sphinx_autodoc_typehints_gp",
-  "sphinx_autodoc_badges",
+  "sphinx_ux_badges",
   "sphinx_autodoc_layout",
 ]
 combine-as-imports = true

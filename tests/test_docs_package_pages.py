@@ -169,7 +169,7 @@ def test_architecture_page_names_all_three_tiers() -> None:
     assert "Domain" in text or "Tier 2" in text
     assert "Theme" in text or "Tier 3" in text or "Presentation" in text
     assert "sphinx-autodoc-layout" in text
-    assert "sphinx-autodoc-badges" in text
+    assert "sphinx-ux-badges" in text
     assert "sphinx-autodoc-typehints-gp" in text
 
 
