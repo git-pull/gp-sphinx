@@ -64,7 +64,7 @@ def _on_missing_reference(
 
     reftype = node.get("reftype")
     target = node.get("reftarget", "")
-    py_domain: PythonDomain = env.get_domain("py")
+    py_domain = env.domains.python_domain
 
     # Short-name :fixture: lookup via public_to_canon.
     if reftype == "fixture":
@@ -283,7 +283,7 @@ def _on_doctree_resolved(
         The name of the document being resolved.
     """
     store = _get_spf_store(app.env)
-    py_domain: PythonDomain = app.env.get_domain("py")  # type: ignore[assignment]
+    py_domain = app.env.domains.python_domain
 
     for desc_node in doctree.findall(addnodes.desc):
         if desc_node.get("objtype") != "fixture":

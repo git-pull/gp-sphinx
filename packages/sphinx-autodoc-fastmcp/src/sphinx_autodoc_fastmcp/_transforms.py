@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import re
-import typing as t
 
 from docutils import nodes
 from sphinx.application import Sphinx
@@ -14,9 +13,6 @@ from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._models import ToolInfo
 from sphinx_autodoc_fastmcp._roles import _tool_ref_placeholder
 from sphinx_ux_autodoc_layout import api_component
-
-if t.TYPE_CHECKING:
-    from sphinx.domains.std import StandardDomain
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +60,7 @@ def collect_tool_section_content(app: Sphinx, doctree: nodes.document) -> None:
 
 def register_tool_labels(app: Sphinx, doctree: nodes.document) -> None:
     """Mirror autosectionlabel for tool sections (``{ref}`tool-id```)."""
-    domain = t.cast("StandardDomain", app.env.get_domain("std"))
+    domain = app.env.domains.standard_domain
     docname = app.env.docname
     for section in doctree.findall(nodes.section):
         if not section["ids"]:
@@ -120,7 +116,7 @@ def resolve_tool_refs(
     fromdocname: str,
 ) -> None:
     """Resolve ``:tool:`` / ``:toolref:`` / ``:toolicon*:`` placeholders."""
-    domain = t.cast("StandardDomain", app.env.get_domain("std"))
+    domain = app.env.domains.standard_domain
     builder = app.builder
     tool_data: dict[str, ToolInfo] = getattr(app.env, "fastmcp_tools", {})
 
