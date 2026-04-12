@@ -83,6 +83,15 @@ dl.py.fixture > dd > dl.field-list + dl.field-list {
   display: none;
 }
 
+/* Deprecated fixture muting (self-contained so this extension works
+ * without sphinx-autodoc-api-style, which carries the same rule at
+ * the more general dl.py scope). Fires when _directives.py appends
+ * SAB.STATE_DEPRECATED ("gp-sphinx-badge--state-deprecated") to the
+ * parent `desc` node of a fixture flagged with :deprecated:. */
+dl.py.fixture.gp-sphinx-badge--state-deprecated > dt {
+  opacity: 0.7;
+}
+
 /* Horizontal scroll wrapper for the fixture index table */
 .gp-sphinx-pytest-fixtures__fixture-index .gp-sphinx-badge-group {
   display: inline-flex;
