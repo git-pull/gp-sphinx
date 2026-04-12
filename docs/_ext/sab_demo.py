@@ -51,7 +51,9 @@ class BadgeDemoDirective(SphinxDirective):
             )
         )
 
-        result.append(_section("With icon — left (default, sab-badge[data-icon])"))
+        result.append(
+            _section("With icon — left (default, gp-sphinx-badge[data-icon])")
+        )
         result.append(
             _row(
                 build_badge("readonly", icon="\U0001f50d", tooltip="Icon on left"),
@@ -65,7 +67,7 @@ class BadgeDemoDirective(SphinxDirective):
             )
         )
 
-        result.append(_section("With icon — right (sab-icon-right)"))
+        result.append(_section("With icon — right (gp-sphinx-badge--icon-right)"))
         result.append(
             _row(
                 build_badge(
@@ -84,7 +86,9 @@ class BadgeDemoDirective(SphinxDirective):
             )
         )
 
-        result.append(_section("Icon-only — 16x16 coloured box (sab-icon-only)"))
+        result.append(
+            _section("Icon-only — 16x16 coloured box (gp-sphinx-badge--icon-only)")
+        )
         result.append(
             _row(
                 build_badge(
@@ -112,7 +116,10 @@ class BadgeDemoDirective(SphinxDirective):
         )
 
         result.append(
-            _section("Inline-icon — bare emoji inside code chip (sab-inline-icon)")
+            _section(
+                "Inline-icon — bare emoji inside code chip"
+                " (gp-sphinx-badge--inline-icon)"
+            )
         )
         wrapper = nodes.paragraph()
         wrapper += build_badge(
@@ -136,7 +143,7 @@ class BadgeDemoDirective(SphinxDirective):
         wrapper += nodes.literal(text='build_badge("", style="inline-icon", icon="✏️")')
         result.append(wrapper)
 
-        result.append(_section("Outline (sab-outline)"))
+        result.append(_section("Outline (gp-sphinx-badge--outline)"))
         result.append(
             _row(
                 build_badge("outline", fill="outline", tooltip="Outline, no bg"),
@@ -158,7 +165,9 @@ class BadgeDemoDirective(SphinxDirective):
         )
 
         result.append(
-            _section("Dense (sab-dense) — compact bordered, dotted underline")
+            _section(
+                "Dense (gp-sphinx-badge--dense) — compact bordered, dotted underline"
+            )
         )
         result.append(
             _row(
@@ -237,25 +246,25 @@ class BadgeDemoDirective(SphinxDirective):
                 build_badge(
                     "no underline",
                     icon="\U0001f50d",
-                    tooltip="Dense + sab-no-underline",
+                    tooltip="Dense + gp-sphinx-badge--underline-none",
                     classes=[SAB.DENSE, SAB.NO_UNDERLINE, SAB.TYPE_CLASS],
                 ),
                 build_badge(
                     "solid",
                     icon="\U0001f50d",
-                    tooltip="Dense + sab-underline-solid",
+                    tooltip="Dense + gp-sphinx-badge--underline-solid",
                     classes=[SAB.DENSE, SAB.UNDERLINE_SOLID, SAB.TYPE_FIXTURE],
                 ),
                 build_badge(
                     "dotted (opt-in)",
                     icon="\U0001f50d",
-                    tooltip="Standard pill + sab-underline-dotted",
+                    tooltip="Standard pill + gp-sphinx-badge--underline-dotted",
                     classes=[SAB.UNDERLINE_DOTTED, SAB.TYPE_CONFIG],
                 ),
                 build_badge(
                     "solid (opt-in)",
                     icon="\U0001f50d",
-                    tooltip="Standard pill + sab-underline-solid",
+                    tooltip="Standard pill + gp-sphinx-badge--underline-solid",
                     classes=[SAB.UNDERLINE_SOLID, SAB.TYPE_DIRECTIVE],
                 ),
                 label=("SAB.NO_UNDERLINE / SAB.UNDERLINE_SOLID / SAB.UNDERLINE_DOTTED"),
@@ -450,7 +459,7 @@ class BadgeDemoDirective(SphinxDirective):
                     tooltip="Extra large dense + icon",
                     classes=[SAB.DENSE, SAB.TYPE_CONFIG],
                 ),
-                label="xxs / xs / sm / md / default / lg / xl (sab-dense)",
+                label="xxs / xs / sm / md / default / lg / xl (gp-sphinx-badge--dense)",
             )
         )
 
@@ -560,7 +569,9 @@ class BadgeDemoDirective(SphinxDirective):
                 ]
             )
         )
-        heading_container = nodes.container(classes=["sab-demo-toolbar-heading"])
+        heading_container = nodes.container(
+            classes=["gp-sphinx-badge-demo-toolbar-heading"]
+        )
         heading_p = nodes.paragraph()
         heading_p += nodes.strong(text="Example heading ")
         heading_p += tb
@@ -570,7 +581,7 @@ class BadgeDemoDirective(SphinxDirective):
 
         # ── Python API type palette (standard + dense) ───────────
 
-        result.append(_section("Python API types (sab-type-*)"))
+        result.append(_section("Python API types (gp-sphinx-badge--type-*)"))
         py_types = [
             ("function", SAB.TYPE_FUNCTION, "Python function"),
             ("class", SAB.TYPE_CLASS, "Python class"),
@@ -592,7 +603,9 @@ class BadgeDemoDirective(SphinxDirective):
             type_row += nodes.Text(" ")
         result.append(type_row)
 
-        result.append(_section("Python API types — dense variant (sab-dense)"))
+        result.append(
+            _section("Python API types — dense variant (gp-sphinx-badge--dense)")
+        )
         type_dense_row = nodes.paragraph()
         for label, css_class, tooltip in py_types:
             type_dense_row += build_badge(
@@ -603,7 +616,9 @@ class BadgeDemoDirective(SphinxDirective):
             type_dense_row += nodes.Text(" ")
         result.append(type_dense_row)
 
-        result.append(_section("Python API modifiers (sab-mod-*, outlined)"))
+        result.append(
+            _section("Python API modifiers (gp-sphinx-badge--mod-*, outlined)")
+        )
         py_mods = [
             ("async", SAB.MOD_ASYNC, "Asynchronous"),
             ("classmethod", SAB.MOD_CLASSMETHOD, "Class method"),
@@ -636,7 +651,7 @@ class BadgeDemoDirective(SphinxDirective):
 
         # ── pytest fixture palette ───────────────────────────────
 
-        result.append(_section("pytest fixture types (sab-type-fixture)"))
+        result.append(_section("pytest fixture types (gp-sphinx-badge--type-fixture)"))
         result.append(
             _row(
                 build_badge(
@@ -658,7 +673,7 @@ class BadgeDemoDirective(SphinxDirective):
             )
         )
 
-        result.append(_section("pytest fixture scopes (sab-scope-*)"))
+        result.append(_section("pytest fixture scopes (gp-sphinx-badge--scope-*)"))
         scope_row = nodes.paragraph()
         scope_dense_row = nodes.paragraph()
         for scope in ("session", "module", "class"):
@@ -709,7 +724,12 @@ class BadgeDemoDirective(SphinxDirective):
 
         # ── Sphinx config palette ────────────────────────────────
 
-        result.append(_section("Sphinx config (sab-type-config / sab-mod-rebuild)"))
+        result.append(
+            _section(
+                "Sphinx config"
+                " (gp-sphinx-badge--type-config / gp-sphinx-badge--mod-rebuild)"
+            )
+        )
         result.append(
             _row(
                 build_badge(
@@ -757,7 +777,9 @@ class BadgeDemoDirective(SphinxDirective):
 
         # ── docutils palette ─────────────────────────────────────
 
-        result.append(_section("docutils (sab-type-directive / role / option)"))
+        result.append(
+            _section("docutils (gp-sphinx-badge--type-directive / role / option)")
+        )
         result.append(
             _row(
                 build_badge(
@@ -806,7 +828,9 @@ class BadgeDemoDirective(SphinxDirective):
             _row(
                 _maturity_badge("Alpha"),
                 _maturity_badge("Beta"),
-                label="sab-meta-alpha / sab-meta-beta (filled)",
+                label=(
+                    "gp-sphinx-badge--meta-alpha / gp-sphinx-badge--meta-beta (filled)"
+                ),
             )
         )
 
@@ -823,7 +847,10 @@ class BadgeDemoDirective(SphinxDirective):
         )
         link_row += nodes.Text(" ")
         link_row += nodes.literal(
-            text="_link_badge(label, url)  — sab-badge sab-outline sab-meta-link <a>",
+            text=(
+                "_link_badge(label, url)  — gp-sphinx-badge"
+                " gp-sphinx-badge--outline gp-sphinx-badge--meta-link <a>"
+            ),
         )
         result.append(link_row)
 
@@ -846,7 +873,7 @@ class BadgeDemoDirective(SphinxDirective):
 
 
 def setup(app: Sphinx) -> dict[str, t.Any]:
-    """Register the ``sab-badge-demo`` directive."""
-    app.add_directive("sab-badge-demo", BadgeDemoDirective)
+    """Register the ``gp-sphinx-badge-demo`` directive."""
+    app.add_directive("gp-sphinx-badge-demo", BadgeDemoDirective)
     app.add_css_file("css/sab_demo.css")
     return {"version": "0.1", "parallel_read_safe": True}

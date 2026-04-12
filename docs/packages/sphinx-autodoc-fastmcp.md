@@ -2,7 +2,7 @@
 
 # sphinx-autodoc-fastmcp
 
-```{sab-package-meta} sphinx-autodoc-fastmcp
+```{gp-sphinx-package-meta} sphinx-autodoc-fastmcp
 ```
 
 :::{admonition} Alpha

@@ -1,6 +1,6 @@
 # sphinx-autodoc-argparse
 
-```{sab-package-meta} sphinx-autodoc-argparse
+```{gp-sphinx-package-meta} sphinx-autodoc-argparse
 ```
 
 Modern Sphinx extension for documenting `argparse` CLIs. The base package

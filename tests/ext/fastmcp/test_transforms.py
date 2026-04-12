@@ -15,8 +15,8 @@ def test_collect_tool_section_content_appends_siblings_to_api_content() -> None:
     doctree = nodes.section()
     tool_section = nodes.section(ids=["list-sessions"])
     tool_section["classes"] = [_CSS.TOOL_SECTION]
-    entry = build_api_component("api-entry", classes=(_CSS.TOOL_ENTRY,))
-    content = build_api_component("api-content")
+    entry = build_api_component("gp-sphinx-api-entry", classes=(_CSS.TOOL_ENTRY,))
+    content = build_api_component("gp-sphinx-api-content")
     entry += content
     tool_section += entry
     trailing = nodes.paragraph("", "Parameters")

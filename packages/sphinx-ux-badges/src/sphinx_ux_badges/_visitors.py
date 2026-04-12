@@ -14,7 +14,7 @@ def visit_badge_html(self: HTML5Translator, node: BadgeNode) -> None:
     """Emit opening ``<span>`` with ARIA, tooltip, icon data attribute.
 
     The icon (``data-icon`` → ``::before`` CSS) sits on the outer badge span so
-    that ``text-decoration`` on the inner ``.sab-badge-label`` span cannot reach
+    that ``text-decoration`` on the inner ``.gp-sphinx-badge__label`` span cannot reach
     it.  This prevents emoji icons from inheriting any underline decoration,
     since CSS ``text-decoration`` cannot be suppressed on pseudo-elements from a
     parent element — but it can be scoped to a sibling span.
@@ -47,7 +47,7 @@ def visit_badge_html(self: HTML5Translator, node: BadgeNode) -> None:
     self.body.append(self.starttag(node, "span", "", role="note", **attrs))  # type: ignore[arg-type]
     # Inner label span: text-decoration is scoped here so icons (::before on
     # the outer span) are never underlined.
-    self.body.append('<span class="sab-badge-label">')
+    self.body.append('<span class="gp-sphinx-badge__label">')
 
 
 def depart_badge_html(self: HTML5Translator, node: BadgeNode) -> None:

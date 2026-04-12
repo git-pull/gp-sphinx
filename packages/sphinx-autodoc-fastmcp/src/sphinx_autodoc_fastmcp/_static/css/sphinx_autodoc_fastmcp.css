@@ -1,129 +1,129 @@
 /* sphinx_autodoc_fastmcp — color layer for FastMCP tool badges.
  *
- * Base metrics and sizing come from sphinx_ux_badges.css (sab-dense class).
+ * Base metrics and sizing come from sphinx_ux_badges.css (gp-sphinx-badge--dense class).
  * This file matches sphinx-gp-theme custom.css rules for .sd-badge[aria-label^="Safety tier:"]
- * (colors and theme --badge-safety-* variables).
+ * (colors and theme --gp-sphinx-fastmcp-safety-* variables).
  *
  * Safety palette: same tokens as sphinx_gp_theme/theme/static/css/custom.css
  * so readonly / mutating / destructive match production regardless of load order.
  */
 
 :root {
-  --badge-safety-readonly-bg: #1f7a3f;
-  --badge-safety-readonly-border: #2a8d4d;
-  --badge-safety-readonly-text: #f3fff7;
-  --badge-safety-mutating-bg: #b96a1a;
-  --badge-safety-mutating-border: #cf7a23;
-  --badge-safety-mutating-text: #fff8ef;
-  --badge-safety-destructive-bg: #b4232c;
-  --badge-safety-destructive-border: #cb3640;
-  --badge-safety-destructive-text: #fff5f5;
-  --smf-type-tool-bg: #0e7490;
-  --smf-type-tool-fg: #fff;
-  --smf-type-tool-border: #0f766e;
+  --gp-sphinx-fastmcp-safety-readonly-bg: #1f7a3f;
+  --gp-sphinx-fastmcp-safety-readonly-border: #2a8d4d;
+  --gp-sphinx-fastmcp-safety-readonly-text: #f3fff7;
+  --gp-sphinx-fastmcp-safety-mutating-bg: #b96a1a;
+  --gp-sphinx-fastmcp-safety-mutating-border: #cf7a23;
+  --gp-sphinx-fastmcp-safety-mutating-text: #fff8ef;
+  --gp-sphinx-fastmcp-safety-destructive-bg: #b4232c;
+  --gp-sphinx-fastmcp-safety-destructive-border: #cb3640;
+  --gp-sphinx-fastmcp-safety-destructive-text: #fff5f5;
+  --gp-sphinx-fastmcp-type-tool-bg: #0e7490;
+  --gp-sphinx-fastmcp-type-tool-fg: #fff;
+  --gp-sphinx-fastmcp-type-tool-border: #0f766e;
 }
 
-/* ── Safety badges: sab-dense provides compact metrics; restore inline-flex for icon gap ── */
-.sab-badge.sab-dense.smf-badge--safety {
+/* ── Safety badges: gp-sphinx-badge--dense provides compact metrics; restore inline-flex for icon gap ── */
+.gp-sphinx-badge.gp-sphinx-badge--dense.gp-sphinx-fastmcp__safety {
   display: inline-flex !important;
 }
 
 /*
  * Matte safety colors: literal hex + !important so sphinx-design (loaded after
  * this file) cannot skew var() resolution or shorthands. Keeps parity with
- * :root --badge-safety-* above; override there + copy here if you change the palette.
+ * :root --gp-sphinx-fastmcp-safety-* above; override there + copy here if you change the palette.
  */
-.sab-badge.smf-safety-readonly:not(.sab-inline-icon) {
+.gp-sphinx-badge.gp-sphinx-fastmcp__safety-readonly:not(.gp-sphinx-badge--inline-icon) {
   background-color: #1f7a3f !important;
   color: #f3fff7 !important;
   border: 1px solid #2a8d4d !important;
-  box-shadow: var(--sab-buff-shadow) !important;
+  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
 }
 
-.sab-badge.smf-safety-mutating:not(.sab-inline-icon) {
+.gp-sphinx-badge.gp-sphinx-fastmcp__safety-mutating:not(.gp-sphinx-badge--inline-icon) {
   background-color: #b96a1a !important;
   color: #fff8ef !important;
   border: 1px solid #cf7a23 !important;
-  box-shadow: var(--sab-buff-shadow) !important;
+  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
 }
 
-.sab-badge.smf-safety-destructive:not(.sab-inline-icon) {
+.gp-sphinx-badge.gp-sphinx-fastmcp__safety-destructive:not(.gp-sphinx-badge--inline-icon) {
   background-color: #b4232c !important;
   color: #fff5f5 !important;
   border: 1px solid #cb3640 !important;
-  box-shadow: var(--sab-buff-shadow) !important;
+  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
 }
 
 /* MCP "tool": white label (never use --sd-color-info-text; it is dark on light teal) */
-.sab-badge.smf-type-tool:not(.sab-inline-icon) {
+.gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon) {
   background-color: #0e7490 !important;
   color: #ffffff !important;
   border: 1px solid #0f766e !important;
-  box-shadow: var(--sab-buff-shadow) !important;
+  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
 }
 
 @media (prefers-color-scheme: dark) {
-  body:not([data-theme="light"]) .sab-badge.smf-safety-readonly:not(.sab-inline-icon),
-  body:not([data-theme="light"]) .sab-badge.smf-safety-mutating:not(.sab-inline-icon),
-  body:not([data-theme="light"]) .sab-badge.smf-safety-destructive:not(.sab-inline-icon),
-  body:not([data-theme="light"]) .sab-badge.smf-type-tool:not(.sab-inline-icon) {
-    box-shadow: var(--sab-buff-shadow-dark-ui) !important;
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__safety-readonly:not(.gp-sphinx-badge--inline-icon),
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__safety-mutating:not(.gp-sphinx-badge--inline-icon),
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__safety-destructive:not(.gp-sphinx-badge--inline-icon),
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon) {
+    box-shadow: var(--gp-sphinx-badge-buff-shadow-dark-ui) !important;
   }
 
-  body:not([data-theme="light"]) .sab-badge.smf-type-tool:not(.sab-inline-icon) {
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon) {
     background-color: #0d9488 !important;
     color: #ffffff !important;
     border: 1px solid #14b8a6 !important;
   }
 }
 
-body[data-theme="dark"] .sab-badge.smf-safety-readonly:not(.sab-inline-icon),
-body[data-theme="dark"] .sab-badge.smf-safety-mutating:not(.sab-inline-icon),
-body[data-theme="dark"] .sab-badge.smf-safety-destructive:not(.sab-inline-icon),
-body[data-theme="dark"] .sab-badge.smf-type-tool:not(.sab-inline-icon) {
-  box-shadow: var(--sab-buff-shadow-dark-ui) !important;
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__safety-readonly:not(.gp-sphinx-badge--inline-icon),
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__safety-mutating:not(.gp-sphinx-badge--inline-icon),
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__safety-destructive:not(.gp-sphinx-badge--inline-icon),
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon) {
+  box-shadow: var(--gp-sphinx-badge-buff-shadow-dark-ui) !important;
 }
 
-body[data-theme="dark"] .sab-badge.smf-type-tool:not(.sab-inline-icon) {
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon) {
   background-color: #0d9488 !important;
   color: #ffffff !important;
   border: 1px solid #14b8a6 !important;
 }
 
 /* ── Emoji when data-icon absent (unicode); data-icon wins via badges base ── */
-.smf-safety-readonly:not([data-icon])::before {
+.gp-sphinx-fastmcp__safety-readonly:not([data-icon])::before {
   content: "\1F50D";
 }
 
-.smf-safety-mutating:not([data-icon])::before {
+.gp-sphinx-fastmcp__safety-mutating:not([data-icon])::before {
   content: "\270F\FE0F";
 }
 
-.smf-safety-destructive:not([data-icon])::before {
+.gp-sphinx-fastmcp__safety-destructive:not([data-icon])::before {
   content: "\1F4A3";
 }
 
 /* ── Tool section card ──────────────────────────────────── */
-section.smf-tool-section {
+section.gp-sphinx-fastmcp__tool-section {
   padding: 0;
   overflow: clip;
 }
 
-section.smf-tool-section > .smf-tool-entry > .api-header .api-signature {
+section.gp-sphinx-fastmcp__tool-section > .gp-sphinx-fastmcp__tool-entry > .gp-sphinx-api-header .gp-sphinx-api-signature {
   min-width: 0;
   font-family: var(--font-stack--monospace);
 }
 
-section.smf-tool-section > .smf-tool-entry > .api-content > .smf-body-section + .smf-body-section {
+section.gp-sphinx-fastmcp__tool-section > .gp-sphinx-fastmcp__tool-entry > .gp-sphinx-api-content > .gp-sphinx-fastmcp__body-section + .gp-sphinx-fastmcp__body-section {
   margin-top: 0.75rem;
 }
 
 /* Hide the "tool" type badge in TOC sidebar (redundant there). */
-.toc-tree .smf-type-tool {
+.toc-tree .gp-sphinx-fastmcp__type-tool {
   display: none !important;
 }
 
-.smf-visually-hidden {
+.gp-sphinx-fastmcp__visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;

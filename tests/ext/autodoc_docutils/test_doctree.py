@@ -85,23 +85,29 @@ def _make_role_desc(role_name: str = "demo-badge") -> addnodes.desc:
 
 
 def _api_facts_child(content: addnodes.desc_content) -> api_component | None:
-    """Return the api-facts component in desc_content, or None."""
+    """Return the gp-sphinx-api-facts component in desc_content, or None."""
     for child in content.children:
-        if isinstance(child, api_component) and child.get("name") == "api-facts":
+        if (
+            isinstance(child, api_component)
+            and child.get("name") == "gp-sphinx-api-facts"
+        ):
             return child
     return None
 
 
 def _api_options_child(content: addnodes.desc_content) -> api_component | None:
-    """Return the api-options component in desc_content, or None."""
+    """Return the gp-sphinx-api-options component in desc_content, or None."""
     for child in content.children:
-        if isinstance(child, api_component) and child.get("name") == "api-options":
+        if (
+            isinstance(child, api_component)
+            and child.get("name") == "gp-sphinx-api-options"
+        ):
             return child
     return None
 
 
 def _fact_labels(facts_section: api_component) -> list[str]:
-    """Return the field-name labels from an api-facts section."""
+    """Return the field-name labels from an gp-sphinx-api-facts section."""
     return [
         field.children[0].astext()
         for field in facts_section.findall(nodes.field)
@@ -110,7 +116,7 @@ def _fact_labels(facts_section: api_component) -> list[str]:
 
 
 def test_normalize_directive_inserts_api_facts_after_summary() -> None:
-    """_normalize_directive_nodes inserts api-facts after the summary paragraph."""
+    """_normalize_directive_nodes inserts gp-sphinx-api-facts after the summary paragraph."""
     desc = _make_directive_desc(with_option=False)
     content = t.cast(addnodes.desc_content, desc.children[-1])
 
@@ -123,7 +129,7 @@ def test_normalize_directive_inserts_api_facts_after_summary() -> None:
     assert len(content.children) >= 2
     assert isinstance(content.children[0], nodes.paragraph)
     facts = _api_facts_child(content)
-    assert facts is not None, "api-facts section should be inserted"
+    assert facts is not None, "gp-sphinx-api-facts section should be inserted"
     labels = _fact_labels(facts)
     assert "Python path" in labels
     assert "Required arguments" in labels
@@ -159,7 +165,7 @@ def test_normalize_directive_fact_values_match_directive_class() -> None:
 
 
 def test_normalize_directive_extracts_options_into_api_options() -> None:
-    """Option sub-entries are removed from desc_content and placed in api-options."""
+    """Option sub-entries are removed from desc_content and placed in gp-sphinx-api-options."""
     desc = _make_directive_desc(with_option=True)
     content = t.cast(addnodes.desc_content, desc.children[-1])
 
@@ -171,7 +177,7 @@ def test_normalize_directive_extracts_options_into_api_options() -> None:
 
     options = _api_options_child(content)
     assert options is not None, (
-        "api-options section should be created for option entries"
+        "gp-sphinx-api-options section should be created for option entries"
     )
     assert any(
         isinstance(child, addnodes.desc) and child.get("objtype") == "directive:option"
@@ -197,7 +203,7 @@ def test_normalize_directive_removes_option_descs_from_main_content() -> None:
         and child.get("objtype") == "directive:option"
     ]
     assert direct_option_descs == [], (
-        "directive:option entries should be moved into api-options, not left in content"
+        "directive:option entries should be moved into gp-sphinx-api-options, not left in content"
     )
 
 
@@ -220,14 +226,14 @@ def test_normalize_directive_skips_non_directive_descs() -> None:
 
 
 def test_normalize_role_inserts_api_facts_with_python_path() -> None:
-    """_normalize_role_nodes inserts an api-facts section with Python path."""
+    """_normalize_role_nodes inserts an gp-sphinx-api-facts section with Python path."""
     desc = _make_role_desc()
     content = t.cast(addnodes.desc_content, desc.children[-1])
 
     _normalize_role_nodes([desc], path="demo.demo_badge_role", role_fn=_demo_role)
 
     facts = _api_facts_child(content)
-    assert facts is not None, "api-facts section should be inserted for roles"
+    assert facts is not None, "gp-sphinx-api-facts section should be inserted for roles"
     labels = _fact_labels(facts)
     assert "Python path" in labels
     assert "Accepts role content" in labels

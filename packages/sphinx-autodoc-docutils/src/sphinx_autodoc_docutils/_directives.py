@@ -13,6 +13,7 @@ from sphinx.util.docutils import SphinxDirective
 
 from sphinx_autodoc_docutils._badges import build_kind_badge_group
 from sphinx_ux_autodoc_layout import (
+    API,
     ApiFactRow,
     build_api_facts_section,
     build_api_summary_section,
@@ -290,7 +291,7 @@ def _normalize_directive_nodes(
             build_api_facts_section(_directive_fact_rows(path, directive_cls)),
         )
         if option_descs:
-            content += build_api_table_section("api-options", *option_descs)
+            content += build_api_table_section(API.OPTIONS, *option_descs)
 
 
 def _normalize_role_nodes(
@@ -313,7 +314,7 @@ def _normalize_role_nodes(
         )
         if option_field_list is not None:
             content += build_api_table_section(
-                "api-options",
+                API.OPTIONS,
                 option_field_list.deepcopy(),
             )
 

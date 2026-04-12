@@ -48,26 +48,26 @@ def test_iter_desc_nodes_yields_nested_desc_entries() -> None:
 def test_build_api_card_entry_uses_shared_component_shell() -> None:
     """Non-desc card consumers can reuse the shared inner api shell."""
     entry = build_api_card_entry(
-        profile_class="api-profile--demo",
+        profile_class="gp-sphinx-api-profile--demo",
         signature_children=(nodes.literal("", "demo_tool"),),
         content_children=(nodes.paragraph("", "Demo body."),),
-        badge_group=nodes.inline("", "badge", classes=["sab-badge-group"]),
+        badge_group=nodes.inline("", "badge", classes=["gp-sphinx-badge-group"]),
         permalink=api_permalink(href="#demo-tool", title="Permalink"),
         entry_classes=("demo-entry",),
         signature_classes=("demo-signature",),
     )
 
     assert entry.get("classes") == [
-        "api-entry",
-        "api-card-entry",
-        "api-profile--demo",
+        "gp-sphinx-api-entry",
+        "gp-sphinx-api-card-entry",
+        "gp-sphinx-api-profile--demo",
         "demo-entry",
     ]
     header = t.cast(nodes.Element, entry.children[0])
     content = t.cast(nodes.Element, entry.children[1])
 
-    assert header.get("name") == "api-header"
-    assert content.get("name") == "api-content"
+    assert header.get("name") == "gp-sphinx-api-header"
+    assert content.get("name") == "gp-sphinx-api-content"
     assert "demo_tool" in header.astext()
     assert "badge" in header.astext()
     assert "Demo body." in content.astext()
@@ -77,6 +77,6 @@ def test_build_api_summary_section_uses_shared_summary_region() -> None:
     """Shared summary content uses a dedicated public summary wrapper."""
     summary = build_api_summary_section(nodes.paragraph("", "Summary"))
 
-    assert summary.get("name") == "api-summary"
-    assert "api-region--summary" in summary.get("classes", [])
+    assert summary.get("name") == "gp-sphinx-api-summary"
+    assert "gp-sphinx-api-region--summary" in summary.get("classes", [])
     assert summary.astext() == "Summary"

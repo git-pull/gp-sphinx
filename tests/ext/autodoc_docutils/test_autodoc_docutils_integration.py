@@ -106,12 +106,18 @@ def test_autodoc_docutils_entries_use_shared_layout(
 ) -> None:
     html = read_output(autodoc_docutils_html_result, "index.html")
 
-    assert "api-profile--rst-directive" in html
-    assert "api-profile--rst-directive-option" in html
-    assert "api-profile--rst-role" in html
-    assert 'class="api-facts api-region api-region--facts"' in html
-    assert 'class="api-options api-region api-region--options"' in html
-    assert 'class="api-badge-container"' in html
+    assert "gp-sphinx-api-profile--rst-directive" in html
+    assert "gp-sphinx-api-profile--rst-directive-option" in html
+    assert "gp-sphinx-api-profile--rst-role" in html
+    assert (
+        'class="gp-sphinx-api-facts gp-sphinx-api-region gp-sphinx-api-region--facts"'
+        in html
+    )
+    assert (
+        'class="gp-sphinx-api-options gp-sphinx-api-region gp-sphinx-api-region--options"'
+        in html
+    )
+    assert 'class="gp-sphinx-api-badge-container"' in html
     assert ">directive<" in html
     assert ">option<" in html
     assert ">role<" in html

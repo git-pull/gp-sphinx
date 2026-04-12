@@ -12,7 +12,8 @@ from sphinx_autodoc_fastmcp._badges import build_safety_badge
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._models import ToolInfo
 from sphinx_autodoc_fastmcp._roles import _tool_ref_placeholder
-from sphinx_ux_autodoc_layout import api_component
+from sphinx_ux_autodoc_layout import API, api_component
+from sphinx_ux_badges import SAB
 
 logger = logging.getLogger(__name__)
 
@@ -20,11 +21,11 @@ logger = logging.getLogger(__name__)
 def _tool_content_container(section: nodes.section) -> nodes.Element:
     """Return the shared content wrapper for a FastMCP tool section."""
     for child in section.children:
-        if not isinstance(child, api_component) or child.get("name") != "api-entry":
+        if not isinstance(child, api_component) or child.get("name") != API.ENTRY:
             continue
         for grandchild in child.children:
             if isinstance(grandchild, api_component) and grandchild.get("name") == (
-                "api-content"
+                API.CONTENT
             ):
                 return grandchild
     return section
@@ -154,7 +155,7 @@ def resolve_tool_refs(
                 style = "inline-icon" if icon_pos.startswith("inline") else "icon-only"
                 badge = build_safety_badge(tool_info.safety, icon_only=True)
                 if style == "inline-icon":
-                    badge["classes"].append("sab-inline-icon")
+                    badge["classes"].append(SAB.INLINE_ICON)
 
             if icon_pos == "left":
                 if badge:

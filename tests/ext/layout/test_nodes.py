@@ -48,14 +48,14 @@ def test_gal_fold_default_open_is_falsy() -> None:
 
 
 def test_api_component_stores_name_and_tag() -> None:
-    node = api_component(name="api-layout", tag="div")
-    assert node.get("name") == "api-layout"
+    node = api_component(name="gp-sphinx-api-layout", tag="div")
+    assert node.get("name") == "gp-sphinx-api-layout"
     assert node.get("tag") == "div"
 
 
 def test_build_api_component_adds_classes() -> None:
-    node = build_api_component("api-layout", classes=("legacy",))
-    assert node.get("classes") == ["api-layout", "legacy"]
+    node = build_api_component("gp-sphinx-api-layout", classes=("legacy",))
+    assert node.get("classes") == ["gp-sphinx-api-layout", "legacy"]
 
 
 def test_api_permalink_stores_href() -> None:
@@ -65,14 +65,14 @@ def test_api_permalink_stores_href() -> None:
 
 
 def test_api_inline_component_stores_name_and_tag() -> None:
-    node = api_inline_component(name="api-source-link", tag="span")
-    assert node.get("name") == "api-source-link"
+    node = api_inline_component(name="gp-sphinx-api-source-link", tag="span")
+    assert node.get("name") == "gp-sphinx-api-source-link"
     assert node.get("tag") == "span"
 
 
 def test_build_api_inline_component_adds_classes() -> None:
-    node = build_api_inline_component("api-source-link", classes=("legacy",))
-    assert node.get("classes") == ["api-source-link", "legacy"]
+    node = build_api_inline_component("gp-sphinx-api-source-link", classes=("legacy",))
+    assert node.get("classes") == ["gp-sphinx-api-source-link", "legacy"]
 
 
 def test_api_slot_stores_slot_name() -> None:
@@ -82,7 +82,10 @@ def test_api_slot_stores_slot_name() -> None:
 
 def test_build_api_slot_adds_slot_classes() -> None:
     slot = build_api_slot("source-link", nodes.inline("", "[source]"))
-    assert slot.get("classes") == ["api-slot", "api-slot--source-link"]
+    assert slot.get("classes") == [
+        "gp-sphinx-api-slot",
+        "gp-sphinx-api-slot--source-link",
+    ]
     assert slot.astext() == "[source]"
 
 

@@ -37,20 +37,20 @@ from sphinx_ux_badges import SAB, BadgeNode
 
 
 def test_sab_prefix() -> None:
-    """SAB prefix is 'sab' (unified palette)."""
-    assert SAB.PREFIX == "sab"
+    """SAB prefix is the gp-sphinx-badge namespace."""
+    assert SAB.PREFIX == "gp-sphinx-badge"
 
 
 def test_sab_badge_group_class() -> None:
-    """Badge group class uses the shared sab- prefix."""
-    assert SAB.BADGE_GROUP == "sab-badge-group"
+    """Badge group class uses the shared gp-sphinx- namespace."""
+    assert SAB.BADGE_GROUP == "gp-sphinx-badge-group"
 
 
 def test_sab_obj_type_class() -> None:
     """obj_type() returns sab-type-* class (unified palette)."""
-    assert SAB.obj_type("function") == "sab-type-function"
-    assert SAB.obj_type("class") == "sab-type-class"
-    assert SAB.obj_type("method") == "sab-type-method"
+    assert SAB.obj_type("function") == "gp-sphinx-badge--type-function"
+    assert SAB.obj_type("class") == "gp-sphinx-badge--type-class"
+    assert SAB.obj_type("method") == "gp-sphinx-badge--type-method"
 
 
 # ---------------------------------------------------------------------------
@@ -181,7 +181,7 @@ def test_badge_group_builds_shared_badge_specs(
     ) -> nodes.inline:
         seen["badges"] = badges
         seen["classes"] = classes
-        return nodes.inline("", "", classes=["sab-badge-group"])
+        return nodes.inline("", "", classes=["gp-sphinx-badge-group"])
 
     monkeypatch.setattr(
         sas_badges,

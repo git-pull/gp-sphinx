@@ -1,7 +1,7 @@
 """Componentized layout for Sphinx object-description output.
 
 Preserves Sphinx's outer ``dl / dt / dd`` structure while rebuilding
-managed Sphinx object entries into stable ``api-*`` components.
+managed Sphinx object entries into stable ``gp-sphinx-api-*`` components.
 
 Examples
 --------
@@ -18,6 +18,7 @@ import typing as t
 from sphinx import addnodes
 
 from sphinx_ux_autodoc_layout._cards import build_api_card_entry
+from sphinx_ux_autodoc_layout._css import API
 from sphinx_ux_autodoc_layout._nodes import (
     api_component,
     api_fold,
@@ -61,6 +62,7 @@ if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
 __all__ = [
+    "API",
     "ApiFactRow",
     "api_component",
     "api_fold",
@@ -178,7 +180,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     )
 
     # Managed desc signatures keep Sphinx's outer ``dt`` handling but skip the
-    # stock permalink injection so layout can place ``api-link`` explicitly.
+    # stock permalink injection so layout can place ``gp-sphinx-api-link`` explicitly.
     app.add_node(
         addnodes.desc_signature,
         override=True,

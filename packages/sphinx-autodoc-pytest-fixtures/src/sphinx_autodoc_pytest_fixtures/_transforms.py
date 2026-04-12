@@ -14,7 +14,11 @@ from sphinx_autodoc_pytest_fixtures._constants import _FIELD_LABELS
 from sphinx_autodoc_pytest_fixtures._index import _resolve_fixture_index
 from sphinx_autodoc_pytest_fixtures._models import autofixture_index_node
 from sphinx_autodoc_pytest_fixtures._store import FixtureStoreDict, _get_spf_store
-from sphinx_ux_autodoc_layout import build_api_table_section, inject_signature_slots
+from sphinx_ux_autodoc_layout import (
+    API,
+    build_api_table_section,
+    inject_signature_slots,
+)
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -159,7 +163,7 @@ def _wrap_fixture_field_lists(desc_node: addnodes.desc) -> None:
                 for field_name in field_list.findall(nodes.field_name)
             }
             section_name = (
-                "api-parameters" if labels & _PARAMETER_FIELD_LABELS else "api-facts"
+                API.PARAMETERS if labels & _PARAMETER_FIELD_LABELS else API.FACTS
             )
             insert_idx = content_child.children.index(field_list)
             content_child.remove(field_list)

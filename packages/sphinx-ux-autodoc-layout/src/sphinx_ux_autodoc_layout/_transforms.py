@@ -2,8 +2,8 @@
 
 Runs as a ``doctree-resolved`` event handler after
 ``sphinx-autodoc-api-style``. It rebuilds managed Sphinx object entries into
-stable ``api-*`` wrappers while preserving Sphinx's outer ``dl / dt / dd``
-structure.
+stable ``gp-sphinx-api-*`` wrappers while preserving Sphinx's outer
+``dl / dt / dd`` structure.
 
 Examples
 --------
@@ -23,6 +23,7 @@ import typing as t
 from docutils import nodes
 from sphinx import addnodes
 
+from sphinx_ux_autodoc_layout._css import API
 from sphinx_ux_autodoc_layout._nodes import (
     api_component,
     api_fold,
@@ -34,16 +35,17 @@ from sphinx_ux_autodoc_layout._nodes import (
     build_api_inline_component,
 )
 from sphinx_ux_autodoc_layout._slots import is_viewcode_ref
+from sphinx_ux_badges import SAB
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
 _SECTION_COMPONENTS: dict[str, str] = {
-    "narrative": "api-description",
-    "facts": "api-facts",
-    "fields": "api-parameters",
-    "options": "api-options",
-    "members": "api-footer",
+    "narrative": API.DESCRIPTION,
+    "facts": API.FACTS,
+    "fields": API.PARAMETERS,
+    "options": API.OPTIONS,
+    "members": API.FOOTER,
 }
 
 _STRUCTURED_SECTION_NAMES: frozenset[str] = frozenset(_SECTION_COMPONENTS.values())
@@ -88,7 +90,7 @@ class DescLayoutProfile:
     @property
     def class_name(self) -> str:
         """Return the stable CSS class for the profile."""
-        return f"api-profile--{self.slug}"
+        return API.profile(self.slug)
 
 
 _PROFILE_REGISTRY: dict[tuple[str, str], DescLayoutProfile] = {
@@ -156,7 +158,7 @@ def _make_api_permalink(desc_sig: addnodes.desc_signature) -> api_permalink | No
         href=f"#{ids[0]}",
         title="Link to this definition",
     )
-    link["classes"] = ["headerlink", "api-link"]
+    link["classes"] = ["headerlink", API.LINK]
     return link
 
 
@@ -228,7 +230,7 @@ def _wrap_content_runs(desc_node: addnodes.desc) -> None:
     >>> desc += content
     >>> _wrap_content_runs(desc)
     >>> [child.get("name") for child in content.children]
-    ['api-description', 'api-parameters']
+    ['gp-sphinx-api-description', 'gp-sphinx-api-parameters']
     """
     content = next(
         (c for c in desc_node.children if isinstance(c, addnodes.desc_content)),
@@ -237,7 +239,7 @@ def _wrap_content_runs(desc_node: addnodes.desc) -> None:
     if content is None:
         return
 
-    _append_class(content, "api-content")
+    _append_class(content, API.CONTENT)
     if not content.children:
         return
 
@@ -264,7 +266,7 @@ def _wrap_content_runs(desc_node: addnodes.desc) -> None:
                 content += current_section
             current_section = build_api_component(
                 _component_name_for_kind(kind),
-                classes=("api-region", f"api-region--{kind}"),
+                classes=(API.REGION, API.region_modifier(kind)),
             )
             current_kind = kind
         assert current_section is not None
@@ -442,7 +444,7 @@ def _count_field_entries(field_list: nodes.field_list) -> int:
 def _is_parameters_section(node: nodes.Node) -> bool:
     """Return ``True`` when *node* is an API parameters section."""
     if isinstance(node, api_component):
-        return str(node.get("name", "")) == "api-parameters"
+        return str(node.get("name", "")) == API.PARAMETERS
     if isinstance(node, api_region):
         return str(node.get("kind", "")) == "fields"
     return False
@@ -504,7 +506,7 @@ def _signature_expanded_id(desc_sig: addnodes.desc_signature) -> str:
     ids: list[str] = [
         str(node_id) for node_id in t.cast(list[t.Any], desc_sig.get("ids", []))
     ]
-    base = ids[0] if ids else "api-signature"
+    base = ids[0] if ids else API.SIGNATURE
     return f"{base}--signature-expanded"
 
 
@@ -803,9 +805,7 @@ def _rebuild_signature_layout(
     fallback_source_ref: nodes.reference | None = None
 
     for child in original:
-        if isinstance(child, nodes.inline) and "sab-toolbar" in child.get(
-            "classes", []
-        ):
+        if isinstance(child, nodes.inline) and SAB.TOOLBAR in child.get("classes", []):
             toolbar = child
             continue
         if isinstance(child, nodes.reference) and "headerlink" in child.get(
@@ -826,10 +826,10 @@ def _rebuild_signature_layout(
     if not source_children and fallback_source_ref is not None:
         source_children = [fallback_source_ref]
 
-    layout = build_api_component("api-layout")
-    left = build_api_component("api-layout-left")
-    signature = build_api_component("api-signature")
-    right = build_api_component("api-layout-right", classes=("sab-toolbar",))
+    layout = build_api_component(API.LAYOUT)
+    left = build_api_component(API.LAYOUT_LEFT)
+    signature = build_api_component(API.SIGNATURE)
+    right = build_api_component(API.LAYOUT_RIGHT, classes=(SAB.TOOLBAR,))
     parameter_types = _extract_parameter_types(desc_node)
     folded = False
 
@@ -849,8 +849,8 @@ def _rebuild_signature_layout(
                     show_annotations=show_annotations,
                 )
                 expanded = build_api_component(
-                    "api-signature-expanded",
-                    classes=("api-sig-expanded",),
+                    API.SIGNATURE_EXPANDED,
+                    classes=(API.SIG_EXPANDED,),
                     html_attrs={
                         "aria-hidden": "true",
                         "data-expanded": "false",
@@ -860,7 +860,7 @@ def _rebuild_signature_layout(
                 )
                 expanded += child
                 collapse = build_api_inline_component(
-                    "api-sig-collapse",
+                    API.SIG_COLLAPSE,
                     tag="button",
                     html_attrs={
                         "aria-controls": panel_id,
@@ -882,13 +882,13 @@ def _rebuild_signature_layout(
             left += permalink
 
     if badge_children:
-        badge_container = build_api_inline_component("api-badge-container")
+        badge_container = build_api_inline_component(API.BADGE_CONTAINER)
         for child in badge_children:
             badge_container += child
         right += badge_container
 
     if source_children:
-        source_container = build_api_inline_component("api-source-link")
+        source_container = build_api_inline_component(API.SOURCE_LINK)
         for child in source_children:
             source_container += child
         right += source_container
@@ -934,7 +934,7 @@ def on_doctree_resolved(
         if profile is None:
             continue
 
-        _append_class(desc_node, "api-container")
+        _append_class(desc_node, API.CONTAINER)
         _append_class(desc_node, profile.class_name)
         _wrap_content_runs(desc_node)
 
@@ -949,7 +949,7 @@ def on_doctree_resolved(
         for child in desc_node.children:
             if not isinstance(child, addnodes.desc_signature):
                 continue
-            _append_class(child, "api-header")
+            _append_class(child, API.HEADER)
             child["api_managed"] = not child.get("is_multiline", False)
             if child["api_managed"]:
                 child["html_attrs"] = {"data-signature-expanded": "false"}

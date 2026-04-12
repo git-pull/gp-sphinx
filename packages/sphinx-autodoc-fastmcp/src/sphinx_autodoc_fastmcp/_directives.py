@@ -20,6 +20,7 @@ from sphinx_autodoc_typehints_gp import (
     classify_annotation_display,
 )
 from sphinx_ux_autodoc_layout import (
+    API,
     ApiFactRow,
     api_permalink,
     build_api_card_entry,
@@ -64,7 +65,7 @@ class FastMCPToolDirective(SphinxDirective):
 
         section = nodes.section()
         section["ids"].append(section_id)
-        section["classes"].extend((_CSS.TOOL_SECTION, "api-card-shell"))
+        section["classes"].extend((_CSS.TOOL_SECTION, API.CARD_SHELL))
         document.note_explicit_target(section)
 
         title_node = nodes.title("", "")
@@ -77,11 +78,11 @@ class FastMCPToolDirective(SphinxDirective):
             href=f"#{section_id}",
             title="Link to this tool",
         )
-        link["classes"] = ["headerlink", "api-link"]
+        link["classes"] = ["headerlink", API.LINK]
         first_para = first_paragraph(tool.docstring)
         content_nodes: list[nodes.Node] = [
             build_api_section(
-                "api-description",
+                API.DESCRIPTION,
                 parse_rst_inline(first_para, self.state, self.lineno),
                 classes=(_CSS.BODY_SECTION,),
             )
@@ -104,7 +105,7 @@ class FastMCPToolDirective(SphinxDirective):
             )
 
         entry = build_api_card_entry(
-            profile_class="api-profile--fastmcp-tool",
+            profile_class=API.profile("fastmcp-tool"),
             signature_children=(nodes.literal("", tool.name),),
             content_children=tuple(content_nodes),
             badge_group=build_tool_badge_group(tool.safety),
@@ -182,7 +183,7 @@ class FastMCPToolInputDirective(SphinxDirective):
                 )
             result.append(
                 build_api_table_section(
-                    "api-parameters",
+                    API.PARAMETERS,
                     make_table(headers, rows, col_widths=[15, 15, 8, 10, 52]),
                 ),
             )

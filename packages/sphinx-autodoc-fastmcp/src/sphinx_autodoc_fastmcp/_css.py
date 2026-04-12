@@ -1,39 +1,39 @@
 """CSS class name constants for sphinx_autodoc_fastmcp.
 
-All constants use the ``smf-`` prefix for FastMCP-specific layout
-and safety semantics.  For shared badge primitives, import ``SAB``
+All constants use the ``gp-sphinx-fastmcp`` namespace for FastMCP-specific
+layout and safety semantics.  For shared badge primitives, import ``SAB``
 from ``sphinx_ux_badges`` directly.
 
 Examples
 --------
 >>> _CSS.TOOL_SECTION
-'smf-tool-section'
+'gp-sphinx-fastmcp__tool-section'
 
 >>> _CSS.BADGE_SAFETY
-'smf-badge--safety'
+'gp-sphinx-fastmcp__safety'
 """
 
 from __future__ import annotations
 
 
 class _CSS:
-    """CSS class name constants (``smf-`` = sphinx autodoc fastmcp)."""
+    """CSS class name constants (``gp-sphinx-fastmcp`` namespace)."""
 
-    PREFIX = "smf"
+    PREFIX = "gp-sphinx-fastmcp"
 
     # Layout
-    TOOL_SECTION = f"{PREFIX}-tool-section"
-    SECTION_TITLE_HIDDEN = f"{PREFIX}-visually-hidden"
-    TYPE_TOOL = f"{PREFIX}-type-tool"
-    TOOL_ENTRY = f"{PREFIX}-tool-entry"
-    TOOL_SIGNATURE = f"{PREFIX}-tool-signature"
-    BODY_SECTION = f"{PREFIX}-body-section"
+    TOOL_SECTION = "gp-sphinx-fastmcp__tool-section"
+    SECTION_TITLE_HIDDEN = "gp-sphinx-fastmcp__visually-hidden"
+    TYPE_TOOL = "gp-sphinx-fastmcp__type-tool"
+    TOOL_ENTRY = "gp-sphinx-fastmcp__tool-entry"
+    TOOL_SIGNATURE = "gp-sphinx-fastmcp__tool-signature"
+    BODY_SECTION = "gp-sphinx-fastmcp__body-section"
 
-    # Safety tiers
-    BADGE_SAFETY = f"{PREFIX}-badge--safety"
-    SAFETY_READONLY = f"{PREFIX}-safety-readonly"
-    SAFETY_MUTATING = f"{PREFIX}-safety-mutating"
-    SAFETY_DESTRUCTIVE = f"{PREFIX}-safety-destructive"
+    # Safety slot + tier values
+    BADGE_SAFETY = "gp-sphinx-fastmcp__safety"
+    SAFETY_READONLY = "gp-sphinx-fastmcp__safety-readonly"
+    SAFETY_MUTATING = "gp-sphinx-fastmcp__safety-mutating"
+    SAFETY_DESTRUCTIVE = "gp-sphinx-fastmcp__safety-destructive"
 
     @staticmethod
     def safety_class(safety: str) -> str:
@@ -42,6 +42,6 @@ class _CSS:
         Examples
         --------
         >>> _CSS.safety_class("readonly")
-        'smf-safety-readonly'
+        'gp-sphinx-fastmcp__safety-readonly'
         """
-        return f"{_CSS.PREFIX}-safety-{safety}"
+        return f"gp-sphinx-fastmcp__safety-{safety}"

@@ -1,6 +1,6 @@
 # sphinx-autodoc-pytest-fixtures
 
-```{sab-package-meta} sphinx-autodoc-pytest-fixtures
+```{gp-sphinx-package-meta} sphinx-autodoc-pytest-fixtures
 ```
 
 :::{admonition} Alpha

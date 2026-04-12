@@ -1,16 +1,16 @@
 # serializer version: 1
 # name: test_confval_snapshot[confval_entry]
   '''
-  <desc classes="api-container api-profile--confval" domain="std" objtype="confval">
-      <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="confval.demo_option">
-          <api_component classes="api-layout" name="api-layout" tag="div">
-              <api_component classes="api-layout-left" name="api-layout-left" tag="div">
-                  <api_component classes="api-signature" name="api-signature" tag="div">
+  <desc classes="gp-sphinx-api-container gp-sphinx-api-profile--confval" domain="std" objtype="confval">
+      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="confval.demo_option">
+          <api_component classes="gp-sphinx-api-layout" name="gp-sphinx-api-layout" tag="div">
+              <api_component classes="gp-sphinx-api-layout-left" name="gp-sphinx-api-layout-left" tag="div">
+                  <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
                       <desc_name classes="sig-name descname" xml:space="preserve">
                           demo_option
-                  <api_permalink classes="headerlink api-link" href="#confval.demo_option" title="Link to this definition">
-              <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
-                  <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
+                  <api_permalink classes="headerlink gp-sphinx-api-link" href="#confval.demo_option" title="Link to this definition">
+              <api_component classes="gp-sphinx-api-layout-right gp-sphinx-toolbar" name="gp-sphinx-api-layout-right" tag="div">
+                  <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
                       <inline classes="sas-badge-group">
                           <inline classes="sas-badge--type">
                               config
@@ -22,8 +22,8 @@
                                
                           <inline classes="sas-badge--status">
                               stable
-      <desc_content classes="api-content">
-          <api_component classes="api-parameters api-region api-region--fields" name="api-parameters" tag="div">
+      <desc_content classes="gp-sphinx-api-content">
+          <api_component classes="gp-sphinx-api-parameters gp-sphinx-api-region gp-sphinx-api-region--fields" name="gp-sphinx-api-parameters" tag="div">
               <field_list>
                   <field>
                       <field_name>
@@ -37,22 +37,22 @@
                       <field_body>
                           <literal_block xml:space="preserve">
                               {'accent': 'teal', 'surface': 'paper', 'ink': 'charcoal'}
-          <api_component classes="api-description api-region api-region--narrative" name="api-description" tag="div">
+          <api_component classes="gp-sphinx-api-description gp-sphinx-api-region gp-sphinx-api-region--narrative" name="gp-sphinx-api-description" tag="div">
               <paragraph>
                   A demo option.
   '''
 # ---
 # name: test_fastmcp_tool_prototype_snapshot[fastmcp_tool_prototype]
   '''
-  <desc classes="api-container api-profile--mcp-tool" domain="mcp" objtype="tool">
-      <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="list-sessions" smf_prototype_slots="True">
-          <api_component classes="api-layout" name="api-layout" tag="div">
-              <api_component classes="api-layout-left" name="api-layout-left" tag="div">
-                  <api_component classes="api-signature" name="api-signature" tag="div">
+  <desc classes="gp-sphinx-api-container gp-sphinx-api-profile--mcp-tool" domain="mcp" objtype="tool">
+      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="list-sessions" smf_prototype_slots="True">
+          <api_component classes="gp-sphinx-api-layout" name="gp-sphinx-api-layout" tag="div">
+              <api_component classes="gp-sphinx-api-layout-left" name="gp-sphinx-api-layout-left" tag="div">
+                  <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
                       <desc_name classes="sig-name descname" xml:space="preserve">
                           list_sessions
                       <api_sig_fold first_param="server" panel_id="list-sessions--signature-expanded" param_count="12">
-                      <api_component classes="api-signature-expanded api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'list-sessions--signature-expanded'}" name="api-signature-expanded" tag="div">
+                      <api_component classes="gp-sphinx-api-signature-expanded gp-sphinx-api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'list-sessions--signature-expanded'}" name="gp-sphinx-api-signature-expanded" tag="div">
                           <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
                               <desc_parameter xml:space="preserve">
                                   <desc_sig_name classes="n">
@@ -250,22 +250,22 @@
                                        
                                   <inline classes="default_value">
                                       None
-                          <api_inline_component classes="api-sig-collapse" html_attrs="{'aria-controls': 'list-sessions--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="api-sig-collapse" tag="button">
+                          <api_inline_component classes="gp-sphinx-api-sig-collapse" html_attrs="{'aria-controls': 'list-sessions--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gp-sphinx-api-sig-collapse" tag="button">
                               [collapse]
-                  <api_permalink classes="headerlink api-link" href="#list-sessions" title="Link to this definition">
-              <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
-                  <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
-                      <inline classes="sab-badge-group">
-                          <BadgeNode badge_icon="🔍" badge_tooltip="Read-only — does not modify external state" classes="sab-badge sab-dense sab-no-underline smf-badge--safety smf-safety-readonly" tabindex="0">
+                  <api_permalink classes="headerlink gp-sphinx-api-link" href="#list-sessions" title="Link to this definition">
+              <api_component classes="gp-sphinx-api-layout-right gp-sphinx-toolbar" name="gp-sphinx-api-layout-right" tag="div">
+                  <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
+                      <inline classes="gp-sphinx-badge-group">
+                          <BadgeNode badge_icon="🔍" badge_tooltip="Read-only — does not modify external state" classes="gp-sphinx-badge gp-sphinx-badge--dense gp-sphinx-badge--underline-none gp-sphinx-fastmcp__safety gp-sphinx-fastmcp__safety-readonly" tabindex="0">
                               readonly
                            
-                          <BadgeNode badge_tooltip="MCP tool" classes="sab-badge sab-dense sab-no-underline sab-badge--type smf-type-tool" tabindex="0">
+                          <BadgeNode badge_tooltip="MCP tool" classes="gp-sphinx-badge gp-sphinx-badge--dense gp-sphinx-badge--underline-none gp-sphinx-badge--slot-type gp-sphinx-fastmcp__type-tool" tabindex="0">
                               tool
-      <desc_content classes="api-content">
-          <api_component classes="api-description api-region api-region--narrative" name="api-description" tag="div">
+      <desc_content classes="gp-sphinx-api-content">
+          <api_component classes="gp-sphinx-api-description gp-sphinx-api-region gp-sphinx-api-region--narrative" name="gp-sphinx-api-description" tag="div">
               <paragraph>
                   List sessions for one server.
-          <api_component classes="api-parameters api-region api-region--fields" name="api-parameters" tag="div">
+          <api_component classes="gp-sphinx-api-parameters gp-sphinx-api-region gp-sphinx-api-region--fields" name="gp-sphinx-api-parameters" tag="div">
               <field_list>
                   <field>
                       <field_name>
@@ -534,15 +534,15 @@
 # ---
 # name: test_large_signature_snapshot_annotated[large_signature_annotated]
   '''
-  <desc classes="api-container api-profile--py-method" domain="py" objtype="method">
-      <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="demo.Session.__init__">
-          <api_component classes="api-layout" name="api-layout" tag="div">
-              <api_component classes="api-layout-left" name="api-layout-left" tag="div">
-                  <api_component classes="api-signature" name="api-signature" tag="div">
+  <desc classes="gp-sphinx-api-container gp-sphinx-api-profile--py-method" domain="py" objtype="method">
+      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="demo.Session.__init__">
+          <api_component classes="gp-sphinx-api-layout" name="gp-sphinx-api-layout" tag="div">
+              <api_component classes="gp-sphinx-api-layout-left" name="gp-sphinx-api-layout-left" tag="div">
+                  <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
                       <desc_name classes="sig-name descname" xml:space="preserve">
                           __init__
                       <api_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded" param_count="13">
-                      <api_component classes="api-signature-expanded api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded'}" name="api-signature-expanded" tag="div">
+                      <api_component classes="gp-sphinx-api-signature-expanded gp-sphinx-api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded'}" name="gp-sphinx-api-signature-expanded" tag="div">
                           <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
                               <desc_parameter xml:space="preserve">
                                   <desc_sig_name classes="n">
@@ -794,23 +794,23 @@
                                        
                                   <inline classes="default_value">
                                       None
-                          <api_inline_component classes="api-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="api-sig-collapse" tag="button">
+                          <api_inline_component classes="gp-sphinx-api-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gp-sphinx-api-sig-collapse" tag="button">
                               [collapse]
-                  <api_permalink classes="headerlink api-link" href="#demo.Session.__init__" title="Link to this definition">
-              <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
-                  <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
-                      <inline classes="sab-badge-group">
-                          <inline classes="sab-badge">
+                  <api_permalink classes="headerlink gp-sphinx-api-link" href="#demo.Session.__init__" title="Link to this definition">
+              <api_component classes="gp-sphinx-api-layout-right gp-sphinx-toolbar" name="gp-sphinx-api-layout-right" tag="div">
+                  <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
+                      <inline classes="gp-sphinx-badge-group">
+                          <inline classes="gp-sphinx-badge">
                               method
-                  <api_inline_component classes="api-source-link" name="api-source-link" tag="span">
+                  <api_inline_component classes="gp-sphinx-api-source-link" name="gp-sphinx-api-source-link" tag="span">
                       <reference internal="False">
                           <inline classes="viewcode-link">
                               [source]
-      <desc_content classes="api-content">
-          <api_component classes="api-description api-region api-region--narrative" name="api-description" tag="div">
+      <desc_content classes="gp-sphinx-api-content">
+          <api_component classes="gp-sphinx-api-description gp-sphinx-api-region gp-sphinx-api-region--narrative" name="gp-sphinx-api-description" tag="div">
               <paragraph>
                   Create a richly configurable session.
-          <api_component classes="api-parameters api-region api-region--fields" name="api-parameters" tag="div">
+          <api_component classes="gp-sphinx-api-parameters gp-sphinx-api-region gp-sphinx-api-region--fields" name="gp-sphinx-api-parameters" tag="div">
               <api_fold kind="parameters" summary="Parameters (13)">
                   <field_list>
                       <field>
@@ -926,15 +926,15 @@
 # ---
 # name: test_large_signature_snapshot_annotation_disabled[large_signature_annotation_disabled]
   '''
-  <desc classes="api-container api-profile--py-method" domain="py" objtype="method">
-      <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="demo.Session.__init__">
-          <api_component classes="api-layout" name="api-layout" tag="div">
-              <api_component classes="api-layout-left" name="api-layout-left" tag="div">
-                  <api_component classes="api-signature" name="api-signature" tag="div">
+  <desc classes="gp-sphinx-api-container gp-sphinx-api-profile--py-method" domain="py" objtype="method">
+      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="demo.Session.__init__">
+          <api_component classes="gp-sphinx-api-layout" name="gp-sphinx-api-layout" tag="div">
+              <api_component classes="gp-sphinx-api-layout-left" name="gp-sphinx-api-layout-left" tag="div">
+                  <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
                       <desc_name classes="sig-name descname" xml:space="preserve">
                           __init__
                       <api_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded" param_count="13">
-                      <api_component classes="api-signature-expanded api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded'}" name="api-signature-expanded" tag="div">
+                      <api_component classes="gp-sphinx-api-signature-expanded gp-sphinx-api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded'}" name="gp-sphinx-api-signature-expanded" tag="div">
                           <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
                               <desc_parameter xml:space="preserve">
                                   <desc_sig_name classes="n">
@@ -1071,23 +1071,23 @@
                                        
                                   <inline classes="default_value">
                                       None
-                          <api_inline_component classes="api-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="api-sig-collapse" tag="button">
+                          <api_inline_component classes="gp-sphinx-api-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gp-sphinx-api-sig-collapse" tag="button">
                               [collapse]
-                  <api_permalink classes="headerlink api-link" href="#demo.Session.__init__" title="Link to this definition">
-              <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
-                  <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
-                      <inline classes="sab-badge-group">
-                          <inline classes="sab-badge">
+                  <api_permalink classes="headerlink gp-sphinx-api-link" href="#demo.Session.__init__" title="Link to this definition">
+              <api_component classes="gp-sphinx-api-layout-right gp-sphinx-toolbar" name="gp-sphinx-api-layout-right" tag="div">
+                  <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
+                      <inline classes="gp-sphinx-badge-group">
+                          <inline classes="gp-sphinx-badge">
                               method
-                  <api_inline_component classes="api-source-link" name="api-source-link" tag="span">
+                  <api_inline_component classes="gp-sphinx-api-source-link" name="gp-sphinx-api-source-link" tag="span">
                       <reference internal="False">
                           <inline classes="viewcode-link">
                               [source]
-      <desc_content classes="api-content">
-          <api_component classes="api-description api-region api-region--narrative" name="api-description" tag="div">
+      <desc_content classes="gp-sphinx-api-content">
+          <api_component classes="gp-sphinx-api-description gp-sphinx-api-region gp-sphinx-api-region--narrative" name="gp-sphinx-api-description" tag="div">
               <paragraph>
                   Create a richly configurable session.
-          <api_component classes="api-parameters api-region api-region--fields" name="api-parameters" tag="div">
+          <api_component classes="gp-sphinx-api-parameters gp-sphinx-api-region gp-sphinx-api-region--fields" name="gp-sphinx-api-parameters" tag="div">
               <api_fold kind="parameters" summary="Parameters (13)">
                   <field_list>
                       <field>
@@ -1203,39 +1203,39 @@
 # ---
 # name: test_rst_directive_snapshot[rst_directive_entry]
   '''
-  <desc classes="api-container api-profile--rst-directive" domain="rst" objtype="directive">
-      <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="directive-demo-directive">
-          <api_component classes="api-layout" name="api-layout" tag="div">
-              <api_component classes="api-layout-left" name="api-layout-left" tag="div">
-                  <api_component classes="api-signature" name="api-signature" tag="div">
+  <desc classes="gp-sphinx-api-container gp-sphinx-api-profile--rst-directive" domain="rst" objtype="directive">
+      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="directive-demo-directive">
+          <api_component classes="gp-sphinx-api-layout" name="gp-sphinx-api-layout" tag="div">
+              <api_component classes="gp-sphinx-api-layout-left" name="gp-sphinx-api-layout-left" tag="div">
+                  <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
                       <desc_name classes="sig-name descname" xml:space="preserve">
                           demo-directive
-                  <api_permalink classes="headerlink api-link" href="#directive-demo-directive" title="Link to this definition">
-              <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
-                  <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
+                  <api_permalink classes="headerlink gp-sphinx-api-link" href="#directive-demo-directive" title="Link to this definition">
+              <api_component classes="gp-sphinx-api-layout-right gp-sphinx-toolbar" name="gp-sphinx-api-layout-right" tag="div">
+                  <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
                       <inline classes="sadoc-badge-group">
                           <inline classes="sadoc-badge--type">
                               directive
-      <desc_content classes="api-content">
-          <api_component classes="api-description api-region api-region--narrative" name="api-description" tag="div">
+      <desc_content classes="gp-sphinx-api-content">
+          <api_component classes="gp-sphinx-api-description gp-sphinx-api-region gp-sphinx-api-region--narrative" name="gp-sphinx-api-description" tag="div">
               <paragraph>
                   A demo directive.
-          <api_component classes="api-footer api-region api-region--members" name="api-footer" tag="div">
-              <desc classes="api-container api-profile--rst-directive-option" domain="rst" objtype="directive:option">
-                  <desc_signature api_managed="True" classes="sig sig-object api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="directive-option-demo-opt">
-                      <api_component classes="api-layout" name="api-layout" tag="div">
-                          <api_component classes="api-layout-left" name="api-layout-left" tag="div">
-                              <api_component classes="api-signature" name="api-signature" tag="div">
+          <api_component classes="gp-sphinx-api-footer gp-sphinx-api-region gp-sphinx-api-region--members" name="gp-sphinx-api-footer" tag="div">
+              <desc classes="gp-sphinx-api-container gp-sphinx-api-profile--rst-directive-option" domain="rst" objtype="directive:option">
+                  <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="directive-option-demo-opt">
+                      <api_component classes="gp-sphinx-api-layout" name="gp-sphinx-api-layout" tag="div">
+                          <api_component classes="gp-sphinx-api-layout-left" name="gp-sphinx-api-layout-left" tag="div">
+                              <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
                                   <desc_name classes="sig-name descname" xml:space="preserve">
                                       demo-opt
-                              <api_permalink classes="headerlink api-link" href="#directive-option-demo-opt" title="Link to this definition">
-                          <api_component classes="api-layout-right sab-toolbar" name="api-layout-right" tag="div">
-                              <api_inline_component classes="api-badge-container" name="api-badge-container" tag="span">
+                              <api_permalink classes="headerlink gp-sphinx-api-link" href="#directive-option-demo-opt" title="Link to this definition">
+                          <api_component classes="gp-sphinx-api-layout-right gp-sphinx-toolbar" name="gp-sphinx-api-layout-right" tag="div">
+                              <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
                                   <inline classes="sadoc-badge-group">
                                       <inline classes="sadoc-badge--type">
                                           option
-                  <desc_content classes="api-content">
-                      <api_component classes="api-description api-region api-region--narrative" name="api-description" tag="div">
+                  <desc_content classes="gp-sphinx-api-content">
+                      <api_component classes="gp-sphinx-api-description gp-sphinx-api-region gp-sphinx-api-region--narrative" name="gp-sphinx-api-description" tag="div">
                           <paragraph>
                               A demo option.
                           <literal_block xml:space="preserve">

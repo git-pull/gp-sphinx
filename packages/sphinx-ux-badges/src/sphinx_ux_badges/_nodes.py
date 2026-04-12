@@ -9,11 +9,11 @@ Examples
 >>> node.astext()
 'readonly'
 
->>> "sab-badge" in node["classes"]
+>>> "gp-sphinx-badge" in node["classes"]
 True
 
 >>> n2 = BadgeNode("xxs", badge_size="xxs")
->>> "sab-xxs" in n2["classes"]
+>>> "gp-sphinx-badge--size-xxs" in n2["classes"]
 True
 """
 
@@ -23,7 +23,17 @@ import typing as t
 
 from docutils import nodes
 
+from sphinx_ux_badges._css import SAB
+
 _BADGE_SIZES = frozenset({"xxs", "xs", "sm", "md", "lg", "xl"})
+
+# Maps badge_style ctor values to SAB class constants.
+_STYLE_CLASSES: dict[str, str] = {
+    "icon-only": SAB.ICON_ONLY,
+    "inline-icon": SAB.INLINE_ICON,
+    "filled": SAB.FILLED,
+    "outline": SAB.OUTLINE,
+}
 
 
 class BadgeNode(nodes.inline):
@@ -57,7 +67,7 @@ class BadgeNode(nodes.inline):
     ) -> None:
         children = [nodes.Text(text)] if text else []
         super().__init__("", *children, **attributes)
-        self["classes"].append("sab-badge")
+        self["classes"].append(SAB.BADGE)
         if classes:
             self["classes"].extend(classes)
         if badge_tooltip:
@@ -66,13 +76,19 @@ class BadgeNode(nodes.inline):
             self["badge_icon"] = badge_icon
         if badge_style != "full":
             self["badge_style"] = badge_style
-            self["classes"].append(f"sab-{badge_style}")
+            style_class = _STYLE_CLASSES.get(badge_style)
+            if style_class is not None:
+                self["classes"].append(style_class)
+            else:
+                # Unknown style: preserve back-compat "gp-sphinx-badge--<style>"
+                # shape so callers passing custom style strings still work.
+                self["classes"].append(f"gp-sphinx-badge--{badge_style}")
         if badge_size:
             if badge_size not in _BADGE_SIZES:
                 allowed = sorted(_BADGE_SIZES)
                 msg = f"badge_size must be one of {allowed!r}, got {badge_size!r}"
                 raise ValueError(msg)
             self["badge_size"] = badge_size
-            self["classes"].append(f"sab-{badge_size}")
+            self["classes"].append(f"gp-sphinx-badge--size-{badge_size}")
         if tabindex:
             self["tabindex"] = tabindex

@@ -6,7 +6,7 @@ Uses shared ``BadgeNode`` from ``sphinx_ux_badges`` instead of
 Examples
 --------
 >>> group = build_badge_group("function", modifiers=frozenset())
->>> "sab-badge-group" in group["classes"]
+>>> "gp-sphinx-badge-group" in group["classes"]
 True
 """
 
@@ -114,7 +114,7 @@ def build_badge_group(
     Examples
     --------
     >>> group = build_badge_group("function", modifiers=frozenset())
-    >>> "sab-badge-group" in group["classes"]
+    >>> "gp-sphinx-badge-group" in group["classes"]
     True
 
     >>> group = build_badge_group("method", modifiers=frozenset({"async"}))

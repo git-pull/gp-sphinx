@@ -106,15 +106,18 @@ def test_fastmcp_tool_cards_use_shared_layout(
 ) -> None:
     html = read_output(fastmcp_html_result, "index.html")
 
-    assert 'class="smf-tool-section api-card-shell"' in html
+    assert 'class="gp-sphinx-fastmcp__tool-section gp-sphinx-api-card-shell"' in html
     assert (
-        'class="api-entry api-card-entry api-profile--fastmcp-tool smf-tool-entry"'
+        'class="gp-sphinx-api-entry gp-sphinx-api-card-entry gp-sphinx-api-profile--fastmcp-tool gp-sphinx-fastmcp__tool-entry"'
         in html
     )
-    assert 'class="api-layout"' in html
-    assert 'class="api-badge-container"' in html
-    assert 'class="api-facts api-region api-region--facts smf-body-section"' in html
-    assert 'class="headerlink api-link"' in html
+    assert 'class="gp-sphinx-api-layout"' in html
+    assert 'class="gp-sphinx-api-badge-container"' in html
+    assert (
+        'class="gp-sphinx-api-facts gp-sphinx-api-region gp-sphinx-api-region--facts gp-sphinx-fastmcp__body-section"'
+        in html
+    )
+    assert 'class="headerlink gp-sphinx-api-link"' in html
     assert 'class="reference internal" href="#list-sessions"' in html
     assert "Parameters" in html
     assert "readonly" in html
