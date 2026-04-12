@@ -3,7 +3,7 @@
 # What's new
 
 The `autodoc-improvements` branch introduces a unified **autodoc design
-system** — seven major advancements that transform how the documentation
+system** — eight major advancements that transform how the documentation
 stack works.  See the {doc}`gallery` for a visual showcase.
 
 ## New packages
@@ -27,8 +27,9 @@ light/dark theming.
 
 ## Shared layout stack
 
-The five domain packages
+The six domain packages
 ({doc}`api-style <packages/sphinx-autodoc-api-style>`,
+{doc}`argparse <packages/sphinx-autodoc-argparse>`,
 {doc}`docutils <packages/sphinx-autodoc-docutils>`,
 {doc}`fastmcp <packages/sphinx-autodoc-fastmcp>`,
 {doc}`pytest-fixtures <packages/sphinx-autodoc-pytest-fixtures>`,
@@ -36,6 +37,18 @@ The five domain packages
 now all share the same layout, badge, and typehint infrastructure.  A
 change in the foundational layout package propagates instantly and
 consistently.
+
+## argparse Sphinx domain
+
+{doc}`sphinx-autodoc-argparse <packages/sphinx-autodoc-argparse>` now
+ships a real Sphinx `Domain` subclass.  Programs, options, subcommands,
+and positional arguments are individually addressable via
+`:argparse:program:`, `:argparse:option:`, `:argparse:subcommand:`, and
+`:argparse:positional:` xref roles.  Two auto-generated indices —
+`argparse-programsindex` (alphabetised programs) and
+`argparse-optionsindex` (options grouped by program) — give a workspace
+overview.  `:option:` / `std:cmdoption` continues to resolve for
+intersphinx consumers.
 
 ## Three-tier package organization
 
