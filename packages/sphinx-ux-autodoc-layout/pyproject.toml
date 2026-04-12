@@ -24,7 +24,7 @@ classifiers = [
   "Topic :: Documentation :: Sphinx",
   "Typing :: Typed",
 ]
-dependencies = ["sphinx>=7.2"]
+dependencies = ["sphinx>=8.1"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sphinx_ux_autodoc_layout"]
