@@ -7,7 +7,7 @@ import sys
 
 import pytest
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "scripts" / "ci"))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "scripts" / "ci"))
 import package_tools
 
 
