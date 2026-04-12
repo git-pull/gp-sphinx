@@ -85,7 +85,7 @@ globals().update(conf)
 ```python
 conf = merge_sphinx_config(
     # ...
-    extra_extensions=["sphinx_argparse_neo.exemplar", "sphinx_click"],
+    extra_extensions=["sphinx_autodoc_argparse.exemplar", "sphinx_click"],
 )
 ```
 
@@ -134,6 +134,75 @@ $ uv run sphinx-build -b html docs docs/_build/html
 ```
 
 Open `docs/_build/html/index.html` in your browser to see the result.
+
+## Seeing the autodoc design system
+
+The build above renders a Furo-themed page with IBM Plex fonts.  To see the
+full autodoc stack — badges, type hints, and card layout — document a Python
+module.
+
+Create a file `my_module.py` next to your `docs/` directory:
+
+```python
+"""Demo module for the autodoc design system."""
+from __future__ import annotations
+
+from typing import Any
+
+
+def get_user(
+    *,
+    user_id: int,
+    use_cache: bool = True,
+) -> dict[str, Any]:
+    """Fetch a user from the database.
+
+    Parameters
+    ----------
+    user_id : int
+        The ID of the user to fetch.
+    use_cache : bool
+        If ``True``, attempts to use a cache.
+
+    Returns
+    -------
+    dict[str, Any]
+        A dictionary of user properties.
+    """
+    return {"id": user_id, "name": "Demo User"}
+```
+
+Enable the API style extension in your `docs/conf.py`:
+
+```python
+conf = merge_sphinx_config(
+    # ... existing parameters ...
+    extra_extensions=["sphinx_autodoc_api_style"],
+)
+```
+
+Create `docs/api.md`:
+
+````markdown
+# API Reference
+
+```{eval-rst}
+.. automodule:: my_module
+   :members:
+```
+````
+
+Rebuild:
+
+```console
+$ uv run sphinx-build -b html docs docs/_build/html
+```
+
+Open `docs/_build/html/api.html`.  The function renders with type and modifier
+**badges**, clean **type hints** with cross-referenced links, and a **card
+layout** with parameter sections.
+
+See the {doc}`gallery` for a full showcase of every component.
 
 [pip]: https://pip.pypa.io/en/stable/
 [pipx]: https://pypa.github.io/pipx/docs/

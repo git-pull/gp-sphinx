@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import pathlib
+import shutil
 import types
 import typing as t
 import urllib.error
@@ -103,12 +104,27 @@ def test_cdn_url_matches_template() -> None:
 # --- _download_font tests ---
 
 
+@pytest.fixture(scope="module")
+def font_test_root(tmp_path_factory: pytest.TempPathFactory) -> pathlib.Path:
+    """Return a shared temp root for sphinx_fonts tests."""
+    return tmp_path_factory.mktemp("sphinx-fonts")
+
+
+def _case_dir(root: pathlib.Path, name: str) -> pathlib.Path:
+    """Return a clean per-test directory under ``root``."""
+    case_dir = root / name
+    if case_dir.exists():
+        shutil.rmtree(case_dir)
+    case_dir.mkdir(parents=True)
+    return case_dir
+
+
 def test_download_font_cached(
-    tmp_path: pathlib.Path,
+    font_test_root: pathlib.Path,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """_download_font returns True and logs debug when file exists."""
-    dest = tmp_path / "font.woff2"
+    dest = _case_dir(font_test_root, "download-font-cached") / "font.woff2"
     dest.write_bytes(b"cached-data")
 
     with caplog.at_level(logging.DEBUG, logger="sphinx_fonts"):
@@ -120,12 +136,12 @@ def test_download_font_cached(
 
 
 def test_download_font_success(
-    tmp_path: pathlib.Path,
+    font_test_root: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """_download_font downloads and returns True on success."""
-    dest = tmp_path / "subdir" / "font.woff2"
+    dest = _case_dir(font_test_root, "download-font-success") / "subdir" / "font.woff2"
 
     def fake_urlretrieve(url: str, filename: t.Any) -> tuple[str, t.Any]:
         pathlib.Path(filename).write_bytes(b"font-data")
@@ -142,12 +158,12 @@ def test_download_font_success(
 
 
 def test_download_font_url_error(
-    tmp_path: pathlib.Path,
+    font_test_root: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """_download_font returns False and warns on URLError."""
-    dest = tmp_path / "font.woff2"
+    dest = _case_dir(font_test_root, "download-font-url-error") / "font.woff2"
 
     msg = "network error"
 
@@ -165,12 +181,12 @@ def test_download_font_url_error(
 
 
 def test_download_font_os_error(
-    tmp_path: pathlib.Path,
+    font_test_root: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """_download_font returns False and warns on OSError."""
-    dest = tmp_path / "font.woff2"
+    dest = _case_dir(font_test_root, "download-font-os-error") / "font.woff2"
 
     msg = "disk full"
 
@@ -188,11 +204,13 @@ def test_download_font_os_error(
 
 
 def test_download_font_partial_file_cleanup(
-    tmp_path: pathlib.Path,
+    font_test_root: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """_download_font removes partial file on failure."""
-    dest = tmp_path / "cache" / "partial.woff2"
+    dest = (
+        _case_dir(font_test_root, "download-font-partial") / "cache" / "partial.woff2"
+    )
 
     msg = "disk full"
 
@@ -212,7 +230,8 @@ def test_download_font_partial_file_cleanup(
 
 
 def _make_app(
-    tmp_path: pathlib.Path,
+    root: pathlib.Path,
+    case_name: str,
     *,
     builder_format: str = "html",
     fonts: list[dict[str, t.Any]] | None = None,
@@ -221,6 +240,7 @@ def _make_app(
     variables: dict[str, str] | None = None,
 ) -> Sphinx:
     """Create a fake Sphinx app namespace for testing."""
+    case_dir = _case_dir(root, case_name)
     config = types.SimpleNamespace(
         sphinx_fonts=fonts if fonts is not None else [],
         sphinx_font_preload=preload if preload is not None else [],
@@ -233,31 +253,34 @@ def _make_app(
         types.SimpleNamespace(
             builder=builder,
             config=config,
-            outdir=str(tmp_path / "output"),
+            outdir=str(case_dir / "output"),
         ),
     )
 
 
-def test_on_builder_inited_non_html(tmp_path: pathlib.Path) -> None:
+def test_on_builder_inited_non_html(font_test_root: pathlib.Path) -> None:
     """_on_builder_inited returns early for non-HTML builders."""
-    app = _make_app(tmp_path, builder_format="latex")
+    app = _make_app(
+        font_test_root, "on-builder-inited-non-html", builder_format="latex"
+    )
     sphinx_fonts._on_builder_inited(app)
     assert not hasattr(app, "_font_faces")
 
 
-def test_on_builder_inited_empty_fonts(tmp_path: pathlib.Path) -> None:
+def test_on_builder_inited_empty_fonts(font_test_root: pathlib.Path) -> None:
     """_on_builder_inited returns early when no fonts configured."""
-    app = _make_app(tmp_path, fonts=[])
+    app = _make_app(font_test_root, "on-builder-inited-empty-fonts", fonts=[])
     sphinx_fonts._on_builder_inited(app)
     assert not hasattr(app, "_font_faces")
 
 
 def test_on_builder_inited_with_fonts(
-    tmp_path: pathlib.Path,
+    font_test_root: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """_on_builder_inited processes fonts and stores results on app."""
-    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
+    case_dir = _case_dir(font_test_root, "on-builder-inited-with-fonts")
+    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: case_dir / "cache")
 
     fonts = [
         {
@@ -268,9 +291,9 @@ def test_on_builder_inited_with_fonts(
             "styles": ["normal"],
         },
     ]
-    app = _make_app(tmp_path, fonts=fonts)
+    app = _make_app(font_test_root, "on-builder-inited-with-fonts", fonts=fonts)
 
-    cache = tmp_path / "cache"
+    cache = case_dir / "cache"
     cache.mkdir(parents=True)
     for weight in [400, 700]:
         (cache / f"open-sans-latin-{weight}-normal.woff2").write_bytes(b"data")
@@ -287,11 +310,12 @@ def test_on_builder_inited_with_fonts(
 
 
 def test_on_builder_inited_download_failure(
-    tmp_path: pathlib.Path,
+    font_test_root: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """_on_builder_inited skips font_faces entry on download failure."""
-    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
+    case_dir = _case_dir(font_test_root, "on-builder-inited-download-failure")
+    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: case_dir / "cache")
 
     msg = "offline"
 
@@ -309,7 +333,7 @@ def test_on_builder_inited_download_failure(
             "styles": ["normal"],
         },
     ]
-    app = _make_app(tmp_path, fonts=fonts)
+    app = _make_app(font_test_root, "on-builder-inited-download-failure", fonts=fonts)
 
     sphinx_fonts._on_builder_inited(app)
 
@@ -317,11 +341,12 @@ def test_on_builder_inited_download_failure(
 
 
 def test_on_builder_inited_explicit_subset(
-    tmp_path: pathlib.Path,
+    font_test_root: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """_on_builder_inited respects explicit subset in font config."""
-    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
+    case_dir = _case_dir(font_test_root, "on-builder-inited-explicit-subset")
+    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: case_dir / "cache")
 
     fonts = [
         {
@@ -333,9 +358,9 @@ def test_on_builder_inited_explicit_subset(
             "styles": ["normal"],
         },
     ]
-    app = _make_app(tmp_path, fonts=fonts)
+    app = _make_app(font_test_root, "on-builder-inited-explicit-subset", fonts=fonts)
 
-    cache = tmp_path / "cache"
+    cache = case_dir / "cache"
     cache.mkdir(parents=True)
     (cache / "noto-sans-latin-ext-400-normal.woff2").write_bytes(b"data")
 
@@ -345,11 +370,12 @@ def test_on_builder_inited_explicit_subset(
 
 
 def test_on_builder_inited_preload_match(
-    tmp_path: pathlib.Path,
+    font_test_root: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """_on_builder_inited builds preload_hrefs for matching preload specs."""
-    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
+    case_dir = _case_dir(font_test_root, "on-builder-inited-preload-match")
+    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: case_dir / "cache")
 
     fonts = [
         {
@@ -361,9 +387,14 @@ def test_on_builder_inited_preload_match(
         },
     ]
     preload = [("Open Sans", 400, "normal")]
-    app = _make_app(tmp_path, fonts=fonts, preload=preload)
+    app = _make_app(
+        font_test_root,
+        "on-builder-inited-preload-match",
+        fonts=fonts,
+        preload=preload,
+    )
 
-    cache = tmp_path / "cache"
+    cache = case_dir / "cache"
     cache.mkdir(parents=True)
     (cache / "open-sans-latin-400-normal.woff2").write_bytes(b"data")
 
@@ -373,11 +404,12 @@ def test_on_builder_inited_preload_match(
 
 
 def test_on_builder_inited_preload_no_match(
-    tmp_path: pathlib.Path,
+    font_test_root: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """_on_builder_inited produces empty preload when family doesn't match."""
-    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
+    case_dir = _case_dir(font_test_root, "on-builder-inited-preload-no-match")
+    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: case_dir / "cache")
 
     fonts = [
         {
@@ -389,9 +421,14 @@ def test_on_builder_inited_preload_no_match(
         },
     ]
     preload = [("Nonexistent Font", 400, "normal")]
-    app = _make_app(tmp_path, fonts=fonts, preload=preload)
+    app = _make_app(
+        font_test_root,
+        "on-builder-inited-preload-no-match",
+        fonts=fonts,
+        preload=preload,
+    )
 
-    cache = tmp_path / "cache"
+    cache = case_dir / "cache"
     cache.mkdir(parents=True)
     (cache / "open-sans-latin-400-normal.woff2").write_bytes(b"data")
 
@@ -401,11 +438,12 @@ def test_on_builder_inited_preload_no_match(
 
 
 def test_on_builder_inited_fallbacks_and_variables(
-    tmp_path: pathlib.Path,
+    font_test_root: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """_on_builder_inited stores fallbacks and CSS variables on app."""
-    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: tmp_path / "cache")
+    case_dir = _case_dir(font_test_root, "on-builder-inited-fallbacks-and-variables")
+    monkeypatch.setattr("sphinx_fonts._cache_dir", lambda: case_dir / "cache")
 
     fonts = [
         {
@@ -418,9 +456,15 @@ def test_on_builder_inited_fallbacks_and_variables(
     ]
     fallbacks = [{"family": "system-ui", "style": "normal", "weight": "400"}]
     variables = {"--font-body": "Inter, system-ui"}
-    app = _make_app(tmp_path, fonts=fonts, fallbacks=fallbacks, variables=variables)
+    app = _make_app(
+        font_test_root,
+        "on-builder-inited-fallbacks-and-variables",
+        fonts=fonts,
+        fallbacks=fallbacks,
+        variables=variables,
+    )
 
-    cache = tmp_path / "cache"
+    cache = case_dir / "cache"
     cache.mkdir(parents=True)
     (cache / "inter-latin-400-normal.woff2").write_bytes(b"data")
 

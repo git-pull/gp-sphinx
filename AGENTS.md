@@ -26,6 +26,7 @@ Key features:
 
 This project uses:
 - Python 3.10+
+- Sphinx 8.1+ (required for the typed `env.domains.<name>_domain` accessors)
 - [uv](https://github.com/astral-sh/uv) for dependency management
 - [ruff](https://github.com/astral-sh/ruff) for linting and formatting
 - [mypy](https://github.com/python/mypy) for type checking
@@ -140,21 +141,331 @@ gp_sphinx/
    - `DEFAULT_FONT_FAMILIES` dict
    - Shared sidebar configuration
 
+### Package CSS self-containment
+
+A workspace package's own CSS must style every class its Python code
+emits. If a directive appends `SAB.X` (or any gp-sphinx-* class) to a
+node, the package's own CSS file carries a rule targeting `SAB.X`.
+Cross-package **reuse** of a shared class (e.g., `gp-sphinx-badge`
+styled in `sphinx-ux-badges`) is fine; cross-package **dependence** —
+where your feature only renders correctly because a sibling package
+happens to be loaded — is not. A downstream user installing a single
+extension standalone must get the correct visual result.
+
 ## Testing Strategy
 
-gp-sphinx uses pytest for testing. Tests verify that configuration merging, default values, and override behavior work correctly.
+All tests are plain functions (`def test_*`). No `class TestFoo:` groupings. Every test
+function and every `NamedTuple` fixture class must be fully type-annotated; mypy runs as
+part of CI.
 
-### Testing Guidelines
+Run continuously while developing:
 
-1. **Use functional tests only**: Write tests as standalone functions, not classes. Avoid `class TestFoo:` groupings - use descriptive function names and file organization instead.
+```console
+$ uv run ptw .
+```
 
-2. **Preferred pytest patterns**
-   - Use `tmp_path` (pathlib.Path) fixture over Python's `tempfile`
-   - Use `monkeypatch` fixture over `unittest.mock`
+Include doctests:
 
-3. **Running tests continuously**
-   - Use pytest-watcher during development: `uv run ptw .`
-   - For doctests: `uv run ptw . --now --doctest-modules`
+```console
+$ uv run ptw . --now --doctest-modules
+```
+
+### Test Level Hierarchy
+
+Pick the **lightest** level that exercises the behavior. Never reach for a full Sphinx
+build when a docutils node test suffices — an integration build takes 2–10 s, a node
+test runs in microseconds.
+
+| Level | When to use |
+|---|---|
+| **Pure unit** | Transforming strings, dicts, dataclasses — no nodes, no Sphinx |
+| **Docutils tree unit** | Testing transforms/visitors/renderers by constructing `nodes.*` directly |
+| **Snapshot unit** | Same as docutils tree, but output is large or complex — assert via `snapshot_doctree` |
+| **Sphinx integration** (`@pytest.mark.integration`) | **Any test that constructs a `Sphinx` app.** `build_shared_sphinx_result` / `build_isolated_sphinx_result` with any builder — *including `buildername="dummy"`* — counts. If the test touches `env.domains.*`, walks a built doctree, or asserts on `result.warnings`, it is integration. |
+
+### Type Annotations (required everywhere)
+
+Every test function must annotate all parameters and the return type:
+
+```python
+def test_something(value: str, expected: int) -> None:
+    assert compute(value) == expected
+```
+
+Every `NamedTuple` fixture class must annotate all fields.
+
+### NamedTuple Parametrization
+
+Use `t.NamedTuple` for any parametrized test with three or more inputs. Two wiring
+styles are in use — pick whichever reads more clearly for the case at hand.
+
+**Style A — unpack all fields** (dominant; used in `test_unit.py`, lexer tests, etc.)
+
+Each field becomes a typed parameter in the test function, which makes the signature
+self-documenting:
+
+```python
+import typing as t
+
+import pytest
+
+
+class FooFixture(t.NamedTuple):
+    """Test case for foo()."""
+
+    test_id: str  # always the first field
+    input: str
+    expected: str
+
+
+_FOO_FIXTURES: list[FooFixture] = [
+    FooFixture(test_id="basic", input="a", expected="A"),
+    FooFixture(test_id="empty", input="", expected=""),
+]
+
+
+@pytest.mark.parametrize(
+    list(FooFixture._fields),
+    _FOO_FIXTURES,
+    ids=[f.test_id for f in _FOO_FIXTURES],
+)
+def test_foo(test_id: str, input: str, expected: str) -> None:
+    """foo() uppercases its input."""
+    assert foo(input) == expected
+```
+
+**Style B — pass whole struct as `case`** (used in `test_directives.py`,
+`test_nodes.py`, when the struct is reused in assertion messages or has many fields):
+
+```python
+@pytest.mark.parametrize(
+    "case",
+    _FOO_FIXTURES,
+    ids=lambda c: c.test_id,
+)
+def test_foo(case: FooFixture) -> None:
+    """foo() uppercases its input."""
+    assert foo(case.input) == case.expected
+```
+
+Naming conventions:
+
+- `test_id: str` is **always the first field**
+- Fixture list: `_FOO_FIXTURES` (module-private, all-caps)
+- Fixture class: `FooFixture` or `FooCase` — never `TestFoo`
+
+### Docutils Tree Unit Tests (no Sphinx build)
+
+Test transforms, visitors, and renderers by constructing `docutils.nodes` and
+`sphinx.addnodes` objects directly. Follow the pattern in
+`tests/ext/layout/test_transforms.py`:
+
+```python
+from docutils import nodes
+from sphinx import addnodes
+
+
+def _make_desc(
+    *content_children: nodes.Node,
+    domain: str = "py",
+    objtype: str = "function",
+) -> addnodes.desc:
+    desc = addnodes.desc(domain=domain, objtype=objtype)
+    desc += addnodes.desc_signature()
+    content = addnodes.desc_content()
+    for child in content_children:
+        content += child
+    desc += content
+    return desc
+
+
+def test_transform_wraps_content_runs() -> None:
+    """_wrap_content_runs groups consecutive content nodes."""
+    desc = _make_desc(nodes.paragraph("", "summary"), nodes.field_list())
+    _wrap_content_runs(desc)
+    assert any(isinstance(n, ContentGroup) for n in desc[1])
+```
+
+- Put `_make_*()` builder helpers at the top of the test file, near the tests that use
+  them.
+- Never import `sphinx.application.Sphinx` in a pure tree test.
+- Use `nodes.document()` (with a minimal `settings` object from
+  `docutils.frontend.OptionParser`) only when the transform requires a real document
+  root.
+
+### Snapshot Tests (syrupy)
+
+Use when the expected output is too large or fragile to inline. The three fixtures
+(from `tests/_snapshots.py`, loaded automatically via `pytest_plugins`) normalize their
+inputs before asserting so that build-path churn and docutils version noise do not cause
+spurious failures:
+
+- `snapshot_doctree(doctree, *, name=None, roots=())` — normalizes a `nodes.Node`
+- `snapshot_html_fragment(fragment, *, name=None, roots=())` — strips ANSI, normalizes whitespace
+- `snapshot_warnings(warnings, *, name=None, roots=())` — strips noise lines and ANSI codes
+
+```python
+import typing as t
+
+
+def test_layout_render(
+    snapshot_doctree: t.Callable[..., None],
+) -> None:
+    """Transform produces a stable doctree."""
+    desc = _make_large_signature_desc()
+    on_doctree_resolved(desc)
+    snapshot_doctree(desc)
+```
+
+Update stored snapshots after intentional output changes:
+
+```console
+$ uv run pytest --snapshot-update
+```
+
+### Integration Tests (full Sphinx build)
+
+Use the harness in `tests/_sphinx_scenarios.py`. The key types and helpers:
+
+- `SphinxScenario(files=(...), confoverrides={}, buildername="html")` — describes the
+  synthetic project; `buildername` defaults to `"html"`, override for text builds
+- `ScenarioFile(relative_path, contents, substitute_srcdir=False)` — one source file
+- `build_shared_sphinx_result(cache_root, scenario, *, purge_modules=())` — builds
+  once per content-hash digest; `purge_modules` removes named modules from `sys.modules`
+  before the initial build to prevent stale import cache — required when scenario files
+  inject a Python module into `sys.path`
+- `build_isolated_sphinx_result(cache_root, tmp_path, scenario, *, purge_modules=())`
+  — fresh build per test, for mutating assertions
+- `derive_sphinx_scenario_cache_root(tmp_path)` — derives a stable per-session cache
+  root from any `tmp_path` by using its parent directory
+- `copy_scenario_tree(cache_root, scenario, destination_root)` — materialize source
+  files into a directory without running a Sphinx build
+- `get_doctree(result, docname, post_transforms=False)` — deep-copied doctree from
+  the built environment
+- `read_output(result, filename)` — reads a built output file as a string
+
+Always use a **module-scoped** (or session-scoped) fixture for the build — never
+function-scoped — so the expensive Sphinx build is shared across all tests in the
+module. Follow the pattern in `tests/ext/typehints_gp/test_integration.py`:
+
+```python
+import textwrap
+
+import pytest
+
+from tests._sphinx_scenarios import (
+    SCENARIO_SRCDIR_TOKEN,
+    ScenarioFile,
+    SharedSphinxResult,
+    SphinxScenario,
+    build_shared_sphinx_result,
+    read_output,
+)
+
+_CONF_PY = textwrap.dedent(
+    """\
+    import sys
+    sys.path.insert(0, r"__SCENARIO_SRCDIR__")
+    extensions = ["sphinx.ext.autodoc", "my_extension"]
+    """
+)
+
+_INDEX_RST = textwrap.dedent(
+    """\
+    Demo
+    ====
+
+    .. autofunction:: my_module.my_function
+    """
+)
+
+
+@pytest.fixture(scope="module")
+def my_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a minimal Sphinx project using my_extension."""
+    cache_root = tmp_path_factory.mktemp("my-ext-html")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("index.rst", _INDEX_RST),
+            ScenarioFile(
+                "conf.py",
+                _CONF_PY.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN),
+                substitute_srcdir=True,
+            ),
+        ),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("my_module", "my_extension"),
+    )
+
+
+@pytest.mark.integration
+def test_my_feature_appears_in_html(my_html_result: SharedSphinxResult) -> None:
+    """Extension renders the expected markup."""
+    html = read_output(my_html_result, "index.html")
+    assert "my-feature" in html
+```
+
+Rules:
+- Always mark with `@pytest.mark.integration`
+- Always `scope="module"` or `scope="session"` on the build fixture — never
+  `scope="function"`
+- Use `textwrap.dedent("""...""")` for inline source strings
+- Use `SCENARIO_SRCDIR_TOKEN` + `substitute_srcdir=True` for `sys.path` injection in
+  `conf.py`
+
+> **See also:** `notes/test-analysis.md` — profiling data, 9.5x speedup rationale,
+> and the per-package migration history for the shared autodoc stack.
+
+### Available Fixtures Reference
+
+| Fixture | Source | When to use |
+|---|---|---|
+| `tmp_path` | pytest built-in | Per-test temp directory |
+| `tmp_path_factory` | pytest built-in | Session/module fixtures that create temp dirs |
+| `monkeypatch` | pytest built-in | Env vars, module attributes, `sys.modules` patching |
+| `caplog` | pytest built-in | Log assertions; use `caplog.records`, not `caplog.text` |
+| `snapshot_doctree` | `tests/_snapshots.py` | Normalized doctree snapshot assertion |
+| `snapshot_html_fragment` | `tests/_snapshots.py` | Normalized HTML string snapshot assertion |
+| `snapshot_warnings` | `tests/_snapshots.py` | Normalized Sphinx warning snapshot assertion |
+| `spf_suite_root`, `spf_doctree_root`, `spf_html_root` | `tests/ext/pytest_fixtures/conftest.py` | Session roots for sphinx-pytest-fixture ext tests |
+| `simple_parser`, `parser_with_groups`, … | `tests/ext/argparse/conftest.py` | `ArgumentParser` permutations for argparse tests |
+
+### Anti-Patterns
+
+- **No `class TestFoo:` groupings** — use descriptive function names and file
+  organization instead
+- **No `unittest.mock.patch`** — use `monkeypatch`
+- **No `tempfile.mkdtemp()`** — use `tmp_path`
+- **No `Sphinx()` instantiation in a unit test** — build docutils nodes directly
+- **No unannotated test functions** — every parameter and `-> None` must be typed
+- **No `# doctest: +SKIP`** in module doctests (see Doctests section)
+- **No inline tuples in `parametrize`** when there are three or more fields — use
+  `NamedTuple`
+- **No function-scoped Sphinx build fixtures** — always module- or session-scoped
+
+## CSS Standards
+
+All CSS classes, custom properties, and MyST directive names added by a
+workspace package live under the `gp-sphinx-*` namespace:
+
+- **Tier A (shared concepts)** — `gp-sphinx-<concept>` (e.g.,
+  `gp-sphinx-badge`, `gp-sphinx-toolbar`). Used by multiple packages.
+- **Tier B (package-owned)** — `gp-sphinx-<pkg>__<thing>` BEM-style
+  (e.g., `gp-sphinx-fastmcp__safety-readonly`,
+  `gp-sphinx-pytest-fixtures__fixture-index`).
+- **Modifiers** — axis-value pairs `--<axis>-<value>` (e.g.,
+  `gp-sphinx-badge--size-xs`, `gp-sphinx-badge--type-function`).
+- **Custom properties** — mirror the class namespace:
+  `--gp-sphinx-<pkg>-<token>`. Furo-owned variables (`--color-api-*`,
+  `--font-stack--*`, etc.) stay untouched.
+- **Specificity** — prefer chained class selectors
+  (`.gp-sphinx-badge.gp-sphinx-badge--dense`); keep selectors at 0,3,0
+  max.
 
 ## Coding Standards
 
@@ -167,6 +478,22 @@ Key highlights:
   - This rule applies to Python standard library only; third-party packages may use `from X import Y`
 - **For typing**, use `import typing as t` and access via namespace: `t.NamedTuple`, etc.
 - **Use `from __future__ import annotations`** at the top of all Python files
+
+### Sphinx domain access
+
+Prefer the typed accessors on `env.domains` over `env.get_domain(<literal>)`:
+
+- `env.domains.standard_domain` — not `env.get_domain("std")`
+- `env.domains.python_domain` — not `env.get_domain("py")`
+- Similarly: `c_domain`, `cpp_domain`, `javascript_domain`,
+  `restructuredtext_domain`, `changeset_domain`, `citation_domain`,
+  `index_domain`, `math_domain`
+
+The typed accessors return the concrete domain subclass
+(`StandardDomain`, `PythonDomain`, etc.), so mypy sees subclass-specific
+attributes (`progoptions`, `add_program_option`, `data["objects"]`, …)
+without `t.cast` or `# type: ignore`. The accessors were added in Sphinx
+8.1 (`_DomainsContainer`), which is the workspace floor.
 
 ### Docstrings
 

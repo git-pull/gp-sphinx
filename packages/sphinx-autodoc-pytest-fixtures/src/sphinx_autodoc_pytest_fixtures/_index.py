@@ -11,11 +11,15 @@ from sphinx.util.nodes import make_refnode
 
 from sphinx_autodoc_pytest_fixtures._badges import _build_badge_group_node
 from sphinx_autodoc_pytest_fixtures._constants import (
-    _IDENTIFIER_PATTERN,
     _INDEX_TABLE_COLUMNS,
     _RST_INLINE_PATTERN,
 )
-from sphinx_autodoc_pytest_fixtures._css import _CSS
+from sphinx_autodoc_pytest_fixtures._css import SPF
+from sphinx_autodoc_typehints_gp import build_resolved_annotation_paragraph
+from sphinx_ux_autodoc_layout import build_api_summary_section
+
+_FIXTURE_INDEX = SPF.FIXTURE_INDEX
+_TABLE_SCROLL = SPF.TABLE_SCROLL
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -123,53 +127,73 @@ def _parse_rst_inline(
     return result_nodes
 
 
-def _build_return_type_nodes(
-    meta: FixtureMeta,
-    py_domain: PythonDomain,
-    app: Sphinx,
-    docname: str,
-) -> list[nodes.Node]:
-    """Build doctree nodes for the return type, with linked class/builtin names.
+def _select_fixture_index_fixtures(
+    store: FixtureStoreDict,
+    modname: str,
+    exclude: set[str],
+) -> list[FixtureMeta]:
+    """Return fixture metadata that should appear in the generated index."""
+    return [
+        meta
+        for canon, meta in sorted(store["fixtures"].items())
+        if canon.startswith(f"{modname}.") and meta.public_name not in exclude
+    ]
 
-    Tokenises the ``return_display`` string and wraps every identifier in a
-    ``:class:`` cross-reference.  ``env.resolve_references()`` then resolves
-    identifiers it knows (``str`` \u2192 Python docs via intersphinx, ``Server`` \u2192
-    local API page) and leaves unknown ones as plain code literals.
 
-    Parameters
-    ----------
-    meta : FixtureMeta
-        Fixture metadata containing ``return_display``.
-    py_domain : PythonDomain
-        Python domain for object lookup.
-    app : Sphinx
-        Sphinx application.
-    docname : str
-        Current document name.
+def _build_fixture_index_table_structure(
+    fixtures: list[FixtureMeta],
+) -> tuple[nodes.table, nodes.tbody]:
+    """Return the index table shell populated with plain fixture metadata."""
+    table = nodes.table(classes=[_FIXTURE_INDEX])
+    tgroup = nodes.tgroup(cols=len(_INDEX_TABLE_COLUMNS))
+    table += tgroup
+    for _header, width in _INDEX_TABLE_COLUMNS:
+        tgroup += nodes.colspec(colwidth=width)
 
-    Returns
-    -------
-    list[nodes.Node]
-        Nodes for the return type cell with cross-referenced identifiers.
-    """
-    display = meta.return_display
-    if not display:
-        return [nodes.Text("")]
+    thead = nodes.thead()
+    tgroup += thead
+    header_row = nodes.row()
+    thead += header_row
+    for header, _width in _INDEX_TABLE_COLUMNS:
+        entry = nodes.entry()
+        entry += nodes.paragraph("", header)
+        header_row += entry
 
-    # Tokenise: identifiers (including dotted) vs punctuation/whitespace.
-    # Every identifier gets wrapped in :class:`~name` so intersphinx and
-    # the Python domain can resolve it.  Punctuation passes through as text.
-    rst_parts: list[str] = []
-    for token in _IDENTIFIER_PATTERN.split(display):
-        if not token:
-            continue
-        if _IDENTIFIER_PATTERN.fullmatch(token):
-            rst_parts.append(f":class:`~{token}`")
-        else:
-            rst_parts.append(token)
+    tbody = nodes.tbody()
+    tgroup += tbody
+    for meta in fixtures:
+        row = nodes.row()
+        tbody += row
 
-    rst_text = "".join(rst_parts)
-    return _parse_rst_inline(rst_text, app, docname)
+        name_entry = nodes.entry()
+        name_entry += nodes.paragraph(
+            "",
+            "",
+            nodes.literal(meta.public_name, meta.public_name),
+        )
+        row += name_entry
+
+        flags_entry = nodes.entry()
+        flags_para = nodes.paragraph()
+        flags_para += _build_badge_group_node(
+            scope=meta.scope,
+            kind=meta.kind,
+            autouse=meta.autouse,
+            deprecated=bool(meta.deprecated),
+            show_fixture_badge=True,
+        )
+        flags_entry += flags_para
+        row += flags_entry
+
+        ret_entry = nodes.entry()
+        ret_entry += nodes.paragraph("", meta.return_display)
+        row += ret_entry
+
+        desc_entry = nodes.entry()
+        desc_entry += nodes.paragraph("", meta.summary)
+        row += desc_entry
+
+    return table, tbody
 
 
 def _resolve_fixture_index(
@@ -202,39 +226,21 @@ def _resolve_fixture_index(
     modname = node["module"]
     exclude: set[str] = node.get("exclude", set())
 
-    fixtures = [
-        meta
-        for canon, meta in sorted(store["fixtures"].items())
-        if canon.startswith(f"{modname}.") and meta.public_name not in exclude
-    ]
+    fixtures = _select_fixture_index_fixtures(store, modname, exclude)
 
     if not fixtures:
         node.replace_self([])
         return
 
-    table = nodes.table(classes=[_CSS.FIXTURE_INDEX])
-    tgroup = nodes.tgroup(cols=len(_INDEX_TABLE_COLUMNS))
-    table += tgroup
-    for _header, width in _INDEX_TABLE_COLUMNS:
-        tgroup += nodes.colspec(colwidth=width)
-
-    thead = nodes.thead()
-    tgroup += thead
-    header_row = nodes.row()
-    thead += header_row
-    for header, _width in _INDEX_TABLE_COLUMNS:
-        entry = nodes.entry()
-        entry += nodes.paragraph("", header)
-        header_row += entry
-
-    tbody = nodes.tbody()
-    tgroup += tbody
-    for meta in fixtures:
-        row = nodes.row()
-        tbody += row
+    table, tbody = _build_fixture_index_table_structure(fixtures)
+    for meta, row_node in zip(fixtures, tbody.children, strict=True):
+        row = t.cast(nodes.row, row_node)
+        name_entry, _flags_entry, ret_entry, desc_entry = t.cast(
+            tuple[nodes.entry, nodes.entry, nodes.entry, nodes.entry],
+            tuple(row.children),
+        )
 
         # --- Fixture name: cross-ref link ---
-        name_entry = nodes.entry()
         obj_entry = py_domain.objects.get(meta.canonical_name)
         if obj_entry is not None:
             ref_node: nodes.Node = make_refnode(
@@ -248,39 +254,24 @@ def _resolve_fixture_index(
             ref_node = nodes.literal(meta.public_name, meta.public_name)
         name_para = nodes.paragraph()
         name_para += ref_node
-        name_entry += name_para
-        row += name_entry
-
-        # --- Flags: scope/kind/autouse/deprecated badges ---
-        flags_entry = nodes.entry()
-        flags_para = nodes.paragraph()
-        flags_para += _build_badge_group_node(
-            scope=meta.scope,
-            kind=meta.kind,
-            autouse=meta.autouse,
-            deprecated=bool(meta.deprecated),
-            show_fixture_badge=True,
-        )
-        flags_entry += flags_para
-        row += flags_entry
+        name_entry[:] = [name_para]
 
         # --- Returns: linked type name ---
-        ret_entry = nodes.entry()
-        ret_para = nodes.paragraph()
-        for ret_node in _build_return_type_nodes(meta, py_domain, app, docname):
-            ret_para += ret_node
-        ret_entry += ret_para
-        row += ret_entry
+        ret_entry[:] = [
+            build_resolved_annotation_paragraph(
+                meta.return_display,
+                app,
+                docname,
+            )
+        ]
 
         # --- Description: parsed RST inline markup ---
-        desc_entry = nodes.entry()
         desc_para = nodes.paragraph()
         if meta.summary:
             for desc_node in _parse_rst_inline(meta.summary, app, docname):
                 desc_para += desc_node
-        desc_entry += desc_para
-        row += desc_entry
+        desc_entry[:] = [desc_para]
 
-    scroll_wrapper = nodes.container(classes=[_CSS.TABLE_SCROLL])
+    scroll_wrapper = nodes.container(classes=[_TABLE_SCROLL])
     scroll_wrapper += table
-    node.replace_self([scroll_wrapper])
+    node.replace_self([build_api_summary_section(scroll_wrapper)])

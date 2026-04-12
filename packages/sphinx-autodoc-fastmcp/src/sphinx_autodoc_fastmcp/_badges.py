@@ -2,15 +2,19 @@
 
 from __future__ import annotations
 
+import typing as t
+
 from docutils import nodes
-from sphinx_autodoc_badges import (
-    BadgeNode,
-    build_badge,
-    build_badge_group,
-    build_toolbar as _sab_build_toolbar,
-)
 
 from sphinx_autodoc_fastmcp._css import _CSS
+from sphinx_ux_badges import (
+    SAB,
+    BadgeNode,
+    BadgeSpec,
+    build_badge,
+    build_badge_group_from_specs,
+    build_toolbar as _sab_build_toolbar,
+)
 
 _SAFETY_LABELS = ("readonly", "mutating", "destructive")
 
@@ -55,8 +59,15 @@ def build_safety_badge(
     """
     label = safety if safety in _SAFETY_LABELS else safety
     text = "" if icon_only else label
-    style = "icon-only" if icon_only else "full"
-    classes = [_CSS.BADGE_SAFETY, _CSS.safety_class(safety)]
+    style: t.Literal["full", "icon-only", "inline-icon"] = (
+        "icon-only" if icon_only else "full"
+    )
+    classes = [
+        SAB.DENSE,
+        SAB.NO_UNDERLINE,
+        _CSS.BADGE_SAFETY,
+        _CSS.safety_class(safety),
+    ]
     return build_badge(
         text,
         tooltip=_SAFETY_TOOLTIPS.get(safety, f"Safety: {safety}"),
@@ -78,7 +89,7 @@ def build_type_tool_badge() -> BadgeNode:
     return build_badge(
         "tool",
         tooltip=_TYPE_TOOLTIP,
-        classes=[_CSS.BADGE_TYPE, _CSS.TYPE_TOOL],
+        classes=[SAB.DENSE, SAB.NO_UNDERLINE, SAB.BADGE_TYPE, _CSS.TYPE_TOOL],
     )
 
 
@@ -97,12 +108,28 @@ def build_tool_badge_group(safety: str) -> nodes.inline:
     Examples
     --------
     >>> g = build_tool_badge_group("readonly")
-    >>> "sab-badge-group" in g["classes"]
+    >>> "gp-sphinx-badge-group" in g["classes"]
     True
     """
-    return build_badge_group(
-        [build_safety_badge(safety), build_type_tool_badge()],
-        classes=[_CSS.BADGE_GROUP],
+    return build_badge_group_from_specs(
+        [
+            BadgeSpec(
+                safety if safety in _SAFETY_LABELS else safety,
+                tooltip=_SAFETY_TOOLTIPS.get(safety, f"Safety: {safety}"),
+                icon=_SAFETY_ICONS.get(safety, ""),
+                classes=(
+                    SAB.DENSE,
+                    SAB.NO_UNDERLINE,
+                    _CSS.BADGE_SAFETY,
+                    _CSS.safety_class(safety),
+                ),
+            ),
+            BadgeSpec(
+                "tool",
+                tooltip=_TYPE_TOOLTIP,
+                classes=(SAB.DENSE, SAB.NO_UNDERLINE, SAB.BADGE_TYPE, _CSS.TYPE_TOOL),
+            ),
+        ],
     )
 
 
@@ -112,10 +139,7 @@ def build_toolbar(safety: str) -> nodes.inline:
     Examples
     --------
     >>> t = build_toolbar("readonly")
-    >>> "sab-toolbar" in t["classes"]
+    >>> "gp-sphinx-toolbar" in t["classes"]
     True
     """
-    return _sab_build_toolbar(
-        build_tool_badge_group(safety),
-        classes=[_CSS.TOOLBAR],
-    )
+    return _sab_build_toolbar(build_tool_badge_group(safety))

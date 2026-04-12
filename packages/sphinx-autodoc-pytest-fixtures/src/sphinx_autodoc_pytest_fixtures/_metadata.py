@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+import logging
 import re
 import typing as t
 
@@ -16,7 +17,6 @@ from sphinx_autodoc_pytest_fixtures._constants import (
 )
 from sphinx_autodoc_pytest_fixtures._detection import (
     _classify_deps,
-    _format_type_short,
     _get_fixture_fn,
     _get_fixture_marker,
     _get_return_annotation,
@@ -24,11 +24,27 @@ from sphinx_autodoc_pytest_fixtures._detection import (
 )
 from sphinx_autodoc_pytest_fixtures._models import FixtureDep, FixtureMeta
 from sphinx_autodoc_pytest_fixtures._store import _get_spf_store
+from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 if t.TYPE_CHECKING:
     from sphinx import addnodes
 
-logger = sphinx_logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
+sphinx_logger = sphinx_logging.getLogger(__name__)
+
+
+def _active_logger(app: t.Any) -> t.Any:
+    """Return the logger best suited to the current execution context.
+
+    Examples
+    --------
+    >>> import types
+    >>> _active_logger(types.SimpleNamespace()).name
+    'sphinx_autodoc_pytest_fixtures._metadata'
+    """
+    if hasattr(app, "_warning"):
+        return sphinx_logger
+    return logger
 
 
 def _is_type_checking_guard(node: ast.If) -> bool:
@@ -259,25 +275,17 @@ def _register_fixture_meta(
     is_async = inspect.iscoroutinefunction(fn) or inspect.isasyncgenfunction(fn)
 
     ret_ann = _get_return_annotation(obj)
-    return_display = (
-        _format_type_short(ret_ann) if ret_ann is not inspect.Parameter.empty else ""
-    )
-    # Simple class name for xref: only for bare names without special chars.
-    # When the annotation is a forward-reference string (from TYPE_CHECKING),
-    # try to qualify it via the module's TYPE_CHECKING imports so Sphinx can
-    # resolve cross-references (e.g. "Session" → "libtmux.session.Session").
-    return_xref_target: str | None = None
-    if return_display and return_display.isidentifier():
-        return_xref_target = return_display
-        if isinstance(ret_ann, str):
-            qualified = _qualify_forward_ref(return_display, fn)
-            if qualified:
-                return_xref_target = qualified
-                return_display = qualified
+    return_display = ""
+    if ret_ann is not inspect.Parameter.empty:
+        return_display = normalize_annotation_text(
+            ret_ann,
+            module_name=fn.__module__ if isinstance(ret_ann, str) else None,
+            qualify_unresolved=isinstance(ret_ann, str),
+        )
 
     inferred_kind = _infer_kind(obj, kind or None)
     if inferred_kind not in _KNOWN_KINDS:
-        logger.warning(
+        _active_logger(app).warning(
             "unknown fixture kind %r for %r; expected one of %r",
             inferred_kind,
             canonical_name,
@@ -309,7 +317,6 @@ def _register_fixture_meta(
         autouse=autouse,
         kind=inferred_kind,
         return_display=return_display,
-        return_xref_target=return_xref_target,
         deps=tuple(dep_list),
         param_reprs=param_reprs,
         has_teardown=has_teardown,

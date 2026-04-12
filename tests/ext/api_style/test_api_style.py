@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import types
 import typing as t
 
+import pytest
 from docutils import nodes
 from sphinx import addnodes
-from sphinx_autodoc_badges import BadgeNode
 
+import sphinx_autodoc_api_style
+import sphinx_autodoc_api_style._badges as sas_badges
 from sphinx_autodoc_api_style._badges import (
     _MOD_ORDER,
     _MOD_TOOLTIPS,
@@ -15,7 +18,6 @@ from sphinx_autodoc_api_style._badges import (
     _TYPE_TOOLTIPS,
     build_badge_group,
 )
-from sphinx_autodoc_api_style._css import _CSS
 from sphinx_autodoc_api_style._transforms import (
     _HANDLED_OBJTYPES,
     _KEYWORD_TO_MOD,
@@ -26,27 +28,29 @@ from sphinx_autodoc_api_style._transforms import (
     _prune_empty_desc_content,
     on_doctree_resolved,
 )
+from sphinx_ux_autodoc_layout._nodes import api_slot
+from sphinx_ux_badges import SAB, BadgeNode
 
 # ---------------------------------------------------------------------------
-# _CSS constants
+# SAB constants used by api-style
 # ---------------------------------------------------------------------------
 
 
-def test_css_prefix() -> None:
-    """CSS prefix is 'gas'."""
-    assert _CSS.PREFIX == "gas"
+def test_sab_prefix() -> None:
+    """SAB prefix is the gp-sphinx-badge namespace."""
+    assert SAB.PREFIX == "gp-sphinx-badge"
 
 
-def test_css_badge_group_class() -> None:
-    """Badge group class includes prefix."""
-    assert _CSS.BADGE_GROUP == "gas-badge-group"
+def test_sab_badge_group_class() -> None:
+    """Badge group class uses the shared gp-sphinx- namespace."""
+    assert SAB.BADGE_GROUP == "gp-sphinx-badge-group"
 
 
-def test_css_obj_type_class() -> None:
-    """obj_type() returns prefixed type-specific class."""
-    assert _CSS.obj_type("function") == "gas-type-function"
-    assert _CSS.obj_type("class") == "gas-type-class"
-    assert _CSS.obj_type("method") == "gas-type-method"
+def test_sab_obj_type_class() -> None:
+    """obj_type() returns gp-sphinx-badge--type-* class (unified palette)."""
+    assert SAB.obj_type("function") == "gp-sphinx-badge--type-function"
+    assert SAB.obj_type("class") == "gp-sphinx-badge--type-class"
+    assert SAB.obj_type("method") == "gp-sphinx-badge--type-method"
 
 
 # ---------------------------------------------------------------------------
@@ -58,7 +62,7 @@ def test_badge_group_returns_inline() -> None:
     """build_badge_group returns a nodes.inline with badge-group class."""
     group = build_badge_group("function", modifiers=frozenset())
     assert isinstance(group, nodes.inline)
-    assert _CSS.BADGE_GROUP in group["classes"]
+    assert SAB.BADGE_GROUP in group["classes"]
 
 
 def test_badge_group_type_badge_present() -> None:
@@ -67,8 +71,8 @@ def test_badge_group_type_badge_present() -> None:
     badges = list(group.findall(BadgeNode))
     assert len(badges) == 1
     assert badges[0].astext() == "class"
-    assert _CSS.BADGE_TYPE in badges[0]["classes"]
-    assert _CSS.obj_type("class") in badges[0]["classes"]
+    assert SAB.BADGE_TYPE in badges[0]["classes"]
+    assert SAB.obj_type("class") in badges[0]["classes"]
 
 
 def test_badge_group_type_badge_suppressed() -> None:
@@ -98,7 +102,7 @@ def test_badge_group_modifier_order() -> None:
     all_mods = frozenset(_MOD_ORDER)
     group = build_badge_group("function", modifiers=all_mods)
     badges = list(group.findall(BadgeNode))
-    mod_labels = [b.astext() for b in badges if _CSS.BADGE_MOD in b["classes"]]
+    mod_labels = [b.astext() for b in badges if SAB.BADGE_MOD in b["classes"]]
     expected = list(_MOD_ORDER)
     assert mod_labels == expected
 
@@ -150,8 +154,8 @@ def test_badge_group_deprecated() -> None:
     group = build_badge_group("class", modifiers=frozenset({"deprecated"}))
     badges = list(group.findall(BadgeNode))
     dep_badge = [b for b in badges if b.astext() == "deprecated"][0]
-    assert _CSS.DEPRECATED in dep_badge["classes"]
-    assert _CSS.BADGE_MOD in dep_badge["classes"]
+    assert SAB.STATE_DEPRECATED in dep_badge["classes"]
+    assert SAB.BADGE_MOD in dep_badge["classes"]
 
 
 def test_badge_group_all_type_labels() -> None:
@@ -162,6 +166,39 @@ def test_badge_group_all_type_labels() -> None:
         assert len(badges) >= 1
         label = badges[-1].astext()
         assert label == _TYPE_LABELS.get(objtype, objtype)
+
+
+def test_badge_group_builds_shared_badge_specs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """api-style emits BadgeSpec data into the shared badge-group renderer."""
+    seen: dict[str, object] = {}
+
+    def _fake_build_badge_group_from_specs(
+        badges: t.Sequence[object],
+        *,
+        classes: list[str] | None = None,
+    ) -> nodes.inline:
+        seen["badges"] = badges
+        seen["classes"] = classes
+        return nodes.inline("", "", classes=["gp-sphinx-badge-group"])
+
+    monkeypatch.setattr(
+        sas_badges,
+        "build_badge_group_from_specs",
+        _fake_build_badge_group_from_specs,
+    )
+
+    group = build_badge_group("method", modifiers=frozenset({"async", "abstract"}))
+
+    assert isinstance(group, nodes.inline)
+    assert seen["classes"] == [SAB.BADGE_GROUP]
+    badge_specs = t.cast(t.Sequence[object], seen["badges"])
+    assert [t.cast(t.Any, spec).text for spec in badge_specs] == [
+        "abstract",
+        "async",
+        "method",
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -288,11 +325,11 @@ def test_detect_deprecated_ignores_versionadded() -> None:
 
 
 def test_inject_badges_sets_flag() -> None:
-    """_inject_badges sets gas_badges_injected flag on signature."""
+    """_inject_badges sets sab_badges_injected flag on signature."""
     sig = addnodes.desc_signature()
     sig += addnodes.desc_name("", "my_func")
     _inject_badges(sig, "function")
-    assert sig.get("gas_badges_injected") is True
+    assert sig.get("sab_badges_injected") is True
 
 
 def test_inject_badges_idempotent() -> None:
@@ -306,19 +343,17 @@ def test_inject_badges_idempotent() -> None:
     assert badge_count_1 == badge_count_2
 
 
-def test_inject_badges_adds_toolbar_with_badge_group() -> None:
-    """Toolbar containing badge group is added to the signature."""
+def test_inject_badges_adds_badge_slot_with_badge_group() -> None:
+    """A badge slot containing the badge group is added to the signature."""
     sig = addnodes.desc_signature()
     sig += addnodes.desc_name("", "my_func")
     _inject_badges(sig, "function")
-    toolbars = [
-        c
-        for c in sig.children
-        if isinstance(c, nodes.inline) and _CSS.TOOLBAR in c.get("classes", [])
+    slots = [
+        c for c in sig.children if isinstance(c, api_slot) and c.get("slot") == "badges"
     ]
-    assert len(toolbars) == 1
-    groups = list(toolbars[0].findall(nodes.inline))
-    badge_groups = [g for g in groups if _CSS.BADGE_GROUP in g.get("classes", [])]
+    assert len(slots) == 1
+    groups = list(slots[0].findall(nodes.inline))
+    badge_groups = [g for g in groups if SAB.BADGE_GROUP in g.get("classes", [])]
     assert len(badge_groups) == 1
 
 
@@ -341,8 +376,8 @@ def test_inject_badges_detects_deprecated_parent() -> None:
     assert "deprecated" in labels
 
 
-def test_inject_badges_toolbar_contains_viewcode() -> None:
-    """Viewcode [source] link is inside the toolbar, after badge group."""
+def test_inject_badges_adds_source_slot_for_viewcode() -> None:
+    """Viewcode [source] link moves into a dedicated source-link slot."""
     sig = addnodes.desc_signature()
     sig += addnodes.desc_name("", "my_func")
     viewcode_span = nodes.inline(classes=["viewcode-link"])
@@ -352,31 +387,20 @@ def test_inject_badges_toolbar_contains_viewcode() -> None:
 
     _inject_badges(sig, "function")
 
-    toolbars = [
-        c
-        for c in sig.children
-        if isinstance(c, nodes.inline) and _CSS.TOOLBAR in c.get("classes", [])
-    ]
-    assert len(toolbars) == 1
-    toolbar = toolbars[0]
-
-    toolbar_items: list[str] = []
-    for c in toolbar.children:
-        if isinstance(c, nodes.inline) and _CSS.BADGE_GROUP in c.get("classes", []):
-            toolbar_items.append("badge_group")
-        elif isinstance(c, nodes.reference):
-            toolbar_items.append("viewcode")
-    assert toolbar_items == ["badge_group", "viewcode"]
+    slots = [c for c in sig.children if isinstance(c, api_slot)]
+    assert [slot.get("slot") for slot in slots] == ["badges", "source-link"]
+    source_slot = slots[1]
+    assert isinstance(source_slot.children[0], nodes.reference)
 
 
-def test_inject_badges_headerlink_not_in_toolbar() -> None:
-    """Headerlink stays as a direct child of sig, never inside the toolbar.
+def test_inject_badges_headerlink_not_moved_into_slots() -> None:
+    """Headerlink stays as a direct child of sig, never inside a layout slot.
 
     Sphinx's HTML writer adds the headerlink as raw HTML during
     ``depart_desc_signature``, so it's not a doctree node during our
     transform. But if a theme or extension adds one as a node, we must
-    leave it alone — it belongs next to the signature name, not grouped
-    with badges and [source] in the toolbar.
+    leave it alone — layout owns its final position separately from the
+    badge and source slots.
     """
     sig = addnodes.desc_signature()
     sig += addnodes.desc_name("", "Server")
@@ -393,18 +417,13 @@ def test_inject_badges_headerlink_not_in_toolbar() -> None:
 
     _inject_badges(sig, "class")
 
-    toolbar = None
-    for c in sig.children:
-        if isinstance(c, nodes.inline) and _CSS.TOOLBAR in c.get("classes", []):
-            toolbar = c
-            break
-    assert toolbar is not None
-
-    toolbar_refs = list(toolbar.findall(nodes.reference))
-    for ref in toolbar_refs:
-        assert "headerlink" not in ref.get("classes", []), (
-            "headerlink must not be inside the toolbar"
-        )
+    slots = [c for c in sig.children if isinstance(c, api_slot)]
+    for slot in slots:
+        slot_refs = list(slot.findall(nodes.reference))
+        for ref in slot_refs:
+            assert "headerlink" not in ref.get("classes", []), (
+                "headerlink must not be inside an api_slot"
+            )
 
     sig_direct_refs = [
         c
@@ -485,7 +504,7 @@ def test_on_doctree_resolved_processes_py_desc(monkeypatch: t.Any) -> None:
 
     on_doctree_resolved(app, doc, "index")
 
-    assert sig.get("gas_badges_injected") is True
+    assert sig.get("sab_badges_injected") is True
 
 
 def test_on_doctree_resolved_skips_fixture() -> None:
@@ -504,7 +523,7 @@ def test_on_doctree_resolved_skips_fixture() -> None:
 
     on_doctree_resolved(app, doc, "index")
 
-    assert sig.get("gas_badges_injected") is None
+    assert sig.get("sab_badges_injected") is None
 
 
 def test_on_doctree_resolved_skips_non_py() -> None:
@@ -523,7 +542,30 @@ def test_on_doctree_resolved_skips_non_py() -> None:
 
     on_doctree_resolved(app, doc, "index")
 
-    assert sig.get("gas_badges_injected") is None
+    assert sig.get("sab_badges_injected") is None
+
+
+def test_setup_auto_loads_layout() -> None:
+    """setup() loads layout alongside autodoc and badges."""
+    setup_extensions: list[str] = []
+
+    app = t.cast(
+        t.Any,
+        types.SimpleNamespace(
+            setup_extension=setup_extensions.append,
+            connect=lambda *args, **kwargs: None,
+            add_css_file=lambda *args, **kwargs: None,
+            config=types.SimpleNamespace(html_static_path=[]),
+        ),
+    )
+
+    sphinx_autodoc_api_style.setup(app)
+
+    assert setup_extensions == [
+        "sphinx.ext.autodoc",
+        "sphinx_ux_badges",
+        "sphinx_ux_autodoc_layout",
+    ]
 
 
 def test_on_doctree_resolved_handles_multiple() -> None:
@@ -547,7 +589,7 @@ def test_on_doctree_resolved_handles_multiple() -> None:
 
     for desc in doc.findall(addnodes.desc):
         for sig in desc.findall(addnodes.desc_signature):
-            assert sig.get("gas_badges_injected") is True
+            assert sig.get("sab_badges_injected") is True
 
 
 # ---------------------------------------------------------------------------

@@ -218,6 +218,9 @@ docs/_static/css/fonts.css
 # Playwright MCP
 .playwright-mcp/
 
+# Repo-local pytest mirror (do not track — validator-only)
+out/
+
 # Misc
 .vim/
 *.lprof

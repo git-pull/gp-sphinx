@@ -1,6 +1,15 @@
 # gp-sphinx
 
-{bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-sphinx>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/gp-sphinx/>`
+```{gp-sphinx-package-meta} gp-sphinx
+```
+
+:::{admonition} Alpha
+:class: warning
+
+Rendered output is stable. The Python API, CSS class names, and Sphinx
+config value names may change without a major version bump. Pin your
+dependency to a specific version range in production.
+:::
 
 Shared configuration coordinator for Sphinx projects. {py:func}`~gp_sphinx.config.merge_sphinx_config`
 builds a complete `conf.py` namespace from the workspace defaults and leaves

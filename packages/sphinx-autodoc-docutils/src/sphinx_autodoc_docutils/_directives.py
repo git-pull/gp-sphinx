@@ -8,8 +8,20 @@ import typing as t
 
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
-from docutils.statemachine import StringList
+from sphinx import addnodes
 from sphinx.util.docutils import SphinxDirective
+
+from sphinx_autodoc_docutils._badges import build_kind_badge_group
+from sphinx_ux_autodoc_layout import (
+    API,
+    ApiFactRow,
+    build_api_facts_section,
+    build_api_summary_section,
+    build_api_table_section,
+    inject_signature_slots,
+    iter_desc_nodes,
+    parse_generated_markup,
+)
 
 if t.TYPE_CHECKING:
     from sphinx.util.typing import OptionSpec
@@ -78,7 +90,7 @@ def _role_callables(
 
     Examples
     --------
-    >>> roles = _role_callables("sphinx_argparse_neo.roles")
+    >>> roles = _role_callables("sphinx_autodoc_argparse.roles")
     >>> any(name == "cli_option_role" for name, _value in roles)
     True
     """
@@ -132,43 +144,179 @@ def _option_rows(option_spec: OptionSpec | None) -> list[str]:
     return rows
 
 
-# NOTE: This function is byte-for-byte identical to
-# sphinx_autodoc_sphinx._directives._render_blocks.  Both packages depend only
-# on sphinx (not on each other), so a shared location would require a new
-# dependency.  If a third caller emerges, extract to gp_sphinx._render.
-def _render_blocks(directive: SphinxDirective, markup: str) -> list[nodes.Node]:
-    """Parse generated markup through Sphinx when available.
+def _literal_paragraph(text: str) -> nodes.paragraph:
+    """Return a paragraph containing one literal node."""
+    paragraph = nodes.paragraph()
+    paragraph += nodes.literal(text, text)
+    return paragraph
 
-    Examples
-    --------
-    >>> class DummyState:
-    ...     def nested_parse(
-    ...         self,
-    ...         view_list: StringList,
-    ...         offset: int,
-    ...         node: nodes.Element,
-    ...     ) -> None:
-    ...         for line in view_list:
-    ...             node += nodes.paragraph("", line)
-    >>> class DummyDirective:
-    ...     state = DummyState()
-    ...     content_offset = 0
-    ...     def get_source_info(self) -> tuple[str, int]:
-    ...         return ("demo.md", 1)
-    >>> rendered = _render_blocks(DummyDirective(), "demo")  # type: ignore[arg-type]
-    >>> rendered[0].astext()
-    'demo'
-    """
-    if hasattr(directive, "parse_text_to_nodes"):
-        return directive.parse_text_to_nodes(markup)
 
-    source, _line = directive.get_source_info()
-    view_list: StringList = StringList()
-    for line in markup.splitlines():
-        view_list.append(line, source)
-    container = nodes.container()
-    directive.state.nested_parse(view_list, directive.content_offset, container)
-    return [container] if container.children else []
+def _option_field_list(option_spec: OptionSpec | None) -> nodes.field_list | None:
+    """Return a field-list representation of an option spec."""
+    rows = _option_rows(option_spec)
+    if not rows:
+        return None
+    field_list = nodes.field_list()
+    for row in rows:
+        option_name, converter_name = row.split("|")[1:3]
+        clean_option_name = option_name.strip().strip("`")
+        clean_converter_name = converter_name.strip().strip("`")
+        field_list += nodes.field(
+            "",
+            nodes.field_name("", clean_option_name),
+            nodes.field_body("", _literal_paragraph(clean_converter_name)),
+        )
+    return field_list
+
+
+def _entry_kind(desc_node: addnodes.desc) -> str:
+    """Return the badge label for one parsed ``rst`` description node."""
+    objtype = str(desc_node.get("objtype", ""))
+    if objtype == "directive:option":
+        return "option"
+    return objtype
+
+
+def _inject_docutils_badges(node_list: list[nodes.Node]) -> None:
+    """Attach shared badge-slot metadata to parsed ``rst:*`` entries."""
+    for desc_node in iter_desc_nodes(node_list):
+        if desc_node.get("domain") != "rst":
+            continue
+        badge_group = build_kind_badge_group(_entry_kind(desc_node))
+        for sig_node in desc_node.children:
+            if not isinstance(sig_node, addnodes.desc_signature):
+                continue
+            inject_signature_slots(
+                sig_node,
+                marker_attr="sadoc_badges_injected",
+                badge_node=badge_group.deepcopy(),
+                extract_source_link=False,
+            )
+
+
+def _render_markup_nodes(
+    directive: SphinxDirective,
+    markup: str,
+) -> list[nodes.Node]:
+    """Parse markup and attach layout metadata for docutils entries."""
+    node_list = parse_generated_markup(directive, markup)
+    _inject_docutils_badges(node_list)
+    return node_list
+
+
+def _content_node(desc_node: addnodes.desc) -> addnodes.desc_content | None:
+    """Return the first ``desc_content`` child for ``desc_node``."""
+    return next(
+        (
+            child
+            for child in desc_node.children
+            if isinstance(child, addnodes.desc_content)
+        ),
+        None,
+    )
+
+
+def _insert_after_summary(
+    content: addnodes.desc_content,
+    node: nodes.Node,
+) -> None:
+    """Insert *node* after the leading summary paragraphs in ``content``."""
+    insert_idx = 0
+    while insert_idx < len(content.children) and isinstance(
+        content.children[insert_idx],
+        nodes.paragraph,
+    ):
+        insert_idx += 1
+    content.insert(insert_idx, node)
+
+
+def _directive_fact_rows(
+    path: str,
+    directive_cls: type[Directive],
+) -> list[ApiFactRow]:
+    """Return shared fact rows for one autodocumented directive."""
+    return [
+        ApiFactRow("Python path", _literal_paragraph(path)),
+        ApiFactRow(
+            "Required arguments",
+            _literal_paragraph(str(directive_cls.required_arguments)),
+        ),
+        ApiFactRow(
+            "Optional arguments",
+            _literal_paragraph(str(directive_cls.optional_arguments)),
+        ),
+        ApiFactRow(
+            "Final argument whitespace",
+            _literal_paragraph(str(directive_cls.final_argument_whitespace)),
+        ),
+        ApiFactRow("Has content", _literal_paragraph(str(directive_cls.has_content))),
+    ]
+
+
+def _role_fact_rows(path: str, role_fn: object) -> list[ApiFactRow]:
+    """Return shared fact rows for one autodocumented role."""
+    rows = [ApiFactRow("Python path", _literal_paragraph(path))]
+    content_value = getattr(role_fn, "content", None)
+    if content_value is not None:
+        rows.append(
+            ApiFactRow("Accepts role content", _literal_paragraph(str(content_value)))
+        )
+    return rows
+
+
+def _normalize_directive_nodes(
+    node_list: list[nodes.Node],
+    *,
+    path: str,
+    directive_cls: type[Directive],
+) -> None:
+    """Attach shared facts/options sections to parsed directive entries."""
+    for desc_node in iter_desc_nodes(node_list):
+        if desc_node.get("domain") != "rst" or desc_node.get("objtype") != "directive":
+            continue
+        content = _content_node(desc_node)
+        if content is None:
+            continue
+        option_descs = [
+            child
+            for child in list(content.children)
+            if isinstance(child, addnodes.desc)
+            and child.get("domain") == "rst"
+            and child.get("objtype") == "directive:option"
+        ]
+        for option_desc in option_descs:
+            content.remove(option_desc)
+        _insert_after_summary(
+            content,
+            build_api_facts_section(_directive_fact_rows(path, directive_cls)),
+        )
+        if option_descs:
+            content += build_api_table_section(API.OPTIONS, *option_descs)
+
+
+def _normalize_role_nodes(
+    node_list: list[nodes.Node],
+    *,
+    path: str,
+    role_fn: object,
+) -> None:
+    """Attach shared facts/options sections to parsed role entries."""
+    option_field_list = _option_field_list(getattr(role_fn, "options", None))
+    for desc_node in iter_desc_nodes(node_list):
+        if desc_node.get("domain") != "rst" or desc_node.get("objtype") != "role":
+            continue
+        content = _content_node(desc_node)
+        if content is None:
+            continue
+        _insert_after_summary(
+            content,
+            build_api_facts_section(_role_fact_rows(path, role_fn)),
+        )
+        if option_field_list is not None:
+            content += build_api_table_section(
+                API.OPTIONS,
+                option_field_list.deepcopy(),
+            )
 
 
 def _directive_markup(
@@ -191,16 +339,6 @@ def _directive_markup(
         "   :no-index:" if no_index else "",
         "",
         f"   {_summary(directive_cls) or 'Autodocumented directive class.'}",
-        "",
-        f"   Python path: ``{path}``",
-        "",
-        f"   Required arguments: ``{directive_cls.required_arguments}``",
-        "",
-        f"   Optional arguments: ``{directive_cls.optional_arguments}``",
-        "",
-        f"   Final argument whitespace: ``{directive_cls.final_argument_whitespace}``",
-        "",
-        f"   Has content: ``{directive_cls.has_content}``",
     ]
     option_rows = _option_rows(getattr(directive_cls, "option_spec", None))
     if option_rows:
@@ -244,20 +382,7 @@ def _role_markup(
         "   :no-index:" if no_index else "",
         "",
         f"   {_summary(role_fn) or 'Autodocumented role callable.'}",
-        "",
-        f"   Python path: ``{path}``",
     ]
-    option_rows = _option_rows(getattr(role_fn, "options", None))
-    if option_rows:
-        lines.extend(["", "   Options:", ""])
-        for row in option_rows:
-            option_name, converter_name = row.split("|")[1:3]
-            clean_option_name = option_name.strip().strip("`")
-            clean_converter_name = converter_name.strip().strip("`")
-            lines.append(f"   - ``{clean_option_name}``: ``{clean_converter_name}``")
-    content_value = getattr(role_fn, "content", None)
-    if content_value is not None:
-        lines.extend(["", f"   Accepts role content: ``{content_value}``"])
     return "\n".join(lines)
 
 
@@ -304,7 +429,7 @@ class AutoDirective(SphinxDirective):
         path = self.arguments[0]
         module_name, _, attr_name = path.rpartition(".")
         directive_cls = getattr(importlib.import_module(module_name), attr_name)
-        return _render_blocks(
+        rendered = _render_markup_nodes(
             self,
             _directive_markup(
                 path,
@@ -313,6 +438,8 @@ class AutoDirective(SphinxDirective):
                 no_index="no-index" in self.options,
             ),
         )
+        _normalize_directive_nodes(rendered, path=path, directive_cls=directive_cls)
+        return rendered
 
 
 class AutoDirectives(SphinxDirective):
@@ -324,16 +451,22 @@ class AutoDirectives(SphinxDirective):
 
     def run(self) -> list[nodes.Node]:
         module_name = self.arguments[0]
-        markup = "\n\n".join(
-            _directive_markup(
-                f"{module_name}.{name}",
-                directive_cls,
-                directive_name=_registered_name(name),
-                no_index="no-index" in self.options,
+        no_index = "no-index" in self.options
+        results: list[nodes.Node] = []
+        for name, directive_cls in _directive_classes(module_name):
+            path = f"{module_name}.{name}"
+            rendered = _render_markup_nodes(
+                self,
+                _directive_markup(
+                    path,
+                    directive_cls,
+                    directive_name=_registered_name(name),
+                    no_index=no_index,
+                ),
             )
-            for name, directive_cls in _directive_classes(module_name)
-        )
-        return _render_blocks(self, markup) if markup else []
+            _normalize_directive_nodes(rendered, path=path, directive_cls=directive_cls)
+            results.extend(rendered)
+        return results
 
 
 class AutoDirectiveIndex(SphinxDirective):
@@ -349,7 +482,13 @@ class AutoDirectiveIndex(SphinxDirective):
             for name, directive_cls in _directive_classes(module_name)
         ]
         markup = _index_markup("Directive Index", rows)
-        return _render_blocks(self, markup) if markup else []
+        if not markup:
+            return []
+        rendered = parse_generated_markup(self, markup)
+        return [
+            build_api_summary_section(node) if isinstance(node, nodes.table) else node
+            for node in rendered
+        ]
 
 
 class AutoRole(SphinxDirective):
@@ -364,7 +503,7 @@ class AutoRole(SphinxDirective):
         module_name, _, attr_name = path.rpartition(".")
         role_fn = getattr(importlib.import_module(module_name), attr_name)
         role_name = _registered_name(attr_name)
-        return _render_blocks(
+        rendered = _render_markup_nodes(
             self,
             _role_markup(
                 path,
@@ -373,6 +512,8 @@ class AutoRole(SphinxDirective):
                 no_index="no-index" in self.options,
             ),
         )
+        _normalize_role_nodes(rendered, path=path, role_fn=role_fn)
+        return rendered
 
 
 class AutoRoles(SphinxDirective):
@@ -384,16 +525,22 @@ class AutoRoles(SphinxDirective):
 
     def run(self) -> list[nodes.Node]:
         module_name = self.arguments[0]
-        markup = "\n\n".join(
-            _role_markup(
-                f"{module_name}.{name}",
-                _registered_name(name),
-                role_fn,
-                no_index="no-index" in self.options,
+        no_index = "no-index" in self.options
+        results: list[nodes.Node] = []
+        for name, role_fn in _role_callables(module_name):
+            path = f"{module_name}.{name}"
+            rendered = _render_markup_nodes(
+                self,
+                _role_markup(
+                    path,
+                    _registered_name(name),
+                    role_fn,
+                    no_index=no_index,
+                ),
             )
-            for name, role_fn in _role_callables(module_name)
-        )
-        return _render_blocks(self, markup) if markup else []
+            _normalize_role_nodes(rendered, path=path, role_fn=role_fn)
+            results.extend(rendered)
+        return results
 
 
 class AutoRoleIndex(SphinxDirective):
@@ -413,4 +560,10 @@ class AutoRoleIndex(SphinxDirective):
             for name, role_fn in _role_callables(module_name)
         ]
         markup = _index_markup("Role Index", rows)
-        return _render_blocks(self, markup) if markup else []
+        if not markup:
+            return []
+        rendered = parse_generated_markup(self, markup)
+        return [
+            build_api_summary_section(node) if isinstance(node, nodes.table) else node
+            for node in rendered
+        ]

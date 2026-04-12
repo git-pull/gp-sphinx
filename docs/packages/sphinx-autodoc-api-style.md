@@ -2,7 +2,16 @@
 
 # sphinx-autodoc-api-style
 
-{bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-api-style>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-autodoc-api-style/>`
+```{gp-sphinx-package-meta} sphinx-autodoc-api-style
+```
+
+:::{admonition} Alpha
+:class: warning
+
+Rendered output is stable. The Python API, CSS class names, and Sphinx
+config value names may change without a major version bump. Pin your
+dependency to a specific version range in production.
+:::
 
 Sphinx extension that adds type and modifier badges to standard Python domain
 entries (functions, classes, methods, properties, attributes, data,
@@ -25,7 +34,7 @@ $ pip install sphinx-autodoc-api-style
 - **Accessibility**: keyboard-focusable badges with tooltip popups
 - **Non-invasive**: hooks into `doctree-resolved` without replacing directives
 
-## How it works
+## Downstream `conf.py`
 
 Add `sphinx_autodoc_api_style` to your Sphinx extensions. With `gp-sphinx`,
 use `extra_extensions`:
@@ -46,44 +55,67 @@ Or without `merge_sphinx_config`:
 extensions = ["sphinx_autodoc_api_style"]
 ```
 
+`sphinx_autodoc_api_style` automatically registers `sphinx_ux_badges` and
+`sphinx_ux_autodoc_layout` via `app.setup_extension()`. You do not need to add
+them separately to your `extensions` list.
+
+## Working usage examples
+
 No special directives are needed — existing `.. autofunction::`,
 `.. autoclass::`, `.. automodule::` directives automatically receive badges.
 
-## Live demo
+Render one function:
 
-```{py:module} gas_demo_api
+````myst
+```{eval-rst}
+.. autofunction:: my_project.api.demo_function
+```
+````
+
+Render one class and its members:
+
+````myst
+```{eval-rst}
+.. autoclass:: my_project.api.DemoClass
+   :members:
+```
+````
+
+## Live demos
+
+```{py:module} gp_demo_api
 ```
 
 ### Functions
 
 ```{eval-rst}
-.. autofunction:: gas_demo_api.demo_function
+.. autofunction:: gp_demo_api.demo_function
 ```
 
 ```{eval-rst}
-.. autofunction:: gas_demo_api.demo_async_function
+.. autofunction:: gp_demo_api.demo_async_function
 ```
 
 ```{eval-rst}
-.. autofunction:: gas_demo_api.demo_deprecated_function
+.. autofunction:: gp_demo_api.demo_deprecated_function
 ```
 
 ### Module data
 
 ```{eval-rst}
-.. autodata:: gas_demo_api.DEMO_CONSTANT
+.. autodata:: gp_demo_api.DEMO_CONSTANT
 ```
 
 ### Exceptions
 
 ```{eval-rst}
-.. autoexception:: gas_demo_api.DemoError
+.. autoexception:: gp_demo_api.DemoError
 ```
 
 ### Classes
 
 ```{eval-rst}
-.. autoclass:: gas_demo_api.DemoClass
+.. autoclass:: gp_demo_api.DemoClass
    :members:
    :undoc-members:
 ```
@@ -91,39 +123,41 @@ No special directives are needed — existing `.. autofunction::`,
 ### Abstract base classes
 
 ```{eval-rst}
-.. autoclass:: gas_demo_api.DemoAbstractBase
+.. autoclass:: gp_demo_api.DemoAbstractBase
    :members:
 ```
 
 ## Badge reference
 
-### Type badges
+All badge classes are drawn from the shared `sphinx_ux_badges.SAB` palette.
+This extension uses:
 
-| Object type | CSS class | Color |
-|-------------|-----------|-------|
-| `function` | `gas-type-function` | Blue |
-| `class` | `gas-type-class` | Indigo |
-| `method` | `gas-type-method` | Cyan |
-| `property` | `gas-type-property` | Teal |
-| `attribute` | `gas-type-attribute` | Slate |
-| `data` | `gas-type-data` | Grey |
-| `exception` | `gas-type-exception` | Rose |
+| Object type | `SAB` constant | CSS class |
+|---|---|---|
+| `function` | `SAB.TYPE_FUNCTION` | `gp-sphinx-badge--type-function` |
+| `class` | `SAB.TYPE_CLASS` | `gp-sphinx-badge--type-class` |
+| `method` | `SAB.TYPE_METHOD` | `gp-sphinx-badge--type-method` |
+| `property` | `SAB.TYPE_PROPERTY` | `gp-sphinx-badge--type-property` |
+| `attribute` | `SAB.TYPE_ATTRIBUTE` | `gp-sphinx-badge--type-attribute` |
+| `data` | `SAB.TYPE_DATA` | `gp-sphinx-badge--type-data` |
+| `exception` | `SAB.TYPE_EXCEPTION` | `gp-sphinx-badge--type-exception` |
 
-### Modifier badges
+| Modifier | `SAB` constant | CSS class |
+|---|---|---|
+| `async` | `SAB.MOD_ASYNC` | `gp-sphinx-badge--mod-async` |
+| `classmethod` | `SAB.MOD_CLASSMETHOD` | `gp-sphinx-badge--mod-classmethod` |
+| `staticmethod` | `SAB.MOD_STATICMETHOD` | `gp-sphinx-badge--mod-staticmethod` |
+| `abstract` | `SAB.MOD_ABSTRACT` | `gp-sphinx-badge--mod-abstract` |
+| `final` | `SAB.MOD_FINAL` | `gp-sphinx-badge--mod-final` |
+| `deprecated` | `SAB.STATE_DEPRECATED` | `gp-sphinx-badge--state-deprecated` |
 
-| Modifier | CSS class | Style |
-|----------|-----------|-------|
-| `async` | `gas-mod-async` | Purple outlined |
-| `classmethod` | `gas-mod-classmethod` | Amber outlined |
-| `staticmethod` | `gas-mod-staticmethod` | Grey outlined |
-| `abstract` | `gas-mod-abstract` | Indigo outlined |
-| `final` | `gas-mod-final` | Emerald outlined |
-| `deprecated` | `gas-deprecated` | Red/grey outlined |
+See {doc}`sphinx-ux-badges` for the full shared palette.
 
 ## CSS prefix
 
-All CSS classes use the `gas-` prefix (**g**p-sphinx **a**pi **s**tyle) to avoid
-collision with `spf-` (sphinx pytest fixtures) or other extensions.
+All badge CSS classes use the `sab-` prefix from {doc}`sphinx-ux-badges`.
+Layout card classes (borders, headers, field-list rules) are local to this package
+and use `dl.py-*` and `.api-*` selectors.
 
 ```{package-reference} sphinx-autodoc-api-style
 ```

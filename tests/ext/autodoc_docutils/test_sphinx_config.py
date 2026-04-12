@@ -27,12 +27,13 @@ def test_config_values_discovers_registered_options() -> None:
 
 
 def test_config_markup_contains_default_and_rebuild() -> None:
-    """Rendered config markup shows the default and rebuild target."""
+    """Rendered config markup leaves facts to the shared presenter."""
     value = next(
         item
-        for item in discover_config_values("sphinx_argparse_neo")
+        for item in discover_config_values("sphinx_autodoc_argparse")
         if item.name == "argparse_show_defaults"
     )
     markup = render_config_value_markup(value)
-    assert ":default: ``True``" in markup
-    assert "Rebuild: ``html``" in markup
+    assert ".. confval:: argparse_show_defaults" in markup
+    assert ":default:" not in markup
+    assert "Rebuild:" not in markup

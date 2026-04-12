@@ -14,6 +14,11 @@ from sphinx_autodoc_pytest_fixtures._constants import _FIELD_LABELS
 from sphinx_autodoc_pytest_fixtures._index import _resolve_fixture_index
 from sphinx_autodoc_pytest_fixtures._models import autofixture_index_node
 from sphinx_autodoc_pytest_fixtures._store import FixtureStoreDict, _get_spf_store
+from sphinx_ux_autodoc_layout import (
+    API,
+    build_api_table_section,
+    inject_signature_slots,
+)
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -22,6 +27,10 @@ if t.TYPE_CHECKING:
     pass
 
 logger = sphinx_logging.getLogger(__name__)
+
+_PARAMETER_FIELD_LABELS = frozenset(
+    {"parameter", "parameters", "return", "returns", "yield", "yields", "raises"}
+)
 
 
 def _on_missing_reference(
@@ -59,7 +68,7 @@ def _on_missing_reference(
 
     reftype = node.get("reftype")
     target = node.get("reftarget", "")
-    py_domain: PythonDomain = env.get_domain("py")
+    py_domain = env.domains.python_domain
 
     # Short-name :fixture: lookup via public_to_canon.
     if reftype == "fixture":
@@ -105,53 +114,28 @@ def _on_missing_reference(
 
 
 def _inject_badges_and_reorder(sig_node: addnodes.desc_signature) -> None:
-    """Inject scope/kind/fixture badges and reorder signature children.
-
-    Appends a badge group to *sig_node* and reorders the \u00b6 headerlink and
-    [source] viewcode link so the visual layout is:
-    ``name \u2192 return \u2192 \u00b6 \u2192 badges (right-aligned) \u2192 [source]``.
+    """Inject scope/kind/fixture badges into shared layout slots.
 
     Guarded by the ``spf_badges_injected`` flag \u2014 safe to call multiple times.
     """
-    if sig_node.get("spf_badges_injected"):
-        return
-    sig_node["spf_badges_injected"] = True
-
     scope = sig_node.get("spf_scope", "function")
     kind = sig_node.get("spf_kind", "resource")
     autouse = sig_node.get("spf_autouse", False)
     deprecated = sig_node.get("spf_deprecated", False)
 
     badge_group = _build_badge_group_node(scope, kind, autouse, deprecated=deprecated)
-
-    # Detach [source] and \u00b6 links, then re-append in desired order.
-    viewcode_ref = None
-    headerlink_ref = None
-    for child in list(sig_node.children):
-        if isinstance(child, nodes.reference):
-            if child.get("internal") is not True and any(
-                "viewcode-link" in getattr(gc, "get", lambda *_: "")("classes", [])
-                for gc in child.children
-                if isinstance(gc, nodes.inline)
-            ):
-                viewcode_ref = child
-                sig_node.remove(child)
-            elif "headerlink" in child.get("classes", []):
-                headerlink_ref = child
-                sig_node.remove(child)
-
-    if headerlink_ref is not None:
-        sig_node += headerlink_ref
-    sig_node += badge_group
-    if viewcode_ref is not None:
-        sig_node += viewcode_ref
+    inject_signature_slots(
+        sig_node,
+        marker_attr="spf_badges_injected",
+        badge_node=badge_group,
+    )
 
 
 def _strip_rtype_fields(desc_node: addnodes.desc) -> None:
     """Remove redundant "Rtype" fields from fixture descriptions.
 
-    ``sphinx_autodoc_typehints`` emits these for all autodoc objects; for
-    fixtures the return type is already in the signature line (``\u2192 Type``).
+    ``sphinx_autodoc_typehints_gp`` emits these for all autodoc objects; for
+    fixtures the return type is already in the signature line (``→ Type``).
     """
     for content_child in desc_node.findall(addnodes.desc_content):
         for fl in list(content_child.findall(nodes.field_list)):
@@ -166,6 +150,27 @@ def _strip_rtype_fields(desc_node: addnodes.desc) -> None:
                     fl.remove(field)
             if not fl.children:
                 content_child.remove(fl)
+
+
+def _wrap_fixture_field_lists(desc_node: addnodes.desc) -> None:
+    """Wrap top-level fixture field lists in shared body sections."""
+    for content_child in desc_node.findall(addnodes.desc_content):
+        for field_list in list(content_child.children):
+            if not isinstance(field_list, nodes.field_list):
+                continue
+            labels = {
+                field_name.astext().strip().lower()
+                for field_name in field_list.findall(nodes.field_name)
+            }
+            section_name = (
+                API.PARAMETERS if labels & _PARAMETER_FIELD_LABELS else API.FACTS
+            )
+            insert_idx = content_child.children.index(field_list)
+            content_child.remove(field_list)
+            content_child.insert(
+                insert_idx,
+                build_api_table_section(section_name, field_list),
+            )
 
 
 def _inject_metadata_fields(
@@ -282,7 +287,7 @@ def _on_doctree_resolved(
         The name of the document being resolved.
     """
     store = _get_spf_store(app.env)
-    py_domain: PythonDomain = app.env.get_domain("py")  # type: ignore[assignment]
+    py_domain = app.env.domains.python_domain
 
     for desc_node in doctree.findall(addnodes.desc):
         if desc_node.get("objtype") != "fixture":
@@ -292,6 +297,7 @@ def _on_doctree_resolved(
             _inject_badges_and_reorder(sig_node)
         _strip_rtype_fields(desc_node)
         _inject_metadata_fields(desc_node, store, py_domain, app, docname)
+        _wrap_fixture_field_lists(desc_node)
 
     # Resolve autofixture-index placeholders
     for idx_node in list(doctree.findall(autofixture_index_node)):

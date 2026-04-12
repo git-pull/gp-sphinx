@@ -14,7 +14,7 @@ from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
 
 from sphinx_autodoc_api_style._badges import build_badge_group
-from sphinx_autodoc_api_style._css import _CSS
+from sphinx_ux_autodoc_layout import inject_signature_slots
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -132,13 +132,9 @@ def _detect_deprecated(desc_node: addnodes.desc) -> bool:
 
 
 def _inject_badges(sig_node: addnodes.desc_signature, objtype: str) -> None:
-    """Inject a toolbar containing badges, viewcode, and headerlink.
+    """Inject structured layout slots containing badges and source links.
 
-    Builds a toolbar container (``gas-toolbar``) that groups the badge
-    group, ``[source]`` link, and permalink into a single flex item so
-    they stay together on the right side of the signature header.
-
-    Guarded by ``gas_badges_injected`` flag.
+    Guarded by ``sab_badges_injected`` flag.
 
     Parameters
     ----------
@@ -153,39 +149,20 @@ def _inject_badges(sig_node: addnodes.desc_signature, objtype: str) -> None:
     >>> sig = addnodes.desc_signature()
     >>> sig += addnodes.desc_name("", "my_func")
     >>> _inject_badges(sig, "function")
-    >>> sig.get("gas_badges_injected")
+    >>> sig.get("sab_badges_injected")
     True
     """
-    if sig_node.get("gas_badges_injected"):
-        return
-    sig_node["gas_badges_injected"] = True
-
     mods = _detect_modifiers(sig_node)
     parent = sig_node.parent
     if isinstance(parent, addnodes.desc) and _detect_deprecated(parent):
         mods = mods | {"deprecated"}
 
     badge_group = build_badge_group(objtype, modifiers=mods)
-
-    viewcode_ref = None
-    for child in list(sig_node.children):
-        if (
-            isinstance(child, nodes.reference)
-            and child.get("internal") is not True
-            and any(
-                "viewcode-link" in getattr(gc, "get", lambda *_: "")("classes", [])
-                for gc in child.children
-                if isinstance(gc, nodes.inline)
-            )
-        ):
-            viewcode_ref = child
-            sig_node.remove(child)
-
-    toolbar = nodes.inline(classes=[_CSS.TOOLBAR])
-    toolbar += badge_group
-    if viewcode_ref is not None:
-        toolbar += viewcode_ref
-    sig_node += toolbar
+    inject_signature_slots(
+        sig_node,
+        marker_attr="sab_badges_injected",
+        badge_node=badge_group,
+    )
 
 
 def _prune_empty_desc_content(desc_node: addnodes.desc) -> None:

@@ -14,7 +14,6 @@ from sphinx_autodoc_pytest_fixtures._constants import (
     PYTEST_HIDDEN,
 )
 from sphinx_autodoc_pytest_fixtures._detection import (
-    _format_type_short,
     _get_fixture_fn,
     _get_fixture_marker,
     _get_return_annotation,
@@ -26,6 +25,7 @@ from sphinx_autodoc_pytest_fixtures._metadata import (
     _extract_teardown_summary,
     _register_fixture_meta,
 )
+from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 logger = sphinx_logging.getLogger(__name__)
 
@@ -179,7 +179,7 @@ class FixtureDocumenter(FunctionDocumenter):
         ret = _get_return_annotation(self.object)
         if ret is inspect.Parameter.empty:
             return "()"
-        return f"() -> {_format_type_short(ret)}"
+        return f"() -> {normalize_annotation_text(ret)}"
 
     def format_args(self, **kwargs: t.Any) -> str:
         """Return empty string — no argument list is shown to users.
@@ -240,7 +240,10 @@ class FixtureDocumenter(FunctionDocumenter):
 
         ret = _get_return_annotation(self.object)
         if ret is not inspect.Parameter.empty:
-            self.add_line(f"   :return-type: {_format_type_short(ret)}", sourcename)
+            self.add_line(
+                f"   :return-type: {normalize_annotation_text(ret)}",
+                sourcename,
+            )
 
         explicit_kind = self.options.get("kind")
         kind = _infer_kind(self.object, explicit_kind=explicit_kind)

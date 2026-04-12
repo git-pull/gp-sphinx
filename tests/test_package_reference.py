@@ -20,15 +20,17 @@ def test_workspace_packages_lists_publishable_packages() -> None:
     names = {package["name"] for package in package_reference.workspace_packages()}
     assert names == {
         "gp-sphinx",
-        "sphinx-argparse-neo",
+        "sphinx-autodoc-argparse",
         "sphinx-autodoc-api-style",
-        "sphinx-autodoc-badges",
+        "sphinx-ux-badges",
         "sphinx-autodoc-docutils",
         "sphinx-autodoc-fastmcp",
+        "sphinx-ux-autodoc-layout",
+        "sphinx-autodoc-typehints-gp",
         "sphinx-autodoc-pytest-fixtures",
         "sphinx-autodoc-sphinx",
         "sphinx-fonts",
-        "sphinx-gptheme",
+        "sphinx-gp-theme",
     }
 
 
@@ -46,7 +48,7 @@ def test_collect_extension_surface_for_sphinx_fonts() -> None:
 
 def test_package_reference_markdown_for_argparse_includes_roles() -> None:
     """Generated markdown includes the exemplar role registrations."""
-    markdown = package_reference.package_reference_markdown("sphinx-argparse-neo")
+    markdown = package_reference.package_reference_markdown("sphinx-autodoc-argparse")
     assert "cli-option" in markdown
     assert "argparse_examples_section_title" in markdown
 
@@ -105,14 +107,22 @@ def test_redirects_cover_legacy_extensions_paths() -> None:
     """Legacy extensions/* redirects exist for the packages index and pages."""
     redirects = (REPO_ROOT / "docs" / "redirects.txt").read_text().splitlines()
     redirect_map = dict(line.split(maxsplit=1) for line in redirects if line.strip())
-    expected = {
+    required = {
         "extensions/index": "packages/index",
         **{
             f"extensions/{package['name']}": f"packages/{package['name']}"
             for package in package_reference.workspace_packages()
         },
     }
-    assert redirect_map == expected
+    # Required entries must be present; additional backward-compat redirects
+    # (e.g., packages/sphinx-gptheme -> packages/sphinx-gp-theme) are allowed.
+    missing = required.keys() - redirect_map.keys()
+    assert not missing, f"Missing redirects: {missing}"
+    for source, target in required.items():
+        assert redirect_map[source] == target, (
+            f"Redirect {source!r} points to {redirect_map[source]!r}, "
+            f"expected {target!r}"
+        )
 
 
 class MaturityBadgeFixture(t.NamedTuple):
@@ -224,9 +234,9 @@ DOMAIN_REGISTRATION_FIXTURES: list[DomainRegistrationFixture] = [
     ),
     DomainRegistrationFixture(
         test_id="exemplar_role_from_submodule",
-        full_name="sphinx_argparse_neo.roles.cli_option_role",
+        full_name="sphinx_autodoc_argparse.roles.cli_option_role",
         expected_objtype="function",
-        expected_docname="packages/sphinx-argparse-neo",
+        expected_docname="packages/sphinx-autodoc-argparse",
     ),
 ]
 

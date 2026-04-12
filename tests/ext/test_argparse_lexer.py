@@ -6,7 +6,7 @@ import typing as t
 
 import pytest
 
-from sphinx_argparse_neo.lexer import (
+from sphinx_autodoc_argparse.lexer import (
     ArgparseHelpLexer,
     ArgparseLexer,
     ArgparseUsageLexer,

@@ -86,7 +86,7 @@ _INDEX_TABLE_COLUMNS: tuple[tuple[str, int], ...] = (
 
 _CONFIG_HIDDEN_DEPS = "pytest_fixture_hidden_dependencies"
 _CONFIG_BUILTIN_LINKS = "pytest_fixture_builtin_links"
-_CONFIG_EXTERNAL_LINKS = "pytest_external_fixture_links"
+_CONFIG_EXTERNAL_LINKS = "pytest_fixture_external_links"
 _CONFIG_LINT_LEVEL = "pytest_fixture_lint_level"
 
 # ---------------------------------------------------------------------------
@@ -120,7 +120,7 @@ _IDENTIFIER_PATTERN = re.compile(r"(\b[a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)*\b)")
 FixtureKind = t.Literal["resource", "factory", "override_hook"]
 _KNOWN_KINDS: frozenset[str] = frozenset(t.get_args(FixtureKind))
 
-_STORE_VERSION = 5
+_STORE_VERSION = 6
 """Bump whenever ``FixtureMeta`` or the store schema changes.
 
 Used both as the Sphinx ``env_version`` (triggers full cache invalidation) and

@@ -7,27 +7,77 @@ set shell := ["bash", "-uc"]
 py_files := "find . -type f -not -path '*/\\.*' | grep -i '.*[.]py$' 2> /dev/null"
 doc_files := "find . -type f -not -path '*/\\.*' | grep -i '.*[.]rst$\\|.*[.]md$\\|.*[.]css$\\|.*[.]py$\\|mkdocs\\.yml\\|CHANGES\\|TODO\\|.*conf\\.py' 2> /dev/null"
 all_files := "find . -type f -not -path '*/\\.*' | grep -i '.*[.]py$\\|.*[.]rst$\\|.*[.]md$\\|.*[.]css$\\|.*[.]py$\\|mkdocs\\.yml\\|CHANGES\\|TODO\\|.*conf\\.py' 2> /dev/null"
+fast_test_addopts := "--tb=short --no-header --showlocals"
+pytest_local_opts := "-o tmp_path_retention_policy=none"
+pytest_full_basetemp := ".cache/pytest-full"
+pytest_fast_basetemp := ".cache/pytest-fast"
+pytest_watch_basetemp := ".cache/pytest-watch"
+pytest_fast_watch_basetemp := ".cache/pytest-fast-watch"
 
 # List all available commands
 default:
     @just --list
 
 # Run tests with pytest
-[group: 'test']
 test *args:
-    uv run py.test {{ args }}
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p .cache
+    cache_root="$(pwd)/{{ pytest_full_basetemp }}"
+    recipe_args="{{ args }}"
+    if [[ -n "${recipe_args// }" ]]; then
+        uv run pytest \
+            -s \
+            {{ pytest_local_opts }} \
+            --basetemp="${cache_root}" \
+            {{ args }}
+    else
+        uv run pytest \
+            -s \
+            {{ pytest_local_opts }} \
+            --basetemp="${cache_root}"
+    fi
+
+# Run the fast local test lane without doctest-modules or integration tests
+test-fast:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p .cache
+    cache_root="$(pwd)/{{ pytest_fast_basetemp }}"
+    uv run pytest \
+        {{ pytest_local_opts }} \
+        -o "addopts={{ fast_test_addopts }}" \
+        --basetemp="${cache_root}" \
+        -q \
+        --capture=tee-sys \
+        tests \
+        -m "not integration"
 
 # Run tests then start continuous testing with pytest-watcher
-[group: 'test']
 start:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p .cache
+    cache_root="$(pwd)/{{ pytest_watch_basetemp }}"
     just test
-    uv run ptw .
+    uv run ptw . \
+        --runner "uv run pytest -s {{ pytest_local_opts }} --basetemp=${cache_root}"
+
+# Run the fast local test lane continuously with pytest-watcher
+start-fast:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p .cache
+    cache_root="$(pwd)/{{ pytest_fast_watch_basetemp }}"
+    just test-fast
+    uv run ptw . \
+        --runner "uv run pytest {{ pytest_local_opts }} -o \"addopts={{ fast_test_addopts }}\" --basetemp=${cache_root} -q --capture=tee-sys tests -m \"not integration\""
 
 # Watch files and run tests on change (requires entr)
-[group: 'test']
 watch-test:
     #!/usr/bin/env bash
     set -euo pipefail
+    mkdir -p .cache
     if command -v entr > /dev/null; then
         {{ all_files }} | entr -c just test
     else
@@ -36,12 +86,10 @@ watch-test:
     fi
 
 # Build documentation
-[group: 'docs']
 build-docs:
     just -f docs/justfile html
 
 # Watch files and rebuild docs on change
-[group: 'docs']
 watch-docs:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -53,12 +101,10 @@ watch-docs:
     fi
 
 # Serve documentation
-[group: 'docs']
 serve-docs:
     just -f docs/justfile serve
 
 # Watch and serve docs simultaneously
-[group: 'docs']
 dev-docs:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -66,27 +112,22 @@ dev-docs:
     just serve-docs
 
 # Start documentation server with auto-reload
-[group: 'docs']
 start-docs:
     just -f docs/justfile start
 
 # Start documentation design mode (watches static files)
-[group: 'docs']
 design-docs:
     just -f docs/justfile design
 
 # Format code with ruff
-[group: 'lint']
 ruff-format:
     uv run ruff format .
 
 # Run ruff linter
-[group: 'lint']
 ruff:
     uv run ruff check .
 
 # Watch files and run ruff on change
-[group: 'lint']
 watch-ruff:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -98,12 +139,10 @@ watch-ruff:
     fi
 
 # Run mypy type checker
-[group: 'lint']
 mypy:
     uv run mypy $({{ py_files }})
 
 # Watch files and run mypy on change
-[group: 'lint']
 watch-mypy:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -122,3 +161,20 @@ _entr-warn:
     @echo "Install entr(1) to automatically run tasks on file change."
     @echo "See https://eradman.com/entrproject/                      "
     @echo "----------------------------------------------------------"
+
+# Bump the workspace-wide version string in all pyproject.toml files.
+# Usage: just bump-version 0.0.1a8
+bump-version new_version:
+    @echo "Bumping workspace version to {{new_version}}..."
+    uv run python -c "\
+    import pathlib, re; \
+    old = re.search(r'version\s*=\s*\"([^\"]+)\"', \
+        pathlib.Path('pyproject.toml').read_text()).group(1); \
+    print(f'  {old} -> {{new_version}}'); \
+    [p.write_text(p.read_text().replace(old, '{{new_version}}')) \
+     for p in sorted(pathlib.Path('.').glob('**/pyproject.toml')) \
+     if old in p.read_text()]; \
+    "
+    uv lock
+    uv run python scripts/ci/package_tools.py check-versions
+    @echo "Done. Review with: git diff '**/pyproject.toml' uv.lock"

@@ -66,7 +66,9 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     >>> callable(setup)
     True
     """
-    app.setup_extension("sphinx_autodoc_badges")
+    app.setup_extension("sphinx_ux_badges")
+    app.setup_extension("sphinx_ux_autodoc_layout")
+    app.setup_extension("sphinx_autodoc_typehints_gp")
 
     app.add_config_value("fastmcp_tool_modules", [], "env")
     app.add_config_value("fastmcp_area_map", {}, "env")
@@ -102,7 +104,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
 
     app.add_directive("fastmcp-tool", FastMCPToolDirective)
     app.add_directive("fastmcp-tool-input", FastMCPToolInputDirective)
-    app.add_directive("fastmcp-toolsummary", FastMCPToolSummaryDirective)
+    app.add_directive("fastmcp-tool-summary", FastMCPToolSummaryDirective)
 
     return {
         "version": _EXTENSION_VERSION,

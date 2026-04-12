@@ -76,7 +76,7 @@ The returned config includes a `setup(app)` function from
 
 | Action | Effect |
 | --- | --- |
-| `app.add_js_file("js/spa-nav.js", loading_method="defer")` | Registers the bundled SPA navigation script from `sphinx-gptheme` |
+| `app.add_js_file("js/spa-nav.js", loading_method="defer")` | Registers the bundled SPA navigation script from `sphinx-gp-theme` |
 | `app.connect("build-finished", remove_tabs_js)` | Removes `_static/tabs.js` after HTML builds as a `sphinx-inline-tabs` workaround |
 
 ## Always-set coordinator values
@@ -100,7 +100,7 @@ These are injected even though they are not exposed as `DEFAULT_*` constants:
 
 | Constant | Value |
 | --- | --- |
-| `DEFAULT_EXTENSIONS` | `["sphinx.ext.autodoc", "sphinx_fonts", "sphinx.ext.intersphinx", "sphinx_autodoc_typehints", "sphinx.ext.todo", "sphinx.ext.napoleon", "sphinx_inline_tabs", "sphinx_copybutton", "sphinxext.opengraph", "sphinxext.rediraffe", "sphinx_design", "myst_parser", "linkify_issues"]` |
+| `DEFAULT_EXTENSIONS` | `["sphinx.ext.autodoc", "sphinx_fonts", "sphinx.ext.intersphinx", "sphinx_autodoc_typehints_gp", "sphinx.ext.todo", "sphinx_inline_tabs", "sphinx_copybutton", "sphinxext.opengraph", "sphinxext.rediraffe", "sphinx_design", "myst_parser", "linkify_issues"]` |
 | `DEFAULT_SOURCE_SUFFIX` | `{".rst": "restructuredtext", ".md": "markdown"}` |
 | `DEFAULT_MYST_EXTENSIONS` | `["colon_fence", "substitution", "replacements", "strikethrough", "linkify"]` |
 | `DEFAULT_MYST_HEADING_ANCHORS` | `4` |
@@ -111,7 +111,7 @@ These are injected even though they are not exposed as `DEFAULT_*` constants:
 
 | Constant | Value |
 | --- | --- |
-| `DEFAULT_THEME` | `"sphinx-gptheme"` |
+| `DEFAULT_THEME` | `"sphinx-gp-theme"` |
 | `DEFAULT_THEME_OPTIONS` | footer GitHub icon, `source_repository=""`, `source_branch="main"`, `source_directory="docs/"` |
 
 ### Font defaults
@@ -138,20 +138,18 @@ These are injected even though they are not exposed as `DEFAULT_*` constants:
 
 | Constant | Value |
 | --- | --- |
-| `DEFAULT_AUTOCLASS_CONTENT` | `"both"` |
+| `DEFAULT_AUTOCLASS_CONTENT` | `"class"` |
 | `DEFAULT_AUTODOC_MEMBER_ORDER` | `"bysource"` |
 | `DEFAULT_AUTODOC_CLASS_SIGNATURE` | `"separated"` |
 | `DEFAULT_AUTODOC_TYPEHINTS` | `"description"` |
 | `DEFAULT_TOC_OBJECT_ENTRIES_SHOW_PARENTS` | `"hide"` |
 | `DEFAULT_AUTODOC_OPTIONS` | `{"undoc-members": True, "members": True, "private-members": True, "show-inheritance": True, "member-order": "bysource"}` |
 
-### Napoleon and warning defaults
+### Warning defaults
 
 | Constant | Value |
 | --- | --- |
-| `DEFAULT_NAPOLEON_GOOGLE_DOCSTRING` | `True` |
-| `DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC` | `False` |
-| `DEFAULT_SUPPRESS_WARNINGS` | `["sphinx_autodoc_typehints.forward_reference"]` |
+| `DEFAULT_SUPPRESS_WARNINGS` | `[]` |
 
 ## Parameter interactions
 

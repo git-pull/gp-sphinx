@@ -5,17 +5,29 @@ from __future__ import annotations
 from docutils import nodes
 from sphinx.util.docutils import SphinxDirective
 
-from sphinx_autodoc_fastmcp._badges import build_toolbar
+from sphinx_autodoc_fastmcp._badges import build_tool_badge_group
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._models import ParamInfo, ToolInfo
 from sphinx_autodoc_fastmcp._parsing import (
-    extract_enum_values as extract_enum_values_from_type,
     first_paragraph,
     make_para,
     make_table,
-    make_type_cell_smart,
-    make_type_xref,
     parse_rst_inline,
+)
+from sphinx_autodoc_typehints_gp import (
+    build_annotation_display_paragraph,
+    build_annotation_paragraph,
+    classify_annotation_display,
+)
+from sphinx_ux_autodoc_layout import (
+    API,
+    ApiFactRow,
+    api_permalink,
+    build_api_card_entry,
+    build_api_facts_section,
+    build_api_section,
+    build_api_summary_section,
+    build_api_table_section,
 )
 
 
@@ -47,36 +59,61 @@ class FastMCPToolDirective(SphinxDirective):
         return self._build_tool_section(tool)
 
     def _build_tool_section(self, tool: ToolInfo) -> list[nodes.Node]:
-        """Build section card: title (literal + badges) + summary + returns."""
+        """Build section card with shared API layout regions."""
         document = self.state.document
         section_id = tool.name.replace("_", "-")
 
         section = nodes.section()
         section["ids"].append(section_id)
-        section["classes"].append(_CSS.TOOL_SECTION)
+        section["classes"].extend((_CSS.TOOL_SECTION, API.CARD_SHELL))
         document.note_explicit_target(section)
 
         title_node = nodes.title("", "")
         title_node["classes"].append(f"{_CSS.PREFIX}-tool-title")
+        title_node["classes"].append(_CSS.SECTION_TITLE_HIDDEN)
         title_node += nodes.literal("", tool.name)
-        title_node += nodes.Text(" ")
-        title_node += build_toolbar(tool.safety)
         section += title_node
 
+        link = api_permalink(
+            href=f"#{section_id}",
+            title="Link to this tool",
+        )
+        link["classes"] = ["headerlink", API.LINK]
         first_para = first_paragraph(tool.docstring)
-        section += parse_rst_inline(first_para, self.state, self.lineno)
+        content_nodes: list[nodes.Node] = [
+            build_api_section(
+                API.DESCRIPTION,
+                parse_rst_inline(first_para, self.state, self.lineno),
+                classes=(_CSS.BODY_SECTION,),
+            )
+        ]
 
         if tool.return_annotation:
-            returns_para = nodes.paragraph("")
-            returns_para += nodes.strong("", "Returns: ")
-            type_para = make_type_xref(
-                tool.return_annotation,
-                model_module=str(self.config.fastmcp_model_module),
-                model_classes=frozenset(self.config.fastmcp_model_classes),
+            content_nodes.append(
+                build_api_facts_section(
+                    [
+                        ApiFactRow(
+                            "Returns",
+                            build_annotation_paragraph(
+                                tool.return_annotation,
+                                self.env,
+                            ),
+                        )
+                    ],
+                    classes=(_CSS.BODY_SECTION,),
+                )
             )
-            for child in type_para.children:
-                returns_para += child.deepcopy()
-            section += returns_para
+
+        entry = build_api_card_entry(
+            profile_class=API.profile("fastmcp-tool"),
+            signature_children=(nodes.literal("", tool.name),),
+            content_children=tuple(content_nodes),
+            badge_group=build_tool_badge_group(tool.safety),
+            permalink=link,
+            entry_classes=(_CSS.TOOL_ENTRY,),
+            signature_classes=(_CSS.TOOL_SIGNATURE,),
+        )
+        section += entry
 
         return [section]
 
@@ -113,17 +150,23 @@ class FastMCPToolInputDirective(SphinxDirective):
             for p in tool.params:
                 desc_node = self._build_description(p)
 
-                type_cell, is_enum = make_type_cell_smart(p.type_str)
+                type_cell: str | nodes.Node = "—"
+                if p.type_str:
+                    type_cell = build_annotation_display_paragraph(
+                        p.type_str,
+                        self.env,
+                    )
 
-                if is_enum and p.type_str:
-                    enum_values = extract_enum_values_from_type(p.type_str)
-                    if enum_values:
-                        desc_node += nodes.Text(" One of: ")
-                        for i, val in enumerate(enum_values):
-                            if i > 0:
-                                desc_node += nodes.Text(", ")
-                            desc_node += nodes.literal("", val)
-                        desc_node += nodes.Text(".")
+                type_display = (
+                    classify_annotation_display(p.type_str) if p.type_str else None
+                )
+                if type_display and type_display.literal_members:
+                    desc_node += nodes.Text(" One of: ")
+                    for i, val in enumerate(type_display.literal_members):
+                        if i > 0:
+                            desc_node += nodes.Text(", ")
+                        desc_node += nodes.literal("", val)
+                    desc_node += nodes.Text(".")
 
                 default_cell: str | nodes.Node = "—"
                 if p.default and p.default != "None":
@@ -139,7 +182,10 @@ class FastMCPToolInputDirective(SphinxDirective):
                     ],
                 )
             result.append(
-                make_table(headers, rows, col_widths=[15, 15, 8, 10, 52]),
+                build_api_table_section(
+                    API.PARAMETERS,
+                    make_table(headers, rows, col_widths=[15, 15, 8, 10, 52]),
+                ),
             )
 
         return result
@@ -169,7 +215,7 @@ class FastMCPToolSummaryDirective(SphinxDirective):
         if not tools:
             return [
                 self.state.document.reporter.warning(
-                    "fastmcp-toolsummary: no tools found.",
+                    "fastmcp-tool-summary: no tools found.",
                     line=self.lineno,
                 ),
             ]
@@ -214,7 +260,9 @@ class FastMCPToolSummaryDirective(SphinxDirective):
                         parse_rst_inline(first_line, self.state, self.lineno),
                     ],
                 )
-            section += make_table(headers, rows, col_widths=[30, 70])
+            section += build_api_summary_section(
+                make_table(headers, rows, col_widths=[30, 70]),
+            )
 
             result_nodes.append(section)
 

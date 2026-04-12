@@ -11,6 +11,8 @@ import sys
 
 import pytest
 
+pytest_plugins = ("tests._snapshots",)
+
 for src_path in sorted(
     (pathlib.Path(__file__).resolve().parents[1] / "packages").glob("*/src"),
 ):
@@ -19,10 +21,16 @@ for src_path in sorted(
         sys.path.insert(0, src_str)
 
 
+@pytest.fixture(scope="session")
+def _doctest_tmp_path(tmp_path_factory: pytest.TempPathFactory) -> pathlib.Path:
+    """Return a shared writable path for doctest examples."""
+    return tmp_path_factory.mktemp("doctest")
+
+
 @pytest.fixture(autouse=True)
 def _doctest_namespace(
     doctest_namespace: dict[str, object],
-    tmp_path: pathlib.Path,
+    _doctest_tmp_path: pathlib.Path,
 ) -> None:
     """Inject common fixtures into doctest namespace."""
-    doctest_namespace["tmp_path"] = tmp_path
+    doctest_namespace["tmp_path"] = _doctest_tmp_path

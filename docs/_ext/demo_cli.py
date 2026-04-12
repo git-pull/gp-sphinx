@@ -25,7 +25,7 @@ def create_parser() -> argparse.ArgumentParser:
     """
     parser = argparse.ArgumentParser(
         prog="myapp",
-        description="Example CLI showing how sphinx-argparse-neo renders parsers.",
+        description="Example CLI showing how sphinx-autodoc-argparse renders parsers.",
     )
     parser.add_argument(
         "--verbose",

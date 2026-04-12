@@ -39,7 +39,6 @@ from sphinx_autodoc_pytest_fixtures._constants import (
     PYTEST_HIDDEN,
     SetupDict,
 )
-from sphinx_autodoc_pytest_fixtures._css import _CSS
 from sphinx_autodoc_pytest_fixtures._detection import (
     _classify_deps,
     _get_fixture_fn,
@@ -53,7 +52,7 @@ from sphinx_autodoc_pytest_fixtures._detection import (
 from sphinx_autodoc_pytest_fixtures._directives import (
     AutofixtureIndexDirective,
     AutofixturesDirective,
-    DocPytestPluginDirective,
+    AutoPytestPluginDirective,
     PyFixtureDirective,
 )
 from sphinx_autodoc_pytest_fixtures._documenter import FixtureDocumenter
@@ -99,7 +98,9 @@ def setup(app: Sphinx) -> SetupDict:
         Extension metadata dict.
     """
     app.setup_extension("sphinx.ext.autodoc")
-    app.setup_extension("sphinx_autodoc_badges")
+    app.setup_extension("sphinx_ux_badges")
+    app.setup_extension("sphinx_ux_autodoc_layout")
+    app.setup_extension("sphinx_autodoc_typehints_gp")
 
     import pathlib
 
@@ -162,7 +163,7 @@ def setup(app: Sphinx) -> SetupDict:
     app.add_directive("autofixtures", AutofixturesDirective)
     app.add_node(autofixture_index_node)
     app.add_directive("autofixture-index", AutofixtureIndexDirective)
-    app.add_directive("doc-pytest-plugin", DocPytestPluginDirective)
+    app.add_directive("auto-pytest-plugin", AutoPytestPluginDirective)
 
     app.connect("missing-reference", _on_missing_reference)
     app.connect("doctree-resolved", _on_doctree_resolved)

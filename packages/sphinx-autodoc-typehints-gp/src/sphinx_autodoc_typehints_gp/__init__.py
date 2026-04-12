@@ -1,0 +1,29 @@
+"""Unconventional typehints extension for gp-sphinx."""
+
+from __future__ import annotations
+
+from sphinx_autodoc_typehints_gp.extension import setup
+from sphinx_autodoc_typehints_gp.rendering import (
+    AnnotationDisplay,
+    build_annotation_display_paragraph,
+    build_annotation_paragraph,
+    build_resolved_annotation_display_paragraph,
+    build_resolved_annotation_paragraph,
+    classify_annotation_display,
+    normalize_annotation_text,
+    normalize_type_collection_text,
+    render_annotation_nodes,
+)
+
+__all__ = [
+    "AnnotationDisplay",
+    "build_annotation_display_paragraph",
+    "build_annotation_paragraph",
+    "build_resolved_annotation_display_paragraph",
+    "build_resolved_annotation_paragraph",
+    "classify_annotation_display",
+    "normalize_annotation_text",
+    "normalize_type_collection_text",
+    "render_annotation_nodes",
+    "setup",
+]

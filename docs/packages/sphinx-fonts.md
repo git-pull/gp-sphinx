@@ -1,6 +1,7 @@
 # sphinx-fonts
 
-{bdg-success-line}`Beta` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-fonts>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-fonts/>`
+```{gp-sphinx-package-meta} sphinx-fonts
+```
 
 Sphinx extension for self-hosted web fonts via Fontsource. It downloads font
 assets during the HTML build, caches them locally, copies them into
@@ -76,7 +77,7 @@ The extension injects these values during `html-page-context`:
 
 - Fonts are cached under `~/.cache/sphinx-fonts`.
 - Non-HTML builders return early and do not download assets.
-- `sphinx-gptheme` consumes this template context automatically; `gp-sphinx` preconfigures IBM Plex defaults for it.
+- `sphinx-gp-theme` consumes this template context automatically; `gp-sphinx` preconfigures IBM Plex defaults for it.
 
 ```{package-reference} sphinx-fonts
 ```

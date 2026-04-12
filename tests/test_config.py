@@ -209,7 +209,7 @@ def test_merge_sphinx_config_uses_gp_sphinx_theme() -> None:
         version="1.0",
         copyright="2026",
     )
-    assert result["html_theme"] == "sphinx-gptheme"
+    assert result["html_theme"] == "sphinx-gp-theme"
 
 
 def test_merge_sphinx_config_no_sidebars() -> None:
@@ -251,13 +251,13 @@ def test_merge_sphinx_config_autodoc_class_signature() -> None:
 
 
 def test_merge_sphinx_config_suppress_warnings() -> None:
-    """Default suppress_warnings includes autodoc_typehints forward_reference."""
+    """Default suppress_warnings is an empty list."""
     result = merge_sphinx_config(
         project="test",
         version="1.0",
         copyright="2026",
     )
-    assert "sphinx_autodoc_typehints.forward_reference" in result["suppress_warnings"]
+    assert result["suppress_warnings"] == []
 
 
 def test_merge_sphinx_config_linkcode_auto_added() -> None:
@@ -349,17 +349,6 @@ def test_merge_sphinx_config_autodoc_typehints() -> None:
         copyright="2026",
     )
     assert result["autodoc_typehints"] == "description"
-
-
-def test_merge_sphinx_config_napoleon_defaults() -> None:
-    """Default napoleon settings are present."""
-    result = merge_sphinx_config(
-        project="test",
-        version="1.0",
-        copyright="2026",
-    )
-    assert result["napoleon_google_docstring"] is True
-    assert result["napoleon_include_init_with_doc"] is False
 
 
 def test_merge_sphinx_config_copybutton_continuation() -> None:

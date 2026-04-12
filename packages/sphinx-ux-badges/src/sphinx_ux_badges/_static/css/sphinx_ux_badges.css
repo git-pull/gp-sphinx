@@ -1,0 +1,337 @@
+/* sphinx_ux_badges — shared badge metrics, variants, and structural CSS.
+ *
+ * Class selectors use the ``gp-sphinx-badge*`` namespace.  CSS custom
+ * properties (``--gp-sphinx-badge-bg``, ``--gp-sphinx-badge-fg``,
+ * ``--gp-sphinx-badge-border``, …) share the same root for consistency —
+ * they are internal theme tokens consumed by palette classes in
+ * ``sab_palettes.css`` (historical filename) and may be overridden by
+ * downstream themes.
+ */
+
+:root {
+  /* Subtle “buffed pill”: top highlight + soft inner shade (light UI / white page bg) */
+  --gp-sphinx-badge-buff-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.12);
+  --gp-sphinx-badge-buff-shadow-dark-ui: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.28);
+}
+
+/* ── Base badge ─────────────────────────────────────────── */
+.gp-sphinx-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gp-sphinx-badge-icon-gap, 0.28rem);
+  font-size: var(--gp-sphinx-badge-font-size, 0.75rem);
+  font-weight: var(--gp-sphinx-badge-font-weight, 700);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  padding: var(--gp-sphinx-badge-padding-v, 0.28rem) var(--gp-sphinx-badge-padding-h, 0.52rem);
+  border-radius: var(--gp-sphinx-badge-radius, 0.25rem);
+  border: var(--gp-sphinx-badge-border, none);
+  /* Use background-color + fallbacks so unset --gp-sphinx-badge-* does not interact badly
+   * with later theme shorthands (e.g. sphinx-design loaded after extensions). */
+  background-color: var(--gp-sphinx-badge-bg, transparent);
+  color: var(--gp-sphinx-badge-fg, inherit);
+  vertical-align: middle;
+  white-space: nowrap;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+}
+
+/* ── Size variants (rem-absolute; compose with outline / icon-only / color classes) ─
+ * Both standard and dense use rem so they scale proportionally.
+ * "size-md" matches the base badge default — it is the explicit alias for
+ * the default size.  Steps: xxs 0.55, xs 0.62, sm 0.69, md/default 0.75,
+ * lg 0.85, xl 1.00 rem. */
+.gp-sphinx-badge.gp-sphinx-badge--size-xxs { font-size: 0.55rem; padding: 0.10rem 0.28rem; }
+.gp-sphinx-badge.gp-sphinx-badge--size-xs  { font-size: 0.62rem; padding: 0.15rem 0.35rem; }
+.gp-sphinx-badge.gp-sphinx-badge--size-sm  { font-size: 0.69rem; padding: 0.22rem 0.48rem; }
+.gp-sphinx-badge.gp-sphinx-badge--size-md  { font-size: 0.75rem; padding: 0.28rem 0.52rem; }
+.gp-sphinx-badge.gp-sphinx-badge--size-lg  { font-size: 0.85rem; padding: 0.40rem 0.75rem; }
+.gp-sphinx-badge.gp-sphinx-badge--size-xl  { font-size: 1.00rem; padding: 0.45rem 0.85rem; }
+
+/* ── Dense variant: compact metrics + always-visible 1px border ── */
+/* Fixed 0.67 rem font, tight padding, squarer corners, always-visible
+ * 1 px solid border, and the distinctive underline-dotted treatment.
+ * Compose with colour classes (``--type-*``, ``--scope-*``, …) just like
+ * the default variant.  The border colour comes from the same
+ * --gp-sphinx-badge-border custom property that palette classes already set. */
+.gp-sphinx-badge.gp-sphinx-badge--dense {
+  display: inline-block;
+  font-size: 0.67rem;
+  padding: 0.16rem 0.5rem;
+  border-radius: 0.22rem;
+  border: 1px solid;
+  border-color: var(--gp-sphinx-badge-border, currentColor);
+  box-shadow: none;
+}
+
+/* text-decoration is on the inner label span so the ::before icon is never
+ * decorated — CSS text-decoration propagates through ::before pseudo-elements
+ * on the same element but does not cross into a sibling span. */
+.gp-sphinx-badge.gp-sphinx-badge--dense .gp-sphinx-badge__label {
+  text-decoration: underline dotted;
+}
+
+/* ── Dense + size compositions ──────────────────────────── */
+/* Three-class specificity (0,3,0) beats both --dense and --size-* (0,2,0).
+ * Font-sizes match the standard pill exactly so the same size name produces
+ * the same visual tier; only padding is kept "dense" (tighter than standard).
+ * The dense default (0.67rem) is intentionally compact — size variants
+ * override it upward to align with standard when explicitly requested. */
+.gp-sphinx-badge.gp-sphinx-badge--dense.gp-sphinx-badge--size-xxs { font-size: 0.55rem; padding: 0.10rem 0.34rem; }
+.gp-sphinx-badge.gp-sphinx-badge--dense.gp-sphinx-badge--size-xs  { font-size: 0.62rem; padding: 0.12rem 0.38rem; }
+.gp-sphinx-badge.gp-sphinx-badge--dense.gp-sphinx-badge--size-sm  { font-size: 0.69rem; padding: 0.12rem 0.44rem; }
+/* default dense: 0.67rem — no extra rule needed */
+.gp-sphinx-badge.gp-sphinx-badge--dense.gp-sphinx-badge--size-md  { font-size: 0.75rem; padding: 0.17rem 0.52rem; }
+.gp-sphinx-badge.gp-sphinx-badge--dense.gp-sphinx-badge--size-lg  { font-size: 0.85rem; padding: 0.20rem 0.58rem; }
+.gp-sphinx-badge.gp-sphinx-badge--dense.gp-sphinx-badge--size-xl  { font-size: 1.00rem; padding: 0.24rem 0.68rem; }
+
+.gp-sphinx-badge:not(.gp-sphinx-badge--outline):not(.gp-sphinx-badge--inline-icon) {
+  box-shadow: var(--gp-sphinx-badge-buff-shadow);
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) .gp-sphinx-badge:not(.gp-sphinx-badge--outline):not(.gp-sphinx-badge--inline-icon) {
+    box-shadow: var(--gp-sphinx-badge-buff-shadow-dark-ui);
+  }
+}
+
+body[data-theme="dark"] .gp-sphinx-badge:not(.gp-sphinx-badge--outline):not(.gp-sphinx-badge--inline-icon) {
+  box-shadow: var(--gp-sphinx-badge-buff-shadow-dark-ui);
+}
+
+.gp-sphinx-badge:focus-visible {
+  outline: 2px solid var(--color-link, #2962ff);
+  outline-offset: 2px;
+}
+
+/* ── Outline fill variant ───────────────────────────────── */
+.gp-sphinx-badge.gp-sphinx-badge--outline {
+  background: transparent;
+}
+
+/* ── Underline control modifiers ────────────────────────── */
+/* Target .gp-sphinx-badge__label (the inner text span) so text-decoration
+ * is scoped to the text content only — icons on the outer badge ::before
+ * are never decorated.  This also prevents the "button underline" effect
+ * where text-decoration on an inline-flex outer span draws below the
+ * whole badge. */
+.gp-sphinx-badge.gp-sphinx-badge--underline-none   .gp-sphinx-badge__label { text-decoration: none; }
+.gp-sphinx-badge.gp-sphinx-badge--underline-solid  .gp-sphinx-badge__label { text-decoration: underline solid; }
+.gp-sphinx-badge.gp-sphinx-badge--underline-dotted .gp-sphinx-badge__label { text-decoration: underline dotted; }
+
+/* ── Icon system (::before / ::after pseudo-elements) ───── */
+/* Icons can sit at ::before (default, or right via flex reversal) or ::after
+ * (future positions). Both must suppress any text-decoration inherited from
+ * the dense parent so the emoji is never underlined regardless of position. */
+.gp-sphinx-badge::before,
+.gp-sphinx-badge::after {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 1em;
+  line-height: 1;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.gp-sphinx-badge[data-icon]::before {
+  content: attr(data-icon);
+}
+
+/* ── Icon-right variant (icon after text via flex reversal) ─ */
+/* The base badge is already display:inline-flex, so reversing
+ * flex-direction moves the ::before pseudo-element to the right of
+ * the text content.  Same data-icon attribute — zero new HTML. */
+.gp-sphinx-badge.gp-sphinx-badge--icon-right {
+  flex-direction: row-reverse;
+}
+
+/* --dense overrides display:inline-block, so restore inline-flex
+ * when icon-right is also requested. */
+.gp-sphinx-badge.gp-sphinx-badge--dense.gp-sphinx-badge--icon-right {
+  display: inline-flex;
+  flex-direction: row-reverse;
+}
+
+/* ── Badge group ────────────────────────────────────────── */
+.gp-sphinx-badge-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+/* ── Toolbar (flex margin-left: auto for title rows) ────── */
+.gp-sphinx-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  margin-left: auto;
+  white-space: nowrap;
+  text-indent: 0;
+  order: 99;
+}
+
+/* ── Icon-only variant (outside code: 16x16 colored box) ── */
+.gp-sphinx-badge.gp-sphinx-badge--icon-only {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 3px;
+  gap: 0;
+  font-size: 0;
+  line-height: 1;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+}
+
+.gp-sphinx-badge.gp-sphinx-badge--icon-only::before {
+  font-size: 10px;
+  line-height: 1;
+  font-style: normal;
+  font-weight: normal;
+  margin: 0;
+  display: block;
+  opacity: 0.9;
+}
+
+/* Icon-only links: flexbox parent for consistent spacing */
+a.reference:has(> .gp-sphinx-badge.gp-sphinx-badge--icon-only) {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+a.reference:has(> .gp-sphinx-badge.gp-sphinx-badge--icon-only) > code {
+  margin: 0;
+}
+
+/* ── Inline-icon variant (bare emoji inside code chip) ──── */
+.gp-sphinx-badge.gp-sphinx-badge--inline-icon {
+  background: transparent !important;
+  border: none !important;
+  padding: 0;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  vertical-align: -0.01em;
+  margin-right: 0.12em;
+  margin-left: 0;
+}
+
+.gp-sphinx-badge.gp-sphinx-badge--inline-icon::before {
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+
+code.docutils .gp-sphinx-badge.gp-sphinx-badge--inline-icon:last-child {
+  margin-left: 0.1em;
+  margin-right: 0;
+}
+
+/* ── Context-aware badge sizing ─────────────────────────── *
+ * Scoped to .document-content (Furo main body) to avoid
+ * applying in sidebar, TOC, or navigation contexts.
+ * Only applies to DEFAULT (no explicit size class) badges so that
+ * all size-classed badges render at their declared rem values.
+ * Paragraph context compacts default to sm-level (~18px) instead of
+ * the old ultra-compact 0.62rem (~14px). */
+:where(.body h2, .body h3, [role="main"] h2, [role="main"] h3)
+  .gp-sphinx-badge:not(.gp-sphinx-badge--size-xxs):not(.gp-sphinx-badge--size-xs):not(.gp-sphinx-badge--size-sm):not(.gp-sphinx-badge--size-md):not(.gp-sphinx-badge--size-lg):not(.gp-sphinx-badge--size-xl) {
+  font-size: 0.71rem;
+  padding: 0.20rem 0.44rem;
+}
+
+:where(
+    .body p,
+    .body li,
+    .body td,
+    .body a,
+    [role="main"] p,
+    [role="main"] li,
+    [role="main"] td,
+    [role="main"] a
+  )
+  .gp-sphinx-badge:not(.gp-sphinx-badge--size-xxs):not(.gp-sphinx-badge--size-xs):not(.gp-sphinx-badge--size-sm):not(.gp-sphinx-badge--size-md):not(.gp-sphinx-badge--size-lg):not(.gp-sphinx-badge--size-xl) {
+  font-size: 0.69rem;
+  padding: 0.18rem 0.40rem;
+}
+
+/* ── Consistent code → badge spacing (body only) ────────── */
+:where(.body) code.docutils + .gp-sphinx-badge,
+:where(.body) .gp-sphinx-badge + code.docutils,
+:where([role="main"]) code.docutils + .gp-sphinx-badge,
+:where([role="main"]) .gp-sphinx-badge + code.docutils {
+  margin-left: 0.4em;
+}
+
+/* ── Link behavior: underline code only, on hover ───────── */
+:where(.body, [role="main"]) a.reference .gp-sphinx-badge {
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+:where(.body, [role="main"]) a.reference:has(.gp-sphinx-badge) code {
+  vertical-align: middle;
+  text-decoration: none;
+}
+
+:where(.body, [role="main"]) a.reference:has(.gp-sphinx-badge) {
+  text-decoration: none;
+}
+
+:where(.body, [role="main"]) a.reference:has(.gp-sphinx-badge):hover code {
+  text-decoration: underline;
+}
+
+/* ── Anchor badges (metadata link badges: GitHub, PyPI, …) ──
+ * <a class="gp-sphinx-badge …"> inherits all base badge metrics via the
+ * class selector; only suppress underline and add hover feedback.
+ */
+a.gp-sphinx-badge {
+  text-decoration: none;
+}
+
+a.gp-sphinx-badge:hover {
+  opacity: 0.85;
+  text-decoration: none;
+}
+
+/* ── TOC sidebar: compact badges ─────────────────────────
+ * Smaller badges that still show text (matching production).
+ * Container wrappers collapse to inline flow.
+ * Emoji icons shown at compact size (data-icon / ::before).
+ */
+:where(.toc-tree) .gp-sphinx-toolbar,
+:where(.toc-tree) .gp-sphinx-badge-group {
+  display: inline;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+:where(.toc-tree) .gp-sphinx-badge {
+  font-size: 0.58rem;
+  padding: 0.1rem 0.25rem;
+  gap: 0.06rem;
+  vertical-align: middle;
+  line-height: 1.1;
+}
+
+:where(.toc-tree) .gp-sphinx-badge::before {
+  font-size: 0.5rem;
+  margin-right: 0.08rem;
+  flex-shrink: 0;
+}

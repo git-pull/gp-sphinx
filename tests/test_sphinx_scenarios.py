@@ -1,0 +1,125 @@
+"""Tests for typed Sphinx scenario caching helpers."""
+
+from __future__ import annotations
+
+import pathlib
+import textwrap
+
+import pytest
+
+from tests._sphinx_scenarios import (
+    ScenarioFile,
+    SphinxScenario,
+    build_shared_sphinx_result,
+    copy_scenario_tree,
+    derive_sphinx_scenario_cache_root,
+)
+
+
+def _make_demo_scenario(
+    *,
+    index_title: str = "Demo",
+    buildername: str = "html",
+) -> SphinxScenario:
+    """Return a minimal Sphinx scenario for cache helper tests."""
+    conf_py = textwrap.dedent(
+        """\
+        from __future__ import annotations
+
+        master_doc = "index"
+        exclude_patterns = ["_build"]
+        html_theme = "alabaster"
+        """,
+    )
+    index_rst = textwrap.dedent(
+        f"""\
+        {index_title}
+        {"=" * len(index_title)}
+
+        Cache helper smoke page.
+        """,
+    )
+    return SphinxScenario(
+        buildername=buildername,
+        files=(
+            ScenarioFile("conf.py", conf_py),
+            ScenarioFile("index.rst", index_rst),
+        ),
+    )
+
+
+@pytest.fixture(scope="module")
+def scenario_test_root(tmp_path_factory: pytest.TempPathFactory) -> pathlib.Path:
+    """Return a shared temp root for scenario cache helper tests."""
+    return tmp_path_factory.mktemp("sphinx-scenario-tests")
+
+
+@pytest.fixture(scope="module")
+def scenario_cache_root(scenario_test_root: pathlib.Path) -> pathlib.Path:
+    """Return a shared cache root for scenario cache helper tests."""
+    return derive_sphinx_scenario_cache_root(scenario_test_root / "cache-root")
+
+
+@pytest.mark.integration
+def test_shared_sphinx_result_reuses_identical_builds(
+    scenario_cache_root: pathlib.Path,
+) -> None:
+    """Reuse the same completed build for identical scenarios."""
+    scenario = _make_demo_scenario(buildername="dummy")
+
+    result_one = build_shared_sphinx_result(
+        scenario_cache_root,
+        scenario,
+        purge_modules=("demo_module",),
+    )
+    result_two = build_shared_sphinx_result(
+        scenario_cache_root,
+        scenario,
+        purge_modules=("demo_module",),
+    )
+
+    assert result_one is result_two
+    assert result_one.app.builder.name == "dummy"
+    assert result_one.app.env.found_docs == {"index"}
+
+
+def test_sphinx_scenario_key_changes_when_inputs_change() -> None:
+    """Change the cache digest when scenario inputs differ."""
+    scenario_one = _make_demo_scenario(index_title="Demo")
+    scenario_two = _make_demo_scenario(index_title="Demo Two")
+
+    assert scenario_one.cache_key().digest() != scenario_two.cache_key().digest()
+
+
+def test_copy_scenario_tree_keeps_cached_source_pristine(
+    scenario_test_root: pathlib.Path,
+    scenario_cache_root: pathlib.Path,
+) -> None:
+    """Keep the cached source tree unchanged when copied trees are mutated."""
+    scenario = _make_demo_scenario()
+    digest = scenario.cache_key().digest()
+    copy_root = scenario_test_root / "copy-tree"
+    copy_root.mkdir(parents=True, exist_ok=True)
+
+    first_copy = copy_scenario_tree(
+        scenario_cache_root,
+        scenario,
+        copy_root / "copy-one",
+    )
+    mutated_index = first_copy / "index.rst"
+    mutated_index.write_text(
+        mutated_index.read_text(encoding="utf-8") + "\nMutated copy.\n",
+        encoding="utf-8",
+    )
+
+    second_copy = copy_scenario_tree(
+        scenario_cache_root,
+        scenario,
+        copy_root / "copy-two",
+    )
+    cached_index = scenario_cache_root / f"{digest}-source" / "index.rst"
+
+    assert "Mutated copy." not in second_copy.joinpath("index.rst").read_text(
+        encoding="utf-8",
+    )
+    assert "Mutated copy." not in cached_index.read_text(encoding="utf-8")

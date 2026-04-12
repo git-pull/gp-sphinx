@@ -244,6 +244,35 @@ def _workspace_wheel_requirements(dist_dir: pathlib.Path) -> list[str]:
     return sorted(str(path) for path in dist_dir.glob("*.whl"))
 
 
+def _target_wheel_path(dist_dir: pathlib.Path, package_name: str) -> str:
+    """Return the wheel path for a specific package in the dist directory.
+
+    Parameters
+    ----------
+    dist_dir : pathlib.Path
+        Directory containing built wheel files.
+    package_name : str
+        Distribution name, e.g. ``"sphinx-autodoc-api-style"``.
+
+    Returns
+    -------
+    str
+        Absolute path to the matching wheel file.
+
+    Raises
+    ------
+    ValueError
+        If exactly one matching wheel is not found.
+    """
+    normalized = package_name.replace("-", "_")
+    prefix = normalized + "-"
+    matches = [path for path in dist_dir.glob("*.whl") if path.name.startswith(prefix)]
+    if len(matches) != 1:
+        msg = f"Expected exactly 1 wheel for {package_name!r}, found {len(matches)}"
+        raise ValueError(msg)
+    return str(matches[0])
+
+
 def _run_python(python_path: pathlib.Path, source: str) -> None:
     """Run inline Python code with the given interpreter."""
     _run([str(python_path), "-c", source])
@@ -419,13 +448,33 @@ def smoke_gp_sphinx(dist_dir: pathlib.Path, version: str) -> None:
         _run_sphinx_build(python_path, docs_dir, tmpdir / "_build")
 
 
-def smoke_sphinx_gptheme(dist_dir: pathlib.Path, version: str) -> None:
+def smoke_sphinx_autodoc_typehints_gp(dist_dir: pathlib.Path, version: str) -> None:
+    """Build a minimal Sphinx project using the typehints extension."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmpdir = pathlib.Path(tmp)
+        docs_dir = tmpdir / "docs"
+        docs_dir.mkdir()
+        (docs_dir / "conf.py").write_text(
+            "extensions = ['sphinx_autodoc_typehints_gp']\n"
+        )
+        (docs_dir / "index.rst").write_text("Demo\n====\n")
+
+        python_path = _create_venv(tmpdir)
+        _install_into_venv(
+            python_path,
+            "sphinx",
+            _target_wheel_path(dist_dir, "sphinx-autodoc-typehints-gp"),
+        )
+        _run_sphinx_build(python_path, docs_dir, tmpdir / "build")
+
+
+def smoke_sphinx_gp_theme(dist_dir: pathlib.Path, version: str) -> None:
     """Build a minimal Sphinx project using the standalone theme."""
     with tempfile.TemporaryDirectory() as tmp:
         tmpdir = pathlib.Path(tmp)
         docs_dir = tmpdir / "docs"
         docs_dir.mkdir()
-        (docs_dir / "conf.py").write_text("html_theme = 'sphinx-gptheme'\n")
+        (docs_dir / "conf.py").write_text("html_theme = 'sphinx-gp-theme'\n")
         (docs_dir / "index.rst").write_text("Demo\n====\n")
 
         python_path = _create_venv(tmpdir)
@@ -461,7 +510,7 @@ def smoke_sphinx_fonts(dist_dir: pathlib.Path, version: str) -> None:
         )
 
 
-def smoke_sphinx_argparse_neo(dist_dir: pathlib.Path, version: str) -> None:
+def smoke_sphinx_autodoc_argparse(dist_dir: pathlib.Path, version: str) -> None:
     """Verify the argparse extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
         python_path = _create_venv(pathlib.Path(tmp))
@@ -472,9 +521,9 @@ def smoke_sphinx_argparse_neo(dist_dir: pathlib.Path, version: str) -> None:
         _run_python(
             python_path,
             (
-                "import sphinx_argparse_neo; "
-                "from sphinx_argparse_neo import ArgparseDirective; "
-                f"assert sphinx_argparse_neo.__version__ == {version!r}; "
+                "import sphinx_autodoc_argparse; "
+                "from sphinx_autodoc_argparse import ArgparseDirective; "
+                f"assert sphinx_autodoc_argparse.__version__ == {version!r}; "
                 "assert ArgparseDirective is not None"
             ),
         )
@@ -525,7 +574,8 @@ def smoke_sphinx_autodoc_pytest_fixtures(dist_dir: pathlib.Path, version: str) -
         python_path = _create_venv(pathlib.Path(tmp))
         _install_into_venv(
             python_path,
-            *_workspace_wheel_requirements(dist_dir),
+            _target_wheel_path(dist_dir, "sphinx-autodoc-pytest-fixtures"),
+            find_links=dist_dir,
         )
         _run_python(
             python_path,
@@ -543,7 +593,8 @@ def smoke_sphinx_autodoc_api_style(dist_dir: pathlib.Path, version: str) -> None
         python_path = _create_venv(pathlib.Path(tmp))
         _install_into_venv(
             python_path,
-            *_workspace_wheel_requirements(dist_dir),
+            _target_wheel_path(dist_dir, "sphinx-autodoc-api-style"),
+            find_links=dist_dir,
         )
         _run_python(
             python_path,
@@ -555,8 +606,8 @@ def smoke_sphinx_autodoc_api_style(dist_dir: pathlib.Path, version: str) -> None
         )
 
 
-def smoke_sphinx_autodoc_badges(dist_dir: pathlib.Path, version: str) -> None:
-    """Verify the autodoc-badges extension installs and imports cleanly."""
+def smoke_sphinx_ux_badges(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the ux-badges extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
         python_path = _create_venv(pathlib.Path(tmp))
         _install_into_venv(
@@ -566,8 +617,26 @@ def smoke_sphinx_autodoc_badges(dist_dir: pathlib.Path, version: str) -> None:
         _run_python(
             python_path,
             (
-                "import sphinx_autodoc_badges; "
-                "from sphinx_autodoc_badges import setup; "
+                "import sphinx_ux_badges; "
+                "from sphinx_ux_badges import setup; "
+                "assert callable(setup)"
+            ),
+        )
+
+
+def smoke_sphinx_ux_autodoc_layout(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the ux-autodoc-layout extension installs and imports cleanly."""
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(
+            python_path,
+            *_workspace_wheel_requirements(dist_dir),
+        )
+        _run_python(
+            python_path,
+            (
+                "import sphinx_ux_autodoc_layout; "
+                "from sphinx_ux_autodoc_layout import setup; "
                 "assert callable(setup)"
             ),
         )
@@ -579,7 +648,8 @@ def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
         python_path = _create_venv(pathlib.Path(tmp))
         _install_into_venv(
             python_path,
-            *_workspace_wheel_requirements(dist_dir),
+            _target_wheel_path(dist_dir, "sphinx-autodoc-fastmcp"),
+            find_links=dist_dir,
         )
         _run_python(
             python_path,
@@ -593,15 +663,17 @@ def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
 
 _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "gp-sphinx": smoke_gp_sphinx,
-    "sphinx-argparse-neo": smoke_sphinx_argparse_neo,
+    "sphinx-autodoc-argparse": smoke_sphinx_autodoc_argparse,
     "sphinx-autodoc-api-style": smoke_sphinx_autodoc_api_style,
-    "sphinx-autodoc-badges": smoke_sphinx_autodoc_badges,
+    "sphinx-ux-badges": smoke_sphinx_ux_badges,
     "sphinx-autodoc-docutils": smoke_sphinx_autodoc_docutils,
     "sphinx-autodoc-fastmcp": smoke_sphinx_autodoc_fastmcp,
+    "sphinx-ux-autodoc-layout": smoke_sphinx_ux_autodoc_layout,
     "sphinx-autodoc-pytest-fixtures": smoke_sphinx_autodoc_pytest_fixtures,
     "sphinx-autodoc-sphinx": smoke_sphinx_autodoc_sphinx,
     "sphinx-fonts": smoke_sphinx_fonts,
-    "sphinx-gptheme": smoke_sphinx_gptheme,
+    "sphinx-gp-theme": smoke_sphinx_gp_theme,
+    "sphinx-autodoc-typehints-gp": smoke_sphinx_autodoc_typehints_gp,
 }
 
 

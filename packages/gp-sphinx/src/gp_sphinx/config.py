@@ -17,7 +17,7 @@ Examples
 'my-project'
 
 >>> conf["html_theme"]
-'sphinx-gptheme'
+'sphinx-gp-theme'
 
 >>> "myst_parser" in conf["extensions"]
 True
@@ -47,8 +47,6 @@ from gp_sphinx.defaults import (
     DEFAULT_HTML_STATIC_PATH,
     DEFAULT_MYST_EXTENSIONS,
     DEFAULT_MYST_HEADING_ANCHORS,
-    DEFAULT_NAPOLEON_GOOGLE_DOCSTRING,
-    DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC,
     DEFAULT_PYGMENTS_DARK_STYLE,
     DEFAULT_PYGMENTS_STYLE,
     DEFAULT_SOURCE_SUFFIX,
@@ -226,7 +224,7 @@ def merge_sphinx_config(
     Returns a flat dictionary suitable for injection into a ``docs/conf.py``
     module namespace via ``globals().update(conf)``.
 
-    The default theme is ``sphinx-gptheme`` (a Furo child theme bundled in this
+    The default theme is ``sphinx-gp-theme`` (a Furo child theme bundled in this
     package). Sidebars, templates, CSS, and JS are provided by the theme
     automatically.
 
@@ -247,7 +245,7 @@ def merge_sphinx_config(
     extensions : list[str] | None
         Replace the default extension list entirely. Usually not needed.
     extra_extensions : list[str] | None
-        Add extensions to the defaults (e.g., ``["sphinx_argparse_neo.exemplar"]``).
+        Add extensions to the defaults (e.g., ``["sphinx_autodoc_argparse.exemplar"]``).
     remove_extensions : list[str] | None
         Remove specific defaults (e.g., ``["sphinx_design"]``).
     theme_options : dict | None
@@ -288,9 +286,9 @@ def merge_sphinx_config(
     '1.0'
 
     >>> conf["html_theme"]
-    'sphinx-gptheme'
+    'sphinx-gp-theme'
 
-    >>> len(conf["extensions"]) >= 13
+    >>> len(conf["extensions"]) >= 12
     True
 
     >>> callable(conf["setup"])
@@ -399,9 +397,6 @@ def merge_sphinx_config(
         "autodoc_typehints": DEFAULT_AUTODOC_TYPEHINTS,
         "toc_object_entries_show_parents": DEFAULT_TOC_OBJECT_ENTRIES_SHOW_PARENTS,
         "autodoc_default_options": dict(DEFAULT_AUTODOC_OPTIONS),
-        # Napoleon
-        "napoleon_google_docstring": DEFAULT_NAPOLEON_GOOGLE_DOCSTRING,
-        "napoleon_include_init_with_doc": DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC,
         # Copybutton
         "copybutton_prompt_text": DEFAULT_COPYBUTTON_PROMPT_TEXT,
         "copybutton_prompt_is_regexp": DEFAULT_COPYBUTTON_PROMPT_IS_REGEXP,

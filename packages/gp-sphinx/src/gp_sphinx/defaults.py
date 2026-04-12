@@ -80,9 +80,8 @@ DEFAULT_EXTENSIONS: list[str] = [
     "sphinx.ext.autodoc",
     "sphinx_fonts",
     "sphinx.ext.intersphinx",
-    "sphinx_autodoc_typehints",
+    "sphinx_autodoc_typehints_gp",
     "sphinx.ext.todo",
-    "sphinx.ext.napoleon",
     "sphinx_inline_tabs",
     "sphinx_copybutton",
     "sphinxext.opengraph",
@@ -96,13 +95,13 @@ DEFAULT_EXTENSIONS: list[str] = [
 Examples
 --------
 >>> len(DEFAULT_EXTENSIONS)
-13
+12
 
 >>> DEFAULT_EXTENSIONS[0]
 'sphinx.ext.autodoc'
 """
 
-DEFAULT_THEME: str = "sphinx-gptheme"
+DEFAULT_THEME: str = "sphinx-gp-theme"
 """Default Sphinx HTML theme (Furo child theme bundled in this package)."""
 
 DEFAULT_THEME_OPTIONS: FuroThemeOptions = {
@@ -126,7 +125,7 @@ by :func:`~gp_sphinx.config.merge_sphinx_config`.
 Examples
 --------
 >>> DEFAULT_THEME_OPTIONS["source_branch"]
-'master'
+'main'
 
 >>> DEFAULT_THEME_OPTIONS["source_directory"]
 'docs/'
@@ -306,8 +305,13 @@ Examples
 'bysource'
 """
 
-DEFAULT_AUTOCLASS_CONTENT: str = "both"
-"""Default autodoc autoclass_content setting (show __init__ and class docstring)."""
+DEFAULT_AUTOCLASS_CONTENT: str = "class"
+"""Default autodoc autoclass_content setting.
+
+Uses ``"class"`` (class docstring only) with ``autodoc_class_signature =
+"separated"`` so ``__init__`` is documented as a separate member and its
+parameters appear only once -- not duplicated in the class body.
+"""
 
 DEFAULT_AUTODOC_MEMBER_ORDER: str = "bysource"
 """Default autodoc member ordering."""
@@ -330,16 +334,6 @@ Examples
 'description'
 """
 
-DEFAULT_NAPOLEON_GOOGLE_DOCSTRING: bool = True
-"""Enable Google-style docstring parsing in napoleon."""
-
-DEFAULT_NAPOLEON_INCLUDE_INIT_WITH_DOC: bool = False
-"""Include __init__ docstring in class documentation.
-
-Default is ``False`` to match napoleon's built-in default. Most downstream
-projects never set this explicitly, so ``True`` would change rendered output.
-"""
-
 DEFAULT_COPYBUTTON_LINE_CONTINUATION_CHARACTER: str = "\\"
 """Line continuation character for sphinx-copybutton."""
 
@@ -355,13 +349,11 @@ Examples
 'hide'
 """
 
-DEFAULT_SUPPRESS_WARNINGS: list[str] = [
-    "sphinx_autodoc_typehints.forward_reference",
-]
+DEFAULT_SUPPRESS_WARNINGS: list[str] = []
 """Warnings to suppress by default.
 
 Examples
 --------
 >>> len(DEFAULT_SUPPRESS_WARNINGS)
-1
+0
 """

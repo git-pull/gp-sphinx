@@ -4,11 +4,18 @@ Sphinx extension that documents pytest fixtures as first-class domain objects
 with scope badges, dependency tracking, reverse-dep graphs, and auto-generated
 usage snippets.
 
+The extension auto-loads the shared stack: `sphinx_ux_badges` owns badge
+rendering, `sphinx_ux_autodoc_layout` owns the shared `api-*` regions and summary
+wrappers, and `sphinx_autodoc_typehints_gp` owns fixture return-type rendering.
+
 ## Install
 
 ```console
 $ pip install sphinx-autodoc-pytest-fixtures
 ```
+
+Installing this package also installs `sphinx-ux-badges`,
+`sphinx-ux-autodoc-layout`, and `sphinx-autodoc-typehints-gp` as declared dependencies.
 
 ## Usage
 
@@ -25,7 +32,7 @@ Then document fixtures with:
 
 .. autofixture-index:: myproject.conftest
 
-.. doc-pytest-plugin:: myproject.pytest_plugin
+.. auto-pytest-plugin:: myproject.pytest_plugin
    :project: myproject
    :package: myproject
    :summary: Document your pytest plugin with generated install and fixture

@@ -1,28 +1,27 @@
+"""CSS class name constants for sphinx_autodoc_pytest_fixtures.
+
+All constants use the ``gp-sphinx-pytest-fixtures`` namespace for
+fixture-index layout.  Shared badge primitives come from ``SAB`` in
+``sphinx-ux-badges``; shared card/region primitives come from ``API`` in
+``sphinx-ux-autodoc-layout``.
+
+Examples
+--------
+>>> SPF.FIXTURE_INDEX
+'gp-sphinx-pytest-fixtures__fixture-index'
+
+>>> SPF.TABLE_SCROLL
+'gp-sphinx-pytest-fixtures__table-scroll'
+"""
+
 from __future__ import annotations
 
 
-class _CSS:
-    """CSS class name constants used in generated HTML.
+class SPF:
+    """CSS class name constants (``gp-sphinx-pytest-fixtures`` namespace)."""
 
-    Centralises every ``spf-*`` class name so the extension and stylesheet
-    stay in sync.  Tests import this class to assert on rendered output.
-    """
+    PREFIX = "gp-sphinx-pytest-fixtures"
 
-    PREFIX = "spf"
-    BADGE_GROUP = f"{PREFIX}-badge-group"
-    BADGE = f"{PREFIX}-badge"
-    BADGE_SCOPE = f"{PREFIX}-badge--scope"
-    BADGE_KIND = f"{PREFIX}-badge--kind"
-    BADGE_STATE = f"{PREFIX}-badge--state"
-    BADGE_FIXTURE = f"{PREFIX}-badge--fixture"
-    FACTORY = f"{PREFIX}-factory"
-    OVERRIDE = f"{PREFIX}-override"
-    AUTOUSE = f"{PREFIX}-autouse"
-    DEPRECATED = f"{PREFIX}-deprecated"
-    FIXTURE_INDEX = f"{PREFIX}-fixture-index"
-    TABLE_SCROLL = f"{PREFIX}-table-scroll"
-
-    @staticmethod
-    def scope(name: str) -> str:
-        """Return the scope-specific CSS class, e.g. ``spf-scope-session``."""
-        return f"{_CSS.PREFIX}-scope-{name}"
+    FIXTURE_INDEX = "gp-sphinx-pytest-fixtures__fixture-index"
+    TABLE_SCROLL = "gp-sphinx-pytest-fixtures__table-scroll"
+    DEPRECATED = "gp-sphinx-pytest-fixtures__deprecated"

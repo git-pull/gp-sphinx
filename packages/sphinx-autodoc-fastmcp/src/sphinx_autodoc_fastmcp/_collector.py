@@ -10,7 +10,8 @@ import typing as t
 from sphinx.application import Sphinx
 
 from sphinx_autodoc_fastmcp._models import ToolInfo
-from sphinx_autodoc_fastmcp._parsing import extract_params, format_annotation
+from sphinx_autodoc_fastmcp._parsing import extract_params
+from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ class ToolCollector:
                     func=func,
                     docstring=func.__doc__ or "",
                     params=extract_params(func),
-                    return_annotation=format_annotation(
+                    return_annotation=normalize_annotation_text(
                         inspect.signature(func).return_annotation,
                     ),
                 ),
@@ -120,7 +121,9 @@ def _tool_from_callable(
         func=func,
         docstring=func.__doc__ or "",
         params=extract_params(func),
-        return_annotation=format_annotation(inspect.signature(func).return_annotation),
+        return_annotation=normalize_annotation_text(
+            inspect.signature(func).return_annotation,
+        ),
     )
 
 

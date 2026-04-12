@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import re
-import typing as t
 
 from docutils import nodes
 from sphinx.application import Sphinx
@@ -13,11 +12,23 @@ from sphinx_autodoc_fastmcp._badges import build_safety_badge
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._models import ToolInfo
 from sphinx_autodoc_fastmcp._roles import _tool_ref_placeholder
-
-if t.TYPE_CHECKING:
-    from sphinx.domains.std import StandardDomain
+from sphinx_ux_autodoc_layout import API, api_component
+from sphinx_ux_badges import SAB
 
 logger = logging.getLogger(__name__)
+
+
+def _tool_content_container(section: nodes.section) -> nodes.Element:
+    """Return the shared content wrapper for a FastMCP tool section."""
+    for child in section.children:
+        if not isinstance(child, api_component) or child.get("name") != API.ENTRY:
+            continue
+        for grandchild in child.children:
+            if isinstance(grandchild, api_component) and grandchild.get("name") == (
+                API.CONTENT
+            ):
+                return grandchild
+    return section
 
 
 def collect_tool_section_content(app: Sphinx, doctree: nodes.document) -> None:
@@ -35,6 +46,7 @@ def collect_tool_section_content(app: Sphinx, doctree: nodes.document) -> None:
         parent = section.parent
         if parent is None:
             continue
+        content = _tool_content_container(section)
         idx = parent.index(section)
         while idx + 1 < len(parent.children):
             sibling = parent.children[idx + 1]
@@ -44,12 +56,12 @@ def collect_tool_section_content(app: Sphinx, doctree: nodes.document) -> None:
             if isinstance(sibling, nodes.section):
                 break
             parent.remove(sibling)
-            section.append(sibling)
+            content.append(sibling)
 
 
 def register_tool_labels(app: Sphinx, doctree: nodes.document) -> None:
     """Mirror autosectionlabel for tool sections (``{ref}`tool-id```)."""
-    domain = t.cast("StandardDomain", app.env.get_domain("std"))
+    domain = app.env.domains.standard_domain
     docname = app.env.docname
     for section in doctree.findall(nodes.section):
         if not section["ids"]:
@@ -105,7 +117,7 @@ def resolve_tool_refs(
     fromdocname: str,
 ) -> None:
     """Resolve ``:tool:`` / ``:toolref:`` / ``:toolicon*:`` placeholders."""
-    domain = t.cast("StandardDomain", app.env.get_domain("std"))
+    domain = app.env.domains.standard_domain
     builder = app.builder
     tool_data: dict[str, ToolInfo] = getattr(app.env, "fastmcp_tools", {})
 
@@ -143,7 +155,7 @@ def resolve_tool_refs(
                 style = "inline-icon" if icon_pos.startswith("inline") else "icon-only"
                 badge = build_safety_badge(tool_info.safety, icon_only=True)
                 if style == "inline-icon":
-                    badge["classes"].append("sab-inline-icon")
+                    badge["classes"].append(SAB.INLINE_ICON)
 
             if icon_pos == "left":
                 if badge:

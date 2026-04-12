@@ -7,7 +7,7 @@ import typing as t
 import pytest
 from docutils import nodes
 
-from sphinx_argparse_neo.roles import (
+from sphinx_autodoc_argparse.roles import (
     cli_choice_role,
     cli_command_role,
     cli_default_role,
@@ -16,6 +16,9 @@ from sphinx_argparse_neo.roles import (
     normalize_options,
     register_roles,
 )
+
+if t.TYPE_CHECKING:
+    from sphinx.application import Sphinx
 
 # --- normalize_options tests ---
 
@@ -311,9 +314,25 @@ def test_cli_choice_role(
 
 
 def test_register_roles() -> None:
-    """Test register_roles doesn't raise errors."""
-    # This should not raise any exceptions
-    register_roles()
+    """register_roles() registers the five CLI roles via app.add_role()."""
+
+    class _RoleRecorder:
+        def __init__(self) -> None:
+            self.added: list[tuple[str, object]] = []
+
+        def add_role(self, name: str, role: object, override: bool = False) -> None:
+            self.added.append((name, role))
+
+    app = _RoleRecorder()
+    register_roles(t.cast("Sphinx", app))
+
+    assert [name for name, _ in app.added] == [
+        "cli-option",
+        "cli-metavar",
+        "cli-command",
+        "cli-default",
+        "cli-choice",
+    ]
 
 
 # --- Role Return Type Tests ---

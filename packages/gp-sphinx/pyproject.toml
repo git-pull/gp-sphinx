@@ -25,12 +25,12 @@ classifiers = [
 readme = "README.md"
 keywords = ["sphinx", "documentation", "configuration"]
 dependencies = [
-  "sphinx<9",
-  "sphinx-gptheme==0.0.1a7",
+  "sphinx>=8.1,<9",
+  "sphinx-gp-theme==0.0.1a7",
   "sphinx-fonts==0.0.1a7",
   "myst-parser",
   "docutils",
-  "sphinx-autodoc-typehints",
+  "sphinx-autodoc-typehints-gp==0.0.1a7",
   "sphinx-inline-tabs",
   "sphinx-copybutton",
   "sphinxext-opengraph",
@@ -42,7 +42,7 @@ dependencies = [
 
 [project.optional-dependencies]
 argparse = [
-  "sphinx-argparse-neo==0.0.1a7",
+  "sphinx-autodoc-argparse==0.0.1a7",
 ]
 
 [project.urls]

@@ -2,10 +2,28 @@
 
 # gp-sphinx
 
-Shared Sphinx documentation platform for [git-pull](https://github.com/git-pull) projects.
+Integrated autodoc design system for [git-pull](https://github.com/git-pull) Sphinx projects.
 
 ::::{grid} 1 1 2 3
 :gutter: 2 2 3 3
+
+:::{grid-item-card} What's New
+:link: whats-new
+:link-type: doc
+The unified autodoc design system — seven major advancements.
+:::
+
+:::{grid-item-card} Gallery
+:link: gallery
+:link-type: doc
+Visual showcase of the autodoc design system in action.
+:::
+
+:::{grid-item-card} Architecture
+:link: architecture
+:link-type: doc
+Three-tier package organization — infrastructure, domain, and presentation.
+:::
 
 :::{grid-item-card} Quickstart
 :link: quickstart
@@ -16,7 +34,7 @@ Install and get started in minutes.
 :::{grid-item-card} Packages
 :link: packages/index
 :link-type: doc
-Eight workspace packages — coordinator, extensions, and theme.
+Twelve workspace packages — coordinator, extensions, and theme.
 :::
 
 :::{grid-item-card} Configuration
@@ -53,13 +71,65 @@ conf = merge_sphinx_config(
 globals().update(conf)
 ```
 
+## What you get
+
+Out of the box, {py:func}`~gp_sphinx.config.merge_sphinx_config` activates:
+
+- **Unified badge system** — type and modifier badges for functions, classes, fixtures, tools
+- **Componentized layout** — card containers, parameter folding, managed signatures
+- **Clean type hints** — simplified annotations with cross-referenced links
+- **Five domain autodocumenters** — Python API, pytest fixtures, FastMCP tools, docutils, Sphinx config
+- **IBM Plex fonts** — professional typography with preloaded web fonts
+- **Dark mode** — full light/dark theming via CSS custom properties
+
+See the {doc}`gallery` to see these in action.
+
 ```{toctree}
 :hidden:
 
+whats-new
+gallery
+architecture
 quickstart
 configuration
 packages/index
 api
 project/index
 history
+```
+
+```{toctree}
+:caption: Domain Packages
+:hidden:
+
+packages/sphinx-autodoc-api-style
+packages/sphinx-autodoc-argparse
+packages/sphinx-autodoc-docutils
+packages/sphinx-autodoc-fastmcp
+packages/sphinx-autodoc-pytest-fixtures
+packages/sphinx-autodoc-sphinx
+```
+
+```{toctree}
+:caption: UX
+:hidden:
+
+packages/sphinx-fonts
+packages/sphinx-ux-autodoc-layout
+packages/sphinx-ux-badges
+```
+
+```{toctree}
+:caption: Utils
+:hidden:
+
+packages/sphinx-autodoc-typehints-gp
+```
+
+```{toctree}
+:caption: Internal
+:hidden:
+
+packages/gp-sphinx
+packages/sphinx-gp-theme
 ```

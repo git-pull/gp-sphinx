@@ -1,11 +1,25 @@
 # sphinx-autodoc-pytest-fixtures
 
-{bdg-warning-line}`Alpha` {bdg-link-secondary-line}`GitHub <https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-pytest-fixtures>` {bdg-link-secondary-line}`PyPI <https://pypi.org/project/sphinx-autodoc-pytest-fixtures/>`
+```{gp-sphinx-package-meta} sphinx-autodoc-pytest-fixtures
+```
+
+:::{admonition} Alpha
+:class: warning
+
+Rendered output is stable. The Python API, CSS class names, and Sphinx
+config value names may change without a major version bump. Pin your
+dependency to a specific version range in production.
+:::
 
 Sphinx extension for documenting pytest fixtures as first-class objects. It
 registers a Python-domain fixture directive and role, autodoc helpers for bulk
 fixture discovery, a higher-level pytest plugin page helper, and the
 badge/index UI used throughout the page below.
+
+Fixture pages now use the shared stack end-to-end: badge output comes from
+`sphinx-ux-badges`, visible `api-*` structure comes from
+`sphinx-ux-autodoc-layout`, and fixture return types use the shared
+`sphinx-autodoc-typehints-gp` rendering helpers.
 
 ```console
 $ pip install sphinx-autodoc-pytest-fixtures
@@ -17,10 +31,14 @@ $ pip install sphinx-autodoc-pytest-fixtures
 extensions = ["sphinx_autodoc_pytest_fixtures"]
 
 pytest_fixture_lint_level = "warning"
-pytest_external_fixture_links = {
+pytest_fixture_external_links = {
     "db": "https://docs.example.com/testing#db",
 }
 ```
+
+`sphinx_autodoc_pytest_fixtures` automatically registers `sphinx_ux_badges`,
+`sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via `app.setup_extension()`.
+You do not need to add them separately to your `extensions` list.
 
 ## Registered configuration values
 
@@ -35,6 +53,23 @@ pytest_external_fixture_links = {
 .. autodirective-index:: sphinx_autodoc_pytest_fixtures
 .. autorole-index:: sphinx_autodoc_pytest_fixtures
 ```
+
+## Working usage examples
+
+Render one fixture index:
+
+````myst
+```{autofixture-index} my_project.pytest_plugin
+```
+````
+
+Render a standard pytest plugin page:
+
+````myst
+:::{auto-pytest-plugin} my_project.pytest_plugin
+:package: my-project
+:::
+````
 
 ## Live demos
 
@@ -55,14 +90,14 @@ pytest_external_fixture_links = {
 
 ### Plugin page helper
 
-:::{doc-pytest-plugin} spf_demo_fixtures
+:::{auto-pytest-plugin} spf_demo_fixtures
 :package: sphinx-autodoc-pytest-fixtures
 
 Add project-specific usage notes here. The helper renders the install
 section, autodiscovery note, and full fixture summary/reference.
 :::
 
-#### When to use `doc-pytest-plugin`
+#### When to use `auto-pytest-plugin`
 
 Use this directive for a standard pytest plugin page where you want consistent
 house-style: an install section, the `pytest11` autodiscovery note, and a

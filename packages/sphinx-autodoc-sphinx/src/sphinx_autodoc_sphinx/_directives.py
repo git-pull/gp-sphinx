@@ -25,9 +25,19 @@ from dataclasses import dataclass
 
 from docutils import nodes
 from docutils.parsers.rst import directives
-from docutils.statemachine import StringList
 from sphinx import addnodes
 from sphinx.util.docutils import SphinxDirective
+
+from sphinx_autodoc_sphinx._badges import build_config_badge_group
+from sphinx_autodoc_typehints_gp import normalize_type_collection_text
+from sphinx_ux_autodoc_layout import (
+    ApiFactRow,
+    build_api_facts_section,
+    build_api_summary_section,
+    inject_signature_slots,
+    iter_desc_nodes,
+    parse_generated_markup,
+)
 
 if t.TYPE_CHECKING:
     from sphinx.util.typing import OptionSpec
@@ -163,6 +173,13 @@ def _render_default(value: object) -> str:  # object: only calls repr()
     return f"``{value!r}``"
 
 
+def _literal_paragraph(text: str) -> nodes.paragraph:
+    """Return a paragraph containing one literal node."""
+    paragraph = nodes.paragraph()
+    paragraph += nodes.literal(text, text)
+    return paragraph
+
+
 def _is_complex_default(value: object) -> bool:  # object: only calls repr()
     """Return True when repr of value exceeds the inline display threshold.
 
@@ -203,32 +220,6 @@ def _make_default_block(value: object) -> nodes.literal_block:  # object: calls 
     block["highlight_args"] = {}
     block["force"] = False
     return block
-
-
-def _render_types(
-    types: object,
-    default: object,
-) -> str:  # object: uses isinstance guards
-    """Render a readable type expression for ``:type:``.
-
-    Examples
-    --------
-    >>> _render_types((bool, str), False)
-    '``bool | str``'
-    >>> _render_types((), None)
-    '``None``'
-    """
-    if isinstance(types, (list, tuple, set, frozenset)) and types:
-        names = sorted(
-            "None" if getattr(item, "__name__", "") == "NoneType" else item.__name__
-            for item in t.cast("t.Iterable[type]", types)
-        )
-        return f"``{' | '.join(names)}``"
-    if types:
-        return f"``{types!r}``"
-    if default is None:
-        return "``None``"
-    return f"``{type(default).__name__}``"
 
 
 def _config_values_from_calls(
@@ -291,7 +282,8 @@ def discover_config_values(module_name: str) -> list[SphinxConfigValue]:
 
     Examples
     --------
-    >>> names = {value.name for value in discover_config_values("sphinx_argparse_neo")}
+    >>> vals = discover_config_values("sphinx_autodoc_argparse")
+    >>> names = {value.name for value in vals}
     >>> names == {
     ...     "argparse_group_title_prefix",
     ...     "argparse_show_defaults",
@@ -340,26 +332,16 @@ def render_config_value_markup(
     >>> markup = render_config_value_markup(value)
     >>> ".. confval:: demo_option" in markup
     True
-    >>> ":default: ``True``" in markup
-    True
+    >>> ":default:" in markup
+    False
     """
     lines = [
         f".. confval:: {value.name}",
         "   :no-index:" if no_index else "",
-        f"   :type: {_render_types(value.types, value.default)}",
+        "",
     ]
-    if not _is_complex_default(value.default):
-        lines.append(f"   :default: {_render_default(value.default)}")
-    lines.append("")
     if value.description:
         lines.extend([f"   {value.description}", ""])
-    lines.extend(
-        [
-            f"   Registered by ``{value.module_name}.setup()``.",
-            "",
-            f"   Rebuild: ``{value.rebuild or 'none'}``.",
-        ],
-    )
     return "\n".join(lines)
 
 
@@ -407,54 +389,19 @@ def render_config_index_markup(
         "     - Rebuild",
     ]
     for value in values:
+        type_text = normalize_type_collection_text(
+            value.types,
+            default=value.default,
+        )
         lines.extend(
             [
                 f"   * - ``{value.name}``",
-                f"     - {_render_types(value.types, value.default)}",
+                f"     - ``{type_text}``",
                 f"     - {_render_default(value.default)}",
                 f"     - ``{value.rebuild or 'none'}``",
             ],
         )
     return "\n".join(lines)
-
-
-# NOTE: This function is byte-for-byte identical to
-# sphinx_autodoc_docutils._directives._render_blocks.  Both packages depend
-# only on sphinx (not on each other), so a shared location would require a new
-# dependency.  If a third caller emerges, extract to gp_sphinx._render.
-def _render_blocks(directive: SphinxDirective, markup: str) -> list[nodes.Node]:
-    """Parse generated markup back through Sphinx.
-
-    Examples
-    --------
-    >>> class DummyState:
-    ...     def nested_parse(
-    ...         self,
-    ...         view_list: StringList,
-    ...         offset: int,
-    ...         node: nodes.Element,
-    ...     ) -> None:
-    ...         for line in view_list:
-    ...             node += nodes.paragraph("", line)
-    >>> class DummyDirective:
-    ...     state = DummyState()
-    ...     content_offset = 0
-    ...     def get_source_info(self) -> tuple[str, int]:
-    ...         return ("demo.md", 1)
-    >>> rendered = _render_blocks(DummyDirective(), "demo")  # type: ignore[arg-type]
-    >>> rendered[0].astext()
-    'demo'
-    """
-    if hasattr(directive, "parse_text_to_nodes"):
-        return directive.parse_text_to_nodes(markup)
-
-    source, _line = directive.get_source_info()
-    view_list: StringList = StringList()
-    for line in markup.splitlines():
-        view_list.append(line, source)
-    container = nodes.container()
-    directive.state.nested_parse(view_list, directive.content_offset, container)
-    return [container] if container.children else []
 
 
 def _iter_desc_content(
@@ -471,7 +418,66 @@ def _iter_desc_content(
     []
     """
     for node in node_list:
-        yield from node.traverse(addnodes.desc_content)
+        yield from node.findall(addnodes.desc_content)
+
+
+def _inject_config_badges(
+    node_list: list[nodes.Node],
+    value: SphinxConfigValue,
+) -> None:
+    """Attach shared badge-slot metadata to parsed ``confval`` entries."""
+    badge_group = build_config_badge_group(value)
+    for desc_node in iter_desc_nodes(node_list):
+        if desc_node.get("domain") != "std" or desc_node.get("objtype") != "confval":
+            continue
+        for sig_node in desc_node.children:
+            if not isinstance(sig_node, addnodes.desc_signature):
+                continue
+            inject_signature_slots(
+                sig_node,
+                marker_attr="sas_badges_injected",
+                badge_node=badge_group.deepcopy(),
+                extract_source_link=False,
+            )
+
+
+def _config_fact_rows(value: SphinxConfigValue) -> list[ApiFactRow]:
+    """Return shared fact rows for one config value."""
+    default_body: nodes.Node
+    if _is_complex_default(value.default):
+        default_body = _make_default_block(value.default)
+    else:
+        default_body = _literal_paragraph(repr(value.default))
+    return [
+        ApiFactRow(
+            "Type",
+            _literal_paragraph(
+                normalize_type_collection_text(
+                    value.types,
+                    default=value.default,
+                )
+            ),
+        ),
+        ApiFactRow("Default", default_body),
+        ApiFactRow("Registered by", _literal_paragraph(f"{value.module_name}.setup()")),
+    ]
+
+
+def _render_config_value_nodes(
+    directive: SphinxDirective,
+    value: SphinxConfigValue,
+    *,
+    no_index: bool = False,
+) -> list[nodes.Node]:
+    """Render one config value into parsed nodes with layout metadata."""
+    value_nodes = parse_generated_markup(
+        directive,
+        render_config_value_markup(value, no_index=no_index),
+    )
+    _inject_config_badges(value_nodes, value)
+    for desc_content in _iter_desc_content(value_nodes):
+        desc_content += build_api_facts_section(_config_fact_rows(value))
+    return value_nodes
 
 
 class AutoconfigvalueDirective(SphinxDirective):
@@ -483,9 +489,10 @@ class AutoconfigvalueDirective(SphinxDirective):
 
     def run(self) -> list[nodes.Node]:
         value = discover_config_value(self.arguments[0])
-        return _render_blocks(
+        return _render_config_value_nodes(
             self,
-            render_config_value_markup(value, no_index="no-index" in self.options),
+            value,
+            no_index="no-index" in self.options,
         )
 
 
@@ -501,16 +508,9 @@ class AutoconfigvaluesDirective(SphinxDirective):
         no_index = "no-index" in self.options
         result: list[nodes.Node] = []
         for value in discover_config_values(module_name):
-            markup = render_config_value_markup(value, no_index=no_index)
-            value_nodes = _render_blocks(self, markup)
-            if _is_complex_default(value.default):
-                block = _make_default_block(value.default)
-                for desc_content in _iter_desc_content(value_nodes):
-                    # Insert before the trailing metadata paragraphs
-                    # ("Registered by …" and "Rebuild: …")
-                    idx = max(0, len(desc_content) - 2)
-                    desc_content.insert(idx, block)
-            result.extend(value_nodes)
+            result.extend(
+                _render_config_value_nodes(self, value, no_index=no_index),
+            )
         return result
 
 
@@ -522,10 +522,16 @@ class AutoconfigvalueIndexDirective(SphinxDirective):
 
     def run(self) -> list[nodes.Node]:
         markup = render_config_index_markup(self.arguments[0])
-        return _render_blocks(self, markup) if markup else []
+        if not markup:
+            return []
+        rendered = parse_generated_markup(self, markup)
+        return [
+            build_api_summary_section(node) if isinstance(node, nodes.table) else node
+            for node in rendered
+        ]
 
 
-class AutosphinxconfigIndexDirective(SphinxDirective):
+class AutoconfigvaluePageDirective(SphinxDirective):
     """Render a drop-in index plus detailed ``confval`` blocks.
 
     This keeps the legacy directive useful on package pages without forcing
@@ -537,9 +543,16 @@ class AutosphinxconfigIndexDirective(SphinxDirective):
 
     def run(self) -> list[nodes.Node]:
         module_name = self.arguments[0]
-        parts = [
-            render_config_index_markup(module_name, heading="Sphinx Config Index"),
-            render_config_values_markup(module_name),
-        ]
-        markup = "\n\n".join(part for part in parts if part)
-        return _render_blocks(self, markup) if markup else []
+        result: list[nodes.Node] = []
+        markup = render_config_index_markup(module_name, heading="Sphinx Config Index")
+        if markup:
+            rendered = parse_generated_markup(self, markup)
+            result.extend(
+                build_api_summary_section(node)
+                if isinstance(node, nodes.table)
+                else node
+                for node in rendered
+            )
+        for value in discover_config_values(module_name):
+            result.extend(_render_config_value_nodes(self, value))
+        return result

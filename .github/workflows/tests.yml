@@ -124,13 +124,17 @@ jobs:
         target:
           - root-install
           - gp-sphinx
-          - sphinx-gptheme
+          - sphinx-gp-theme
           - sphinx-fonts
-          - sphinx-argparse-neo
+          - sphinx-autodoc-argparse
           - sphinx-autodoc-docutils
           - sphinx-autodoc-sphinx
           - sphinx-autodoc-pytest-fixtures
           - sphinx-autodoc-api-style
+          - sphinx-autodoc-fastmcp
+          - sphinx-autodoc-typehints-gp
+          - sphinx-ux-badges
+          - sphinx-ux-autodoc-layout
     steps:
       - uses: actions/checkout@v6
 

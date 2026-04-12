@@ -374,15 +374,15 @@ body[data-theme="dark"] {
  * packaged theme CSS so previews match downstream builds.
  * ────────────────────────────────────────────────────────── */
 :root {
-  --badge-safety-readonly-bg: #1f7a3f;
-  --badge-safety-readonly-border: #2a8d4d;
-  --badge-safety-readonly-text: #f3fff7;
-  --badge-safety-mutating-bg: #b96a1a;
-  --badge-safety-mutating-border: #cf7a23;
-  --badge-safety-mutating-text: #fff8ef;
-  --badge-safety-destructive-bg: #b4232c;
-  --badge-safety-destructive-border: #cb3640;
-  --badge-safety-destructive-text: #fff5f5;
+  --gp-sphinx-fastmcp-safety-readonly-bg: #1f7a3f;
+  --gp-sphinx-fastmcp-safety-readonly-border: #2a8d4d;
+  --gp-sphinx-fastmcp-safety-readonly-text: #f3fff7;
+  --gp-sphinx-fastmcp-safety-mutating-bg: #b96a1a;
+  --gp-sphinx-fastmcp-safety-mutating-border: #cf7a23;
+  --gp-sphinx-fastmcp-safety-mutating-text: #fff8ef;
+  --gp-sphinx-fastmcp-safety-destructive-bg: #b4232c;
+  --gp-sphinx-fastmcp-safety-destructive-border: #cb3640;
+  --gp-sphinx-fastmcp-safety-destructive-text: #fff5f5;
 }
 
 h2:has(> .sd-badge[role="note"][aria-label^="Safety tier:"]),
@@ -409,21 +409,21 @@ h4:has(> .sd-badge[role="note"][aria-label^="Safety tier:"]) {
 }
 
 .sd-badge.sd-bg-success[role="note"][aria-label^="Safety tier:"] {
-  background-color: var(--badge-safety-readonly-bg) !important;
-  color: var(--badge-safety-readonly-text) !important;
-  border-color: var(--badge-safety-readonly-border);
+  background-color: var(--gp-sphinx-fastmcp-safety-readonly-bg) !important;
+  color: var(--gp-sphinx-fastmcp-safety-readonly-text) !important;
+  border-color: var(--gp-sphinx-fastmcp-safety-readonly-border);
 }
 
 .sd-badge.sd-bg-warning[role="note"][aria-label^="Safety tier:"] {
-  background-color: var(--badge-safety-mutating-bg) !important;
-  color: var(--badge-safety-mutating-text) !important;
-  border-color: var(--badge-safety-mutating-border);
+  background-color: var(--gp-sphinx-fastmcp-safety-mutating-bg) !important;
+  color: var(--gp-sphinx-fastmcp-safety-mutating-text) !important;
+  border-color: var(--gp-sphinx-fastmcp-safety-mutating-border);
 }
 
 .sd-badge.sd-bg-danger[role="note"][aria-label^="Safety tier:"] {
-  background-color: var(--badge-safety-destructive-bg) !important;
-  color: var(--badge-safety-destructive-text) !important;
-  border-color: var(--badge-safety-destructive-border);
+  background-color: var(--gp-sphinx-fastmcp-safety-destructive-bg) !important;
+  color: var(--gp-sphinx-fastmcp-safety-destructive-text) !important;
+  border-color: var(--gp-sphinx-fastmcp-safety-destructive-border);
 }
 
 .sd-badge.sd-bg-success[role="note"][aria-label^="Safety tier:"]::before {
