@@ -437,6 +437,25 @@ Rules:
   `NamedTuple`
 - **No function-scoped Sphinx build fixtures** — always module- or session-scoped
 
+## CSS Standards
+
+All CSS classes, custom properties, and MyST directive names added by a
+workspace package live under the `gp-sphinx-*` namespace:
+
+- **Tier A (shared concepts)** — `gp-sphinx-<concept>` (e.g.,
+  `gp-sphinx-badge`, `gp-sphinx-toolbar`). Used by multiple packages.
+- **Tier B (package-owned)** — `gp-sphinx-<pkg>__<thing>` BEM-style
+  (e.g., `gp-sphinx-fastmcp__safety-readonly`,
+  `gp-sphinx-pytest-fixtures__fixture-index`).
+- **Modifiers** — axis-value pairs `--<axis>-<value>` (e.g.,
+  `gp-sphinx-badge--size-xs`, `gp-sphinx-badge--type-function`).
+- **Custom properties** — mirror the class namespace:
+  `--gp-sphinx-<pkg>-<token>`. Furo-owned variables (`--color-api-*`,
+  `--font-stack--*`, etc.) stay untouched.
+- **Specificity** — prefer chained class selectors
+  (`.gp-sphinx-badge.gp-sphinx-badge--dense`); keep selectors at 0,3,0
+  max.
+
 ## Coding Standards
 
 Key highlights:
