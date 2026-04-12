@@ -107,14 +107,22 @@ def test_redirects_cover_legacy_extensions_paths() -> None:
     """Legacy extensions/* redirects exist for the packages index and pages."""
     redirects = (REPO_ROOT / "docs" / "redirects.txt").read_text().splitlines()
     redirect_map = dict(line.split(maxsplit=1) for line in redirects if line.strip())
-    expected = {
+    required = {
         "extensions/index": "packages/index",
         **{
             f"extensions/{package['name']}": f"packages/{package['name']}"
             for package in package_reference.workspace_packages()
         },
     }
-    assert redirect_map == expected
+    # Required entries must be present; additional backward-compat redirects
+    # (e.g., packages/sphinx-gptheme -> packages/sphinx-gp-theme) are allowed.
+    missing = required.keys() - redirect_map.keys()
+    assert not missing, f"Missing redirects: {missing}"
+    for source, target in required.items():
+        assert redirect_map[source] == target, (
+            f"Redirect {source!r} points to {redirect_map[source]!r}, "
+            f"expected {target!r}"
+        )
 
 
 class MaturityBadgeFixture(t.NamedTuple):
