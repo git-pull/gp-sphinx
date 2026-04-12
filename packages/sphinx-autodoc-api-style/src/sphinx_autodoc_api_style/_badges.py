@@ -143,7 +143,13 @@ def build_badge_group(
             BadgeSpec(
                 _MOD_LABELS[mod],
                 tooltip=_MOD_TOOLTIPS[mod],
-                classes=(SAB.BADGE, SAB.BADGE_MOD, _MOD_CSS[mod]),
+                classes=(
+                    SAB.BADGE,
+                    SAB.BADGE_MOD,
+                    SAB.DENSE,
+                    SAB.UNDERLINE_DOTTED,
+                    _MOD_CSS[mod],
+                ),
                 fill=fill,
             )
         )
@@ -155,7 +161,13 @@ def build_badge_group(
             BadgeSpec(
                 label,
                 tooltip=tooltip,
-                classes=(SAB.BADGE, SAB.BADGE_TYPE, SAB.obj_type(objtype)),
+                classes=(
+                    SAB.BADGE,
+                    SAB.BADGE_TYPE,
+                    SAB.DENSE,
+                    SAB.UNDERLINE_DOTTED,
+                    SAB.obj_type(objtype),
+                ),
             )
         )
 
