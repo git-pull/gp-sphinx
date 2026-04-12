@@ -11,7 +11,7 @@ def _extract_init_header(html: str) -> str:
     """Return the full ``LayoutDemo.__init__`` header fragment."""
     init_match = re.search(
         r'(<dt (?=[^>]*class="[^"]*api-header[^"]*")'
-        r'(?=[^>]*id="gal_demo_api\.LayoutDemo\.__init__")[^>]*>.*?</dt>)',
+        r'(?=[^>]*id="api_demo_layout\.LayoutDemo\.__init__")[^>]*>.*?</dt>)',
         html,
         re.DOTALL,
     )
@@ -48,10 +48,10 @@ def test_layout_demo_renders_api_component_contract(layout_default_html: str) ->
     assert 'class="api-source-link"' in init_html
     assert 'class="api-signature-expanded api-sig-expanded"' in init_html
     assert (
-        'aria-controls="gal_demo_api.LayoutDemo.__init__--signature-expanded"'
+        'aria-controls="api_demo_layout.LayoutDemo.__init__--signature-expanded"'
         in init_html
     )
-    assert 'id="gal_demo_api.LayoutDemo.__init__--signature-expanded"' in init_html
+    assert 'id="api_demo_layout.LayoutDemo.__init__--signature-expanded"' in init_html
     assert "<dl>" in init_html
     assert '<span class="sig-paren">(</span>' in init_html
     assert '<span class="sig-paren">)</span>' in init_html

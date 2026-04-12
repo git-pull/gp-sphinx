@@ -72,13 +72,13 @@ Large parameter lists fold automatically.  The class below has 13 parameters
 (above the default threshold of 10), so its field list is collapsed into a
 disclosure widget.
 
-```{py:module} gal_demo_api
+```{py:module} api_demo_layout
 ```
 
 ### Class with members (regions + fold)
 
 ```{eval-rst}
-.. autoclass:: gal_demo_api.LayoutDemo
+.. autoclass:: api_demo_layout.LayoutDemo
    :members:
    :noindex:
 ```
@@ -86,7 +86,7 @@ disclosure widget.
 ### Small function (no fold)
 
 ```{eval-rst}
-.. autofunction:: gal_demo_api.compact_function
+.. autofunction:: api_demo_layout.compact_function
    :noindex:
 ```
 
