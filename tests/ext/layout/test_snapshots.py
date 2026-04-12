@@ -7,11 +7,11 @@ import typing as t
 
 from docutils import nodes
 from sphinx import addnodes
-from sphinx_autodoc_layout._nodes import build_api_slot
-from sphinx_autodoc_layout._transforms import on_doctree_resolved
 
 from sphinx_autodoc_fastmcp._models import ParamInfo, ToolInfo
 from sphinx_autodoc_fastmcp._prototype import build_tool_desc_prototype
+from sphinx_autodoc_layout._nodes import build_api_slot
+from sphinx_autodoc_layout._transforms import on_doctree_resolved
 
 
 def _make_parameter(

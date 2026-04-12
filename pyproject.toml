@@ -141,6 +141,9 @@ known-first-party = [
   "sphinx_autodoc_sphinx",
   "sphinx_autodoc_api_style",
   "sphinx_autodoc_fastmcp",
+  "sphinx_autodoc_typehints_gp",
+  "sphinx_autodoc_badges",
+  "sphinx_autodoc_layout",
 ]
 combine-as-imports = true
 required-imports = [

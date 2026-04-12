@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from docutils import nodes
+
 from sphinx_autodoc_badges import SAB, BadgeSpec, build_badge_group_from_specs
 
 _GROUP_CLASS = SAB.BADGE_GROUP

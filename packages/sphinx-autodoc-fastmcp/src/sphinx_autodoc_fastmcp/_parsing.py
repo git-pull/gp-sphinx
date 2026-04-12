@@ -7,9 +7,9 @@ import re
 import typing as t
 
 from docutils import nodes
-from sphinx_autodoc_typehints_gp import classify_annotation_display
 
 from sphinx_autodoc_fastmcp._models import ParamInfo
+from sphinx_autodoc_typehints_gp import classify_annotation_display
 
 
 def parse_numpy_params(docstring: str) -> dict[str, str]:

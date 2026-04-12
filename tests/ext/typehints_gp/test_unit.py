@@ -6,9 +6,10 @@ import types
 import typing as t
 
 import pytest
-import sphinx_autodoc_typehints_gp.rendering as sphinx_typehints_rendering
 from docutils import nodes
 from sphinx import addnodes
+
+import sphinx_autodoc_typehints_gp.rendering as sphinx_typehints_rendering
 from sphinx_autodoc_typehints_gp import (
     AnnotationDisplay,
     build_annotation_display_paragraph,
@@ -1058,6 +1059,7 @@ def test_numpy_special_section(
 def test_setup_registers_builder_inited_cache_clearing() -> None:
     """setup() connects builder-inited to _clear_caches."""
     from sphinx.application import Sphinx
+
     from sphinx_autodoc_typehints_gp.extension import _clear_caches, setup
 
     connections: list[tuple[str, t.Any]] = []

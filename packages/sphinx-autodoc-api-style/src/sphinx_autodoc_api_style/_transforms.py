@@ -12,9 +12,9 @@ import typing as t
 from docutils import nodes
 from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
-from sphinx_autodoc_layout import inject_signature_slots
 
 from sphinx_autodoc_api_style._badges import build_badge_group
+from sphinx_autodoc_layout import inject_signature_slots
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx

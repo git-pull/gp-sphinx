@@ -5,6 +5,7 @@ from __future__ import annotations
 import typing as t
 
 from docutils import nodes
+
 from sphinx_autodoc_badges import (
     SAB,
     BadgeNode,
@@ -13,7 +14,6 @@ from sphinx_autodoc_badges import (
     build_badge_group_from_specs,
     build_toolbar as _sab_build_toolbar,
 )
-
 from sphinx_autodoc_fastmcp._css import _CSS
 
 _SAFETY_LABELS = ("readonly", "mutating", "destructive")

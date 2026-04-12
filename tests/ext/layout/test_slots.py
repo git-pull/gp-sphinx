@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from docutils import nodes
 from sphinx import addnodes
+
 from sphinx_autodoc_layout import inject_signature_slots, is_viewcode_ref
 
 

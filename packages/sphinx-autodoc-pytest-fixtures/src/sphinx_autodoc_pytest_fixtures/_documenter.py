@@ -8,7 +8,6 @@ import typing as t
 from docutils.parsers.rst import directives
 from sphinx.ext.autodoc import FunctionDocumenter
 from sphinx.util import logging as sphinx_logging
-from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 from sphinx_autodoc_pytest_fixtures._constants import (
     _CONFIG_HIDDEN_DEPS,
@@ -26,6 +25,7 @@ from sphinx_autodoc_pytest_fixtures._metadata import (
     _extract_teardown_summary,
     _register_fixture_meta,
 )
+from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 logger = sphinx_logging.getLogger(__name__)
 

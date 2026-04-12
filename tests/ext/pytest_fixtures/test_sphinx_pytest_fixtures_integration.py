@@ -7,8 +7,8 @@ import textwrap
 
 import pytest
 from sphinx.util.inventory import InventoryFile
-from sphinx_autodoc_badges import SAB
 
+from sphinx_autodoc_badges import SAB
 from tests._sphinx_scenarios import (
     SCENARIO_SRCDIR_TOKEN,
     ScenarioFile,
