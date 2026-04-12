@@ -914,7 +914,7 @@ def on_doctree_resolved(
     docname : str
         The document name.
     """
-    if getattr(app.builder, "format", "") != "html":
+    if app.builder.format != "html":
         return
     api_layout_enabled = bool(app.config.api_layout_enabled)
     if not api_layout_enabled and next(doctree.findall(api_slot), None) is None:
