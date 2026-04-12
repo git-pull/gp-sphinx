@@ -6,6 +6,10 @@ Twelve workspace packages in three tiers.  Lower layers never depend on
 higher ones — domain packages consume shared infrastructure, and the
 presentation layer wires everything together for downstream projects.
 
+The sidebar groups these twelve packages into four navigation buckets
+(Domain Packages, UX, Utils, Internal) — a reader-facing grouping that
+is orthogonal to the dependency-ordered tier map below.
+
 ## Tier 1: Shared infrastructure
 
 The rendering pipeline that all domain packages consume:
