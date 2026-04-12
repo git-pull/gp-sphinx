@@ -14,6 +14,7 @@ Badges, type hints, and card layout working together on standard Python domain
 directives.
 
 ```{py:module} gp_demo_api
+:no-index:
 ```
 
 ### Functions
@@ -73,6 +74,7 @@ Large parameter lists fold automatically.  The class below has 13 parameters
 disclosure widget.
 
 ```{py:module} api_demo_layout
+:no-index:
 ```
 
 ### Class with members (regions + fold)
@@ -108,27 +110,22 @@ Tool documentation with safety badges and parameter tables.
 
 ```{eval-rst}
 .. fastmcp-tool:: fastmcp_demo_tools.list_sessions
-   :noindex:
 
 .. fastmcp-tool:: fastmcp_demo_tools.create_session
-   :noindex:
 
 .. fastmcp-tool:: fastmcp_demo_tools.delete_session
-   :noindex:
 ```
 
 ### Parameter table
 
 ```{eval-rst}
 .. fastmcp-tool-input:: fastmcp_demo_tools.create_session
-   :noindex:
 ```
 
 ### Tool summary
 
 ```{eval-rst}
 .. fastmcp-tool-summary::
-   :noindex:
 ```
 
 ---
@@ -136,6 +133,7 @@ Tool documentation with safety badges and parameter tables.
 ## pytest fixtures
 
 ```{py:module} spf_demo_fixtures
+:no-index:
 ```
 
 ### Fixture index
@@ -156,12 +154,11 @@ Tool documentation with safety badges and parameter tables.
 
 ```{eval-rst}
 .. autoconfigvalue-index:: sphinx_config_demo
-   :noindex:
 ```
 
 ```{eval-rst}
 .. autoconfigvalues:: sphinx_config_demo
-   :noindex:
+   :no-index:
 ```
 
 ---
@@ -172,7 +169,6 @@ Tool documentation with safety badges and parameter tables.
 
 ```{eval-rst}
 .. autodirective-index:: docutils_demo
-   :noindex:
 ```
 
 ```{eval-rst}
@@ -184,7 +180,6 @@ Tool documentation with safety badges and parameter tables.
 
 ```{eval-rst}
 .. autorole-index:: docutils_demo
-   :noindex:
 ```
 
 ```{eval-rst}
