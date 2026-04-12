@@ -462,7 +462,8 @@ def smoke_sphinx_autodoc_typehints_gp(dist_dir: pathlib.Path, version: str) -> N
         python_path = _create_venv(tmpdir)
         _install_into_venv(
             python_path,
-            f"sphinx {dist_dir}/sphinx_autodoc_typehints_gp-{version}-py3-none-any.whl",
+            "sphinx",
+            _target_wheel_path(dist_dir, "sphinx-autodoc-typehints-gp"),
         )
         _run_sphinx_build(python_path, docs_dir, tmpdir / "build")
 
