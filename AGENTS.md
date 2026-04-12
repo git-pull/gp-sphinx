@@ -141,6 +141,17 @@ gp_sphinx/
    - `DEFAULT_FONT_FAMILIES` dict
    - Shared sidebar configuration
 
+### Package CSS self-containment
+
+A workspace package's own CSS must style every class its Python code
+emits. If a directive appends `SAB.X` (or any gp-sphinx-* class) to a
+node, the package's own CSS file carries a rule targeting `SAB.X`.
+Cross-package **reuse** of a shared class (e.g., `gp-sphinx-badge`
+styled in `sphinx-ux-badges`) is fine; cross-package **dependence** —
+where your feature only renders correctly because a sibling package
+happens to be loaded — is not. A downstream user installing a single
+extension standalone must get the correct visual result.
+
 ## Testing Strategy
 
 All tests are plain functions (`def test_*`). No `class TestFoo:` groupings. Every test
