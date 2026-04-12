@@ -56,6 +56,12 @@ $ uv add gp-sphinx --prerelease allow
 - New `sphinx-autodoc-typehints-gp` package — single-package replacement
   for `sphinx-autodoc-typehints` + `sphinx.ext.napoleon`; resolves
   annotations statically at build time with no monkey-patching (#18)
+- `sphinx-autodoc-argparse` now ships a real `argparse` Sphinx domain —
+  `program` / `option` / `subcommand` / `positional` ObjTypes,
+  `:argparse:*` xref roles, and two auto-generated indices
+  (`argparse-programsindex`, `argparse-optionsindex`).
+  `Framework :: Sphinx :: Domain` classifier added.  `:option:` /
+  `std:cmdoption` continues to resolve for intersphinx consumers (#18)
 
 ### Bug fixes
 
