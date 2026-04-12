@@ -158,7 +158,7 @@ def test_option_xrefs_resolve_without_warnings(domain_result: _Result) -> None:
 @pytest.mark.integration
 def test_options_appear_in_std_domain(domain_result: _Result) -> None:
     """Argparse options are registered in the std domain's progoptions."""
-    std_domain = domain_result.app.env.get_domain("std")
+    std_domain = domain_result.app.env.domains.standard_domain
     progoptions = std_domain.progoptions
 
     # Top-level options should be registered under program "myapp"

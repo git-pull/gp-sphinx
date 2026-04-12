@@ -26,8 +26,6 @@ from tests.ext.pytest_fixtures._scenario_support import (
 )
 
 if t.TYPE_CHECKING:
-    from sphinx.domains.python import PythonDomain
-
     from tests._sphinx_scenarios import SharedSphinxResult
 
 pytestmark = pytest.mark.integration
@@ -256,7 +254,7 @@ def test_default_fixture_store_and_domain_contract(
     default_dummy_result: SharedSphinxResult,
 ) -> None:
     """Default synthetic fixture scenario populates domain and store indices."""
-    domain = t.cast("PythonDomain", default_dummy_result.app.env.get_domain("py"))
+    domain = default_dummy_result.app.env.domains.python_domain
     objects = domain.data["objects"]
 
     assert (
@@ -328,7 +326,7 @@ def test_manual_directive_without_module_registers_unqualified_name(
         confoverrides={"pytest_fixture_lint_level": "none"},
     )
 
-    domain = t.cast("PythonDomain", result.app.env.get_domain("py"))
+    domain = result.app.env.domains.python_domain
     assert "bare_server" in domain.data["objects"]
 
 

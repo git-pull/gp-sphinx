@@ -187,7 +187,7 @@ class ArgparseRenderer:
         """
         if self.env is None or not names:
             return
-        domain = self.env.get_domain("std")
+        domain = self.env.domains.standard_domain
         program = prog_name.replace(" ", "-") if prog_name else None
         for name in names:
             domain.add_program_option(program, name, self.env.docname, anchor_id)
