@@ -1,8 +1,8 @@
-(sphinx-autodoc-layout)=
+(sphinx-ux-autodoc-layout)=
 
-# sphinx-autodoc-layout
+# sphinx-ux-autodoc-layout
 
-```{sab-package-meta} sphinx-autodoc-layout
+```{sab-package-meta} sphinx-ux-autodoc-layout
 ```
 
 :::{admonition} Alpha
@@ -24,7 +24,7 @@ entries use it directly, and section-card consumers reuse the same inner shell
 through the public `build_api_card_entry()` helper.
 
 ```console
-$ pip install sphinx-autodoc-layout
+$ pip install sphinx-ux-autodoc-layout
 ```
 
 ## Pipeline position
@@ -55,7 +55,7 @@ conf = merge_sphinx_config(
     version="1.0.0",
     copyright="2026, Your Name",
     source_repository="https://github.com/your-org/my-project/",
-    extra_extensions=["sphinx_autodoc_layout"],
+    extra_extensions=["sphinx_ux_autodoc_layout"],
     api_layout_enabled=True,
     api_collapsed_threshold=10,
 )
@@ -64,7 +64,7 @@ conf = merge_sphinx_config(
 Or without `merge_sphinx_config`:
 
 ```python
-extensions = ["sphinx.ext.autodoc", "sphinx_autodoc_layout"]
+extensions = ["sphinx.ext.autodoc", "sphinx_ux_autodoc_layout"]
 api_layout_enabled = True
 ```
 
@@ -154,14 +154,14 @@ The class above renders with:
 ## API reference
 
 ```{eval-rst}
-.. autofunction:: sphinx_autodoc_layout.build_api_card_entry
+.. autofunction:: sphinx_ux_autodoc_layout.build_api_card_entry
 
-.. autofunction:: sphinx_autodoc_layout.build_api_summary_section
+.. autofunction:: sphinx_ux_autodoc_layout.build_api_summary_section
 
-.. autofunction:: sphinx_autodoc_layout.build_api_table_section
+.. autofunction:: sphinx_ux_autodoc_layout.build_api_table_section
 
-.. autofunction:: sphinx_autodoc_layout.build_api_facts_section
+.. autofunction:: sphinx_ux_autodoc_layout.build_api_facts_section
 ```
 
-```{package-reference} sphinx-autodoc-layout
+```{package-reference} sphinx-ux-autodoc-layout
 ```

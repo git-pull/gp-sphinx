@@ -17,7 +17,7 @@ import typing as t
 
 from docutils import nodes
 
-from sphinx_autodoc_layout._nodes import (
+from sphinx_ux_autodoc_layout._nodes import (
     api_permalink,
     build_api_component,
     build_api_inline_component,

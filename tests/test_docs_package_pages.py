@@ -20,7 +20,12 @@ from tests._sphinx_scenarios import (
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
 DOCS_ROOT = REPO_ROOT / "docs"
-PACKAGE_PAGES = sorted((DOCS_ROOT / "packages").glob("sphinx-autodoc-*.md"))
+PACKAGE_PAGES = sorted(
+    [
+        *(DOCS_ROOT / "packages").glob("sphinx-autodoc-*.md"),
+        *(DOCS_ROOT / "packages").glob("sphinx-ux-*.md"),
+    ]
+)
 LIVE_DEMO_MARKERS = (
     "```{eval-rst}",
     "```{sab-badge-demo}",
@@ -168,7 +173,7 @@ def test_architecture_page_names_all_three_tiers() -> None:
     assert "Shared infrastructure" in text or "Tier 1" in text
     assert "Domain" in text or "Tier 2" in text
     assert "Theme" in text or "Tier 3" in text or "Presentation" in text
-    assert "sphinx-autodoc-layout" in text
+    assert "sphinx-ux-autodoc-layout" in text
     assert "sphinx-ux-badges" in text
     assert "sphinx-autodoc-typehints-gp" in text
 
@@ -177,7 +182,7 @@ def test_whats_new_page_covers_key_advancements() -> None:
     """What's-new page documents the major branch advancements."""
     text = (DOCS_ROOT / "whats-new.md").read_text()
 
-    assert "sphinx-autodoc-layout" in text
+    assert "sphinx-ux-autodoc-layout" in text
     assert "sphinx-autodoc-typehints-gp" in text
     assert "badge" in text.lower()
     assert "9.5" in text

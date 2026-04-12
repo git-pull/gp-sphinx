@@ -6,13 +6,13 @@ import typing as t
 
 from docutils import nodes
 
-from sphinx_autodoc_layout._sections import ApiFactRow
 from sphinx_autodoc_sphinx._directives import (
     SphinxConfigValue,
     _config_fact_rows,
     _is_complex_default,
     _make_default_block,
 )
+from sphinx_ux_autodoc_layout._sections import ApiFactRow
 
 
 def _make_value(

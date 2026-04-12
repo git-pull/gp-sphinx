@@ -9,12 +9,12 @@ from sphinx import addnodes
 from sphinx.util import logging as sphinx_logging
 from sphinx.util.nodes import make_refnode
 
-from sphinx_autodoc_layout import build_api_table_section, inject_signature_slots
 from sphinx_autodoc_pytest_fixtures._badges import _build_badge_group_node
 from sphinx_autodoc_pytest_fixtures._constants import _FIELD_LABELS
 from sphinx_autodoc_pytest_fixtures._index import _resolve_fixture_index
 from sphinx_autodoc_pytest_fixtures._models import autofixture_index_node
 from sphinx_autodoc_pytest_fixtures._store import FixtureStoreDict, _get_spf_store
+from sphinx_ux_autodoc_layout import build_api_table_section, inject_signature_slots
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx

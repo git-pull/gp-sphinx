@@ -29,7 +29,7 @@ sys.path.insert(
 )
 sys.path.insert(
     0,
-    str(project_root / "packages" / "sphinx-autodoc-layout" / "src"),
+    str(project_root / "packages" / "sphinx-ux-autodoc-layout" / "src"),
 )
 sys.path.insert(
     0,
@@ -63,7 +63,7 @@ conf = merge_sphinx_config(
         "sphinx_autodoc_fastmcp",
         "sphinx_autodoc_sphinx",
         "sphinx_autodoc_argparse.exemplar",
-        "sphinx_autodoc_layout",
+        "sphinx_ux_autodoc_layout",
     ],
     fastmcp_tool_modules=["fastmcp_demo_tools"],
     fastmcp_area_map={"fastmcp_demo_tools": "packages/sphinx-autodoc-fastmcp"},

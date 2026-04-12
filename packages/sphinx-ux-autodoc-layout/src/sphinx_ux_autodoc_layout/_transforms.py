@@ -7,7 +7,7 @@ structure.
 
 Examples
 --------
->>> from sphinx_autodoc_layout._transforms import _classify_child
+>>> from sphinx_ux_autodoc_layout._transforms import _classify_child
 >>> from docutils import nodes
 >>> _classify_child(nodes.paragraph())
 'narrative'
@@ -23,7 +23,7 @@ import typing as t
 from docutils import nodes
 from sphinx import addnodes
 
-from sphinx_autodoc_layout._nodes import (
+from sphinx_ux_autodoc_layout._nodes import (
     api_component,
     api_fold,
     api_permalink,
@@ -33,7 +33,7 @@ from sphinx_autodoc_layout._nodes import (
     build_api_component,
     build_api_inline_component,
 )
-from sphinx_autodoc_layout._slots import is_viewcode_ref
+from sphinx_ux_autodoc_layout._slots import is_viewcode_ref
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx

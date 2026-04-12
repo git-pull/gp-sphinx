@@ -1,10 +1,10 @@
-"""Tests for sphinx_autodoc_layout._nodes."""
+"""Tests for sphinx_ux_autodoc_layout._nodes."""
 
 from __future__ import annotations
 
 from docutils import nodes
 
-from sphinx_autodoc_layout._nodes import (
+from sphinx_ux_autodoc_layout._nodes import (
     api_component,
     api_fold,
     api_inline_component,

@@ -1,4 +1,4 @@
-# sphinx-autodoc-layout
+# sphinx-ux-autodoc-layout
 
 Componentized layout for Sphinx autodoc output. It preserves Sphinx's
 outer `dl / dt / dd` structure while rebuilding managed object-description
@@ -23,7 +23,7 @@ For shared consumers, the public helper surface now includes:
 ## Install
 
 ```console
-$ pip install sphinx-autodoc-layout
+$ pip install sphinx-ux-autodoc-layout
 ```
 
 ## Usage
@@ -31,7 +31,7 @@ $ pip install sphinx-autodoc-layout
 Standalone Sphinx project:
 
 ```python
-extensions = ["sphinx.ext.autodoc", "sphinx_autodoc_layout"]
+extensions = ["sphinx.ext.autodoc", "sphinx_ux_autodoc_layout"]
 api_layout_enabled = True
 ```
 
@@ -40,12 +40,12 @@ With `gp-sphinx`:
 ```python
 conf = merge_sphinx_config(
     ...,
-    extra_extensions=["sphinx_autodoc_layout"],
+    extra_extensions=["sphinx_ux_autodoc_layout"],
     api_layout_enabled=True,
 )
 ```
 
 ## Documentation
 
-See the [full documentation](https://gp-sphinx.git-pull.com/packages/sphinx-autodoc-layout/)
+See the [full documentation](https://gp-sphinx.git-pull.com/packages/sphinx-ux-autodoc-layout/)
 for configuration reference, CSS classes, and live demos.

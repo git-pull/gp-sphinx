@@ -10,7 +10,7 @@ region wrapper (``api_region``).
 
 Examples
 --------
->>> from sphinx_autodoc_layout._nodes import (
+>>> from sphinx_ux_autodoc_layout._nodes import (
 ...     api_component,
 ...     build_api_component,
 ...     api_fold,

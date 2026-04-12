@@ -8,7 +8,7 @@ from docutils import nodes
 
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._transforms import collect_tool_section_content
-from sphinx_autodoc_layout import build_api_component
+from sphinx_ux_autodoc_layout import build_api_component
 
 
 def test_collect_tool_section_content_appends_siblings_to_api_content() -> None:

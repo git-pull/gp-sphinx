@@ -8,9 +8,9 @@ from docutils import nodes
 from docutils.statemachine import StringList
 from sphinx import addnodes
 
-from sphinx_autodoc_layout import build_api_card_entry, build_api_summary_section
-from sphinx_autodoc_layout._nodes import api_permalink
-from sphinx_autodoc_layout._render import iter_desc_nodes, parse_generated_markup
+from sphinx_ux_autodoc_layout import build_api_card_entry, build_api_summary_section
+from sphinx_ux_autodoc_layout._nodes import api_permalink
+from sphinx_ux_autodoc_layout._render import iter_desc_nodes, parse_generated_markup
 
 
 class _DummyState:

@@ -30,7 +30,7 @@ The shipped `sphinx-autodoc-*` packages now converge on three shared layers for
 the responsibilities they actually share:
 
 - `sphinx_ux_badges` is the only badge primitive and badge-group renderer
-- `sphinx_autodoc_layout` is the only shared presenter for `api-*` entry
+- `sphinx_ux_autodoc_layout` is the only shared presenter for `api-*` entry
   structure and shared body sections
 - `sphinx_autodoc_typehints_gp` is the only owner of canonical annotation
   normalization, type text generation, and cross-reference node rendering
@@ -77,11 +77,11 @@ still `api-layout-right`.
 This migration closed the remaining foundation gaps that were still forcing
 package-local duplication:
 
-- `sphinx_autodoc_layout` now exposes a public shared non-`desc`
+- `sphinx_ux_autodoc_layout` now exposes a public shared non-`desc`
   card-shell builder for section-card consumers
 - shared section builders now cover description, facts, parameters, options,
   footer, and summary/index table wrappers
-- generic card-shell CSS now lives in `sphinx_autodoc_layout` instead of being
+- generic card-shell CSS now lives in `sphinx_ux_autodoc_layout` instead of being
   repeated in FastMCP
 - `sphinx_ux_badges.BadgeSpec` and the shared badge-group builder are now
   the canonical badge pipeline
@@ -99,7 +99,7 @@ The current rendering path is:
    `desc_signature`, `desc_content`, tables, field lists, and literal blocks.
 2. Producer packages discover package-specific metadata.
 3. Producer packages attach shared slots and shared body sections.
-4. `sphinx_autodoc_layout` performs final structural composition in
+4. `sphinx_ux_autodoc_layout` performs final structural composition in
    `doctree-resolved`.
 5. HTML visitors and shared CSS provide the final visual layout.
 
@@ -112,7 +112,7 @@ The current rendering path is:
 - badge-group rendering
 - badge CSS primitives
 
-`sphinx_autodoc_layout`
+`sphinx_ux_autodoc_layout`
 
 - profile-driven desc layout policy
 - shared body section wrappers
@@ -168,7 +168,7 @@ Now fully moved onto the shared badge and type stack for the parts it owns:
 
 - badge creation uses `BadgeSpec`
 - `setup()` auto-loads `sphinx_autodoc_typehints_gp`
-- layout composition remains entirely in `sphinx_autodoc_layout`
+- layout composition remains entirely in `sphinx_ux_autodoc_layout`
 
 ### `sphinx_autodoc_pytest_fixtures`
 
@@ -332,7 +332,7 @@ Top cumulative costs:
 | `posixpath.realpath` | `16.561s` |
 | `_pytest.tmpdir.mktemp` | `0.313s` |
 | `_pytest.pathlib.make_numbered_dir` | `0.155s` |
-| `sphinx_autodoc_layout._transforms.on_doctree_resolved` | negligible compared with builder setup |
+| `sphinx_ux_autodoc_layout._transforms.on_doctree_resolved` | negligible compared with builder setup |
 | `sphinx_autodoc_typehints_gp.rendering.render_annotation_nodes` | negligible compared with builder setup |
 
 Profile total:
@@ -460,7 +460,7 @@ Reasons:
 ### Keep
 
 - `api_slot` as the only cross-package header handoff
-- `sphinx_autodoc_layout` as the sole shared presenter
+- `sphinx_ux_autodoc_layout` as the sole shared presenter
 - `sphinx_ux_badges` as the sole badge DOM owner
 - `sphinx_autodoc_typehints_gp` as the sole annotation rendering layer
 - shared scenario caching in `tests/_sphinx_scenarios.py`

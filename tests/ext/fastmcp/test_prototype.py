@@ -10,8 +10,8 @@ from sphinx import addnodes
 
 from sphinx_autodoc_fastmcp._models import ParamInfo, ToolInfo
 from sphinx_autodoc_fastmcp._prototype import build_tool_desc_prototype
-from sphinx_autodoc_layout._nodes import api_component, api_sig_fold
-from sphinx_autodoc_layout._transforms import on_doctree_resolved
+from sphinx_ux_autodoc_layout._nodes import api_component, api_sig_fold
+from sphinx_ux_autodoc_layout._transforms import on_doctree_resolved
 
 
 def _make_tool_info() -> ToolInfo:

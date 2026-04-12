@@ -14,7 +14,12 @@ from sphinx_autodoc_fastmcp._parsing import (
     make_table,
     parse_rst_inline,
 )
-from sphinx_autodoc_layout import (
+from sphinx_autodoc_typehints_gp import (
+    build_annotation_display_paragraph,
+    build_annotation_paragraph,
+    classify_annotation_display,
+)
+from sphinx_ux_autodoc_layout import (
     ApiFactRow,
     api_permalink,
     build_api_card_entry,
@@ -22,11 +27,6 @@ from sphinx_autodoc_layout import (
     build_api_section,
     build_api_summary_section,
     build_api_table_section,
-)
-from sphinx_autodoc_typehints_gp import (
-    build_annotation_display_paragraph,
-    build_annotation_paragraph,
-    classify_annotation_display,
 )
 
 

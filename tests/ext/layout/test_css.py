@@ -5,7 +5,7 @@ from __future__ import annotations
 import pathlib
 
 _LAYOUT_CSS = pathlib.Path(
-    "packages/sphinx-autodoc-layout/src/sphinx_autodoc_layout/_static/css/layout.css"
+    "packages/sphinx-ux-autodoc-layout/src/sphinx_ux_autodoc_layout/_static/css/layout.css"
 )
 
 

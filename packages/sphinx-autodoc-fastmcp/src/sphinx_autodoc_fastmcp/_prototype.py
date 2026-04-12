@@ -44,11 +44,11 @@ from sphinx_autodoc_fastmcp._parsing import (
     make_para,
     make_table,
 )
-from sphinx_autodoc_layout import inject_signature_slots
 from sphinx_autodoc_typehints_gp import (
     build_annotation_display_paragraph,
     normalize_annotation_text,
 )
+from sphinx_ux_autodoc_layout import inject_signature_slots
 
 
 def _tool_desc_id(tool: ToolInfo) -> str:

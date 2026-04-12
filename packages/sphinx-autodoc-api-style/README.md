@@ -5,7 +5,7 @@ standard Python domain autodoc entries (functions, classes, methods, properties,
 attributes, data, exceptions).
 
 Internally it is now a thin metadata producer on top of the shared stack:
-`sphinx_ux_badges` owns badge rendering and `sphinx_autodoc_layout` owns
+`sphinx_ux_badges` owns badge rendering and `sphinx_ux_autodoc_layout` owns
 the `api-*` entry structure and type rendering.
 
 ## Install
@@ -15,7 +15,7 @@ $ pip install sphinx-autodoc-api-style
 ```
 
 Installing this package also installs `sphinx-ux-badges` and
-`sphinx-autodoc-layout` as declared dependencies.
+`sphinx-ux-autodoc-layout` as declared dependencies.
 
 ## Usage
 
@@ -27,7 +27,7 @@ No special directives are required — existing `.. autofunction::`,
 `.. autoclass::`, and related directives receive badges automatically.
 
 `sphinx_autodoc_api_style` automatically registers `sphinx_ux_badges` and
-`sphinx_autodoc_layout` via `app.setup_extension()`. You do not need to add
+`sphinx_ux_autodoc_layout` via `app.setup_extension()`. You do not need to add
 them separately to your `extensions` list.
 
 ## Documentation

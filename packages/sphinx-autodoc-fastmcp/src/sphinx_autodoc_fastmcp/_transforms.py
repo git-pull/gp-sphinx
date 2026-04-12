@@ -13,7 +13,7 @@ from sphinx_autodoc_fastmcp._badges import build_safety_badge
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._models import ToolInfo
 from sphinx_autodoc_fastmcp._roles import _tool_ref_placeholder
-from sphinx_autodoc_layout import api_component
+from sphinx_ux_autodoc_layout import api_component
 
 if t.TYPE_CHECKING:
     from sphinx.domains.std import StandardDomain

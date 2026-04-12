@@ -1,4 +1,4 @@
-"""Tests for sphinx_autodoc_layout._transforms."""
+"""Tests for sphinx_ux_autodoc_layout._transforms."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import typing as t
 from docutils import nodes
 from sphinx import addnodes
 
-from sphinx_autodoc_layout._nodes import (
+from sphinx_ux_autodoc_layout._nodes import (
     api_component,
     api_fold,
     api_inline_component,
@@ -17,8 +17,8 @@ from sphinx_autodoc_layout._nodes import (
     api_slot,
     build_api_slot,
 )
-from sphinx_autodoc_layout._sections import ApiFactRow, build_api_facts_section
-from sphinx_autodoc_layout._transforms import (
+from sphinx_ux_autodoc_layout._sections import ApiFactRow, build_api_facts_section
+from sphinx_ux_autodoc_layout._transforms import (
     DescLayoutProfile,
     _classify_child,
     _count_field_entries,

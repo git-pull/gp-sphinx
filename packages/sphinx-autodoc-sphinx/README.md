@@ -3,7 +3,7 @@
 Sphinx extension for documenting config values registered by
 `app.add_config_value()` as copyable `conf.py` reference entries.
 
-Rendered entries use the shared stack: `sphinx_autodoc_layout` owns the
+Rendered entries use the shared stack: `sphinx_ux_autodoc_layout` owns the
 visible `api-*` structure, `sphinx_ux_badges` owns badge output, and
 `sphinx_autodoc_typehints_gp` is auto-loaded so displayed config types follow the same
 annotation rules as the rest of the autodoc family.

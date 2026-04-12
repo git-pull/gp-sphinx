@@ -6,7 +6,7 @@ parameter tables, and cross-reference roles.
 
 The shipped output intentionally keeps a section wrapper for stable ToC labels
 and `:tool:` / `:toolref:` behavior, but the inner card, badges, and type
-rendering now come from `sphinx_autodoc_layout`, `sphinx_ux_badges`, and
+rendering now come from `sphinx_ux_autodoc_layout`, `sphinx_ux_badges`, and
 `sphinx_autodoc_typehints_gp`.
 
 ## Features
@@ -44,11 +44,11 @@ See the package docstrings and `sphinx_autodoc_fastmcp.setup()` for defaults.
 
 - Python 3.10+
 - Sphinx
-- `sphinx-ux-badges`, `sphinx-autodoc-layout`, and `sphinx-autodoc-typehints-gp`
+- `sphinx-ux-badges`, `sphinx-ux-autodoc-layout`, and `sphinx-autodoc-typehints-gp`
   are declared dependencies and installed automatically with this package.
 
 `sphinx_autodoc_fastmcp` automatically registers `sphinx_ux_badges`,
-`sphinx_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via `app.setup_extension()`.
+`sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via `app.setup_extension()`.
 You do not need to add them separately to your `extensions` list.
 
 ## Documentation

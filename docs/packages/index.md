@@ -4,7 +4,7 @@ Twelve workspace packages in three tiers.
 
 **Shared infrastructure** — the rendering pipeline that all domain packages consume:
 - `sphinx-ux-badges` — badge primitives and colour palette
-- `sphinx-autodoc-layout` — structural presenter for `api-*` entry components
+- `sphinx-ux-autodoc-layout` — structural presenter for `api-*` entry components
 - `sphinx-autodoc-typehints-gp` — annotation normalization and type rendering
 
 **Autodoc domain packages** — domain-specific autodoc extensions:
@@ -34,7 +34,7 @@ and FastMCP tools all look like they belong together.
 :hidden:
 
 sphinx-ux-badges
-sphinx-autodoc-layout
+sphinx-ux-autodoc-layout
 sphinx-autodoc-typehints-gp
 ```
 

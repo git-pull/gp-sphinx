@@ -538,7 +538,7 @@ def test_setup_return_value() -> None:
     assert setup_extensions == [
         "sphinx.ext.autodoc",
         "sphinx_ux_badges",
-        "sphinx_autodoc_layout",
+        "sphinx_ux_autodoc_layout",
         "sphinx_autodoc_typehints_gp",
     ]
 

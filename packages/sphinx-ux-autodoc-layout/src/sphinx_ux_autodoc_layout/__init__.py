@@ -5,7 +5,7 @@ managed Sphinx object entries into stable ``api-*`` components.
 
 Examples
 --------
->>> from sphinx_autodoc_layout import setup
+>>> from sphinx_ux_autodoc_layout import setup
 >>> callable(setup)
 True
 """
@@ -17,8 +17,8 @@ import typing as t
 
 from sphinx import addnodes
 
-from sphinx_autodoc_layout._cards import build_api_card_entry
-from sphinx_autodoc_layout._nodes import (
+from sphinx_ux_autodoc_layout._cards import build_api_card_entry
+from sphinx_ux_autodoc_layout._nodes import (
     api_component,
     api_fold,
     api_inline_component,
@@ -30,17 +30,17 @@ from sphinx_autodoc_layout._nodes import (
     build_api_inline_component,
     build_api_slot,
 )
-from sphinx_autodoc_layout._render import iter_desc_nodes, parse_generated_markup
-from sphinx_autodoc_layout._sections import (
+from sphinx_ux_autodoc_layout._render import iter_desc_nodes, parse_generated_markup
+from sphinx_ux_autodoc_layout._sections import (
     ApiFactRow,
     build_api_facts_section,
     build_api_section,
     build_api_summary_section,
     build_api_table_section,
 )
-from sphinx_autodoc_layout._slots import inject_signature_slots, is_viewcode_ref
-from sphinx_autodoc_layout._transforms import on_doctree_resolved
-from sphinx_autodoc_layout._visitors import (
+from sphinx_ux_autodoc_layout._slots import inject_signature_slots, is_viewcode_ref
+from sphinx_ux_autodoc_layout._transforms import on_doctree_resolved
+from sphinx_ux_autodoc_layout._visitors import (
     depart_api_component,
     depart_api_fold,
     depart_api_permalink,
