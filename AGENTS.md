@@ -170,7 +170,7 @@ test runs in microseconds.
 | **Pure unit** | Transforming strings, dicts, dataclasses — no nodes, no Sphinx |
 | **Docutils tree unit** | Testing transforms/visitors/renderers by constructing `nodes.*` directly |
 | **Snapshot unit** | Same as docutils tree, but output is large or complex — assert via `snapshot_doctree` |
-| **Sphinx integration** (`@pytest.mark.integration`) | Must verify actual HTML output or Sphinx event wiring |
+| **Sphinx integration** (`@pytest.mark.integration`) | **Any test that constructs a `Sphinx` app.** `build_shared_sphinx_result` / `build_isolated_sphinx_result` with any builder — *including `buildername="dummy"`* — counts. If the test touches `env.domains.*`, walks a built doctree, or asserts on `result.warnings`, it is integration. |
 
 ### Type Annotations (required everywhere)
 
