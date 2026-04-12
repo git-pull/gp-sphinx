@@ -11,10 +11,10 @@ config snippet" sections that appear at the bottom of every
    its name, version, description, classifiers, and GitHub URL.
 
 2. **Surface extraction** (``collect_extension_surface()``) — imports the
-   module and monkey-patches ``app.add_*`` methods on a lightweight mock
-   ``Sphinx`` object to intercept calls that ``setup()`` makes.  Each
-   registered item (config value, directive, role, lexer, theme) is captured
-   into a ``SurfaceDict``.
+   module and passes a lightweight ``RecorderApp`` to its ``setup()``.
+   ``RecorderApp.__getattr__`` captures every ``app.add_*`` call so each
+   registered item (config value, directive, role, lexer, theme) flows
+   into a ``SurfaceDict`` without monkey-patching docutils globals.
 
 3. **Rendering** (``package_reference_markdown()``) — converts the collected
    surface into a Markdown fragment (config snippet + tables), which the
@@ -64,7 +64,6 @@ import pkgutil
 import sys
 import typing as t
 
-from docutils.parsers.rst import roles
 from sphinx.util.docutils import SphinxDirective
 
 if t.TYPE_CHECKING:
@@ -314,26 +313,8 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
             themes=[],
         )
     app = RecorderApp()
-    registered_roles: list[tuple[str, object]] = []
-    original_local = roles.register_local_role
-    original_canonical = roles.register_canonical_role
-
-    def _record_local(name: str, role: object) -> None:
-        registered_roles.append((name, role))
-
-    # Temporarily replace the two docutils global role-registration functions so
-    # that any role registered by setup(app) is captured in registered_roles.
-    # The try/finally guarantees restoration even if setup() raises.
-    # Limitation: this mutates process-global state and is not safe for
-    # parallel Sphinx builds (sphinx -j N); single-threaded builds only.
-    try:
-        roles.register_local_role = t.cast("t.Any", _record_local)
-        roles.register_canonical_role = t.cast("t.Any", _record_local)
-        setup = t.cast("t.Callable[[object], object]", getattr(module, "setup"))
-        setup(app)
-    finally:
-        roles.register_local_role = original_local
-        roles.register_canonical_role = original_canonical
+    setup = t.cast("t.Callable[[object], object]", getattr(module, "setup"))
+    setup(app)
 
     config_values: list[dict[str, str]] = []
     directives: list[dict[str, str]] = []
@@ -439,16 +420,6 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                     "path": f"`{args[1]}`",
                 },
             )
-
-    for role_name, role_fn in registered_roles:
-        role_items.append(
-            {
-                "name": role_name,
-                "kind": "docutils role",
-                "callable": object_path(role_fn),
-                "summary": summarize(getattr(role_fn, "__doc__", None)),
-            },
-        )
 
     return {
         "module": module_name,
@@ -806,26 +777,10 @@ def _register_extension_objects(
                 continue
 
             recorder = RecorderApp()
-            docutils_roles: list[tuple[str, object]] = []
-            original_local = roles.register_local_role
-            original_canonical = roles.register_canonical_role
-
-            def _capture(
-                role_name: str,
-                role_fn: object,
-                _roles: list[tuple[str, object]] = docutils_roles,
-            ) -> None:
-                _roles.append((role_name, role_fn))
-
             try:
-                roles.register_local_role = t.cast("t.Any", _capture)
-                roles.register_canonical_role = t.cast("t.Any", _capture)
                 setup_fn(recorder)
             except Exception:
                 continue
-            finally:
-                roles.register_local_role = original_local
-                roles.register_canonical_role = original_canonical
 
             raw_objs: list[tuple[object, str]] = []  # (obj, objtype)
             for call_name, args, _kwargs in recorder.calls:
@@ -845,10 +800,6 @@ def _register_extension_objects(
                     )
                 elif call_name == "add_lexer" and len(args) >= 2:
                     raw_objs.append((args[1], "class"))
-            for _role_name, role_fn in docutils_roles:
-                raw_objs.append(
-                    (role_fn, "function" if not inspect.isclass(role_fn) else "class"),
-                )
 
             for obj, objtype in raw_objs:
                 mod = getattr(obj, "__module__", None) or type(obj).__module__
