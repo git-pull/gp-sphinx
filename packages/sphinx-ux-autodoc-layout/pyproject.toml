@@ -6,8 +6,12 @@ build-backend = "hatchling.build"
 name = "sphinx-ux-autodoc-layout"
 version = "0.0.1a7"
 description = "Componentized layout for Sphinx autodoc output"
+readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
+authors = [
+  {name = "Tony Narlock", email = "tony@git-pull.com"}
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "License :: OSI Approved :: MIT License",
