@@ -69,7 +69,7 @@ The stable visible structure is:
 - `api-options`
 - `api-footer`
 
-`.gas-toolbar` remains only as a compatibility shim. The ownership point is
+`.sab-toolbar` remains only as a compatibility shim. The ownership point is
 still `api-layout-right`.
 
 ### Shared gaps closed in this wave
@@ -448,7 +448,7 @@ Reasons:
 
 ## Tradeoffs considered
 
-- keeping `.gas-toolbar` for one compatibility wave adds minor markup clutter
+- keeping `.sab-toolbar` for one compatibility wave adds minor markup clutter
   but avoids downstream CSS breakage while `api-*` remains the real contract
 - keeping FastMCP on section cards preserves labels and `:tool:` / `:toolref:`
   behavior with low migration risk
