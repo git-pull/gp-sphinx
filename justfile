@@ -162,19 +162,11 @@ _entr-warn:
     @echo "See https://eradman.com/entrproject/                      "
     @echo "----------------------------------------------------------"
 
-# Bump the workspace-wide version string in all pyproject.toml files.
+# Bump every workspace version literal (pyproject, __init__.py, tests, scripts).
 # Usage: just bump-version 0.0.1a8
 bump-version new_version:
     @echo "Bumping workspace version to {{new_version}}..."
-    uv run python -c "\
-    import pathlib, re; \
-    old = re.search(r'version\s*=\s*\"([^\"]+)\"', \
-        pathlib.Path('pyproject.toml').read_text()).group(1); \
-    print(f'  {old} -> {{new_version}}'); \
-    [p.write_text(p.read_text().replace(old, '{{new_version}}')) \
-     for p in sorted(pathlib.Path('.').glob('**/pyproject.toml')) \
-     if old in p.read_text()]; \
-    "
+    uv run python scripts/ci/bump_version.py {{new_version}}
     uv lock
     uv run python scripts/ci/package_tools.py check-versions
-    @echo "Done. Review with: git diff '**/pyproject.toml' uv.lock"
+    @echo "Done. Review with: git diff"
