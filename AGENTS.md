@@ -26,6 +26,7 @@ Key features:
 
 This project uses:
 - Python 3.10+
+- Sphinx 8.1+ (required for the typed `env.domains.<name>_domain` accessors)
 - [uv](https://github.com/astral-sh/uv) for dependency management
 - [ruff](https://github.com/astral-sh/ruff) for linting and formatting
 - [mypy](https://github.com/python/mypy) for type checking
@@ -447,6 +448,22 @@ Key highlights:
   - This rule applies to Python standard library only; third-party packages may use `from X import Y`
 - **For typing**, use `import typing as t` and access via namespace: `t.NamedTuple`, etc.
 - **Use `from __future__ import annotations`** at the top of all Python files
+
+### Sphinx domain access
+
+Prefer the typed accessors on `env.domains` over `env.get_domain(<literal>)`:
+
+- `env.domains.standard_domain` — not `env.get_domain("std")`
+- `env.domains.python_domain` — not `env.get_domain("py")`
+- Similarly: `c_domain`, `cpp_domain`, `javascript_domain`,
+  `restructuredtext_domain`, `changeset_domain`, `citation_domain`,
+  `index_domain`, `math_domain`
+
+The typed accessors return the concrete domain subclass
+(`StandardDomain`, `PythonDomain`, etc.), so mypy sees subclass-specific
+attributes (`progoptions`, `add_program_option`, `data["objects"]`, …)
+without `t.cast` or `# type: ignore`. The accessors were added in Sphinx
+8.1 (`_DomainsContainer`), which is the workspace floor.
 
 ### Docstrings
 

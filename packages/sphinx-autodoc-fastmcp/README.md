@@ -43,7 +43,7 @@ See the package docstrings and `sphinx_autodoc_fastmcp.setup()` for defaults.
 ## Dependencies
 
 - Python 3.10+
-- Sphinx
+- Sphinx 8.1+
 - `sphinx-ux-badges`, `sphinx-ux-autodoc-layout`, and `sphinx-autodoc-typehints-gp`
   are declared dependencies and installed automatically with this package.
 
