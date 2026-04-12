@@ -16,10 +16,10 @@ from __future__ import annotations
 import typing as t
 
 from docutils import nodes
-from docutils.parsers.rst import roles
 
 if t.TYPE_CHECKING:
     from docutils.parsers.rst.states import Inliner
+    from sphinx.application import Sphinx
 
 
 def normalize_options(options: dict[str, t.Any] | None) -> dict[str, t.Any]:
@@ -348,8 +348,14 @@ def cli_choice_role(
     return [node], []
 
 
-def register_roles() -> None:
-    """Register all CLI roles with docutils.
+def register_roles(app: Sphinx) -> None:
+    """Register all CLI roles with the Sphinx application.
+
+    Uses :meth:`sphinx.application.Sphinx.add_role` (Sphinx-scoped)
+    rather than ``docutils.parsers.rst.roles.register_local_role``
+    (docutils process-global).  The Sphinx accessor is typed as
+    ``(name: str, role: Any, override: bool = False) -> None`` so no
+    ``# type: ignore`` is required.
 
     This function registers the following roles:
     - cli-option: For CLI options (--verbose, -h)
@@ -358,13 +364,19 @@ def register_roles() -> None:
     - cli-default: For default values (None, "default")
     - cli-choice: For choice values (json, yaml)
 
+    Parameters
+    ----------
+    app : Sphinx
+        The Sphinx application instance.  Must be called from within
+        an extension ``setup(app)`` hook.
+
     Examples
     --------
-    >>> register_roles()
-    >>> # Roles are now available in docutils RST parsing
+    >>> register_roles  # doctest: +ELLIPSIS
+    <function register_roles at 0x...>
     """
-    roles.register_local_role("cli-option", cli_option_role)  # type: ignore[arg-type]
-    roles.register_local_role("cli-metavar", cli_metavar_role)  # type: ignore[arg-type]
-    roles.register_local_role("cli-command", cli_command_role)  # type: ignore[arg-type]
-    roles.register_local_role("cli-default", cli_default_role)  # type: ignore[arg-type]
-    roles.register_local_role("cli-choice", cli_choice_role)  # type: ignore[arg-type]
+    app.add_role("cli-option", cli_option_role)
+    app.add_role("cli-metavar", cli_metavar_role)
+    app.add_role("cli-command", cli_command_role)
+    app.add_role("cli-default", cli_default_role)
+    app.add_role("cli-choice", cli_choice_role)
