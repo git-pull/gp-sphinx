@@ -97,3 +97,33 @@ api
 project/index
 history
 ```
+
+```{toctree}
+:caption: Shared Infrastructure
+:hidden:
+
+packages/sphinx-ux-badges
+packages/sphinx-ux-autodoc-layout
+packages/sphinx-autodoc-typehints-gp
+```
+
+```{toctree}
+:caption: Domain Packages
+:hidden:
+
+packages/sphinx-autodoc-api-style
+packages/sphinx-autodoc-docutils
+packages/sphinx-autodoc-fastmcp
+packages/sphinx-autodoc-pytest-fixtures
+packages/sphinx-autodoc-sphinx
+```
+
+```{toctree}
+:caption: Theme, Fonts & CLI
+:hidden:
+
+packages/gp-sphinx
+packages/sphinx-gp-theme
+packages/sphinx-fonts
+packages/sphinx-autodoc-argparse
+```
