@@ -18,6 +18,17 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Breaking changes
+
+- Package renames: `sphinx-argparse-neo` → `sphinx-autodoc-argparse`,
+  `sphinx-gptheme` → `sphinx-gp-theme`, `sphinx-autodoc-badges` →
+  `sphinx-ux-badges`, `sphinx-autodoc-layout` → `sphinx-ux-autodoc-layout`,
+  `sphinx-typehints-gp` → `sphinx-autodoc-typehints-gp` (#18)
+- Sphinx floor bumped to 8.1 across the workspace (#18)
+- CSS classes and custom properties unified under a single `gp-sphinx-*`
+  BEM namespace (retires the per-package `sab-`, `smf-`, `spf-`, `api-`,
+  `gas-`, `gal-` prefixes and collapses their duplicate palettes) (#18)
+
 ### Features
 
 - `sphinx-autodoc-fastmcp`: new Sphinx extension for FastMCP tool docs (card-style
@@ -36,6 +47,15 @@ $ uv add gp-sphinx --prerelease allow
 - `sphinx-autodoc-pytest-fixtures`: Fixture tables now resolve `TypeAlias`
   return annotations — alias names are preserved and linked rather than
   expanding to the underlying union or generic type (#9)
+- Integrated autodoc design system: twelve workspace packages in three
+  tiers — shared infrastructure, domain autodocumenters, theme/coordinator —
+  sharing one badge palette, one layout pipeline, and one typehint
+  renderer (#18)
+- New `sphinx-ux-autodoc-layout` package — componentized autodoc output
+  with card containers, parameter folding, and managed signatures (#18)
+- New `sphinx-autodoc-typehints-gp` package — single-package replacement
+  for `sphinx-autodoc-typehints` + `sphinx.ext.napoleon`; resolves
+  annotations statically at build time with no monkey-patching (#18)
 
 ### Bug fixes
 
