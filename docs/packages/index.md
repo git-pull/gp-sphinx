@@ -28,33 +28,3 @@ and FastMCP tools all look like they belong together.
 
 ```{workspace-package-grid}
 ```
-
-```{toctree}
-:caption: Shared Infrastructure
-:hidden:
-
-sphinx-ux-badges
-sphinx-ux-autodoc-layout
-sphinx-autodoc-typehints-gp
-```
-
-```{toctree}
-:caption: Domain Packages
-:hidden:
-
-sphinx-autodoc-api-style
-sphinx-autodoc-docutils
-sphinx-autodoc-fastmcp
-sphinx-autodoc-pytest-fixtures
-sphinx-autodoc-sphinx
-```
-
-```{toctree}
-:caption: Theme, Fonts & CLI
-:hidden:
-
-gp-sphinx
-sphinx-gp-theme
-sphinx-fonts
-sphinx-autodoc-argparse
-```
