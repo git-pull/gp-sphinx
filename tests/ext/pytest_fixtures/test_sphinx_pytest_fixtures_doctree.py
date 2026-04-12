@@ -250,6 +250,7 @@ def _content_section_names(desc_node: addnodes.desc) -> list[str]:
     ]
 
 
+@pytest.mark.integration
 def test_default_fixture_store_and_domain_contract(
     default_dummy_result: SharedSphinxResult,
 ) -> None:
@@ -281,6 +282,7 @@ def test_default_fixture_store_and_domain_contract(
     assert "fixture_mod.auto_cleanup" not in store["reverse_deps"]
 
 
+@pytest.mark.integration
 def test_default_fixture_post_transform_snapshot(
     default_dummy_result: SharedSphinxResult,
     snapshot_doctree: t.Callable[..., None],
@@ -295,6 +297,7 @@ def test_default_fixture_post_transform_snapshot(
     )
 
 
+@pytest.mark.integration
 def test_default_fixture_sections_use_shared_fact_region(
     default_dummy_result: SharedSphinxResult,
 ) -> None:
@@ -305,6 +308,7 @@ def test_default_fixture_sections_use_shared_fact_region(
     assert "gp-sphinx-api-facts" in _content_section_names(fixture_desc)
 
 
+@pytest.mark.integration
 def test_manual_directive_without_module_registers_unqualified_name(
     spf_doctree_root: pathlib.Path,
 ) -> None:
@@ -330,6 +334,7 @@ def test_manual_directive_without_module_registers_unqualified_name(
     assert "bare_server" in domain.data["objects"]
 
 
+@pytest.mark.integration
 def test_dependency_rendering_snapshot(
     spf_doctree_root: pathlib.Path,
     snapshot_doctree: t.Callable[..., None],
@@ -393,6 +398,7 @@ def test_dependency_rendering_snapshot(
     )
 
 
+@pytest.mark.integration
 def test_warning_and_manual_option_snapshot(
     spf_doctree_root: pathlib.Path,
     snapshot_doctree: t.Callable[..., None],
@@ -493,6 +499,7 @@ def test_warning_and_manual_option_snapshot(
     )
 
 
+@pytest.mark.integration
 def test_autofixture_index_resolution_smoke(
     spf_doctree_root: pathlib.Path,
 ) -> None:
@@ -536,6 +543,7 @@ def test_autofixture_index_resolution_smoke(
     assert ":fixture:" not in table_text
 
 
+@pytest.mark.integration
 def test_autofixtures_directive_smoke(
     autofixtures_usage_result: SharedSphinxResult,
 ) -> None:
@@ -551,6 +559,7 @@ def test_autofixtures_directive_smoke(
     ]
 
 
+@pytest.mark.integration
 def test_short_name_fixture_reference_resolves(
     autofixtures_usage_result: SharedSphinxResult,
 ) -> None:
@@ -562,6 +571,7 @@ def test_short_name_fixture_reference_resolves(
     assert ":fixture:" not in text
 
 
+@pytest.mark.integration
 def test_doc_pytest_plugin_rst_snapshot(
     spf_doctree_root: pathlib.Path,
     snapshot_doctree: t.Callable[..., None],
@@ -599,6 +609,7 @@ def test_doc_pytest_plugin_rst_snapshot(
     )
 
 
+@pytest.mark.integration
 def test_doc_pytest_plugin_myst_smoke(
     myst_smoke_result: SharedSphinxResult,
 ) -> None:
@@ -613,6 +624,7 @@ def test_doc_pytest_plugin_myst_smoke(
     assert "fixture_mod.my_server" in doctree_text
 
 
+@pytest.mark.integration
 def test_autofixtures_directive_myst_smoke(
     myst_smoke_result: SharedSphinxResult,
 ) -> None:
@@ -631,6 +643,7 @@ def test_autofixtures_directive_myst_smoke(
     assert "::{autofixtures}" not in doctree_text
 
 
+@pytest.mark.integration
 def test_lint_level_error_sets_nonzero_status(
     spf_doctree_root: pathlib.Path,
 ) -> None:
