@@ -99,15 +99,6 @@ history
 ```
 
 ```{toctree}
-:caption: Shared Infrastructure
-:hidden:
-
-packages/sphinx-ux-badges
-packages/sphinx-ux-autodoc-layout
-packages/sphinx-autodoc-typehints-gp
-```
-
-```{toctree}
 :caption: Domain Packages
 :hidden:
 
@@ -123,7 +114,22 @@ packages/sphinx-autodoc-sphinx
 :caption: UX
 :hidden:
 
+packages/sphinx-fonts
+packages/sphinx-ux-autodoc-layout
+packages/sphinx-ux-badges
+```
+
+```{toctree}
+:caption: Utils
+:hidden:
+
+packages/sphinx-autodoc-typehints-gp
+```
+
+```{toctree}
+:caption: Internal
+:hidden:
+
 packages/gp-sphinx
 packages/sphinx-gp-theme
-packages/sphinx-fonts
 ```
