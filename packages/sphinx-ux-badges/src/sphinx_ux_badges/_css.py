@@ -93,7 +93,6 @@ class SAB:
 
     # Underline control (compose with dense or any badge)
     NO_UNDERLINE = "gp-sphinx-badge--underline-none"
-    UNDERLINE = "gp-sphinx-badge--underline-solid"
     UNDERLINE_DOTTED = "gp-sphinx-badge--underline-dotted"
     UNDERLINE_SOLID = "gp-sphinx-badge--underline-solid"
 
