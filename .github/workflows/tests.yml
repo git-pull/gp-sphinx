@@ -131,6 +131,10 @@ jobs:
           - sphinx-autodoc-sphinx
           - sphinx-autodoc-pytest-fixtures
           - sphinx-autodoc-api-style
+          - sphinx-autodoc-fastmcp
+          - sphinx-autodoc-typehints-gp
+          - sphinx-ux-badges
+          - sphinx-ux-autodoc-layout
     steps:
       - uses: actions/checkout@v6
 
