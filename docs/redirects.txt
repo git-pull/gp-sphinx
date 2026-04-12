@@ -11,3 +11,9 @@ extensions/sphinx-autodoc-layout packages/sphinx-autodoc-layout
 extensions/sphinx-fonts packages/sphinx-fonts
 extensions/sphinx-gp-theme packages/sphinx-gp-theme
 extensions/sphinx-autodoc-typehints-gp packages/sphinx-autodoc-typehints-gp
+extensions/sphinx-argparse-neo packages/sphinx-autodoc-argparse
+extensions/sphinx-gptheme packages/sphinx-gp-theme
+extensions/sphinx-typehints-gp packages/sphinx-autodoc-typehints-gp
+packages/sphinx-argparse-neo packages/sphinx-autodoc-argparse
+packages/sphinx-gptheme packages/sphinx-gp-theme
+packages/sphinx-typehints-gp packages/sphinx-autodoc-typehints-gp
