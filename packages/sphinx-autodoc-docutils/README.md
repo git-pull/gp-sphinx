@@ -5,7 +5,7 @@ reference entries inside your docs site.
 
 The extension keeps its semantic `rst:*` parse path, but the rendered body
 regions, badges, and shared type formatting now come from
-`sphinx_autodoc_layout`, `sphinx_ux_badges`, and `sphinx_autodoc_typehints_gp`.
+`sphinx_ux_autodoc_layout`, `sphinx_ux_badges`, and `sphinx_autodoc_typehints_gp`.
 
 ## Install
 

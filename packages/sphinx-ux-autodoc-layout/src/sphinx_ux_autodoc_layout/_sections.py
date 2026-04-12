@@ -3,7 +3,7 @@
 Examples
 --------
 >>> from docutils import nodes
->>> from sphinx_autodoc_layout._sections import (
+>>> from sphinx_ux_autodoc_layout._sections import (
 ...     ApiFactRow,
 ...     build_api_facts_section,
 ...     build_api_summary_section,
@@ -24,7 +24,7 @@ from dataclasses import dataclass
 
 from docutils import nodes
 
-from sphinx_autodoc_layout._nodes import api_component, build_api_component
+from sphinx_ux_autodoc_layout._nodes import api_component, build_api_component
 
 _SECTION_KIND_CLASS: dict[str, str] = {
     "api-description": "narrative",

@@ -1,5 +1,5 @@
 /**
- * sphinx_autodoc_layout — layout.js
+ * sphinx_ux_autodoc_layout — layout.js
  *
  * Hash-based auto-expansion for both block <details> folds and the
  * custom api-signature disclosure wrapper.

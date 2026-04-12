@@ -40,7 +40,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     >>> metadata = setup(fake)  # type: ignore[arg-type]
     >>> ("add_directive", "autoconfigvalue") in fake.calls
     True
-    >>> ("setup_extension", "sphinx_autodoc_layout") in fake.calls
+    >>> ("setup_extension", "sphinx_ux_autodoc_layout") in fake.calls
     True
     >>> ("add_css_file", "css/sphinx_autodoc_sphinx.css") in fake.calls
     True
@@ -48,7 +48,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     True
     """
     app.setup_extension("sphinx_ux_badges")
-    app.setup_extension("sphinx_autodoc_layout")
+    app.setup_extension("sphinx_ux_autodoc_layout")
     app.setup_extension("sphinx_autodoc_typehints_gp")
     app.add_directive("autoconfigvalue", AutoconfigvalueDirective)
     app.add_directive("autoconfigvalues", AutoconfigvaluesDirective)

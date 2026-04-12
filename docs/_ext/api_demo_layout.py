@@ -1,4 +1,4 @@
-"""Demo module for sphinx-autodoc-layout live showcase.
+"""Demo module for sphinx-ux-autodoc-layout live showcase.
 
 Provides classes with varying parameter counts to demonstrate
 region wrapping and parameter folding.

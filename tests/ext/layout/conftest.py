@@ -94,7 +94,7 @@ _CONF_PY = textwrap.dedent(
         "sphinx.ext.viewcode",
         "sphinx_autodoc_typehints_gp",
         "sphinx_autodoc_api_style",
-        "sphinx_autodoc_layout",
+        "sphinx_ux_autodoc_layout",
     ]
 
     api_layout_enabled = True

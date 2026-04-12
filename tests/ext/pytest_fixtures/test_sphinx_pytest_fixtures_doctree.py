@@ -10,7 +10,7 @@ import pytest
 from docutils import nodes
 from sphinx import addnodes
 
-from sphinx_autodoc_layout._nodes import api_component
+from sphinx_ux_autodoc_layout._nodes import api_component
 from tests._snapshots import normalize_warning_text
 from tests._sphinx_scenarios import (
     SCENARIO_SRCDIR_TOKEN,

@@ -24,7 +24,7 @@ from __future__ import annotations
 from docutils import nodes
 from sphinx import addnodes
 
-from sphinx_autodoc_layout._nodes import build_api_slot
+from sphinx_ux_autodoc_layout._nodes import build_api_slot
 
 
 def is_viewcode_ref(node: nodes.Node) -> bool:

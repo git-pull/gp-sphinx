@@ -21,8 +21,8 @@ Badge primitives, colour palette, and CSS infrastructure.
 All badge colours live in one place (`SAB.*` constants).
 :::
 
-:::{grid-item-card} sphinx-autodoc-layout
-:link: packages/sphinx-autodoc-layout
+:::{grid-item-card} sphinx-ux-autodoc-layout
+:link: packages/sphinx-ux-autodoc-layout
 :link-type: doc
 
 Structural presenter for `api-*` entry components.

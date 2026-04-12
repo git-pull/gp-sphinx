@@ -1,4 +1,4 @@
-"""Tests for sphinx_autodoc_layout HTML visitors."""
+"""Tests for sphinx_ux_autodoc_layout HTML visitors."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import typing as t
 
 from sphinx import addnodes
 
-from sphinx_autodoc_layout._nodes import build_api_component
-from sphinx_autodoc_layout._visitors import (
+from sphinx_ux_autodoc_layout._nodes import build_api_component
+from sphinx_ux_autodoc_layout._visitors import (
     visit_api_component,
     visit_desc_signature_html,
 )

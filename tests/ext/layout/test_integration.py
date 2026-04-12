@@ -1,4 +1,4 @@
-"""Integration tests for sphinx_autodoc_layout HTML output."""
+"""Integration tests for sphinx_ux_autodoc_layout HTML output."""
 
 from __future__ import annotations
 

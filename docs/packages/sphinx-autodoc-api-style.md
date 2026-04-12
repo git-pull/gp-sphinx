@@ -56,7 +56,7 @@ extensions = ["sphinx_autodoc_api_style"]
 ```
 
 `sphinx_autodoc_api_style` automatically registers `sphinx_ux_badges` and
-`sphinx_autodoc_layout` via `app.setup_extension()`. You do not need to add
+`sphinx_ux_autodoc_layout` via `app.setup_extension()`. You do not need to add
 them separately to your `extensions` list.
 
 ## Working usage examples

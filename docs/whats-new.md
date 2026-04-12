@@ -10,7 +10,7 @@ stack works.  See the {doc}`gallery` for a visual showcase.
 
 Two new foundational packages form the core of the rendering pipeline:
 
-- {doc}`sphinx-autodoc-layout <packages/sphinx-autodoc-layout>` — componentized
+- {doc}`sphinx-ux-autodoc-layout <packages/sphinx-ux-autodoc-layout>` — componentized
   autodoc output with semantic regions, parameter folding, managed signatures,
   and card containers.
 - {doc}`sphinx-autodoc-typehints-gp <packages/sphinx-autodoc-typehints-gp>` — single-package

@@ -28,7 +28,7 @@ keywords = ["sphinx", "autodoc", "documentation", "api", "badges"]
 dependencies = [
   "sphinx",
   "sphinx-ux-badges==0.0.1a7",
-  "sphinx-autodoc-layout==0.0.1a7",
+  "sphinx-ux-autodoc-layout==0.0.1a7",
 ]
 
 [project.urls]
