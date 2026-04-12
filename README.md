@@ -50,7 +50,7 @@ Out of the box, `merge_sphinx_config()` activates:
 - **Componentized layouts** (`sphinx-ux-autodoc-layout`) — card containers, parameter folding, managed signatures
 - **Clean type hints** (`sphinx-autodoc-typehints-gp`) — simplified annotations with cross-referenced links, replacing `sphinx-autodoc-typehints` and `sphinx.ext.napoleon`
 - **Unified badge system** (`sphinx-ux-badges`) — type and modifier badges with a shared colour palette
-- **Five domain autodocumenters** — Python API, pytest fixtures, FastMCP tools, docutils directives, Sphinx config values
+- **Six domain autodocumenters** — Python API, argparse CLIs, pytest fixtures, FastMCP tools, docutils directives, Sphinx config values
 - **IBM Plex fonts** via Fontsource with preloaded web fonts
 - **Full dark mode** theming via CSS custom properties
 
