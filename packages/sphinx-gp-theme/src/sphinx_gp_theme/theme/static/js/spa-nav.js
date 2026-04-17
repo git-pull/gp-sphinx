@@ -183,14 +183,14 @@
 
         if (!isPop) history.pushState({ spa: true }, "", url);
 
-        if (!isPop) {
-          var hash = new URL(url, location.href).hash;
-          if (hash) {
-            var el = document.querySelector(hash);
-            if (el) el.scrollIntoView();
-          } else {
-            window.scrollTo(0, 0);
-          }
+        var hash = new URL(url, location.href).hash;
+        if (hash) {
+          var el = document.getElementById(
+            decodeURIComponent(hash.slice(1)),
+          );
+          if (el) el.scrollIntoView();
+        } else if (!isPop) {
+          window.scrollTo(0, 0);
         }
 
         reinit();
