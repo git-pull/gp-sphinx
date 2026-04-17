@@ -92,6 +92,12 @@ disable_error_code = ["attr-defined", "unused-ignore"]
 module = ["sphinx_autodoc_pytest_fixtures", "sphinx_autodoc_pytest_fixtures.*", "tests.ext.pytest_fixtures.*"]
 ignore_errors = true
 
+[[tool.mypy.overrides]]
+# fastmcp is an optional runtime dependency; users without it installed still get
+# full static analysis of everything else in sphinx-autodoc-fastmcp.
+module = ["fastmcp", "fastmcp.*"]
+ignore_missing_imports = true
+
 [tool.ruff]
 target-version = "py310"
 extend-exclude = [
