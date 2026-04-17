@@ -16,7 +16,7 @@ from sphinx_autodoc_fastmcp._models import (
     ResourceTemplateInfo,
     ToolInfo,
 )
-from sphinx_autodoc_fastmcp._parsing import extract_params
+from sphinx_autodoc_fastmcp._parsing import extract_params, first_paragraph
 from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 logger = logging.getLogger(__name__)
@@ -296,20 +296,6 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
 _SCHEMA_NOTE_MARKER = "Provide as a JSON string matching the following schema:"
 
 
-def _first_paragraph(text: str) -> str:
-    """Return the leading paragraph of a NumPy-style description.
-
-    FastMCP copies the whole docstring into the ``description`` field
-    on registered components.  For human-facing docs we want just the
-    opening paragraph — the ``Parameters`` / ``Returns`` sections are
-    rendered separately (for prompts) or hidden (for resources).
-    """
-    if not text:
-        return ""
-    paragraphs = text.strip().split("\n\n")
-    return paragraphs[0].strip().replace("\n", " ")
-
-
 def _strip_schema_note(text: str) -> str:
     """Remove FastMCP's auto-appended JSON-schema hint from a description.
 
@@ -356,7 +342,7 @@ def _prompt_from_component(prompt: t.Any) -> PromptInfo:
     return PromptInfo(
         name=str(prompt.name),
         title=str(prompt.title or prompt.name),
-        description=_first_paragraph(str(prompt.description or "")),
+        description=first_paragraph(str(prompt.description or "")),
         docstring=docstring,
         tags=tags,
         arguments=arguments,
@@ -387,7 +373,7 @@ def _resource_from_component(res: t.Any) -> ResourceInfo:
         name=str(res.name),
         uri=str(res.uri),
         title=str(res.title or res.name),
-        description=_first_paragraph(str(res.description or "")),
+        description=first_paragraph(str(res.description or "")),
         mime_type=str(getattr(res, "mime_type", "") or ""),
         docstring=docstring,
         tags=tags,
@@ -450,7 +436,7 @@ def _resource_template_from_component(tpl: t.Any) -> ResourceTemplateInfo:
         name=str(tpl.name),
         uri_template=str(tpl.uri_template),
         title=str(tpl.title or tpl.name),
-        description=_first_paragraph(str(tpl.description or "")),
+        description=first_paragraph(str(tpl.description or "")),
         mime_type=str(getattr(tpl, "mime_type", "") or ""),
         parameters=parameters,
         docstring=docstring,
