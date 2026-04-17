@@ -1,4 +1,4 @@
-"""Collect FastMCP tool metadata at Sphinx build time."""
+"""Collect FastMCP tool / prompt / resource metadata at Sphinx build time."""
 
 from __future__ import annotations
 
@@ -9,7 +9,13 @@ import typing as t
 
 from sphinx.application import Sphinx
 
-from sphinx_autodoc_fastmcp._models import ToolInfo
+from sphinx_autodoc_fastmcp._models import (
+    PromptArgInfo,
+    PromptInfo,
+    ResourceInfo,
+    ResourceTemplateInfo,
+    ToolInfo,
+)
 from sphinx_autodoc_fastmcp._parsing import extract_params
 from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
@@ -188,3 +194,320 @@ def collect_tools(app: Sphinx) -> None:
                     collector_tools.append(info)
 
     app.env.fastmcp_tools = {tool.name: tool for tool in collector_tools}  # type: ignore[attr-defined]
+
+
+def _resolve_server_instance(dotted: str) -> t.Any | None:
+    """Import ``module.attr`` and return a populated ``FastMCP`` instance.
+
+    ``fastmcp_server_module`` may point at either:
+
+    * a live ``FastMCP`` instance — used as-is
+    * a zero-argument callable that returns one — invoked once
+    * a module whose ``mcp`` attribute is a ``FastMCP`` instance that
+      has not yet called its registration hook (common when a server
+      exposes ``_register_all()`` and invokes it only from ``run_server``)
+
+    In the last case we call ``register_all()`` / ``_register_all()`` on
+    the module after resolving the instance, so docs can enumerate the
+    same surface area as a running server.
+    """
+    if not dotted:
+        return None
+    if ":" in dotted:
+        module_path, attr = dotted.split(":", 1)
+    else:
+        module_path, _, attr = dotted.rpartition(".")
+        if not module_path or not attr:
+            logger.warning(
+                "sphinx_autodoc_fastmcp: fastmcp_server_module %r has no attribute",
+                dotted,
+            )
+            return None
+    try:
+        mod = importlib.import_module(module_path)
+    except Exception:
+        logger.warning(
+            "sphinx_autodoc_fastmcp: could not import server module %s",
+            module_path,
+            exc_info=True,
+        )
+        return None
+    obj = getattr(mod, attr, None)
+    if obj is None:
+        return None
+    if callable(obj) and not hasattr(obj, "local_provider"):
+        try:
+            obj = obj()
+        except Exception:  # pragma: no cover - defensive
+            logger.warning(
+                "sphinx_autodoc_fastmcp: calling %s() failed", dotted, exc_info=True,
+            )
+            return None
+    if getattr(obj, "local_provider", None) is None:
+        # Catches both: (a) the configured attribute resolved directly to a
+        # non-FastMCP object, and (b) a factory callable that returned one.
+        # Without this guard ``_iter_components`` silently yields ``()`` and
+        # the user sees empty docs with no diagnostic.
+        logger.warning(
+            "sphinx_autodoc_fastmcp: %s did not resolve to a FastMCP instance "
+            "(no local_provider attribute); prompts/resources will be empty",
+            dotted,
+        )
+        return None
+    # If the instance has no components yet, try to run the server's
+    # register-all hook so autodoc sees the same surface a live server does.
+    provider = getattr(obj, "local_provider", None)
+    if provider is not None:
+        components = getattr(provider, "_components", None)
+        if not components:
+            for hook_name in ("register_all", "_register_all"):
+                hook = getattr(mod, hook_name, None)
+                if callable(hook):
+                    try:
+                        hook()
+                    except Exception:  # pragma: no cover - defensive
+                        logger.warning(
+                            "sphinx_autodoc_fastmcp: %s.%s() raised",
+                            module_path,
+                            hook_name,
+                            exc_info=True,
+                        )
+                    break
+    return obj
+
+
+def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
+    """Yield every FastMCPComponent registered on ``server.local_provider``.
+
+    Bypasses the async ``_list_*`` helpers and iterates the underlying
+    ``_components`` dict directly — the helpers are trivial type-filter
+    comprehensions, so reading ``_components.values()`` is equivalent and
+    avoids needing an event loop at Sphinx build time.
+    """
+    provider = getattr(server, "local_provider", None)
+    if provider is None:
+        return ()
+    components = getattr(provider, "_components", None)
+    if components is None:
+        return ()
+    return tuple(components.values())
+
+
+_SCHEMA_NOTE_MARKER = "Provide as a JSON string matching the following schema:"
+
+
+def _first_paragraph(text: str) -> str:
+    """Return the leading paragraph of a NumPy-style description.
+
+    FastMCP copies the whole docstring into the ``description`` field
+    on registered components.  For human-facing docs we want just the
+    opening paragraph — the ``Parameters`` / ``Returns`` sections are
+    rendered separately (for prompts) or hidden (for resources).
+    """
+    if not text:
+        return ""
+    paragraphs = text.strip().split("\n\n")
+    return paragraphs[0].strip().replace("\n", " ")
+
+
+def _strip_schema_note(text: str) -> str:
+    """Remove FastMCP's auto-appended JSON-schema hint from a description.
+
+    FastMCP's prompt argument builder tacks on
+    ``"\\n\\nProvide as a JSON string matching the following schema: {...}"``
+    to help LLMs; it's noise in human-facing docs.
+    """
+    idx = text.find(_SCHEMA_NOTE_MARKER)
+    if idx == -1:
+        return text.strip()
+    return text[:idx].rstrip().rstrip("\n").strip()
+
+
+def _prompt_from_component(prompt: t.Any) -> PromptInfo:
+    """Build a ``PromptInfo`` from a FastMCP ``Prompt`` component."""
+    arguments: list[PromptArgInfo] = []
+    for arg in getattr(prompt, "arguments", None) or []:
+        arguments.append(
+            PromptArgInfo(
+                name=str(arg.name),
+                description=_strip_schema_note(str(arg.description or "")),
+                required=bool(arg.required),
+                type_str="",
+            ),
+        )
+    func = getattr(prompt, "fn", None)
+    if func is not None and hasattr(func, "__wrapped__"):
+        func = func.__wrapped__
+    docstring = (func.__doc__ or "") if func is not None else ""
+    if func is not None and arguments:
+        # Enrich argument metadata with signature type annotations where
+        # possible so the rendered table can show types, not just names.
+        try:
+            sig = inspect.signature(func)
+        except (TypeError, ValueError):  # pragma: no cover - defensive
+            sig = None
+        if sig is not None:
+            for arg in arguments:
+                param = sig.parameters.get(arg.name)
+                if param is not None:
+                    arg.type_str = normalize_annotation_text(param.annotation)
+    tags = tuple(sorted(str(tag) for tag in getattr(prompt, "tags", None) or ()))
+    module_name = getattr(func, "__module__", "") if func is not None else ""
+    return PromptInfo(
+        name=str(prompt.name),
+        title=str(prompt.title or prompt.name),
+        description=_first_paragraph(str(prompt.description or "")),
+        docstring=docstring,
+        tags=tags,
+        arguments=arguments,
+        module_name=module_name,
+    )
+
+
+def _resource_from_component(res: t.Any) -> ResourceInfo:
+    """Build a ``ResourceInfo`` from a FastMCP ``Resource`` component."""
+    func = getattr(res, "fn", None)
+    if func is not None and hasattr(func, "__wrapped__"):
+        func = func.__wrapped__
+    docstring = (func.__doc__ or "") if func is not None else ""
+    tags = tuple(sorted(str(tag) for tag in getattr(res, "tags", None) or ()))
+    annotations = getattr(res, "annotations", None)
+    ann_dict: dict[str, t.Any] = {}
+    if annotations is not None:
+        for field_name in (
+            "audience",
+            "priority",
+            "lastModified",
+        ):
+            val = getattr(annotations, field_name, None)
+            if val is not None:
+                ann_dict[field_name] = val
+    module_name = getattr(func, "__module__", "") if func is not None else ""
+    return ResourceInfo(
+        name=str(res.name),
+        uri=str(res.uri),
+        title=str(res.title or res.name),
+        description=_first_paragraph(str(res.description or "")),
+        mime_type=str(getattr(res, "mime_type", "") or ""),
+        docstring=docstring,
+        tags=tags,
+        annotations=ann_dict,
+        module_name=module_name,
+    )
+
+
+def _template_params_from_schema(
+    schema: dict[str, t.Any] | None,
+) -> list[PromptArgInfo]:
+    """Flatten a JSON Schema ``properties`` dict into ``PromptArgInfo`` rows."""
+    if not schema:
+        return []
+    props = schema.get("properties") or {}
+    required = set(schema.get("required") or ())
+    rows: list[PromptArgInfo] = []
+    for name, subschema in props.items():
+        if not isinstance(subschema, dict):
+            continue
+        type_str = str(subschema.get("type", "")) if subschema.get("type") else ""
+        # Anyof/oneof unions: join short type names.
+        if not type_str:
+            union = subschema.get("anyOf") or subschema.get("oneOf") or ()
+            parts = [
+                str(member.get("type", ""))
+                for member in union
+                if isinstance(member, dict) and member.get("type")
+            ]
+            if parts:
+                type_str = " | ".join(parts)
+        rows.append(
+            PromptArgInfo(
+                name=str(name),
+                description=str(subschema.get("description", "") or ""),
+                required=name in required,
+                type_str=type_str,
+            ),
+        )
+    return rows
+
+
+def _resource_template_from_component(tpl: t.Any) -> ResourceTemplateInfo:
+    """Build a ``ResourceTemplateInfo`` from a ``ResourceTemplate`` component."""
+    func = getattr(tpl, "fn", None)
+    if func is not None and hasattr(func, "__wrapped__"):
+        func = func.__wrapped__
+    docstring = (func.__doc__ or "") if func is not None else ""
+    tags = tuple(sorted(str(tag) for tag in getattr(tpl, "tags", None) or ()))
+    annotations = getattr(tpl, "annotations", None)
+    ann_dict: dict[str, t.Any] = {}
+    if annotations is not None:
+        for field_name in ("audience", "priority", "lastModified"):
+            val = getattr(annotations, field_name, None)
+            if val is not None:
+                ann_dict[field_name] = val
+    parameters = _template_params_from_schema(getattr(tpl, "parameters", None))
+    module_name = getattr(func, "__module__", "") if func is not None else ""
+    return ResourceTemplateInfo(
+        name=str(tpl.name),
+        uri_template=str(tpl.uri_template),
+        title=str(tpl.title or tpl.name),
+        description=_first_paragraph(str(tpl.description or "")),
+        mime_type=str(getattr(tpl, "mime_type", "") or ""),
+        parameters=parameters,
+        docstring=docstring,
+        tags=tags,
+        annotations=ann_dict,
+        module_name=module_name,
+    )
+
+
+def collect_prompts_and_resources(app: Sphinx) -> None:
+    """Populate ``app.env.fastmcp_prompts`` / ``_resources`` / ``_resource_templates``.
+
+    Imports ``fastmcp_server_module`` (e.g. ``"pkg.server:mcp"``) and
+    enumerates the live FastMCP instance's registered components.  Does
+    nothing if the config value is unset.
+    """
+    server_dotted = str(getattr(app.config, "fastmcp_server_module", "") or "")
+    prompts: dict[str, PromptInfo] = {}
+    resources: dict[str, ResourceInfo] = {}
+    templates: dict[str, ResourceTemplateInfo] = {}
+
+    if server_dotted:
+        server = _resolve_server_instance(server_dotted)
+        if server is None:
+            logger.warning(
+                "sphinx_autodoc_fastmcp: fastmcp_server_module %r did not resolve "
+                "to a FastMCP instance; prompts/resources will be empty",
+                server_dotted,
+            )
+        else:
+            try:
+                # Local imports so callers without fastmcp installed don't pay
+                # the import cost unless they actually point at a server.
+                from fastmcp.prompts.base import Prompt as _Prompt
+                from fastmcp.resources.base import Resource as _Resource
+                from fastmcp.resources.template import (
+                    ResourceTemplate as _ResourceTemplate,
+                )
+            except Exception:  # pragma: no cover - defensive
+                logger.warning(
+                    "sphinx_autodoc_fastmcp: could not import fastmcp types",
+                    exc_info=True,
+                )
+                _Prompt = _Resource = _ResourceTemplate = None  # type: ignore[assignment]
+
+            if _Prompt is not None:
+                for component in _iter_components(server):
+                    if isinstance(component, _ResourceTemplate):
+                        info_tpl = _resource_template_from_component(component)
+                        templates[info_tpl.name] = info_tpl
+                    elif isinstance(component, _Resource):
+                        info_res = _resource_from_component(component)
+                        resources[info_res.name] = info_res
+                    elif isinstance(component, _Prompt):
+                        info_p = _prompt_from_component(component)
+                        prompts[info_p.name] = info_p
+
+    app.env.fastmcp_prompts = prompts  # type: ignore[attr-defined]
+    app.env.fastmcp_resources = resources  # type: ignore[attr-defined]
+    app.env.fastmcp_resource_templates = templates  # type: ignore[attr-defined]

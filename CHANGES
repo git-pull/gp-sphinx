@@ -31,6 +31,21 @@ $ uv add gp-sphinx --prerelease allow
 
 ### Features
 
+- `sphinx-autodoc-fastmcp`: autodoc MCP prompts and resources end-to-end.
+  Four new directives —
+  ``{fastmcp-prompt}``, ``{fastmcp-prompt-input}``,
+  ``{fastmcp-resource}``, ``{fastmcp-resource-template}`` — render the
+  same card-style layout used for tools, with dedicated type badges
+  (``prompt``, ``resource``, ``resource-template``) plus a MIME pill
+  next to resources. A new ``fastmcp_server_module`` config value
+  (``"pkg.server:mcp"``) points the collector at a live
+  ``FastMCP`` instance; the collector reads
+  ``local_provider._components`` directly and strips FastMCP's
+  auto-appended ``"Provide as a JSON string matching the following
+  schema: {...}"`` hint from prompt argument descriptions so docs
+  read naturally. If the configured server hasn't run its registration
+  hook yet, the collector calls ``register_all()`` / ``_register_all()``
+  to populate the components.
 - `sphinx-autodoc-fastmcp`: new Sphinx extension for FastMCP tool docs (card-style
   `desc` layouts, safety badges, MyST directives, cross-reference roles)
 - `sphinx-ux-badges`: shared badge node (`BadgeNode`), builder API
