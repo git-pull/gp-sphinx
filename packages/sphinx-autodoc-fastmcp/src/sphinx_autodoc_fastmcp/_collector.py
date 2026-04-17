@@ -240,7 +240,9 @@ def _resolve_server_instance(dotted: str) -> t.Any | None:
             obj = obj()
         except Exception:  # pragma: no cover - defensive
             logger.warning(
-                "sphinx_autodoc_fastmcp: calling %s() failed", dotted, exc_info=True,
+                "sphinx_autodoc_fastmcp: calling %s() failed",
+                dotted,
+                exc_info=True,
             )
             return None
     if getattr(obj, "local_provider", None) is None:
@@ -297,11 +299,18 @@ _SCHEMA_NOTE_MARKER = "Provide as a JSON string matching the following schema:"
 
 
 def _strip_schema_note(text: str) -> str:
-    """Remove FastMCP's auto-appended JSON-schema hint from a description.
+    r"""Remove FastMCP's auto-appended JSON-schema hint from a description.
 
     FastMCP's prompt argument builder tacks on
-    ``"\\n\\nProvide as a JSON string matching the following schema: {...}"``
+    ``"\n\nProvide as a JSON string matching the following schema: {...}"``
     to help LLMs; it's noise in human-facing docs.
+
+    Examples
+    --------
+    >>> _strip_schema_note("Summary.")
+    'Summary.'
+    >>> _strip_schema_note("Summary.\n\nProvide as a JSON string matching the following schema: {}")
+    'Summary.'
     """
     idx = text.find(_SCHEMA_NOTE_MARKER)
     if idx == -1:
@@ -385,7 +394,17 @@ def _resource_from_component(res: t.Any) -> ResourceInfo:
 def _template_params_from_schema(
     schema: dict[str, t.Any] | None,
 ) -> list[PromptArgInfo]:
-    """Flatten a JSON Schema ``properties`` dict into ``PromptArgInfo`` rows."""
+    """Flatten a JSON Schema ``properties`` dict into ``PromptArgInfo`` rows.
+
+    Examples
+    --------
+    >>> _template_params_from_schema(None)
+    []
+    >>> _template_params_from_schema({})
+    []
+    >>> _template_params_from_schema({"properties": {"n": {"type": "string"}}, "required": ["n"]})
+    [PromptArgInfo(name='n', description='', required=True, type_str='string')]
+    """
     if not schema:
         return []
     props = schema.get("properties") or {}
