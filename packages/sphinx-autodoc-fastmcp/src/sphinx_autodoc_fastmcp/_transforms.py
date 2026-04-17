@@ -31,17 +31,23 @@ def _tool_content_container(section: nodes.section) -> nodes.Element:
     return section
 
 
+_CARD_SECTION_CLASSES: frozenset[str] = frozenset(
+    {_CSS.TOOL_SECTION, _CSS.PROMPT_SECTION, _CSS.RESOURCE_SECTION}
+)
+
+
 def collect_tool_section_content(app: Sphinx, doctree: nodes.document) -> None:
-    """Move siblings following each tool section into the section.
+    """Move siblings following each card section into the section.
 
     Directive-returned ``nodes.section`` is a closed node — MyST does not
     "enter" it.  This transform runs after parsing and re-parents prose,
-    code blocks, and ``{fastmcp-tool-input}`` tables that sit between one
-    tool section and the next boundary (``---`` transition or another tool
-    section).
+    code blocks, and input tables that sit between one card section and the
+    next boundary (``---`` transition or another section).
+
+    Covers tool, prompt, and resource card sections.
     """
     for section in list(doctree.findall(nodes.section)):
-        if _CSS.TOOL_SECTION not in section.get("classes", []):
+        if not _CARD_SECTION_CLASSES.intersection(section.get("classes", [])):
             continue
         parent = section.parent
         if parent is None:
