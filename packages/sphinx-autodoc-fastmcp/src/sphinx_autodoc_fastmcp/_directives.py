@@ -353,6 +353,21 @@ class FastMCPPromptDirective(SphinxDirective):
                 ),
             ]
 
+        document = self.state.document
+        section_id = prompt.name.replace("_", "-")
+        section = nodes.section()
+        section["ids"].append(section_id)
+        section["classes"].extend((_CSS.PROMPT_SECTION, API.CARD_SHELL))
+        document.note_explicit_target(section)
+
+        title_node = nodes.title("", "")
+        title_node["classes"].append(_CSS.SECTION_TITLE_HIDDEN)
+        title_node += nodes.literal("", prompt.name)
+        section += title_node
+
+        link = api_permalink(href=f"#{section_id}", title="Link to this prompt")
+        link["classes"] = ["headerlink", API.LINK]
+
         description = prompt.description or first_paragraph(prompt.docstring)
         content_nodes: list[nodes.Node] = []
         if description:
@@ -364,20 +379,16 @@ class FastMCPPromptDirective(SphinxDirective):
                 ),
             )
 
-        shell = nodes.container(
-            "",
-            classes=[_CSS.PROMPT_SECTION, API.CARD_SHELL],
-        )
-        shell += build_api_card_entry(
+        section += build_api_card_entry(
             profile_class=API.profile("fastmcp-prompt"),
             signature_children=(nodes.literal("", prompt.name),),
             content_children=tuple(content_nodes),
             badge_group=build_prompt_badge_group(prompt.tags),
-            permalink=None,
+            permalink=link,
             entry_classes=(_CSS.PROMPT_ENTRY,),
             signature_classes=(_CSS.PROMPT_SIGNATURE,),
         )
-        return [shell]
+        return [section]
 
 
 class FastMCPPromptInputDirective(SphinxDirective):
@@ -423,7 +434,9 @@ def _build_resource_card(
     signature_class: str,
     profile_name: str,
     extra_facts: list[tuple[str, nodes.Node]] | None = None,
-) -> nodes.container:
+    section_id: str | None = None,
+    document: t.Any = None,
+) -> nodes.Node:
     """Shared card builder for resources & resource templates."""
     from sphinx_autodoc_fastmcp._parsing import first_paragraph, parse_rst_inline
 
@@ -447,6 +460,33 @@ def _build_resource_card(
         content_nodes.append(
             build_api_facts_section(facts, classes=(_CSS.BODY_SECTION,)),
         )
+
+    permalink: nodes.Node | None = None
+    if section_id and document is not None:
+        section = nodes.section()
+        section["ids"].append(section_id)
+        section["classes"].extend((shell_class, API.CARD_SHELL))
+        document.note_explicit_target(section)
+
+        title_node = nodes.title("", "")
+        title_node["classes"].append(_CSS.SECTION_TITLE_HIDDEN)
+        title_node += nodes.literal("", section_id.replace("-", "_"))
+        section += title_node
+
+        link = api_permalink(href=f"#{section_id}", title="Link to this resource")
+        link["classes"] = ["headerlink", API.LINK]
+        permalink = link
+
+        section += build_api_card_entry(
+            profile_class=API.profile(profile_name),
+            signature_children=(nodes.literal("", signature_text),),
+            content_children=tuple(content_nodes),
+            badge_group=badge_group,
+            permalink=permalink,
+            entry_classes=(entry_class,),
+            signature_classes=(signature_class,),
+        )
+        return section
 
     shell = nodes.container("", classes=[shell_class, API.CARD_SHELL])
     shell += build_api_card_entry(
@@ -500,6 +540,8 @@ class FastMCPResourceDirective(SphinxDirective):
                 entry_class=_CSS.RESOURCE_ENTRY,
                 signature_class=_CSS.RESOURCE_SIGNATURE,
                 profile_name="fastmcp-resource",
+                section_id=res.name.replace("_", "-"),
+                document=self.state.document,
             ),
         ]
 
@@ -546,6 +588,8 @@ class FastMCPResourceTemplateDirective(SphinxDirective):
             entry_class=_CSS.RESOURCE_ENTRY,
             signature_class=_CSS.RESOURCE_SIGNATURE,
             profile_name="fastmcp-resource-template",
+            section_id=tpl.name.replace("_", "-"),
+            document=self.state.document,
         )
         result: list[nodes.Node] = [card]
         if tpl.parameters:

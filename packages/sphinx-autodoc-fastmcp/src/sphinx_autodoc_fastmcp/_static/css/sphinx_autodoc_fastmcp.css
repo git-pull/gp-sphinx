@@ -21,6 +21,18 @@
   --gp-sphinx-fastmcp-type-tool-bg: #0e7490;
   --gp-sphinx-fastmcp-type-tool-fg: #fff;
   --gp-sphinx-fastmcp-type-tool-border: #0f766e;
+  --gp-sphinx-fastmcp-type-prompt-bg: #7c3aed;
+  --gp-sphinx-fastmcp-type-prompt-bg-dark: #a78bfa;
+  --gp-sphinx-fastmcp-type-prompt-border: #6d28d9;
+  --gp-sphinx-fastmcp-type-prompt-border-dark: #c4b5fd;
+  --gp-sphinx-fastmcp-type-resource-bg: #059669;
+  --gp-sphinx-fastmcp-type-resource-bg-dark: #34d399;
+  --gp-sphinx-fastmcp-type-resource-border: #047857;
+  --gp-sphinx-fastmcp-type-resource-border-dark: #6ee7b7;
+  --gp-sphinx-fastmcp-type-resource-template-bg: #0891b2;
+  --gp-sphinx-fastmcp-type-resource-template-bg-dark: #22d3ee;
+  --gp-sphinx-fastmcp-type-resource-template-border: #0e7490;
+  --gp-sphinx-fastmcp-type-resource-template-border-dark: #a5f3fc;
 }
 
 /* ── Safety badges: gp-sphinx-badge--dense provides compact metrics; restore inline-flex for icon gap ── */
@@ -62,11 +74,96 @@
   box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
 }
 
+/* MCP "prompt": violet */
+.gp-sphinx-badge.gp-sphinx-fastmcp__type-prompt:not(.gp-sphinx-badge--inline-icon) {
+  background-color: #7c3aed !important;
+  color: #ffffff !important;
+  border: 1px solid #6d28d9 !important;
+  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
+}
+
+/* MCP "resource": emerald */
+.gp-sphinx-badge.gp-sphinx-fastmcp__type-resource:not(.gp-sphinx-badge--inline-icon) {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+  border: 1px solid #047857 !important;
+  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
+}
+
+/* MCP "resource-template": cyan */
+.gp-sphinx-badge.gp-sphinx-fastmcp__type-resource-template:not(.gp-sphinx-badge--inline-icon) {
+  background-color: #0891b2 !important;
+  color: #ffffff !important;
+  border: 1px solid #0e7490 !important;
+  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
+}
+
+/* MIME type and tag pills: neutral gray */
+.gp-sphinx-badge.gp-sphinx-fastmcp__mime:not(.gp-sphinx-badge--inline-icon),
+.gp-sphinx-badge.gp-sphinx-fastmcp__tag:not(.gp-sphinx-badge--inline-icon) {
+  background-color: #6b7280 !important;
+  color: #ffffff !important;
+  border: 1px solid #4b5563 !important;
+  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
+}
+
+/* ── Dark mode: override variables only; selectors above need not repeat ── */
+
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) {
+    --gp-sphinx-fastmcp-type-tool-bg: #0d9488;
+    --gp-sphinx-fastmcp-type-tool-fg: #ffffff;
+    --gp-sphinx-fastmcp-type-tool-border: #14b8a6;
+
+    --gp-sphinx-fastmcp-type-prompt-bg: #7c3aed;
+    --gp-sphinx-fastmcp-type-prompt-fg: #ffffff;
+    --gp-sphinx-fastmcp-type-prompt-border: #8b5cf6;
+
+    --gp-sphinx-fastmcp-type-resource-bg: #2563eb;
+    --gp-sphinx-fastmcp-type-resource-fg: #ffffff;
+    --gp-sphinx-fastmcp-type-resource-border: #3b82f6;
+
+    --gp-sphinx-fastmcp-type-resource-template-bg: #0284c7;
+    --gp-sphinx-fastmcp-type-resource-template-fg: #ffffff;
+    --gp-sphinx-fastmcp-type-resource-template-border: #0ea5e9;
+
+    --gp-sphinx-fastmcp-mime-fg: #9ca3af;
+    --gp-sphinx-fastmcp-mime-border: #4b5563;
+  }
+}
+
+body[data-theme="dark"] {
+  --gp-sphinx-fastmcp-type-tool-bg: #0d9488;
+  --gp-sphinx-fastmcp-type-tool-fg: #ffffff;
+  --gp-sphinx-fastmcp-type-tool-border: #14b8a6;
+
+  --gp-sphinx-fastmcp-type-prompt-bg: #7c3aed;
+  --gp-sphinx-fastmcp-type-prompt-fg: #ffffff;
+  --gp-sphinx-fastmcp-type-prompt-border: #8b5cf6;
+
+  --gp-sphinx-fastmcp-type-resource-bg: #2563eb;
+  --gp-sphinx-fastmcp-type-resource-fg: #ffffff;
+  --gp-sphinx-fastmcp-type-resource-border: #3b82f6;
+
+  --gp-sphinx-fastmcp-type-resource-template-bg: #0284c7;
+  --gp-sphinx-fastmcp-type-resource-template-fg: #ffffff;
+  --gp-sphinx-fastmcp-type-resource-template-border: #0ea5e9;
+
+  --gp-sphinx-fastmcp-mime-fg: #9ca3af;
+  --gp-sphinx-fastmcp-mime-border: #4b5563;
+}
+
+/* Safety dark-mode box-shadow (safety badges intentionally keep hardcoded hex — see note above) */
 @media (prefers-color-scheme: dark) {
   body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__safety-readonly:not(.gp-sphinx-badge--inline-icon),
   body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__safety-mutating:not(.gp-sphinx-badge--inline-icon),
   body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__safety-destructive:not(.gp-sphinx-badge--inline-icon),
-  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon) {
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon),
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__type-prompt:not(.gp-sphinx-badge--inline-icon),
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__type-resource:not(.gp-sphinx-badge--inline-icon),
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__type-resource-template:not(.gp-sphinx-badge--inline-icon),
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__mime:not(.gp-sphinx-badge--inline-icon),
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__tag:not(.gp-sphinx-badge--inline-icon) {
     box-shadow: var(--gp-sphinx-badge-buff-shadow-dark-ui) !important;
   }
 
@@ -75,12 +172,42 @@
     color: #ffffff !important;
     border: 1px solid #14b8a6 !important;
   }
+
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__type-prompt:not(.gp-sphinx-badge--inline-icon) {
+    background-color: #a78bfa !important;
+    color: #1e1b2e !important;
+    border: 1px solid #c4b5fd !important;
+  }
+
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__type-resource:not(.gp-sphinx-badge--inline-icon) {
+    background-color: #34d399 !important;
+    color: #022c22 !important;
+    border: 1px solid #6ee7b7 !important;
+  }
+
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__type-resource-template:not(.gp-sphinx-badge--inline-icon) {
+    background-color: #22d3ee !important;
+    color: #083344 !important;
+    border: 1px solid #a5f3fc !important;
+  }
+
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__mime:not(.gp-sphinx-badge--inline-icon),
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__tag:not(.gp-sphinx-badge--inline-icon) {
+    background-color: #9ca3af !important;
+    color: #111827 !important;
+    border: 1px solid #d1d5db !important;
+  }
 }
 
 body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__safety-readonly:not(.gp-sphinx-badge--inline-icon),
 body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__safety-mutating:not(.gp-sphinx-badge--inline-icon),
 body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__safety-destructive:not(.gp-sphinx-badge--inline-icon),
-body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon) {
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon),
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__type-prompt:not(.gp-sphinx-badge--inline-icon),
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__type-resource:not(.gp-sphinx-badge--inline-icon),
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__type-resource-template:not(.gp-sphinx-badge--inline-icon),
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__mime:not(.gp-sphinx-badge--inline-icon),
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__tag:not(.gp-sphinx-badge--inline-icon) {
   box-shadow: var(--gp-sphinx-badge-buff-shadow-dark-ui) !important;
 }
 
@@ -88,6 +215,31 @@ body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sp
   background-color: #0d9488 !important;
   color: #ffffff !important;
   border: 1px solid #14b8a6 !important;
+}
+
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__type-prompt:not(.gp-sphinx-badge--inline-icon) {
+  background-color: #a78bfa !important;
+  color: #1e1b2e !important;
+  border: 1px solid #c4b5fd !important;
+}
+
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__type-resource:not(.gp-sphinx-badge--inline-icon) {
+  background-color: #34d399 !important;
+  color: #022c22 !important;
+  border: 1px solid #6ee7b7 !important;
+}
+
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__type-resource-template:not(.gp-sphinx-badge--inline-icon) {
+  background-color: #22d3ee !important;
+  color: #083344 !important;
+  border: 1px solid #a5f3fc !important;
+}
+
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__mime:not(.gp-sphinx-badge--inline-icon),
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__tag:not(.gp-sphinx-badge--inline-icon) {
+  background-color: #9ca3af !important;
+  color: #111827 !important;
+  border: 1px solid #d1d5db !important;
 }
 
 /* ── Emoji when data-icon absent (unicode); data-icon wins via badges base ── */
@@ -118,9 +270,25 @@ section.gp-sphinx-fastmcp__tool-section > .gp-sphinx-fastmcp__tool-entry > .gp-s
   margin-top: 0.75rem;
 }
 
-/* Hide the "tool" type badge in TOC sidebar (redundant there). */
-.toc-tree .gp-sphinx-fastmcp__type-tool {
+/* Hide type badges in TOC sidebar (redundant — the section title already names the item). */
+.toc-tree .gp-sphinx-fastmcp__type-tool,
+.toc-tree .gp-sphinx-fastmcp__type-prompt,
+.toc-tree .gp-sphinx-fastmcp__type-resource,
+.toc-tree .gp-sphinx-fastmcp__type-resource-template {
   display: none !important;
+}
+
+/* ── Prompt / resource section cards ──────────────────────── */
+section.gp-sphinx-fastmcp__prompt-section,
+section.gp-sphinx-fastmcp__resource-section {
+  padding: 0;
+  overflow: clip;
+}
+
+section.gp-sphinx-fastmcp__prompt-section > .gp-sphinx-fastmcp__prompt-entry > .gp-sphinx-api-header .gp-sphinx-api-signature,
+section.gp-sphinx-fastmcp__resource-section > .gp-sphinx-fastmcp__resource-entry > .gp-sphinx-api-header .gp-sphinx-api-signature {
+  min-width: 0;
+  font-family: var(--font-stack--monospace);
 }
 
 .gp-sphinx-fastmcp__visually-hidden {
