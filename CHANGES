@@ -77,7 +77,10 @@ $ uv add gp-sphinx --prerelease allow
   template instead of cloning ``.copybtn`` from the initial page.
   Pages without code blocks (landing pages, prose-only indexes) left
   ``copyBtnTemplate`` null, so SPA-navigating to a code-block page
-  produced no copy affordance. `gp_sphinx` also injects a small
+  produced no copy affordance. The inline template is byte-equivalent
+  to sphinx-copybutton's output — same classes, same SVG with
+  ``<title>Copy to clipboard</title>`` so screen readers announce the
+  button correctly. `gp_sphinx` also injects a small
   ``window.GP_SPHINX_COPYBUTTON_SELECTOR`` bridge from the project's
   configured ``copybutton_selector`` via ``html-page-context``, so
   projects that extend the selector (e.g. prompt admonitions) get
