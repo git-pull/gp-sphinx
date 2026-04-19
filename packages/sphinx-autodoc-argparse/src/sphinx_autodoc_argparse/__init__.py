@@ -44,7 +44,7 @@ __all__ = [
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
-__version__ = "0.0.1a8"
+__version__ = "0.0.1a9"
 
 
 class SetupDict(t.TypedDict):
