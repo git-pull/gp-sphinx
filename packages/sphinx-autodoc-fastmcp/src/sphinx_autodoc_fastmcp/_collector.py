@@ -361,11 +361,13 @@ def _strip_schema_note(text: str) -> str:
     'Summary.'
     >>> _strip_schema_note("Summary.\n\nProvide as a JSON string matching the following schema: {}")
     'Summary.'
+    >>> _strip_schema_note("  Summary.  \n\nProvide as a JSON string matching the following schema: {}")
+    'Summary.'
     """
     idx = text.find(_SCHEMA_NOTE_MARKER)
     if idx == -1:
         return text.strip()
-    return text[:idx].rstrip().rstrip("\n").strip()
+    return text[:idx].strip()
 
 
 def _prompt_from_component(prompt: t.Any) -> PromptInfo:
