@@ -148,9 +148,6 @@ def build_toolbar(safety: str) -> nodes.inline:
 _TYPE_TOOLTIP_PROMPT = "MCP prompt recipe"
 _TYPE_TOOLTIP_RESOURCE = "MCP resource (fixed URI)"
 _TYPE_TOOLTIP_RESOURCE_TEMPLATE = "MCP resource template (parameterised URI)"
-_ICON_PROMPT = "\U0001f4ac"  # 💬 speech-balloon — prompts are conversation templates
-_ICON_RESOURCE = "\U0001f5c2\ufe0f"  # 🗂️ card-index — fixed-URI documents
-_ICON_RESOURCE_TEMPLATE = "\U0001f9ed"  # 🧭 compass — parameterised URIs
 
 
 def build_prompt_badge_group(tags: t.Sequence[str] = ()) -> nodes.inline:
@@ -166,7 +163,6 @@ def build_prompt_badge_group(tags: t.Sequence[str] = ()) -> nodes.inline:
         BadgeSpec(
             "prompt",
             tooltip=_TYPE_TOOLTIP_PROMPT,
-            icon=_ICON_PROMPT,
             classes=(
                 SAB.DENSE,
                 SAB.NO_UNDERLINE,
@@ -194,8 +190,8 @@ def build_resource_badge_group(
 ) -> nodes.inline:
     """Badge group for a resource or resource template.
 
-    Emits a type badge (``resource`` or ``resource-template``), a MIME
-    pill if one is set, and optional tag pills.
+    Emits a type badge (``resource`` or ``resource-template``), an optional
+    MIME pill, and optional tag pills.
 
     Examples
     --------
@@ -207,7 +203,6 @@ def build_resource_badge_group(
         type_spec = BadgeSpec(
             "resource-template",
             tooltip=_TYPE_TOOLTIP_RESOURCE_TEMPLATE,
-            icon=_ICON_RESOURCE_TEMPLATE,
             classes=(
                 SAB.DENSE,
                 SAB.NO_UNDERLINE,
@@ -219,13 +214,7 @@ def build_resource_badge_group(
         type_spec = BadgeSpec(
             "resource",
             tooltip=_TYPE_TOOLTIP_RESOURCE,
-            icon=_ICON_RESOURCE,
-            classes=(
-                SAB.DENSE,
-                SAB.NO_UNDERLINE,
-                SAB.BADGE_TYPE,
-                _CSS.TYPE_RESOURCE,
-            ),
+            classes=(SAB.DENSE, SAB.NO_UNDERLINE, SAB.BADGE_TYPE, _CSS.TYPE_RESOURCE),
         )
     specs = [type_spec]
     if mime_type:

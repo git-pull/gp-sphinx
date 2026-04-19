@@ -42,6 +42,17 @@ from sphinx_ux_autodoc_layout import (
 )
 
 
+def _register_section_label(env: object, section_id: str, display_name: str) -> None:
+    """Register section in Sphinx std domain at parse time so {ref} resolves it.
+
+    Must run inside a directive's run() — at that point env.docname is set and
+    domain.data is the live dict that gets pickled, surviving incremental builds.
+    """
+    std = env.get_domain("std")  # type: ignore[attr-defined]
+    std.anonlabels[section_id] = (env.docname, section_id)  # type: ignore[attr-defined]
+    std.labels[section_id] = (env.docname, section_id, display_name)  # type: ignore[attr-defined]
+
+
 class FastMCPToolDirective(SphinxDirective):
     """Autodocument one MCP tool: section (ToC/labels) + card body."""
 
@@ -77,6 +88,7 @@ class FastMCPToolDirective(SphinxDirective):
         section = nodes.section()
         section["ids"].append(section_id)
         section["classes"].extend((_CSS.TOOL_SECTION, API.CARD_SHELL))
+        _register_section_label(self.env, section_id, tool.name)
         document.note_explicit_target(section)
 
         title_node = nodes.title("", "")
@@ -358,6 +370,7 @@ class FastMCPPromptDirective(SphinxDirective):
         section = nodes.section()
         section["ids"].append(section_id)
         section["classes"].extend((_CSS.PROMPT_SECTION, API.CARD_SHELL))
+        _register_section_label(self.env, section_id, prompt.name)
         document.note_explicit_target(section)
 
         title_node = nodes.title("", "")
@@ -466,6 +479,11 @@ def _build_resource_card(
         section = nodes.section()
         section["ids"].append(section_id)
         section["classes"].extend((shell_class, API.CARD_SHELL))
+        _register_section_label(
+            state.document.settings.env,
+            section_id,
+            section_id.replace("-", "_"),
+        )
         document.note_explicit_target(section)
 
         title_node = nodes.title("", "")
