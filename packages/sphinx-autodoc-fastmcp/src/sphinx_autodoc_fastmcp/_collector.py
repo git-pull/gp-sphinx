@@ -573,7 +573,7 @@ def collect_prompts_and_resources(app: Sphinx) -> None:
                 from fastmcp.resources.template import (
                     ResourceTemplate as _ResourceTemplate,
                 )
-            except Exception:  # pragma: no cover - defensive
+            except ImportError:  # pragma: no cover - defensive
                 logger.warning(
                     "sphinx_autodoc_fastmcp: could not import fastmcp types",
                     exc_info=True,
