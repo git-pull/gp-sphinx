@@ -804,6 +804,33 @@ _RAISES_FIXTURES: list[RaisesSectionFixture] = [
         ],
         expected_in_output=[":raises TypeError:"],
     ),
+    RaisesSectionFixture(
+        test_id="raises_with_exc_role",
+        input_lines=[
+            "Summary.",
+            "",
+            "Raises",
+            "------",
+            ":exc:`exc.LibTmuxException`",
+        ],
+        expected_in_output=[":raises exc.LibTmuxException:"],
+    ),
+    RaisesSectionFixture(
+        test_id="raises_multiple_comma_roles",
+        input_lines=[
+            "Summary.",
+            "",
+            "Raises",
+            "------",
+            ":exc:`exc.OptionError`, :exc:`exc.UnknownOption`,",
+            ":exc:`exc.InvalidOption`",
+        ],
+        expected_in_output=[
+            ":raises exc.OptionError:",
+            ":raises exc.UnknownOption:",
+            ":raises exc.InvalidOption:",
+        ],
+    ),
 ]
 
 
@@ -902,6 +929,42 @@ def test_numpy_generic_section(
     joined = "\n".join(result)
     for fragment in expected_in_output:
         assert fragment in joined, f"[{test_id}] Missing: {fragment!r}"
+
+
+@pytest.mark.parametrize(
+    ("test_id", "input_lines"),
+    [
+        (
+            "notes_empty_content",
+            [
+                "Summary.",
+                "",
+                "Notes",
+                "-----",
+            ],
+        ),
+        (
+            "notes_only_todo",
+            [
+                "Summary.",
+                "",
+                "Notes",
+                "-----",
+                ".. todo::",
+                "",
+                "    assure it works.",
+            ],
+        ),
+    ],
+    ids=["notes_empty_content", "notes_only_todo"],
+)
+def test_numpy_generic_section_no_rubric(test_id: str, input_lines: list[str]) -> None:
+    """Notes section with no visible content produces no rubric node."""
+    result = process_numpy_docstring(input_lines)
+    joined = "\n".join(result)
+    assert ".. rubric:: Notes" not in joined, (
+        f"[{test_id}] Empty Notes rubric should not be emitted"
+    )
 
 
 # ---------------------------------------------------------------------------

@@ -36,6 +36,8 @@ import re
 import typing as t
 
 _NUMPY_UNDERLINE_RE = re.compile(r"^[=\-`:'\"~^_*+#<>]{2,}\s*$")
+_ROLE_RE = re.compile(r":[a-zA-Z][a-zA-Z0-9_.-]*:`([^`]+)`")
+_TODO_DIRECTIVE_RE = re.compile(r"^\.\.\s+todo\s*::")
 
 _XREF_OR_CODE_RE = re.compile(
     r"((?::(?:[a-zA-Z0-9]+[\-_+:.])*[a-zA-Z0-9]+:`.+?`)|"
@@ -297,6 +299,45 @@ def _indent(lines: list[str], n: int = 4) -> list[str]:
     """
     pad = " " * n
     return [pad + line for line in lines]
+
+
+def _strip_roles(s: str) -> str:
+    """Strip RST inline role markup, returning just the target text.
+
+    Examples
+    --------
+    >>> _strip_roles(":exc:`ValueError`")
+    'ValueError'
+    >>> _strip_roles(":exc:`exc.Foo`, :exc:`exc.Bar`")
+    'exc.Foo, exc.Bar'
+    >>> _strip_roles("plain")
+    'plain'
+    """
+    return _ROLE_RE.sub(r"\1", s)
+
+
+def _filter_invisible_directives(lines: list[str]) -> list[str]:
+    """Remove ``.. todo::`` directives and their indented body from *lines*.
+
+    Examples
+    --------
+    >>> _filter_invisible_directives([".. todo::", "", "    assure it works.", "text"])
+    ['text']
+    >>> _filter_invisible_directives(["keep this", ".. todo::", "    body"])
+    ['keep this']
+    """
+    result: list[str] = []
+    skip_indent: int | None = None
+    for line in lines:
+        if skip_indent is not None:
+            if not line or _is_indented(line, skip_indent + 1):
+                continue
+            skip_indent = None
+        if _TODO_DIRECTIVE_RE.match(line.lstrip()):
+            skip_indent = _get_indent(line)
+            continue
+        result.append(line)
+    return result
 
 
 def _is_list(lines: list[str]) -> bool:
@@ -669,10 +710,21 @@ class _NumpyParser:
         fields = self._consume_fields(parse_type=False, prefer_type=True)
         lines: list[str] = []
         for _name, type_, desc in fields:
-            type_str = f" {type_}" if type_ else ""
+            type_ = _strip_roles(type_)
+            exc_types = [
+                part.strip().rstrip(",")
+                for part in type_.split(",")
+                if part.strip().rstrip(",")
+            ]
+            if not exc_types:
+                exc_types = [""]
             desc = _strip_empty(desc)
-            desc_str = " " + "\n    ".join(desc) if any(desc) else ""
-            lines.append(f":raises{type_str}:{desc_str}")
+            for exc_type in exc_types:
+                type_str = f" {exc_type}" if exc_type else ""
+                if any(desc):
+                    lines.extend(_format_block(f":raises{type_str}: ", desc))
+                else:
+                    lines.append(f":raises{type_str}:")
         if lines:
             lines.append("")
         return lines
@@ -723,10 +775,11 @@ class _NumpyParser:
     def _fmt_generic(self, label: str) -> list[str]:
         raw = _strip_empty(self._consume_to_next_section())
         raw = _dedent(raw)
+        raw = _strip_empty(_filter_invisible_directives(raw))
         header = f".. rubric:: {label}"
         if raw:
             return [header, "", *raw, ""]
-        return [header, ""]
+        return []
 
     def _fmt_admonition(self, directive: str) -> list[str]:
         raw = _strip_empty(self._consume_to_next_section())
