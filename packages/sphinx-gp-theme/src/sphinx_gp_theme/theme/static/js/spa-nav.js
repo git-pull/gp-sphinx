@@ -26,27 +26,57 @@
   }
 
   // --- Copy button injection ---
+  //
+  // Matches sphinx-copybutton's button HTML (copybutton.js_t:141-145 and
+  // the default icon at copybutton.js_t:70-75) so SPA-inserted buttons
+  // look identical to initially-rendered ones and plug into ClipboardJS's
+  // body-delegated listener transparently.
+  //
+  // Uses an inline template instead of cloning an existing ``.copybtn``:
+  // a landing page may have no code blocks (and therefore no button to
+  // clone), which previously left ``copyBtnTemplate`` null on every
+  // subsequent SPA-swapped page.
+  //
+  // Reads ``window.GP_SPHINX_COPYBUTTON_SELECTOR`` — set by gp-sphinx's
+  // ``html-page-context`` hook from the project's configured
+  // ``copybutton_selector`` — so projects that extend the selector (e.g.
+  // ``"div.highlight pre, div.admonition.prompt > p:last-child"``) get
+  // copy buttons re-applied to every matching element on SPA navigation,
+  // not just to code blocks.
 
-  var copyBtnTemplate = null;
+  var iconCopy =
+    '<svg xmlns="http://www.w3.org/2000/svg" ' +
+    'class="icon icon-tabler icon-tabler-copy" ' +
+    'width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" ' +
+    'stroke="#000000" fill="none" stroke-linecap="round" ' +
+    'stroke-linejoin="round">' +
+    "<title>Copy to clipboard</title>" +
+    '<path stroke="none" d="M0 0h24v24H0z" fill="none"/>' +
+    '<rect x="8" y="8" width="12" height="12" rx="2" />' +
+    '<path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2" />' +
+    "</svg>";
 
-  function captureCopyIcon() {
-    var btn = document.querySelector(".copybtn");
-    if (btn) copyBtnTemplate = btn.cloneNode(true);
+  function makeCopyButton(targetId) {
+    return (
+      '<button class="copybtn o-tooltip--left" data-tooltip="Copy" ' +
+      'data-clipboard-target="#' + targetId + '">' +
+      iconCopy +
+      "</button>"
+    );
   }
 
   function addCopyButtons() {
-    if (!copyBtnTemplate) captureCopyIcon();
-    if (!copyBtnTemplate) return;
-    var cells = document.querySelectorAll("div.highlight pre");
+    var selector =
+      window.GP_SPHINX_COPYBUTTON_SELECTOR || "div.highlight pre";
+    var cells = document.querySelectorAll(selector);
     cells.forEach(function (cell, i) {
-      cell.id = "codecell" + i;
+      var id = "codecell" + i;
+      cell.id = id;
       var next = cell.nextElementSibling;
       if (next && next.classList.contains("copybtn")) {
-        next.setAttribute("data-clipboard-target", "#codecell" + i);
+        next.setAttribute("data-clipboard-target", "#" + id);
       } else {
-        var btn = copyBtnTemplate.cloneNode(true);
-        btn.setAttribute("data-clipboard-target", "#codecell" + i);
-        cell.insertAdjacentElement("afterend", btn);
+        cell.insertAdjacentHTML("afterend", makeCopyButton(id));
       }
     });
   }
@@ -183,14 +213,14 @@
 
         if (!isPop) history.pushState({ spa: true }, "", url);
 
-        if (!isPop) {
-          var hash = new URL(url, location.href).hash;
-          if (hash) {
-            var el = document.querySelector(hash);
-            if (el) el.scrollIntoView();
-          } else {
-            window.scrollTo(0, 0);
-          }
+        var hash = new URL(url, location.href).hash;
+        if (hash) {
+          var el = document.getElementById(
+            decodeURIComponent(hash.slice(1)),
+          );
+          if (el) el.scrollIntoView();
+        } else if (!isPop) {
+          window.scrollTo(0, 0);
         }
 
         reinit();
@@ -247,8 +277,7 @@
 
   // --- Init ---
 
-  // Copy buttons are injected by copybutton.js on DOMContentLoaded.
-  // This defer script runs before DOMContentLoaded, so our handler
-  // fires after copybutton's handler (registration order preserved).
-  document.addEventListener("DOMContentLoaded", captureCopyIcon);
+  // sphinx-copybutton creates the initial buttons on DOMContentLoaded.
+  // On SPA swap, ``addCopyButtons`` (called from ``reinit``) re-creates
+  // them from an inline template — no capture step is needed.
 })();

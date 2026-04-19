@@ -65,6 +65,27 @@ $ uv add gp-sphinx --prerelease allow
 
 ### Bug fixes
 
+- `sphinx-gp-theme`: SPA nav now scrolls to the target anchor on
+  cross-page fragment links. `document.querySelector(hash)` mis-parses
+  any hash containing `.` (e.g. Python autodoc IDs like
+  `#libtmux_mcp.models.SearchPanesResult`) as a CSS class selector, so
+  every `py:class` / `py:meth` / `py:attr` cross-ref was failing to
+  scroll. Switched to `getElementById(decodeURIComponent(hash.slice(1)))`
+  and moved the scroll-to-fragment branch out of the `!isPop` guard so
+  browser forward/back also scrolls to fragments (#20)
+- `sphinx-gp-theme`: SPA nav re-creates copy buttons from an inline
+  template instead of cloning ``.copybtn`` from the initial page.
+  Pages without code blocks (landing pages, prose-only indexes) left
+  ``copyBtnTemplate`` null, so SPA-navigating to a code-block page
+  produced no copy affordance. The inline template is byte-equivalent
+  to sphinx-copybutton's output — same classes, same SVG with
+  ``<title>Copy to clipboard</title>`` so screen readers announce the
+  button correctly. `gp_sphinx` also injects a small
+  ``window.GP_SPHINX_COPYBUTTON_SELECTOR`` bridge from the project's
+  configured ``copybutton_selector`` via ``html-page-context``, so
+  projects that extend the selector (e.g. prompt admonitions) get
+  copy buttons re-applied to every configured match after SPA swap,
+  not just to code blocks (#20)
 - Load full weight range `[300, 400, 500, 600, 700]` for both IBM Plex
   Sans and IBM Plex Mono (badges render in monospace at `font-weight: 700`,
   Furo code blocks use 300, and intermediate weights inherit from

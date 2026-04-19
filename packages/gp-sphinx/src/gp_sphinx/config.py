@@ -28,6 +28,7 @@ from __future__ import annotations
 import contextlib
 import copy
 import inspect
+import json
 import logging
 import os.path
 import pathlib
@@ -460,11 +461,53 @@ def remove_tabs_js(app: Sphinx, exc: Exception | None) -> None:
             tabs_js.unlink()
 
 
+def _inject_copybutton_bridge(
+    app: Sphinx,
+    pagename: str,
+    templatename: str,
+    context: dict[str, t.Any],
+    doctree: object,
+) -> None:
+    """Expose ``copybutton_selector`` to ``spa-nav.js`` as a window global.
+
+    ``sphinx-copybutton`` bakes its selector into ``copybutton.js`` at build
+    time inside a function-local ``const``, so it is not reachable from
+    outside JS. ``spa-nav.js`` needs the selector at runtime to re-create
+    copy buttons after SPA swaps on pages whose selectors include more than
+    the default ``div.highlight pre`` (e.g. custom prompt admonitions).
+
+    This hook emits a small inline script into ``<head>`` that sets
+    ``window.GP_SPHINX_COPYBUTTON_SELECTOR`` from the project's configured
+    ``copybutton_selector``.
+
+    Parameters
+    ----------
+    app : Sphinx
+        The Sphinx application object.
+    pagename : str
+        Name of the page being rendered.
+    templatename : str
+        Name of the template being used.
+    context : dict[str, Any]
+        Rendering context passed to the template.
+    doctree : object
+        Doctree for the page (unused).
+    """
+    if "sphinx_copybutton" not in app.config.extensions:
+        return
+    selector = getattr(app.config, "copybutton_selector", "div.highlight pre")
+    snippet = (
+        f"<script>window.GP_SPHINX_COPYBUTTON_SELECTOR={json.dumps(selector)};</script>"
+    )
+    context["metatags"] = context.get("metatags", "") + snippet
+
+
 def setup(app: Sphinx) -> None:
     """Configure Sphinx app hooks for gp-sphinx workarounds.
 
-    Registers the bundled ``spa-nav.js`` script and connects the
-    ``remove_tabs_js`` post-build hook.
+    Registers the bundled ``spa-nav.js`` script, wires the copy-button
+    configuration bridge, and connects the ``remove_tabs_js`` post-build
+    hook.
 
     Parameters
     ----------
@@ -472,6 +515,7 @@ def setup(app: Sphinx) -> None:
         The Sphinx application object.
     """
     app.add_js_file("js/spa-nav.js", loading_method="defer")
+    app.connect("html-page-context", _inject_copybutton_bridge)
     app.connect("build-finished", remove_tabs_js)
     app.add_lexer("myst", MystLexer)
     app.add_lexer("myst-md", MystLexer)
