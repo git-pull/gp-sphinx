@@ -15,8 +15,15 @@ import typing as t
 
 from sphinx.application import Sphinx
 
-from sphinx_autodoc_fastmcp._collector import collect_tools
+from sphinx_autodoc_fastmcp._collector import (
+    collect_prompts_and_resources,
+    collect_tools,
+)
 from sphinx_autodoc_fastmcp._directives import (
+    FastMCPPromptDirective,
+    FastMCPPromptInputDirective,
+    FastMCPResourceDirective,
+    FastMCPResourceTemplateDirective,
     FastMCPToolDirective,
     FastMCPToolInputDirective,
     FastMCPToolSummaryDirective,
@@ -77,6 +84,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_config_value("fastmcp_section_badge_map", {}, "env")
     app.add_config_value("fastmcp_section_badge_pages", (), "env")
     app.add_config_value("fastmcp_collector_mode", "register", "env")
+    app.add_config_value("fastmcp_server_module", "", "env")
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
 
@@ -88,6 +96,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_css_file("css/sphinx_autodoc_fastmcp.css")
 
     app.connect("builder-inited", collect_tools)
+    app.connect("builder-inited", collect_prompts_and_resources)
     app.connect("doctree-read", register_tool_labels)
     app.connect("doctree-read", collect_tool_section_content)
     app.connect("doctree-resolved", add_section_badges)
@@ -105,6 +114,10 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_directive("fastmcp-tool", FastMCPToolDirective)
     app.add_directive("fastmcp-tool-input", FastMCPToolInputDirective)
     app.add_directive("fastmcp-tool-summary", FastMCPToolSummaryDirective)
+    app.add_directive("fastmcp-prompt", FastMCPPromptDirective)
+    app.add_directive("fastmcp-prompt-input", FastMCPPromptInputDirective)
+    app.add_directive("fastmcp-resource", FastMCPResourceDirective)
+    app.add_directive("fastmcp-resource-template", FastMCPResourceTemplateDirective)
 
     return {
         "version": _EXTENSION_VERSION,

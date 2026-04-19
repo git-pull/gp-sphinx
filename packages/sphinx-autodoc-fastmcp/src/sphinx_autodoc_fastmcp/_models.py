@@ -1,9 +1,9 @@
-"""Data models for FastMCP tool documentation."""
+"""Data models for FastMCP tool / prompt / resource documentation."""
 
 from __future__ import annotations
 
 import typing as t
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -34,9 +34,60 @@ class ToolInfo:
 
 
 @dataclass
-class ResourceInfo:
-    """Placeholder for future FastMCP resource documentation."""
+class PromptArgInfo:
+    """One ``arguments[]`` entry on an MCP prompt."""
 
     name: str
-    uri_template: str = ""
+    description: str
+    required: bool
+    type_str: str = ""
+
+
+@dataclass
+class PromptInfo:
+    """Collected metadata for a single MCP prompt.
+
+    The underlying function is intentionally not retained — FastMCP
+    resources and prompts are frequently defined as closure-local
+    functions, which cannot be pickled into Sphinx's environment
+    cache.  We extract the docstring eagerly at collect time.
+    """
+
+    name: str
+    title: str
+    description: str
+    docstring: str
+    tags: tuple[str, ...]
+    arguments: list[PromptArgInfo]
+    module_name: str = ""
+
+
+@dataclass
+class ResourceInfo:
+    """Collected metadata for a single MCP resource (fixed URI)."""
+
+    name: str
+    uri: str
+    title: str
+    description: str
+    mime_type: str
+    docstring: str
+    tags: tuple[str, ...] = ()
+    annotations: dict[str, t.Any] = field(default_factory=dict)
+    module_name: str = ""
+
+
+@dataclass
+class ResourceTemplateInfo:
+    """Collected metadata for a single MCP resource *template* (URI pattern)."""
+
+    name: str
+    uri_template: str
+    title: str
+    description: str
+    mime_type: str
+    parameters: list[PromptArgInfo]
+    docstring: str
+    tags: tuple[str, ...] = ()
+    annotations: dict[str, t.Any] = field(default_factory=dict)
     module_name: str = ""

@@ -143,3 +143,94 @@ def build_toolbar(safety: str) -> nodes.inline:
     True
     """
     return _sab_build_toolbar(build_tool_badge_group(safety))
+
+
+_TYPE_TOOLTIP_PROMPT = "MCP prompt recipe"
+_TYPE_TOOLTIP_RESOURCE = "MCP resource (fixed URI)"
+_TYPE_TOOLTIP_RESOURCE_TEMPLATE = "MCP resource template (parameterised URI)"
+
+
+def build_prompt_badge_group(tags: t.Sequence[str] = ()) -> nodes.inline:
+    """Badge group: ``prompt`` type + optional tag pills.
+
+    Examples
+    --------
+    >>> g = build_prompt_badge_group(())
+    >>> "gp-sphinx-badge-group" in g["classes"]
+    True
+    """
+    specs = [
+        BadgeSpec(
+            "prompt",
+            tooltip=_TYPE_TOOLTIP_PROMPT,
+            classes=(
+                SAB.DENSE,
+                SAB.NO_UNDERLINE,
+                SAB.BADGE_TYPE,
+                _CSS.TYPE_PROMPT,
+            ),
+        ),
+    ]
+    for tag in tags:
+        specs.append(
+            BadgeSpec(
+                tag,
+                tooltip=f"Tag: {tag}",
+                classes=(SAB.DENSE, SAB.NO_UNDERLINE, _CSS.BADGE_TAG),
+            ),
+        )
+    return build_badge_group_from_specs(specs)
+
+
+def build_resource_badge_group(
+    mime_type: str,
+    tags: t.Sequence[str] = (),
+    *,
+    kind: t.Literal["resource", "resource-template"] = "resource",
+) -> nodes.inline:
+    """Badge group for a resource or resource template.
+
+    Emits a type badge (``resource`` or ``resource-template``), an optional
+    MIME pill, and optional tag pills.
+
+    Examples
+    --------
+    >>> g = build_resource_badge_group("application/json")
+    >>> "gp-sphinx-badge-group" in g["classes"]
+    True
+    """
+    if kind == "resource-template":
+        type_spec = BadgeSpec(
+            "resource-template",
+            tooltip=_TYPE_TOOLTIP_RESOURCE_TEMPLATE,
+            classes=(
+                SAB.DENSE,
+                SAB.NO_UNDERLINE,
+                SAB.BADGE_TYPE,
+                _CSS.TYPE_RESOURCE_TEMPLATE,
+            ),
+        )
+    else:
+        type_spec = BadgeSpec(
+            "resource",
+            tooltip=_TYPE_TOOLTIP_RESOURCE,
+            classes=(SAB.DENSE, SAB.NO_UNDERLINE, SAB.BADGE_TYPE, _CSS.TYPE_RESOURCE),
+        )
+    specs = [type_spec]
+    if mime_type:
+        specs.append(
+            BadgeSpec(
+                mime_type,
+                tooltip=f"MIME type: {mime_type}",
+                classes=(SAB.DENSE, SAB.NO_UNDERLINE, _CSS.BADGE_MIME),
+            ),
+        )
+    for tag in tags:
+        specs.append(
+            BadgeSpec(
+                tag,
+                tooltip=f"Tag: {tag}",
+                classes=(SAB.DENSE, SAB.NO_UNDERLINE, _CSS.BADGE_TAG),
+            ),
+        )
+    return build_badge_group_from_specs(specs)

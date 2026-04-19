@@ -260,6 +260,15 @@ dl.gp-sphinx-api-container:not(.py) > dd.gp-sphinx-api-content {
   background: var(--color-api-background-hover);
 }
 
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-link {
+  visibility: hidden;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header:hover .gp-sphinx-api-link,
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-link:focus-visible {
+  visibility: visible;
+}
+
 .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout {
   display: flex;
   align-items: center;

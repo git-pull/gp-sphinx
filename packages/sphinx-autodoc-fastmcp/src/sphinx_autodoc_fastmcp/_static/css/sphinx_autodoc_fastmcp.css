@@ -6,9 +6,13 @@
  *
  * Safety palette: same tokens as sphinx_gp_theme/theme/static/css/custom.css
  * so readonly / mutating / destructive match production regardless of load order.
+ *
+ * Type badge palette (tool / prompt / resource): one variable set per type;
+ * dark mode overrides the same variables in a scoped block — no -dark suffix antipattern.
  */
 
 :root {
+  /* ── Safety tier (kept in sync with sphinx_gp_theme/custom.css) ── */
   --gp-sphinx-fastmcp-safety-readonly-bg: #1f7a3f;
   --gp-sphinx-fastmcp-safety-readonly-border: #2a8d4d;
   --gp-sphinx-fastmcp-safety-readonly-text: #f3fff7;
@@ -18,9 +22,31 @@
   --gp-sphinx-fastmcp-safety-destructive-bg: #b4232c;
   --gp-sphinx-fastmcp-safety-destructive-border: #cb3640;
   --gp-sphinx-fastmcp-safety-destructive-text: #fff5f5;
+
+  /* ── Type: tool — teal ── */
   --gp-sphinx-fastmcp-type-tool-bg: #0e7490;
-  --gp-sphinx-fastmcp-type-tool-fg: #fff;
+  --gp-sphinx-fastmcp-type-tool-fg: #ffffff;
   --gp-sphinx-fastmcp-type-tool-border: #0f766e;
+
+  /* ── Type: prompt — muted violet ── */
+  --gp-sphinx-fastmcp-type-prompt-bg: #5b21b6;
+  --gp-sphinx-fastmcp-type-prompt-fg: #ffffff;
+  --gp-sphinx-fastmcp-type-prompt-border: #4c1d95;
+
+  /* ── Type: resource (fixed URI) — steel blue ── */
+  --gp-sphinx-fastmcp-type-resource-bg: #1e40af;
+  --gp-sphinx-fastmcp-type-resource-fg: #ffffff;
+  --gp-sphinx-fastmcp-type-resource-border: #1e3a8a;
+
+  /* ── Type: resource-template (parameterised URI) — sky blue ── */
+  --gp-sphinx-fastmcp-type-resource-template-bg: #0369a1;
+  --gp-sphinx-fastmcp-type-resource-template-fg: #ffffff;
+  --gp-sphinx-fastmcp-type-resource-template-border: #075985;
+
+  /* ── MIME / tag ghost pill ── */
+  --gp-sphinx-fastmcp-mime-bg: transparent;
+  --gp-sphinx-fastmcp-mime-fg: #6b7280;
+  --gp-sphinx-fastmcp-mime-border: #d1d5db;
 }
 
 /* ── Safety badges: gp-sphinx-badge--dense provides compact metrics; restore inline-flex for icon gap ── */
@@ -54,43 +80,107 @@
   box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
 }
 
-/* MCP "tool": white label (never use --sd-color-info-text; it is dark on light teal) */
+/* ── Type badges: use variables; dark mode re-declares the same vars in a scoped block ── */
+
 .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon) {
-  background-color: #0e7490 !important;
-  color: #ffffff !important;
-  border: 1px solid #0f766e !important;
+  background-color: var(--gp-sphinx-fastmcp-type-tool-bg) !important;
+  color: var(--gp-sphinx-fastmcp-type-tool-fg) !important;
+  border: 1px solid var(--gp-sphinx-fastmcp-type-tool-border) !important;
   box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
 }
 
+.gp-sphinx-badge.gp-sphinx-fastmcp__type-prompt:not(.gp-sphinx-badge--inline-icon) {
+  background-color: var(--gp-sphinx-fastmcp-type-prompt-bg) !important;
+  color: var(--gp-sphinx-fastmcp-type-prompt-fg) !important;
+  border: 1px solid var(--gp-sphinx-fastmcp-type-prompt-border) !important;
+  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
+}
+
+.gp-sphinx-badge.gp-sphinx-fastmcp__type-resource:not(.gp-sphinx-badge--inline-icon) {
+  background-color: var(--gp-sphinx-fastmcp-type-resource-bg) !important;
+  color: var(--gp-sphinx-fastmcp-type-resource-fg) !important;
+  border: 1px solid var(--gp-sphinx-fastmcp-type-resource-border) !important;
+  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
+}
+
+.gp-sphinx-badge.gp-sphinx-fastmcp__type-resource-template:not(.gp-sphinx-badge--inline-icon) {
+  background-color: var(--gp-sphinx-fastmcp-type-resource-template-bg) !important;
+  color: var(--gp-sphinx-fastmcp-type-resource-template-fg) !important;
+  border: 1px solid var(--gp-sphinx-fastmcp-type-resource-template-border) !important;
+  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
+}
+
+/* MIME type and tag pills: ghost outline — whispers rather than shouts */
+.gp-sphinx-badge.gp-sphinx-fastmcp__mime:not(.gp-sphinx-badge--inline-icon),
+.gp-sphinx-badge.gp-sphinx-fastmcp__tag:not(.gp-sphinx-badge--inline-icon) {
+  background-color: var(--gp-sphinx-fastmcp-mime-bg) !important;
+  color: var(--gp-sphinx-fastmcp-mime-fg) !important;
+  border: 1px solid var(--gp-sphinx-fastmcp-mime-border) !important;
+  box-shadow: none !important;
+}
+
+/* ── Dark mode: override variables only; selectors above need not repeat ── */
+
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) {
+    --gp-sphinx-fastmcp-type-tool-bg: #0d9488;
+    --gp-sphinx-fastmcp-type-tool-fg: #ffffff;
+    --gp-sphinx-fastmcp-type-tool-border: #14b8a6;
+
+    --gp-sphinx-fastmcp-type-prompt-bg: #7c3aed;
+    --gp-sphinx-fastmcp-type-prompt-fg: #ffffff;
+    --gp-sphinx-fastmcp-type-prompt-border: #8b5cf6;
+
+    --gp-sphinx-fastmcp-type-resource-bg: #2563eb;
+    --gp-sphinx-fastmcp-type-resource-fg: #ffffff;
+    --gp-sphinx-fastmcp-type-resource-border: #3b82f6;
+
+    --gp-sphinx-fastmcp-type-resource-template-bg: #0284c7;
+    --gp-sphinx-fastmcp-type-resource-template-fg: #ffffff;
+    --gp-sphinx-fastmcp-type-resource-template-border: #0ea5e9;
+
+    --gp-sphinx-fastmcp-mime-fg: #9ca3af;
+    --gp-sphinx-fastmcp-mime-border: #4b5563;
+  }
+}
+
+body[data-theme="dark"] {
+  --gp-sphinx-fastmcp-type-tool-bg: #0d9488;
+  --gp-sphinx-fastmcp-type-tool-fg: #ffffff;
+  --gp-sphinx-fastmcp-type-tool-border: #14b8a6;
+
+  --gp-sphinx-fastmcp-type-prompt-bg: #7c3aed;
+  --gp-sphinx-fastmcp-type-prompt-fg: #ffffff;
+  --gp-sphinx-fastmcp-type-prompt-border: #8b5cf6;
+
+  --gp-sphinx-fastmcp-type-resource-bg: #2563eb;
+  --gp-sphinx-fastmcp-type-resource-fg: #ffffff;
+  --gp-sphinx-fastmcp-type-resource-border: #3b82f6;
+
+  --gp-sphinx-fastmcp-type-resource-template-bg: #0284c7;
+  --gp-sphinx-fastmcp-type-resource-template-fg: #ffffff;
+  --gp-sphinx-fastmcp-type-resource-template-border: #0ea5e9;
+
+  --gp-sphinx-fastmcp-mime-fg: #9ca3af;
+  --gp-sphinx-fastmcp-mime-border: #4b5563;
+}
+
+/* Safety dark-mode box-shadow (safety badges intentionally keep hardcoded hex — see note above) */
 @media (prefers-color-scheme: dark) {
   body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__safety-readonly:not(.gp-sphinx-badge--inline-icon),
   body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__safety-mutating:not(.gp-sphinx-badge--inline-icon),
-  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__safety-destructive:not(.gp-sphinx-badge--inline-icon),
-  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon) {
+  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__safety-destructive:not(.gp-sphinx-badge--inline-icon) {
     box-shadow: var(--gp-sphinx-badge-buff-shadow-dark-ui) !important;
-  }
-
-  body:not([data-theme="light"]) .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon) {
-    background-color: #0d9488 !important;
-    color: #ffffff !important;
-    border: 1px solid #14b8a6 !important;
   }
 }
 
 body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__safety-readonly:not(.gp-sphinx-badge--inline-icon),
 body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__safety-mutating:not(.gp-sphinx-badge--inline-icon),
-body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__safety-destructive:not(.gp-sphinx-badge--inline-icon),
-body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon) {
+body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__safety-destructive:not(.gp-sphinx-badge--inline-icon) {
   box-shadow: var(--gp-sphinx-badge-buff-shadow-dark-ui) !important;
 }
 
-body[data-theme="dark"] .gp-sphinx-badge.gp-sphinx-fastmcp__type-tool:not(.gp-sphinx-badge--inline-icon) {
-  background-color: #0d9488 !important;
-  color: #ffffff !important;
-  border: 1px solid #14b8a6 !important;
-}
-
-/* ── Emoji when data-icon absent (unicode); data-icon wins via badges base ── */
+/* ── Emoji fallback (CSS ::before) when data-icon absent ── */
 .gp-sphinx-fastmcp__safety-readonly:not([data-icon])::before {
   content: "\1F50D";
 }
@@ -118,9 +208,25 @@ section.gp-sphinx-fastmcp__tool-section > .gp-sphinx-fastmcp__tool-entry > .gp-s
   margin-top: 0.75rem;
 }
 
-/* Hide the "tool" type badge in TOC sidebar (redundant there). */
-.toc-tree .gp-sphinx-fastmcp__type-tool {
+/* Hide type badges in TOC sidebar (redundant — the section title already names the item). */
+.toc-tree .gp-sphinx-fastmcp__type-tool,
+.toc-tree .gp-sphinx-fastmcp__type-prompt,
+.toc-tree .gp-sphinx-fastmcp__type-resource,
+.toc-tree .gp-sphinx-fastmcp__type-resource-template {
   display: none !important;
+}
+
+/* ── Prompt / resource section cards ──────────────────────── */
+section.gp-sphinx-fastmcp__prompt-section,
+section.gp-sphinx-fastmcp__resource-section {
+  padding: 0;
+  overflow: clip;
+}
+
+section.gp-sphinx-fastmcp__prompt-section > .gp-sphinx-fastmcp__prompt-entry > .gp-sphinx-api-header .gp-sphinx-api-signature,
+section.gp-sphinx-fastmcp__resource-section > .gp-sphinx-fastmcp__resource-entry > .gp-sphinx-api-header .gp-sphinx-api-signature {
+  min-width: 0;
+  font-family: var(--font-stack--monospace);
 }
 
 .gp-sphinx-fastmcp__visually-hidden {

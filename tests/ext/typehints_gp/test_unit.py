@@ -804,6 +804,55 @@ _RAISES_FIXTURES: list[RaisesSectionFixture] = [
         ],
         expected_in_output=[":raises TypeError:"],
     ),
+    RaisesSectionFixture(
+        test_id="raises_with_exc_role",
+        input_lines=[
+            "Summary.",
+            "",
+            "Raises",
+            "------",
+            ":exc:`exc.LibTmuxException`",
+        ],
+        expected_in_output=[":raises exc.LibTmuxException:"],
+    ),
+    RaisesSectionFixture(
+        test_id="raises_multiple_comma_roles",
+        input_lines=[
+            "Summary.",
+            "",
+            "Raises",
+            "------",
+            ":exc:`exc.OptionError`, :exc:`exc.UnknownOption`,",
+            ":exc:`exc.InvalidOption`",
+        ],
+        expected_in_output=[
+            ":raises exc.OptionError:",
+            ":raises exc.UnknownOption:",
+            ":raises exc.InvalidOption:",
+        ],
+    ),
+    RaisesSectionFixture(
+        test_id="raises_with_tilde_role",
+        input_lines=[
+            "Summary.",
+            "",
+            "Raises",
+            "------",
+            ":exc:`~pkg.mod.MyErr`",
+        ],
+        expected_in_output=[":raises MyErr:"],
+    ),
+    RaisesSectionFixture(
+        test_id="raises_with_bracketed_generic",
+        input_lines=[
+            "Summary.",
+            "",
+            "Raises",
+            "------",
+            "Dict[str, MyErr]",
+        ],
+        expected_in_output=[":raises Dict[str, MyErr]:"],
+    ),
 ]
 
 
@@ -902,6 +951,102 @@ def test_numpy_generic_section(
     joined = "\n".join(result)
     for fragment in expected_in_output:
         assert fragment in joined, f"[{test_id}] Missing: {fragment!r}"
+
+
+class GenericSectionEmptyFixture(t.NamedTuple):
+    """Fixture for empty/stub generic section behavior."""
+
+    test_id: str
+    input_lines: list[str]
+    rubric: str
+    should_emit: bool
+
+
+_GENERIC_EMPTY_FIXTURES: list[GenericSectionEmptyFixture] = [
+    GenericSectionEmptyFixture(
+        test_id="notes_empty_content",
+        input_lines=[
+            "Summary.",
+            "",
+            "Notes",
+            "-----",
+        ],
+        rubric=".. rubric:: Notes",
+        should_emit=False,
+    ),
+    GenericSectionEmptyFixture(
+        test_id="notes_only_todo",
+        input_lines=[
+            "Summary.",
+            "",
+            "Notes",
+            "-----",
+            ".. todo::",
+            "",
+            "    assure it works.",
+        ],
+        rubric=".. rubric:: Notes",
+        should_emit=False,
+    ),
+    GenericSectionEmptyFixture(
+        test_id="examples_empty_keeps_rubric",
+        input_lines=[
+            "Summary.",
+            "",
+            "Examples",
+            "--------",
+        ],
+        rubric=".. rubric:: Examples",
+        should_emit=True,
+    ),
+    GenericSectionEmptyFixture(
+        test_id="references_empty_keeps_rubric",
+        input_lines=[
+            "Summary.",
+            "",
+            "References",
+            "----------",
+        ],
+        rubric=".. rubric:: References",
+        should_emit=True,
+    ),
+    GenericSectionEmptyFixture(
+        test_id="examples_only_todo_keeps_rubric",
+        input_lines=[
+            "Summary.",
+            "",
+            "Examples",
+            "--------",
+            ".. todo::",
+            "",
+            "    write me",
+        ],
+        rubric=".. rubric:: Examples",
+        should_emit=True,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(GenericSectionEmptyFixture._fields),
+    _GENERIC_EMPTY_FIXTURES,
+    ids=[f.test_id for f in _GENERIC_EMPTY_FIXTURES],
+)
+def test_numpy_generic_section_empty(
+    test_id: str,
+    input_lines: list[str],
+    rubric: str,
+    should_emit: bool,
+) -> None:
+    """Empty Notes drops its rubric; other generic sections keep theirs."""
+    result = process_numpy_docstring(input_lines)
+    joined = "\n".join(result)
+    if should_emit:
+        assert rubric in joined, f"[{test_id}] Expected rubric {rubric!r} to be emitted"
+    else:
+        assert rubric not in joined, (
+            f"[{test_id}] Empty rubric {rubric!r} should not be emitted"
+        )
 
 
 # ---------------------------------------------------------------------------

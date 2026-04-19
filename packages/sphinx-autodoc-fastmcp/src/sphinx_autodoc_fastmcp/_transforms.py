@@ -31,17 +31,23 @@ def _tool_content_container(section: nodes.section) -> nodes.Element:
     return section
 
 
+_CARD_SECTION_CLASSES: frozenset[str] = frozenset(
+    {_CSS.TOOL_SECTION, _CSS.PROMPT_SECTION, _CSS.RESOURCE_SECTION}
+)
+
+
 def collect_tool_section_content(app: Sphinx, doctree: nodes.document) -> None:
-    """Move siblings following each tool section into the section.
+    """Move siblings following each card section into the section.
 
     Directive-returned ``nodes.section`` is a closed node — MyST does not
     "enter" it.  This transform runs after parsing and re-parents prose,
-    code blocks, and ``{fastmcp-tool-input}`` tables that sit between one
-    tool section and the next boundary (``---`` transition or another tool
-    section).
+    code blocks, and input tables that sit between one card section and the
+    next boundary (``---`` transition or another section).
+
+    Covers tool, prompt, and resource card sections.
     """
     for section in list(doctree.findall(nodes.section)):
-        if _CSS.TOOL_SECTION not in section.get("classes", []):
+        if not _CARD_SECTION_CLASSES.intersection(section.get("classes", [])):
             continue
         parent = section.parent
         if parent is None:
@@ -60,22 +66,30 @@ def collect_tool_section_content(app: Sphinx, doctree: nodes.document) -> None:
 
 
 def register_tool_labels(app: Sphinx, doctree: nodes.document) -> None:
-    """Mirror autosectionlabel for tool sections (``{ref}`tool-id```)."""
+    """Mirror autosectionlabel for fastmcp card sections (``{ref}`<id>```).
+
+    Re-registers labels for every id on each card section (canonical AND
+    any back-compat aliases), so incremental Sphinx rebuilds — which
+    purge labels when a doc changes — restore both shapes from the
+    doctree cache without re-running the directive's parse-time
+    registration.
+    """
     domain = app.env.domains.standard_domain
     docname = app.env.docname
     for section in doctree.findall(nodes.section):
         if not section["ids"]:
             continue
-        section_id = section["ids"][0]
-        if section.children and isinstance(section[0], nodes.title):
-            title_node = section[0]
-            tool_name = ""
-            for child in title_node.children:
-                if isinstance(child, nodes.literal):
-                    tool_name = child.astext()
-                    break
-            if not tool_name:
-                continue
+        if not (section.children and isinstance(section[0], nodes.title)):
+            continue
+        title_node = section[0]
+        tool_name = ""
+        for child in title_node.children:
+            if isinstance(child, nodes.literal):
+                tool_name = child.astext()
+                break
+        if not tool_name:
+            continue
+        for section_id in section["ids"]:
             domain.anonlabels[section_id] = (docname, section_id)
             domain.labels[section_id] = (docname, section_id, tool_name)
 
