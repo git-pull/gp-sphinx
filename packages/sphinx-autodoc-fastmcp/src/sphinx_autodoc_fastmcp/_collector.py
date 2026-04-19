@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import importlib
 import inspect
 import logging
@@ -256,26 +257,75 @@ def _resolve_server_instance(dotted: str) -> t.Any | None:
             dotted,
         )
         return None
-    # If the instance has no components yet, try to run the server's
-    # register-all hook so autodoc sees the same surface a live server does.
+    # Always invoke the server's register-all hook when one is exported.
+    # Servers that pre-register some components at import time (decorators)
+    # while leaving others to an explicit register_all() would otherwise
+    # have those deferred components silently missing from the docs.
+    #
+    # FastMCP's LocalProvider defaults to on_duplicate="error", so calling
+    # register_all() on an already-populated provider raises and would leave
+    # the server half-populated. Temporarily switch to "ignore" via a
+    # context manager so re-invocation is idempotent. If the hook still
+    # raises (real bug, not duplicate), fail closed (return None) — visible
+    # empty docs beat partially-wrong docs.
     provider = getattr(obj, "local_provider", None)
     if provider is not None:
-        components = getattr(provider, "_components", None)
-        if not components:
-            for hook_name in ("register_all", "_register_all"):
-                hook = getattr(mod, hook_name, None)
-                if callable(hook):
+        # Instance-first lookup — FastMCP's canonical MCPMixin.register_all
+        # is an instance method; module-level register_all is the ad-hoc
+        # fallback used by simple scripts.
+        hook = (
+            getattr(obj, "register_all", None)
+            or getattr(obj, "_register_all", None)
+            or getattr(mod, "register_all", None)
+            or getattr(mod, "_register_all", None)
+        )
+        if callable(hook):
+            try:
+                with _ignore_duplicate_policy(provider):
+                    # MCPMixin.register_all takes the server as a positional
+                    # arg; ad-hoc module-level hooks are zero-arg with the
+                    # server captured in a closure.
                     try:
+                        hook(obj)
+                    except TypeError:
                         hook()
-                    except Exception:  # pragma: no cover - defensive
-                        logger.warning(
-                            "sphinx_autodoc_fastmcp: %s.%s() raised",
-                            module_path,
-                            hook_name,
-                            exc_info=True,
-                        )
-                    break
+            except Exception:
+                logger.warning(
+                    "sphinx_autodoc_fastmcp: register-all hook for %s raised; "
+                    "skipping server",
+                    dotted,
+                    exc_info=True,
+                )
+                return None
     return obj
+
+
+_MISSING_DUPLICATE_POLICY = object()
+
+
+@contextlib.contextmanager
+def _ignore_duplicate_policy(provider: t.Any) -> t.Iterator[None]:
+    """Temporarily set ``provider._on_duplicate = "ignore"`` and restore on exit.
+
+    FastMCP's LocalProvider raises ``ValueError`` when re-registering a
+    component under the default ``on_duplicate="error"`` policy. The
+    autodoc collector needs idempotent re-invocation, but should not
+    permanently mutate the user's provider configuration.
+
+    Sphinx invokes ``builder-inited`` synchronously in the main process
+    before any read/write fork (``sphinx/application.py`` ``_init_builder``);
+    this manager is therefore safe without locking.
+    """
+    original = getattr(provider, "_on_duplicate", _MISSING_DUPLICATE_POLICY)
+    provider._on_duplicate = "ignore"
+    try:
+        yield
+    finally:
+        if original is _MISSING_DUPLICATE_POLICY:
+            with contextlib.suppress(AttributeError):
+                delattr(provider, "_on_duplicate")
+        else:
+            provider._on_duplicate = original
 
 
 def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
