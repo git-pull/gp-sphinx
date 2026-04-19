@@ -31,6 +31,10 @@ $ uv add gp-sphinx --prerelease allow
 
 ### Features
 
+- `sphinx-gp-theme`: dispatch `gp-sphinx:navigated` CustomEvent on
+  `document` after every SPA-nav DOM swap. Third-party widgets that bind to
+  swapped DOM can listen for this event to re-initialise after navigation
+  without a full page reload. Payload: `event.detail.url` is the new URL.
 - `sphinx-autodoc-fastmcp`: autodoc MCP prompts and resources end-to-end.
   Four new directives —
   ``{fastmcp-prompt}``, ``{fastmcp-prompt-input}``,

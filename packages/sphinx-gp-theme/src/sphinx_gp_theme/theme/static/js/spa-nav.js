@@ -187,6 +187,16 @@
     initScrollSpy();
     var btn = document.querySelector(".content-icon-container .theme-toggle");
     if (btn) btn.addEventListener("click", cycleTheme);
+
+    // Public hook: widgets that bind to swapped DOM re-initialise from here.
+    // Dispatched after the article/sidebar/TOC regions have been replaced and
+    // every built-in reinit step (copybutton, scroll-spy, theme toggle) has
+    // run. Consumers: `document.addEventListener("gp-sphinx:navigated", fn)`.
+    document.dispatchEvent(
+      new CustomEvent("gp-sphinx:navigated", {
+        detail: { url: location.href },
+      }),
+    );
   }
 
   // --- Navigation ---
