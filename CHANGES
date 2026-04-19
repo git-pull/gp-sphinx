@@ -84,6 +84,32 @@ $ uv add gp-sphinx --prerelease allow
 
 ### Bug fixes
 
+- `sphinx-autodoc-fastmcp`: section labels for prompts and resources now
+  use the typed `env.domains.standard_domain` accessor and route through the
+  same direct-write pattern as `_transforms.register_tool_labels`. Resource
+  and resource-template card labels carry the actual component name (e.g.
+  ``my_resource``) rather than a slugified round-trip, so ``{ref}`` lookups
+  resolve against the human-readable identifier (#21)
+- `sphinx-autodoc-fastmcp`: the FastMCP register-all hook now fires whenever
+  the resolved server exposes ``local_provider``, regardless of whether
+  ``_components`` is already populated. Servers that register some components
+  at module-import time (decorators) and others via an explicit
+  ``register_all()`` previously dropped the deferred ones from autodoc (#21)
+- `sphinx-autodoc-fastmcp`: narrow the ``except Exception`` around the optional
+  ``fastmcp.*`` imports to ``except ImportError`` so unrelated runtime errors
+  during fastmcp import propagate instead of producing silently empty docs
+  (matches Sphinx's own ``sphinx.util.images`` pattern) (#21)
+- `sphinx-autodoc-typehints-gp`: ``:exc:`~mod.Foo``` in ``Raises`` sections
+  now renders as ``Foo`` (last-component shortener), matching Sphinx's
+  ``PyXRefRole.process_link`` convention (#21)
+- `sphinx-autodoc-typehints-gp`: ``Raises`` type fields split on commas only
+  at bracket depth 0, keeping parameterised generics like ``Dict[str, X]``
+  intact (#21)
+- `sphinx-autodoc-typehints-gp`: empty ``Notes`` sections drop their rubric
+  (intentional after ``.. todo::`` filtering); empty ``Examples``,
+  ``References``, and other generic stub sections regain their rubric for
+  legitimate stub usage (scoped via a new ``suppress_empty`` flag on
+  ``_fmt_generic``) (#21)
 - `sphinx-gp-theme`: SPA nav now scrolls to the target anchor on
   cross-page fragment links. `document.querySelector(hash)` mis-parses
   any hash containing `.` (e.g. Python autodoc IDs like
