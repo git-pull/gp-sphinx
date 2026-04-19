@@ -225,7 +225,7 @@ def _resolve_server_instance(dotted: str) -> t.Any | None:
             return None
     try:
         mod = importlib.import_module(module_path)
-    except Exception:
+    except (ImportError, ModuleNotFoundError):
         logger.warning(
             "sphinx_autodoc_fastmcp: could not import server module %s",
             module_path,
@@ -471,11 +471,38 @@ def collect_prompts_and_resources(app: Sphinx) -> None:
     Imports ``fastmcp_server_module`` (e.g. ``"pkg.server:mcp"``) and
     enumerates the live FastMCP instance's registered components.  Does
     nothing if the config value is unset.
+
+    Examples
+    --------
+    >>> import types
+    >>> app = types.SimpleNamespace(
+    ...     config=types.SimpleNamespace(fastmcp_server_module=""),
+    ...     env=types.SimpleNamespace(),
+    ... )
+    >>> collect_prompts_and_resources(app)
+    >>> app.env.fastmcp_prompts
+    {}
+    >>> app.env.fastmcp_resources
+    {}
+    >>> app.env.fastmcp_resource_names
+    {}
+    >>> app.env.fastmcp_resource_templates
+    {}
+    >>> app.env.fastmcp_resource_template_names
+    {}
     """
     server_dotted = str(getattr(app.config, "fastmcp_server_module", "") or "")
     prompts: dict[str, PromptInfo] = {}
+    # Resources and templates are URI-keyed because FastMCP itself keys by
+    # ``str(uri)`` / ``uri_template`` (see fastmcp/resources/base.py:Resource.key).
+    # Two distinct resources sharing a ``.name`` would silently overwrite each
+    # other if we keyed by name. The companion ``*_names`` dicts let
+    # ``{fastmcp-resource} my_resource`` directives resolve by friendly name
+    # while still preserving URI identity for collisions.
     resources: dict[str, ResourceInfo] = {}
+    resource_names: dict[str, str] = {}
     templates: dict[str, ResourceTemplateInfo] = {}
+    template_names: dict[str, str] = {}
 
     if server_dotted:
         server = _resolve_server_instance(server_dotted)
@@ -505,14 +532,47 @@ def collect_prompts_and_resources(app: Sphinx) -> None:
                 for component in _iter_components(server):
                     if isinstance(component, _ResourceTemplate):
                         info_tpl = _resource_template_from_component(component)
-                        templates[info_tpl.name] = info_tpl
+                        key_tpl = str(info_tpl.uri_template)
+                        templates[key_tpl] = info_tpl
+                        _index_by_name(
+                            template_names, info_tpl.name, key_tpl, "template"
+                        )
                     elif isinstance(component, _Resource):
                         info_res = _resource_from_component(component)
-                        resources[info_res.name] = info_res
+                        key_res = str(info_res.uri)
+                        resources[key_res] = info_res
+                        _index_by_name(
+                            resource_names, info_res.name, key_res, "resource"
+                        )
                     elif isinstance(component, _Prompt):
                         info_p = _prompt_from_component(component)
                         prompts[info_p.name] = info_p
 
     app.env.fastmcp_prompts = prompts  # type: ignore[attr-defined]
     app.env.fastmcp_resources = resources  # type: ignore[attr-defined]
+    app.env.fastmcp_resource_names = resource_names  # type: ignore[attr-defined]
     app.env.fastmcp_resource_templates = templates  # type: ignore[attr-defined]
+    app.env.fastmcp_resource_template_names = template_names  # type: ignore[attr-defined]
+
+
+def _index_by_name(name_index: dict[str, str], name: str, key: str, kind: str) -> None:
+    """Record ``name -> key`` mapping; warn on first-wins collision.
+
+    FastMCP allows two distinct resources/templates to share a display name
+    while remaining keyed apart by URI. Authoring docs by name is convenient
+    but ambiguous in that case — first-wins, with a clear warning so users
+    know to disambiguate by URI.
+    """
+    existing = name_index.get(name)
+    if existing is not None and existing != key:
+        logger.warning(
+            "sphinx_autodoc_fastmcp: %s name %r is ambiguous "
+            "(%s and %s share it); resolving to %s",
+            kind,
+            name,
+            existing,
+            key,
+            existing,
+        )
+        return
+    name_index[name] = key

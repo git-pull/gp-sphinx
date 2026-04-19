@@ -2,8 +2,14 @@
 
 from __future__ import annotations
 
+import logging
+import typing as t
+
 from docutils import nodes
 from sphinx.util.docutils import SphinxDirective
+
+if t.TYPE_CHECKING:
+    from sphinx.environment import BuildEnvironment
 
 from sphinx_autodoc_fastmcp._badges import (
     build_prompt_badge_group,
@@ -41,16 +47,108 @@ from sphinx_ux_autodoc_layout import (
     build_api_table_section,
 )
 
+logger = logging.getLogger(__name__)
 
-def _register_section_label(env: object, section_id: str, display_name: str) -> None:
+
+def _register_section_label(
+    env: BuildEnvironment, section_id: str, display_name: str
+) -> None:
     """Register section in Sphinx std domain at parse time so {ref} resolves it.
 
     Must run inside a directive's run() — at that point env.docname is set and
     domain.data is the live dict that gets pickled, surviving incremental builds.
+
+    Direct dict writes mirror the same-package pattern in
+    :func:`sphinx_autodoc_fastmcp._transforms.register_tool_labels`; Sphinx
+    flags ``StandardDomain.note_hyperlink_target`` as internal-use-only.
+
+    Examples
+    --------
+    >>> import types
+    >>> std = types.SimpleNamespace(labels={}, anonlabels={})
+    >>> domains = types.SimpleNamespace(standard_domain=std)
+    >>> env = types.SimpleNamespace(docname="api", domains=domains)
+    >>> _register_section_label(env, "fastmcp-tool-foo", "foo")
+    >>> std.labels["fastmcp-tool-foo"]
+    ('api', 'fastmcp-tool-foo', 'foo')
+    >>> std.anonlabels["fastmcp-tool-foo"]
+    ('api', 'fastmcp-tool-foo')
     """
-    std = env.get_domain("std")  # type: ignore[attr-defined]
-    std.anonlabels[section_id] = (env.docname, section_id)  # type: ignore[attr-defined]
-    std.labels[section_id] = (env.docname, section_id, display_name)  # type: ignore[attr-defined]
+    std = env.domains.standard_domain
+    std.anonlabels[section_id] = (env.docname, section_id)
+    std.labels[section_id] = (env.docname, section_id, display_name)
+
+
+def _component_ids(kind: str, name: str) -> tuple[str, list[str]]:
+    """Derive canonical section id + back-compat aliases for a component.
+
+    Canonical IDs always namespace by kind so a tool ``status`` and a
+    prompt ``status`` cannot collide in ``std.labels``. Tools additionally
+    keep the bare slug as an alias because their unprefixed IDs were the
+    public ``{ref}`` shape on ``main`` and live in downstream user docs;
+    prompts/resources/templates are new in this branch and have no such
+    history, so they get the canonical ID only.
+
+    Examples
+    --------
+    >>> _component_ids("tool", "list_sessions")
+    ('fastmcp-tool-list-sessions', ['list-sessions'])
+    >>> _component_ids("prompt", "greet_user")
+    ('fastmcp-prompt-greet-user', [])
+    >>> _component_ids("resource-template", "events_by_day")
+    ('fastmcp-resource-template-events-by-day', [])
+    """
+    slug = name.replace("_", "-")
+    canonical = f"fastmcp-{kind}-{slug}"
+    aliases: list[str] = [slug] if kind == "tool" else []
+    return canonical, aliases
+
+
+def _register_alias_if_free(
+    env: BuildEnvironment,
+    *,
+    alias: str,
+    display_name: str,
+    kind: str,
+) -> bool:
+    """Register a bare-slug alias in std.labels iff currently unclaimed.
+
+    Aliases are tool-only by policy (back-compat with v1 ``{ref}`` URLs).
+    Calling this for any other kind is a programming error — raises
+    :class:`ValueError`. If the alias is already bound to a different
+    target, log WARNING and return ``False`` (canonical-only, no
+    silent overwrite).
+
+    The alias maps to itself (``std.labels[alias] = (docname, alias, ...)``);
+    the bare slug is also pushed onto ``section["ids"]`` so the alias
+    resolves to a real HTML anchor without forcing existing ``:ref:``
+    consumers to update href fragments.
+
+    Returns True if the alias was registered, False if skipped.
+    """
+    if kind != "tool":
+        msg = f"alias registration not permitted for kind={kind!r}"
+        raise ValueError(msg)
+
+    std = env.domains.standard_domain
+    existing = std.labels.get(alias) or std.anonlabels.get(alias)
+    if existing is not None:
+        existing_doc = existing[0]
+        existing_id = existing[1]
+        if (existing_doc, existing_id) != (env.docname, alias):
+            logger.warning(
+                "sphinx_autodoc_fastmcp: bare alias %r for %s already claimed "
+                "by %s#%s; using canonical id only",
+                alias,
+                display_name,
+                existing_doc,
+                existing_id,
+            )
+            return False
+
+    std.anonlabels[alias] = (env.docname, alias)
+    std.labels[alias] = (env.docname, alias, display_name)
+    return True
 
 
 class FastMCPToolDirective(SphinxDirective):
@@ -83,12 +181,20 @@ class FastMCPToolDirective(SphinxDirective):
     def _build_tool_section(self, tool: ToolInfo) -> list[nodes.Node]:
         """Build section card with shared API layout regions."""
         document = self.state.document
-        section_id = tool.name.replace("_", "-")
+        section_id, aliases = _component_ids("tool", tool.name)
 
         section = nodes.section()
         section["ids"].append(section_id)
+        section["ids"].extend(aliases)
         section["classes"].extend((_CSS.TOOL_SECTION, API.CARD_SHELL))
         _register_section_label(self.env, section_id, tool.name)
+        for alias in aliases:
+            _register_alias_if_free(
+                self.env,
+                alias=alias,
+                display_name=tool.name,
+                kind="tool",
+            )
         document.note_explicit_target(section)
 
         title_node = nodes.title("", "")
@@ -303,9 +409,6 @@ def _arg_table(
     """Build a Parameters/Arguments section for prompt or template args."""
     if not args:
         return []
-    from sphinx_autodoc_fastmcp._parsing import make_para, make_table, parse_rst_inline
-    from sphinx_autodoc_typehints_gp import build_annotation_display_paragraph
-
     headers = ["Argument", "Type", "Required", "Description"]
     rows: list[list[str | nodes.Node]] = []
     for arg in args:
@@ -337,9 +440,6 @@ def _arg_table(
     ]
 
 
-import typing as t  # noqa: E402  # used by helpers above & below
-
-
 class FastMCPPromptDirective(SphinxDirective):
     """Autodocument one MCP prompt: section + card body."""
 
@@ -350,8 +450,6 @@ class FastMCPPromptDirective(SphinxDirective):
 
     def run(self) -> list[nodes.Node]:
         """Build section with title + description for one prompt."""
-        from sphinx_autodoc_fastmcp._parsing import first_paragraph, parse_rst_inline
-
         arg = self.arguments[0]
         prompt_name = arg.split(".")[-1] if "." in arg else arg
         prompts: dict[str, PromptInfo] = getattr(self.env, "fastmcp_prompts", {})
@@ -366,7 +464,7 @@ class FastMCPPromptDirective(SphinxDirective):
             ]
 
         document = self.state.document
-        section_id = prompt.name.replace("_", "-")
+        section_id, _ = _component_ids("prompt", prompt.name)
         section = nodes.section()
         section["ids"].append(section_id)
         section["classes"].extend((_CSS.PROMPT_SECTION, API.CARD_SHELL))
@@ -435,6 +533,7 @@ class FastMCPPromptInputDirective(SphinxDirective):
 
 def _build_resource_card(
     *,
+    env: BuildEnvironment,
     state: t.Any,
     lineno: int,
     signature_text: str,
@@ -446,13 +545,12 @@ def _build_resource_card(
     entry_class: str,
     signature_class: str,
     profile_name: str,
-    extra_facts: list[tuple[str, nodes.Node]] | None = None,
-    section_id: str | None = None,
-    document: t.Any = None,
+    section_id: str,
+    display_name: str,
+    document: t.Any,
+    permalink_title: str = "Link to this resource",
 ) -> nodes.Node:
     """Shared card builder for resources & resource templates."""
-    from sphinx_autodoc_fastmcp._parsing import first_paragraph, parse_rst_inline
-
     content_nodes: list[nodes.Node] = []
     body = description or first_paragraph(docstring)
     if body:
@@ -464,59 +562,38 @@ def _build_resource_card(
             ),
         )
 
-    facts: list[ApiFactRow] = []
     if mime_type:
-        facts.append(ApiFactRow("MIME type", nodes.literal("", mime_type)))
-    for label, node in extra_facts or ():
-        facts.append(ApiFactRow(label, node))
-    if facts:
         content_nodes.append(
-            build_api_facts_section(facts, classes=(_CSS.BODY_SECTION,)),
+            build_api_facts_section(
+                [ApiFactRow("MIME type", nodes.literal("", mime_type))],
+                classes=(_CSS.BODY_SECTION,),
+            ),
         )
 
-    permalink: nodes.Node | None = None
-    if section_id and document is not None:
-        section = nodes.section()
-        section["ids"].append(section_id)
-        section["classes"].extend((shell_class, API.CARD_SHELL))
-        _register_section_label(
-            state.document.settings.env,
-            section_id,
-            section_id.replace("-", "_"),
-        )
-        document.note_explicit_target(section)
+    section = nodes.section()
+    section["ids"].append(section_id)
+    section["classes"].extend((shell_class, API.CARD_SHELL))
+    _register_section_label(env, section_id, display_name)
+    document.note_explicit_target(section)
 
-        title_node = nodes.title("", "")
-        title_node["classes"].append(_CSS.SECTION_TITLE_HIDDEN)
-        title_node += nodes.literal("", section_id.replace("-", "_"))
-        section += title_node
+    title_node = nodes.title("", "")
+    title_node["classes"].append(_CSS.SECTION_TITLE_HIDDEN)
+    title_node += nodes.literal("", display_name)
+    section += title_node
 
-        link = api_permalink(href=f"#{section_id}", title="Link to this resource")
-        link["classes"] = ["headerlink", API.LINK]
-        permalink = link
+    link = api_permalink(href=f"#{section_id}", title=permalink_title)
+    link["classes"] = ["headerlink", API.LINK]
 
-        section += build_api_card_entry(
-            profile_class=API.profile(profile_name),
-            signature_children=(nodes.literal("", signature_text),),
-            content_children=tuple(content_nodes),
-            badge_group=badge_group,
-            permalink=permalink,
-            entry_classes=(entry_class,),
-            signature_classes=(signature_class,),
-        )
-        return section
-
-    shell = nodes.container("", classes=[shell_class, API.CARD_SHELL])
-    shell += build_api_card_entry(
+    section += build_api_card_entry(
         profile_class=API.profile(profile_name),
         signature_children=(nodes.literal("", signature_text),),
         content_children=tuple(content_nodes),
         badge_group=badge_group,
-        permalink=None,
+        permalink=link,
         entry_classes=(entry_class,),
         signature_classes=(signature_class,),
     )
-    return shell
+    return section
 
 
 class FastMCPResourceDirective(SphinxDirective):
@@ -530,9 +607,11 @@ class FastMCPResourceDirective(SphinxDirective):
     def run(self) -> list[nodes.Node]:
         """Build section card for a resource."""
         arg = self.arguments[0]
-        name = arg.split(".")[-1] if "." in arg else arg
         resources: dict[str, ResourceInfo] = getattr(self.env, "fastmcp_resources", {})
-        res = resources.get(name)
+        names: dict[str, str] = getattr(self.env, "fastmcp_resource_names", {})
+        # Try literal URI first, then friendly-name lookup via the name index.
+        name = arg.split(".")[-1] if "." in arg else arg
+        res = resources.get(arg) or resources.get(names.get(name, ""))
         if res is None:
             return [
                 self.state.document.reporter.warning(
@@ -543,6 +622,7 @@ class FastMCPResourceDirective(SphinxDirective):
             ]
         return [
             _build_resource_card(
+                env=self.env,
                 state=self.state,
                 lineno=self.lineno,
                 signature_text=res.uri,
@@ -558,7 +638,8 @@ class FastMCPResourceDirective(SphinxDirective):
                 entry_class=_CSS.RESOURCE_ENTRY,
                 signature_class=_CSS.RESOURCE_SIGNATURE,
                 profile_name="fastmcp-resource",
-                section_id=res.name.replace("_", "-"),
+                section_id=_component_ids("resource", res.name)[0],
+                display_name=res.name,
                 document=self.state.document,
             ),
         ]
@@ -575,13 +656,15 @@ class FastMCPResourceTemplateDirective(SphinxDirective):
     def run(self) -> list[nodes.Node]:
         """Build section card for a resource template."""
         arg = self.arguments[0]
-        name = arg.split(".")[-1] if "." in arg else arg
         templates: dict[str, ResourceTemplateInfo] = getattr(
             self.env,
             "fastmcp_resource_templates",
             {},
         )
-        tpl = templates.get(name)
+        names: dict[str, str] = getattr(self.env, "fastmcp_resource_template_names", {})
+        # Try literal URI template first, then friendly-name lookup.
+        name = arg.split(".")[-1] if "." in arg else arg
+        tpl = templates.get(arg) or templates.get(names.get(name, ""))
         if tpl is None:
             return [
                 self.state.document.reporter.warning(
@@ -591,6 +674,7 @@ class FastMCPResourceTemplateDirective(SphinxDirective):
                 ),
             ]
         card = _build_resource_card(
+            env=self.env,
             state=self.state,
             lineno=self.lineno,
             signature_text=tpl.uri_template,
@@ -606,8 +690,10 @@ class FastMCPResourceTemplateDirective(SphinxDirective):
             entry_class=_CSS.RESOURCE_ENTRY,
             signature_class=_CSS.RESOURCE_SIGNATURE,
             profile_name="fastmcp-resource-template",
-            section_id=tpl.name.replace("_", "-"),
+            section_id=_component_ids("resource-template", tpl.name)[0],
+            display_name=tpl.name,
             document=self.state.document,
+            permalink_title="Link to this resource template",
         )
         result: list[nodes.Node] = [card]
         if tpl.parameters:
