@@ -301,8 +301,34 @@ def _indent(lines: list[str], n: int = 4) -> list[str]:
     return [pad + line for line in lines]
 
 
+def _shorten_role_target(target: str) -> str:
+    """Shorten a role target so a leading ``~`` keeps only the last component.
+
+    Mirrors :class:`sphinx.domains.python.PyXRefRole`.
+
+    Examples
+    --------
+    >>> _shorten_role_target("~pkg.mod.MyErr")
+    'MyErr'
+    >>> _shorten_role_target("~MyErr")
+    'MyErr'
+    >>> _shorten_role_target("pkg.mod.MyErr")
+    'pkg.mod.MyErr'
+    """
+    if not target.startswith("~"):
+        return target
+    target = target[1:]
+    dot = target.rfind(".")
+    if dot != -1:
+        return target[dot + 1 :]
+    return target
+
+
 def _strip_roles(s: str) -> str:
     """Strip RST inline role markup, returning just the target text.
+
+    Honors the leading ``~`` shortener convention used by Sphinx
+    cross-references.
 
     Examples
     --------
@@ -310,20 +336,62 @@ def _strip_roles(s: str) -> str:
     'ValueError'
     >>> _strip_roles(":exc:`exc.Foo`, :exc:`exc.Bar`")
     'exc.Foo, exc.Bar'
+    >>> _strip_roles(":exc:`~pkg.mod.MyErr`")
+    'MyErr'
     >>> _strip_roles("plain")
     'plain'
     """
-    return _ROLE_RE.sub(r"\1", s)
+    return _ROLE_RE.sub(lambda m: _shorten_role_target(m.group(1)), s)
 
 
-def _filter_invisible_directives(lines: list[str]) -> list[str]:
-    """Remove ``.. todo::`` directives and their indented body from *lines*.
+def _split_top_level(s: str, sep: str = ",") -> list[str]:
+    """Split *s* on *sep* at bracket depth 0 only.
+
+    Keeps parameterised generics like ``Dict[str, X]`` intact while still
+    splitting ``exc.A, exc.B``.
 
     Examples
     --------
-    >>> _filter_invisible_directives([".. todo::", "", "    assure it works.", "text"])
+    >>> _split_top_level("a, b, c")
+    ['a', ' b', ' c']
+    >>> _split_top_level("Dict[str, X], int")
+    ['Dict[str, X]', ' int']
+    >>> _split_top_level("List[Tuple[int, str]]")
+    ['List[Tuple[int, str]]']
+    >>> _split_top_level("")
+    ['']
+    """
+    parts: list[str] = []
+    current: list[str] = []
+    depth = 0
+    for ch in s:
+        if ch in "[(":
+            depth += 1
+            current.append(ch)
+        elif ch in "])":
+            depth -= 1
+            current.append(ch)
+        elif ch == sep and depth == 0:
+            parts.append("".join(current))
+            current = []
+        else:
+            current.append(ch)
+    parts.append("".join(current))
+    return parts
+
+
+def _filter_todo_directives(lines: list[str]) -> list[str]:
+    """Remove ``.. todo::`` directives and their indented body from *lines*.
+
+    Only ``.. todo::`` is removed — other "invisible" directives
+    (``.. only::``, ``.. ifconfig::``, etc.) pass through verbatim. The
+    name reflects the actual scope.
+
+    Examples
+    --------
+    >>> _filter_todo_directives([".. todo::", "", "    assure it works.", "text"])
     ['text']
-    >>> _filter_invisible_directives(["keep this", ".. todo::", "    body"])
+    >>> _filter_todo_directives(["keep this", ".. todo::", "    body"])
     ['keep this']
     """
     result: list[str] = []
@@ -654,7 +722,7 @@ class _NumpyParser:
             label = "Example" if section == "example" else "Examples"
             return self._fmt_generic(label)
         if section in _NOTE_NAMES:
-            return self._fmt_generic("Notes")
+            return self._fmt_generic("Notes", suppress_empty=True)
         if section in _REFERENCE_NAMES:
             return self._fmt_generic("References")
         if section in _SEE_ALSO_NAMES:
@@ -713,7 +781,7 @@ class _NumpyParser:
             type_ = _strip_roles(type_)
             exc_types = [
                 part.strip().rstrip(",")
-                for part in type_.split(",")
+                for part in _split_top_level(type_)
                 if part.strip().rstrip(",")
             ]
             if not exc_types:
@@ -772,14 +840,16 @@ class _NumpyParser:
             lines.append("")
         return lines
 
-    def _fmt_generic(self, label: str) -> list[str]:
+    def _fmt_generic(self, label: str, suppress_empty: bool = False) -> list[str]:
         raw = _strip_empty(self._consume_to_next_section())
         raw = _dedent(raw)
-        raw = _strip_empty(_filter_invisible_directives(raw))
+        raw = _strip_empty(_filter_todo_directives(raw))
         header = f".. rubric:: {label}"
         if raw:
             return [header, "", *raw, ""]
-        return []
+        if suppress_empty:
+            return []
+        return [header, ""]
 
     def _fmt_admonition(self, directive: str) -> list[str]:
         raw = _strip_empty(self._consume_to_next_section())
