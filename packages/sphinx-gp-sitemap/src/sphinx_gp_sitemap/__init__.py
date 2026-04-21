@@ -1,13 +1,18 @@
 """Sitemap generator for Sphinx.
 
-Drop-in replacement for ``sphinx-sitemap`` with Sphinx 8.1+ idioms, a
-plain ``list`` in ``env.temp_data`` instead of ``multiprocessing.Queue``,
-and ``app.builder.name`` based builder detection instead of a monkey
-patch.
+Drop-in replacement for ``sphinx-sitemap`` with Sphinx 8.1+ idioms.
+Behavior is identical to upstream ``sphinx_sitemap`` v2.9.0 with three
+modernizations:
 
-The scaffolding commit registers a ``setup()`` that is importable and
-loadable by Sphinx but does not yet connect any hooks. Subsequent commits
-add the config values and XML emission chain.
+1. ``env.temp_data["sphinx_gp_sitemap_links"]`` is a plain ``list[tuple[...]]``
+   rather than a ``multiprocessing.Queue``. Sphinx joins parallel
+   workers before ``build-finished`` fires, so the Queue machinery was
+   over-engineered.
+2. Builder-kind detection uses the public ``app.builder.name == "dirhtml"``
+   rather than monkey-patching ``env.is_directory_builder``.
+3. The ``html_baseurl`` config value is only registered when not already
+   registered — via a small ``try/except sphinx.errors.ExtensionError``
+   rather than a bare ``except BaseException``.
 
 Examples
 --------
@@ -18,22 +23,41 @@ True
 
 from __future__ import annotations
 
+import contextlib
+import datetime as dt
+import fnmatch
+import pathlib
 import typing as t
+from xml.etree import ElementTree
 
 from sphinx.application import Sphinx
+from sphinx.errors import ExtensionError
+from sphinx.util.logging import getLogger
+
+if t.TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from docutils import nodes
 
 _EXTENSION_VERSION = "0.0.1a9"
+_LINKS_KEY = "sphinx_gp_sitemap_links"
+_SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9"
+_XHTML_NS = "http://www.w3.org/1999/xhtml"
+
+logger = getLogger(__name__)
+
+SitemapLink = tuple[str, str | None]  # (relative link, last_updated ISO8601 or None)
 
 __all__ = ["setup"]
 
 
 def setup(app: Sphinx) -> dict[str, t.Any]:
-    """Register the extension; currently a no-op placeholder.
+    """Register config values and connect sitemap-emission hooks.
 
     Parameters
     ----------
     app : Sphinx
-        Sphinx application instance (unused in the scaffold).
+        Sphinx application instance.
 
     Returns
     -------
@@ -46,9 +70,256 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     >>> callable(setup)
     True
     """
-    del app  # placeholder until hooks are connected
+    app.add_config_value(
+        "site_url",
+        default=None,
+        rebuild="",
+        types=frozenset({str, type(None)}),
+    )
+    app.add_config_value(
+        "sitemap_url_scheme",
+        default="{lang}{version}{link}",
+        rebuild="",
+        types=frozenset({str}),
+    )
+    app.add_config_value(
+        "sitemap_locales",
+        default=[],
+        rebuild="",
+        types=frozenset({list, type(None)}),
+    )
+    app.add_config_value(
+        "sitemap_filename",
+        default="sitemap.xml",
+        rebuild="",
+        types=frozenset({str}),
+    )
+    app.add_config_value(
+        "sitemap_excludes",
+        default=[],
+        rebuild="",
+        types=frozenset({list}),
+    )
+    app.add_config_value(
+        "sitemap_show_lastmod",
+        default=False,
+        rebuild="",
+        types=frozenset({bool}),
+    )
+    app.add_config_value(
+        "sitemap_indent",
+        default=0,
+        rebuild="",
+        types=frozenset({int}),
+    )
+    # html_baseurl is usually registered by Sphinx core already — suppress the
+    # duplicate-registration error without losing the legitimate single-
+    # registration path.
+    with contextlib.suppress(ExtensionError):
+        app.add_config_value(
+            "html_baseurl",
+            default=None,
+            rebuild="",
+            types=frozenset({str, type(None)}),
+        )
+
+    if app.config.sitemap_show_lastmod:
+        try:
+            app.setup_extension("sphinx_last_updated_by_git")
+        except ExtensionError as exc:
+            logger.warning(
+                "%s",
+                exc,
+                type="sitemap",
+                subtype="configuration",
+            )
+            app.config.sitemap_show_lastmod = False
+
+    app.connect("builder-inited", _init_link_store)
+    app.connect("html-page-context", _collect_page_link)
+    app.connect("build-finished", _write_sitemap)
+
     return {
         "version": _EXTENSION_VERSION,
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }
+
+
+def _init_link_store(app: Sphinx) -> None:
+    """Initialize the shared ``env.temp_data`` list on each build start."""
+    app.env.temp_data[_LINKS_KEY] = []
+
+
+def _collect_page_link(
+    app: Sphinx,
+    pagename: str,
+    templatename: str,
+    context: dict[str, t.Any],
+    doctree: nodes.document | None,
+) -> None:
+    """Append one ``(relative_link, last_updated)`` entry per built page.
+
+    Called once per page during HTML emission via ``html-page-context``.
+    """
+    del templatename, context, doctree  # unused
+    config = app.builder.config
+    file_suffix = config.html_file_suffix or ".html"
+
+    last_updated: str | None = None
+    if config.sitemap_show_lastmod:
+        git_last_updated = getattr(app.env, "git_last_updated", None) or {}
+        entry = git_last_updated.get(pagename)
+        if entry:
+            timestamp, _show_sourcelink = entry
+            if timestamp:
+                last_updated = dt.datetime.fromtimestamp(
+                    int(timestamp), dt.timezone.utc
+                ).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    if app.builder.name == "dirhtml":
+        if pagename == "index":
+            sitemap_link = ""
+        elif pagename.endswith("/index"):
+            sitemap_link = pagename[: -len("/index")] + "/"
+        else:
+            sitemap_link = pagename + "/"
+    else:
+        sitemap_link = pagename + file_suffix
+
+    if _is_excluded(sitemap_link, list(config.sitemap_excludes)):
+        return
+
+    links = t.cast("list[SitemapLink]", app.env.temp_data.setdefault(_LINKS_KEY, []))
+    links.append((sitemap_link, last_updated))
+
+
+def _write_sitemap(app: Sphinx, exception: BaseException | None) -> None:
+    """Serialize the collected links to ``<outdir>/<sitemap_filename>``.
+
+    Parameters
+    ----------
+    app : Sphinx
+        Sphinx application instance.
+    exception : BaseException | None
+        Exception raised during build, if any. The sitemap is still
+        written on clean builds; on failures it's suppressed.
+    """
+    if exception is not None:
+        return
+
+    site_url = app.builder.config.site_url or app.builder.config.html_baseurl
+    if not site_url:
+        logger.warning(
+            "sphinx-gp-sitemap: site_url (or html_baseurl) is required in conf.py. "
+            "Sitemap not built.",
+            type="sitemap",
+            subtype="configuration",
+        )
+        return
+
+    links = t.cast(
+        "list[SitemapLink]",
+        app.env.temp_data.get(_LINKS_KEY, []),
+    )
+    if not links:
+        logger.info(
+            "sphinx-gp-sitemap: no pages collected for %s",
+            app.config.sitemap_filename,
+            type="sitemap",
+            subtype="information",
+        )
+        return
+
+    ElementTree.register_namespace("xhtml", _XHTML_NS)
+    root = ElementTree.Element("urlset", xmlns=_SITEMAP_NS)
+
+    locales = _resolve_locales(app)
+    scheme = app.config.sitemap_url_scheme
+    language = app.builder.config.language
+    lang_segment = f"{language}/" if language else ""
+    version_segment = (
+        f"{app.builder.config.version}/" if app.builder.config.version else ""
+    )
+
+    for sitemap_link, last_updated in links:
+        url_el = ElementTree.SubElement(root, "url")
+        ElementTree.SubElement(url_el, "loc").text = site_url + scheme.format(
+            lang=lang_segment,
+            version=version_segment,
+            link=sitemap_link,
+        )
+        if last_updated:
+            ElementTree.SubElement(url_el, "lastmod").text = last_updated
+        for locale in locales:
+            locale_segment = f"{locale}/"
+            ElementTree.SubElement(
+                url_el,
+                f"{{{_XHTML_NS}}}link",
+                rel="alternate",
+                hreflang=_hreflang_formatter(locale),
+                href=site_url
+                + scheme.format(
+                    lang=locale_segment,
+                    version=version_segment,
+                    link=sitemap_link,
+                ),
+            )
+
+    sitemap_path = pathlib.Path(app.outdir) / app.config.sitemap_filename
+    if isinstance(app.config.sitemap_indent, int) and app.config.sitemap_indent > 0:
+        ElementTree.indent(root, space=" " * app.config.sitemap_indent)
+    ElementTree.ElementTree(root).write(
+        sitemap_path,
+        xml_declaration=True,
+        encoding="utf-8",
+        method="xml",
+    )
+
+    logger.info(
+        "sphinx-gp-sitemap: %s generated for URL %s at %s",
+        app.config.sitemap_filename,
+        site_url,
+        sitemap_path,
+        type="sitemap",
+        subtype="information",
+    )
+
+
+def _is_excluded(sitemap_link: str, patterns: Iterable[str]) -> bool:
+    """Return True when ``sitemap_link`` matches any fnmatch pattern."""
+    return any(fnmatch.fnmatch(sitemap_link, pattern) for pattern in patterns)
+
+
+def _hreflang_formatter(lang: str) -> str:
+    """Format a locale code into an ``hreflang``-compatible string.
+
+    References
+    ----------
+    - https://en.wikipedia.org/wiki/Hreflang#Common_Mistakes
+    - https://github.com/readthedocs/readthedocs.org/pull/5638
+    """
+    return lang.replace("_", "-") if "_" in lang else lang
+
+
+def _resolve_locales(app: Sphinx) -> list[str]:
+    """Return the list of locale codes to emit as hreflang alternates.
+
+    If ``sitemap_locales`` is explicitly set (and not ``[None]``), its
+    values win. Otherwise, auto-detect by listing sub-directories of
+    each ``locale_dirs`` entry.
+    """
+    configured: list[str] | None = app.builder.config.sitemap_locales
+    if configured:
+        if configured == [None]:
+            return []
+        return list(configured)
+
+    locales: list[str] = []
+    confdir = pathlib.Path(app.confdir)
+    for locale_dir_setting in app.builder.config.locale_dirs:
+        locale_dir = confdir / locale_dir_setting
+        if not locale_dir.is_dir():
+            continue
+        locales.extend(entry.name for entry in locale_dir.iterdir() if entry.is_dir())
+    return locales
