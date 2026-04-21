@@ -31,6 +31,26 @@ $ uv add gp-sphinx --prerelease allow
 
 ### Features
 
+#### New package: `sphinx-gp-opengraph`
+
+OpenGraph meta-tag emission. Drop-in for `sphinxext-opengraph`,
+matplotlib-free; `ogp_social_cards` is accepted but ignored with a
+warning. Replaces `sphinxext.opengraph` in `DEFAULT_EXTENSIONS`.
+(#22)
+
+#### New package: `sphinx-gp-sitemap`
+
+`sitemap.xml` generator. Drop-in for `sphinx-sitemap` with Sphinx
+8.1+ idioms — no `multiprocessing.Queue`, public `dirhtml` detection,
+narrow `ExtensionError` handling. Added to `DEFAULT_EXTENSIONS`.
+(#22)
+
+#### `gp-sphinx`: SEO config auto-wired from `docs_url`
+
+`merge_sphinx_config` auto-derives `ogp_site_url`, `ogp_site_name`,
+`ogp_image`, `site_url`, and `sitemap_url_scheme` (flat `"{link}"`)
+from a single `docs_url`. (#22)
+
 #### Initial release: `gp-sphinx`
 
 Shared documentation platform for git-pull projects.
