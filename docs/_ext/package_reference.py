@@ -36,6 +36,8 @@ Examples
 --------
 >>> package = workspace_packages()[0]
 >>> package["name"] in {
+...     "sphinx-gp-opengraph",
+...     "sphinx-gp-sitemap",
 ...     "gp-sphinx",
 ...     "sphinx-fonts",
 ...     "sphinx-gp-theme",
