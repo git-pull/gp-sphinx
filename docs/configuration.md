@@ -100,7 +100,7 @@ These are injected even though they are not exposed as `DEFAULT_*` constants:
 
 | Constant | Value |
 | --- | --- |
-| `DEFAULT_EXTENSIONS` | `["sphinx.ext.autodoc", "sphinx_fonts", "sphinx.ext.intersphinx", "sphinx_autodoc_typehints_gp", "sphinx.ext.todo", "sphinx_inline_tabs", "sphinx_copybutton", "sphinxext.opengraph", "sphinxext.rediraffe", "sphinx_design", "myst_parser", "linkify_issues"]` |
+| `DEFAULT_EXTENSIONS` | `["sphinx.ext.autodoc", "sphinx_fonts", "sphinx.ext.intersphinx", "sphinx_autodoc_typehints_gp", "sphinx.ext.todo", "sphinx_inline_tabs", "sphinx_copybutton", "gp_opengraph", "gp_sitemap", "sphinxext.rediraffe", "sphinx_design", "myst_parser", "linkify_issues"]` |
 | `DEFAULT_SOURCE_SUFFIX` | `{".rst": "restructuredtext", ".md": "markdown"}` |
 | `DEFAULT_MYST_EXTENSIONS` | `["colon_fence", "substitution", "replacements", "strikethrough", "linkify"]` |
 | `DEFAULT_MYST_HEADING_ANCHORS` | `4` |

@@ -123,18 +123,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
             types=frozenset({str, type(None)}),
         )
 
-    if app.config.sitemap_show_lastmod:
-        try:
-            app.setup_extension("sphinx_last_updated_by_git")
-        except ExtensionError as exc:
-            logger.warning(
-                "%s",
-                exc,
-                type="sitemap",
-                subtype="configuration",
-            )
-            app.config.sitemap_show_lastmod = False
-
+    app.connect("config-inited", _maybe_enable_git_lastmod)
     app.connect("builder-inited", _init_link_store)
     app.connect("html-page-context", _collect_page_link)
     app.connect("build-finished", _write_sitemap)
@@ -144,6 +133,30 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }
+
+
+def _maybe_enable_git_lastmod(
+    app: Sphinx,
+    config: t.Any,
+) -> None:
+    """Load ``sphinx_last_updated_by_git`` lazily when lastmod is enabled.
+
+    Deferred to ``config-inited`` so ``config.sitemap_show_lastmod`` has
+    had its default populated by Sphinx before we read it. Disables the
+    feature on import failure rather than aborting the build.
+    """
+    if not config.sitemap_show_lastmod:
+        return
+    try:
+        app.setup_extension("sphinx_last_updated_by_git")
+    except ExtensionError as exc:
+        logger.warning(
+            "%s",
+            exc,
+            type="sitemap",
+            subtype="configuration",
+        )
+        config.sitemap_show_lastmod = False
 
 
 def _init_link_store(app: Sphinx) -> None:

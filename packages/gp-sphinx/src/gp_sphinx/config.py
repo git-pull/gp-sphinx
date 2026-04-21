@@ -231,9 +231,9 @@ def merge_sphinx_config(
 
     When ``source_repository`` is provided, ``issue_url_tpl`` is auto-computed
     for the ``linkify_issues`` extension. When ``docs_url`` is provided,
-    ``ogp_site_url``, ``ogp_image``, and ``ogp_site_name`` are auto-computed
-    for ``sphinxext.opengraph``. All auto-computed values can be overridden
-    via ``overrides``.
+    ``ogp_site_url``, ``ogp_image``, ``ogp_site_name`` (for ``gp_opengraph``)
+    and ``site_url`` (for ``gp_sitemap``) are auto-computed. All
+    auto-computed values can be overridden via ``overrides``.
 
     Parameters
     ----------
@@ -425,11 +425,14 @@ def merge_sphinx_config(
         repo = source_repository.rstrip("/")
         conf["issue_url_tpl"] = f"{repo}/issues/{{issue_id}}"
 
-    # Auto-compute sphinxext.opengraph config
+    # Auto-compute gp_opengraph + gp_sitemap config from docs_url
     if docs_url:
         conf["ogp_site_url"] = docs_url
         conf["ogp_site_name"] = project
         conf["ogp_image"] = "_static/img/icons/icon-192x192.png"
+        # gp-sitemap: normalize to trailing slash so {lang}{version}{link}
+        # composition produces valid URLs.
+        conf["site_url"] = docs_url if docs_url.endswith("/") else docs_url + "/"
 
     # Apply overrides last (can override auto-computed values)
     conf.update(overrides)
