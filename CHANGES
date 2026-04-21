@@ -31,6 +31,25 @@ $ uv add gp-sphinx --prerelease allow
 
 ### Features
 
+- `gp-opengraph`: new workspace package providing OpenGraph and Twitter
+  meta-tag emission for Sphinx. Drop-in replacement for the
+  transitive `sphinxext-opengraph` dep — same `ogp_*` configuration
+  surface, minus the matplotlib-based social-card generator (which is
+  accepted but ignored, with a one-line warning pointing at the
+  static-image workflow). Replaces `sphinxext.opengraph` in
+  `DEFAULT_EXTENSIONS`.
+- `gp-sitemap`: new workspace package providing `sitemap.xml`
+  generation for Sphinx. Added to `DEFAULT_EXTENSIONS` so every
+  gp-sphinx site gets a sitemap out of the box. Drop-in replacement
+  for the standalone `sphinx-sitemap` package with three Sphinx 8.1+
+  modernizations: plain `env.temp_data` list instead of
+  `multiprocessing.Queue`, `app.builder.name == "dirhtml"` instead of
+  an `env.is_directory_builder` monkey-patch, and
+  `contextlib.suppress(ExtensionError)` instead of a bare
+  `except BaseException`.
+- `gp-sphinx`: `merge_sphinx_config` auto-wires `site_url` (for
+  `gp-sitemap`) from `docs_url`, alongside the existing
+  `ogp_site_url` / `ogp_site_name` / `ogp_image` auto-wiring.
 - `sphinx-gp-theme`: dispatch `gp-sphinx:navigated` CustomEvent on
   `document` after every SPA-nav DOM swap. Third-party widgets that bind to
   swapped DOM can listen for this event to re-initialise after navigation
