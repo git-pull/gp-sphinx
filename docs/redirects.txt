@@ -1,3 +1,5 @@
+extensions/gp-opengraph packages/gp-opengraph
+extensions/gp-sitemap packages/gp-sitemap
 extensions/gp-sphinx packages/gp-sphinx
 extensions/index packages/index
 extensions/sphinx-autodoc-argparse packages/sphinx-autodoc-argparse
