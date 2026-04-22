@@ -133,3 +133,11 @@ packages/sphinx-autodoc-typehints-gp
 packages/gp-sphinx
 packages/sphinx-gp-theme
 ```
+
+```{toctree}
+:caption: SEO
+:hidden:
+
+packages/gp-opengraph
+packages/gp-sitemap
+```
