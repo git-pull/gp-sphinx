@@ -26,6 +26,7 @@ from __future__ import annotations
 import contextlib
 import datetime as dt
 import fnmatch
+import logging
 import pathlib
 import typing as t
 from xml.etree import ElementTree
@@ -44,7 +45,12 @@ _LINKS_KEY = "gp_sitemap_links"
 _SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9"
 _XHTML_NS = "http://www.w3.org/1999/xhtml"
 
+# gp-sitemap uses Sphinx's logger adapter so ``type=``/``subtype=`` kwargs
+# work for warning classification, but still attaches NullHandler to the
+# underlying stdlib logger so the library doesn't emit "no handlers" warnings
+# when imported outside a Sphinx build (per CLAUDE.md #Logger setup).
 logger = getLogger(__name__)
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 SitemapLink = tuple[str, str | None]  # (relative link, last_updated ISO8601 or None)
 
@@ -229,7 +235,7 @@ def _write_sitemap(app: Sphinx, exception: BaseException | None) -> None:
         # that run with ``-W``.
         logger.info(
             "gp-sitemap: skipping sitemap — set site_url or html_baseurl "
-            "in conf.py to enable.",
+            "in conf.py to enable",
             type="sitemap",
             subtype="configuration",
         )

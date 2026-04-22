@@ -38,6 +38,7 @@ if t.TYPE_CHECKING:
     from sphinx.config import Config
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 _EXTENSION_VERSION = "0.0.1a9"
 
@@ -260,9 +261,9 @@ def _warn_if_social_cards_used(app: Sphinx, config: Config) -> None:
     del app  # unused; required by Sphinx's config-inited signature
     if config.ogp_social_cards:
         logger.warning(
-            "gp-opengraph: ogp_social_cards is ignored — gp-opengraph does "
-            "not bundle a card generator. Use a static PNG via ogp_image "
-            "(site default) or per-page 'og:image' frontmatter.",
+            "gp-opengraph: ogp_social_cards ignored — gp-opengraph ships "
+            "no card generator; use a static PNG via ogp_image (site "
+            "default) or per-page 'og:image' frontmatter",
         )
 
 
