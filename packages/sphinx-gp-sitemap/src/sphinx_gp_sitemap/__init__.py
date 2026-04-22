@@ -223,9 +223,13 @@ def _write_sitemap(app: Sphinx, exception: BaseException | None) -> None:
 
     site_url = app.builder.config.site_url or app.builder.config.html_baseurl
     if not site_url:
-        logger.warning(
-            "sphinx-gp-sitemap: site_url (or html_baseurl) is required in conf.py. "
-            "Sitemap not built.",
+        # INFO rather than WARNING because sphinx-gp-sitemap is in gp-sphinx's
+        # DEFAULT_EXTENSIONS: users who haven't configured a deploy URL
+        # should silently skip sitemap emission rather than break builds
+        # that run with ``-W``.
+        logger.info(
+            "sphinx-gp-sitemap: skipping sitemap — set site_url or html_baseurl "
+            "in conf.py to enable.",
             type="sitemap",
             subtype="configuration",
         )

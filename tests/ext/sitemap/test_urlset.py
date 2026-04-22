@@ -106,10 +106,15 @@ def test_urlset_root_has_sitemap_namespace(
     assert root.tag == f"{_SITEMAP_NS}urlset"
 
 
-def test_no_site_url_emits_warning_and_no_sitemap(
+def test_no_site_url_skips_sitemap_silently(
     build_sitemap_site: t.Callable[..., SitemapBuildResult],
 ) -> None:
-    """Without site_url/html_baseurl the sitemap is skipped (with a warning)."""
+    """Without site_url/html_baseurl the sitemap is silently skipped.
+
+    sphinx-gp-sitemap is in gp-sphinx's DEFAULT_EXTENSIONS, so an unset deploy
+    URL should not break ``sphinx-build -W``. The missing-URL notice is
+    logged at INFO, not WARNING.
+    """
     built = build_sitemap_site(conf_overrides={})  # site_url omitted
     assert built.tree is None
-    assert "site_url" in built.result.warnings
+    assert "site_url" not in built.result.warnings
