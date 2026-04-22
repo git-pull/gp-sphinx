@@ -22,9 +22,9 @@ from __future__ import annotations
 import logging
 import os
 import pathlib
+import types
 import typing as t
-from types import NoneType
-from urllib.parse import urljoin, urlparse, urlsplit, urlunsplit
+import urllib.parse
 
 from docutils import nodes
 from sphinx.application import Sphinx
@@ -137,7 +137,7 @@ def get_tags(
 
     ogp_canonical_url = config.ogp_canonical_url or ogp_site_url
 
-    page_url = urljoin(
+    page_url = urllib.parse.urljoin(
         ogp_canonical_url,
         builder.get_target_uri(context["pagename"]),
     )
@@ -170,10 +170,10 @@ def get_tags(
 
     if image_url:
         if "og:image" not in fields:
-            image_url_parsed = urlparse(image_url)
+            image_url_parsed = urllib.parse.urlparse(image_url)
             if not image_url_parsed.scheme:
                 root = page_url if first_image else ogp_site_url
-                image_url = urljoin(root, image_url_parsed.path)
+                image_url = urllib.parse.urljoin(root, image_url_parsed.path)
             tags["og:image"] = image_url
 
         if isinstance(ogp_image_alt, str):
@@ -204,8 +204,10 @@ def _ambient_site_url() -> str:
     if not rtd_canonical_url:
         msg = "ReadTheDocs did not provide a valid canonical URL"
         raise RuntimeError(msg)
-    parsed = urlsplit(rtd_canonical_url)
-    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, "", ""))
+    parsed = urllib.parse.urlsplit(rtd_canonical_url)
+    return urllib.parse.urlunsplit(
+        (parsed.scheme, parsed.netloc, parsed.path, "", ""),
+    )
 
 
 def _resolve_site_name(config: Config) -> str | None:
@@ -300,13 +302,13 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         "ogp_image",
         None,
         "html",
-        types=frozenset({str, NoneType}),
+        types=frozenset({str, types.NoneType}),
     )
     app.add_config_value(
         "ogp_image_alt",
         None,
         "html",
-        types=frozenset({str, bool, NoneType}),
+        types=frozenset({str, bool, types.NoneType}),
     )
     app.add_config_value(
         "ogp_use_first_image",
@@ -319,14 +321,14 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         "ogp_site_name",
         None,
         "html",
-        types=frozenset({str, bool, NoneType}),
+        types=frozenset({str, bool, types.NoneType}),
     )
     # Accepted-but-ignored: warned about in _warn_if_social_cards_used.
     app.add_config_value(
         "ogp_social_cards",
         None,
         "html",
-        types=frozenset({dict, NoneType}),
+        types=frozenset({dict, types.NoneType}),
     )
     app.add_config_value(
         "ogp_custom_meta_tags",
