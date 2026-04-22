@@ -15,7 +15,7 @@ True
 
 from __future__ import annotations
 
-from html.parser import HTMLParser
+import html.parser
 
 
 def get_meta_description(meta_tags: str) -> str | bool | None:
@@ -40,7 +40,7 @@ def get_meta_description(meta_tags: str) -> str | bool | None:
     return htp.meta_description
 
 
-class HTMLTextParser(HTMLParser):
+class HTMLTextParser(html.parser.HTMLParser):
     """Flag the presence (and content) of a ``<meta name="description">``."""
 
     def __init__(self) -> None:

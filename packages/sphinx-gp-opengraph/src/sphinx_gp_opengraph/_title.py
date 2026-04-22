@@ -11,7 +11,7 @@ Examples
 
 from __future__ import annotations
 
-from html.parser import HTMLParser
+import html.parser
 
 
 def get_title(title: str) -> tuple[str, str]:
@@ -38,7 +38,7 @@ def get_title(title: str) -> tuple[str, str]:
     return htp.text, htp.text_outside_tags
 
 
-class HTMLTextParser(HTMLParser):
+class HTMLTextParser(html.parser.HTMLParser):
     """Track text-inside-tags vs text-outside-tags while parsing HTML."""
 
     def __init__(self) -> None:
