@@ -65,6 +65,132 @@ def _module_members(
     ]
 
 
+class _SetupRecorder:
+    """Record ``app.add_*`` calls made during a Sphinx extension's ``setup()``.
+
+    Used by :func:`_registered_directives` and :func:`_registered_roles` to
+    discover the names a package registers (e.g., ``fastmcp-tool``) instead
+    of guessing them from class names.
+
+    Examples
+    --------
+    >>> recorder = _SetupRecorder()
+    >>> recorder.add_directive("foo-bar", object)
+    >>> recorder.add_role("baz-quux", lambda *a, **k: None)
+    >>> [name for name, _, _ in recorder.calls]
+    ['add_directive', 'add_role']
+    """
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, tuple[object, ...], dict[str, object]]] = []
+
+    def __getattr__(self, attr: str) -> t.Callable[..., None]:
+        def _recorder(*args: object, **kwargs: object) -> None:
+            self.calls.append((attr, args, kwargs))
+
+        return _recorder
+
+
+def _replay_setup(module_name: str) -> _SetupRecorder | None:
+    """Run a module's ``setup()`` against a recorder; return None on failure.
+
+    Examples
+    --------
+    >>> recorder = _replay_setup("sphinx_autodoc_docutils")
+    >>> recorder is not None
+    True
+    >>> any(name == "add_directive" for name, _, _ in recorder.calls)
+    True
+    """
+    try:
+        module = importlib.import_module(module_name)
+    except ImportError:
+        return None
+    setup_fn = getattr(module, "setup", None)
+    if not callable(setup_fn):
+        return None
+    recorder = _SetupRecorder()
+    try:
+        setup_fn(recorder)
+    except Exception:  # noqa: BLE001 - extension setup errors are expected here
+        return None
+    return recorder
+
+
+def _registered_directives(module_name: str) -> list[tuple[str, type[Directive]]]:
+    """Return ``(registered_name, cls)`` pairs from a package's ``setup()``.
+
+    Falls back to module introspection when the module has no ``setup()``,
+    so passing a directive-defining submodule (``pkg._directives``) keeps
+    working.
+
+    Examples
+    --------
+    >>> pairs = _registered_directives("sphinx_autodoc_docutils")
+    >>> ("autodirective-index", AutoDirectiveIndex) in pairs
+    True
+    """
+    recorder = _replay_setup(module_name)
+    if recorder is not None:
+        pairs: list[tuple[str, type[Directive]]] = []
+        for call_name, args, _kwargs in recorder.calls:
+            if call_name == "add_directive" and len(args) >= 2:
+                name, cls = args[0], args[1]
+                if (
+                    isinstance(name, str)
+                    and inspect.isclass(cls)
+                    and issubclass(cls, Directive)
+                ):
+                    pairs.append((name, cls))
+            elif call_name == "add_directive_to_domain" and len(args) >= 3:
+                name, cls = args[1], args[2]
+                if (
+                    isinstance(name, str)
+                    and inspect.isclass(cls)
+                    and issubclass(cls, Directive)
+                ):
+                    pairs.append((name, cls))
+        if pairs:
+            return pairs
+    return [
+        (_registered_name(name), cls) for name, cls in _directive_classes(module_name)
+    ]
+
+
+def _registered_roles(module_name: str) -> list[tuple[str, object]]:
+    """Return ``(registered_name, role_fn)`` pairs from a package's ``setup()``.
+
+    Falls back to module introspection when no ``setup()`` is found, or when
+    the package's ``setup()`` registers nothing via ``app.add_role`` (e.g.,
+    ``sphinx_autodoc_argparse`` exposes role registration through
+    ``register_roles(app)`` rather than wiring it into ``setup()`` itself).
+
+    Examples
+    --------
+    >>> pairs = _registered_roles("sphinx_autodoc_fastmcp")
+    >>> any(name == "tool" for name, _ in pairs)
+    True
+    >>> pairs = _registered_roles("sphinx_autodoc_argparse.roles")
+    >>> any(name == "cli-option" for name, _ in pairs)
+    True
+    """
+    recorder = _replay_setup(module_name)
+    if recorder is not None:
+        pairs: list[tuple[str, object]] = []
+        for call_name, args, _kwargs in recorder.calls:
+            if call_name == "add_role" and len(args) >= 2:
+                name, role_fn = args[0], args[1]
+                if isinstance(name, str) and callable(role_fn):
+                    pairs.append((name, role_fn))
+            elif call_name == "add_role_to_domain" and len(args) >= 3:
+                name, role_fn = args[1], args[2]
+                if isinstance(name, str) and callable(role_fn):
+                    pairs.append((name, role_fn))
+        if pairs:
+            return pairs
+    return [(_registered_name(name), fn) for name, fn in _role_callables(module_name)]
+
+
 def _directive_classes(module_name: str) -> list[tuple[str, type[Directive]]]:
     """Return public docutils directive classes in a module.
 
@@ -443,7 +569,13 @@ class AutoDirective(SphinxDirective):
 
 
 class AutoDirectives(SphinxDirective):
-    """Render documentation for every directive class in a module."""
+    """Render documentation for every directive a package registers.
+
+    Accepts either an extension package (whose ``setup()`` runs against a
+    recorder so each ``app.add_directive(name, cls)`` call surfaces by its
+    real registered name) or a directive-defining module (introspected for
+    ``Directive`` subclasses, with names derived from class names).
+    """
 
     required_arguments = 1
     has_content = False
@@ -453,14 +585,14 @@ class AutoDirectives(SphinxDirective):
         module_name = self.arguments[0]
         no_index = "no-index" in self.options
         results: list[nodes.Node] = []
-        for name, directive_cls in _directive_classes(module_name):
-            path = f"{module_name}.{name}"
+        for registered_name, directive_cls in _registered_directives(module_name):
+            path = f"{directive_cls.__module__}.{directive_cls.__name__}"
             rendered = _render_markup_nodes(
                 self,
                 _directive_markup(
                     path,
                     directive_cls,
-                    directive_name=_registered_name(name),
+                    directive_name=registered_name,
                     no_index=no_index,
                 ),
             )
@@ -470,7 +602,13 @@ class AutoDirectives(SphinxDirective):
 
 
 class AutoDirectiveIndex(SphinxDirective):
-    """Generate a summary index for all directives in a module."""
+    """Generate a summary index for all directives a package registers.
+
+    Accepts either an extension package (whose ``setup()`` runs against a
+    recorder so each ``app.add_directive(name, cls)`` call surfaces by its
+    real registered name) or a directive-defining module (introspected for
+    ``Directive`` subclasses, with names derived from class names).
+    """
 
     required_arguments = 1
     has_content = False
@@ -478,8 +616,12 @@ class AutoDirectiveIndex(SphinxDirective):
     def run(self) -> list[nodes.Node]:
         module_name = self.arguments[0]
         rows = [
-            (_registered_name(name), f"{module_name}.{name}", _summary(directive_cls))
-            for name, directive_cls in _directive_classes(module_name)
+            (
+                registered_name,
+                f"{directive_cls.__module__}.{directive_cls.__name__}",
+                _summary(directive_cls),
+            )
+            for registered_name, directive_cls in _registered_directives(module_name)
         ]
         markup = _index_markup("Directive Index", rows)
         if not markup:
@@ -517,7 +659,13 @@ class AutoRole(SphinxDirective):
 
 
 class AutoRoles(SphinxDirective):
-    """Render documentation for every role callable in a module."""
+    """Render documentation for every role a package registers.
+
+    Accepts either an extension package (whose ``setup()`` runs against a
+    recorder so each ``app.add_role(name, fn)`` call surfaces by its real
+    registered name) or a role-defining module (introspected for ``*_role``
+    callables, with names derived from function names).
+    """
 
     required_arguments = 1
     has_content = False
@@ -527,13 +675,15 @@ class AutoRoles(SphinxDirective):
         module_name = self.arguments[0]
         no_index = "no-index" in self.options
         results: list[nodes.Node] = []
-        for name, role_fn in _role_callables(module_name):
-            path = f"{module_name}.{name}"
+        for registered_name, role_fn in _registered_roles(module_name):
+            role_module = getattr(role_fn, "__module__", module_name)
+            role_attr = getattr(role_fn, "__name__", registered_name)
+            path = f"{role_module}.{role_attr}"
             rendered = _render_markup_nodes(
                 self,
                 _role_markup(
                     path,
-                    _registered_name(name),
+                    registered_name,
                     role_fn,
                     no_index=no_index,
                 ),
@@ -544,7 +694,13 @@ class AutoRoles(SphinxDirective):
 
 
 class AutoRoleIndex(SphinxDirective):
-    """Generate a summary index for all roles in a module."""
+    """Generate a summary index for all roles a package registers.
+
+    Accepts either an extension package (whose ``setup()`` runs against a
+    recorder so each ``app.add_role(name, fn)`` call surfaces by its real
+    registered name) or a role-defining module (introspected for ``*_role``
+    callables, with names derived from function names).
+    """
 
     required_arguments = 1
     has_content = False
@@ -553,11 +709,13 @@ class AutoRoleIndex(SphinxDirective):
         module_name = self.arguments[0]
         rows = [
             (
-                _registered_name(name),
-                f"{module_name}.{name}",
+                registered_name,
+                f"{role_fn.__module__}.{role_fn.__name__}"
+                if hasattr(role_fn, "__module__") and hasattr(role_fn, "__name__")
+                else module_name,
                 _summary(role_fn),
             )
-            for name, role_fn in _role_callables(module_name)
+            for registered_name, role_fn in _registered_roles(module_name)
         ]
         markup = _index_markup("Role Index", rows)
         if not markup:
