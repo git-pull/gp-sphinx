@@ -62,6 +62,15 @@ All parameters are keyword-only.
 | `ogp_site_url` | `docs_url` |
 | `ogp_site_name` | `project` |
 | `ogp_image` | `"_static/img/icons/icon-192x192.png"` |
+| `site_url` | `docs_url` (trailing-slash normalized) |
+| `sitemap_url_scheme` | `"{link}"` |
+
+`sitemap_url_scheme` overrides upstream sphinx-sitemap's default of
+`"{lang}{version}{link}"` because git-pull.com sites deploy flat at the
+project root with no language or version path segment. Multilingual or
+version-pinned hosting can pass an explicit `sitemap_url_scheme` to
+`merge_sphinx_config()` to restore the prefixed scheme — `**overrides`
+is applied after auto-computation, so the explicit value wins.
 
 ### From `**overrides`
 
