@@ -285,6 +285,13 @@ def _write_sitemap(app: Sphinx, exception: BaseException | None) -> None:
             subtype="configuration",
         )
         return
+    # Normalize the resolved base URL so the scheme.format() concatenation
+    # below never produces malformed joins (e.g. "https://example.comindex.html"
+    # when html_baseurl is the source and lacks a trailing slash). gp-sphinx
+    # already normalizes site_url upstream of us, but a user setting
+    # html_baseurl directly bypasses that path.
+    if not site_url.endswith("/"):
+        site_url = site_url + "/"
 
     links = t.cast(
         "list[SitemapLink]",
