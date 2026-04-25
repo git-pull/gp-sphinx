@@ -2,7 +2,7 @@
 
 Sitemap generator for Sphinx — drop-in replacement for
 [`sphinx-sitemap`](https://github.com/jdillard/sphinx-sitemap) with
-Sphinx 8.1+ idioms and a parallel-build-safe implementation (no
+Sphinx 8.1+ idioms and a simplified link-collection model (no
 `multiprocessing.Queue`).
 
 Part of the [gp-sphinx](https://github.com/git-pull/gp-sphinx) documentation
@@ -89,8 +89,11 @@ Implementation changes behind the scenes:
 
 - Collected links stored in `env.temp_data["sphinx_gp_sitemap_links"]` as a
   plain `list[tuple[str, str | None]]` — no `multiprocessing.Queue`.
-  Sphinx joins parallel workers before `build-finished` fires, so the
-  Queue machinery was over-engineered.
+  Trade-off: `temp_data` is per-process and is not merged across
+  parallel workers, so sphinx-gp-sitemap declares `parallel_read_safe` only
+  and is **not** `parallel_write_safe`; sites built with
+  `sphinx-build -j N` should fall back to a single write process for
+  this extension to capture every page.
 - Builder-kind detection uses `app.builder.name == "dirhtml"` —
   no `env.is_directory_builder` monkey-patch.
 - `html_baseurl` re-registration uses
