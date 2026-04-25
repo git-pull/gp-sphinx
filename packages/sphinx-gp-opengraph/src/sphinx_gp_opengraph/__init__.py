@@ -281,8 +281,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     Returns
     -------
     ExtensionMetadata
-        Extension metadata — version, env_version, and parallel-build
-        flags.
+        Extension metadata — version and parallel-build flags.
 
     Examples
     --------
@@ -350,7 +349,6 @@ def setup(app: Sphinx) -> ExtensionMetadata:
 
     return {
         "version": _EXTENSION_VERSION,
-        "env_version": 1,
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }
