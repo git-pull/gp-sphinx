@@ -34,7 +34,10 @@ def test_setup_registers_config_values_and_connects_hooks() -> None:
     meta = gp_sitemap.setup(t.cast("t.Any", _FakeApp()))
     assert meta["version"]
     assert meta["parallel_read_safe"] is True
-    assert meta["parallel_write_safe"] is True
+    # gp-sitemap intentionally does not advertise parallel_write_safe:
+    # link collection lives in env.temp_data, which is per-process and
+    # not merged across parallel workers.
+    assert "parallel_write_safe" not in meta
 
     assert "site_url" in registered
     assert "sitemap_url_scheme" in registered

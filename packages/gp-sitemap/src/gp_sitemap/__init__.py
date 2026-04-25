@@ -5,9 +5,11 @@ Behavior is identical to upstream ``sphinx_sitemap`` v2.9.0 with three
 modernizations:
 
 1. ``env.temp_data["gp_sitemap_links"]`` is a plain ``list[tuple[...]]``
-   rather than a ``multiprocessing.Queue``. Sphinx joins parallel
-   workers before ``build-finished`` fires, so the Queue machinery was
-   over-engineered.
+   rather than a ``multiprocessing.Queue``. Because ``temp_data`` is
+   per-process and not merged across parallel workers, gp-sitemap only
+   advertises ``parallel_read_safe`` and intentionally omits
+   ``parallel_write_safe``: under ``sphinx-build -j N`` link collection
+   would be incomplete, so the extension is single-write-process only.
 2. Builder-kind detection uses the public ``app.builder.name == "dirhtml"``
    rather than monkey-patching ``env.is_directory_builder``.
 3. The ``html_baseurl`` config value is only registered when not already
@@ -138,7 +140,6 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     return {
         "version": _EXTENSION_VERSION,
         "parallel_read_safe": True,
-        "parallel_write_safe": True,
     }
 
 
