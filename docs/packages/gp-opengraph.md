@@ -13,60 +13,92 @@ may change without a major version bump. Pin your dependency to a
 specific version range in production.
 :::
 
-OpenGraph and Twitter meta-tag emission for Sphinx. Drop-in replacement
-for [`sphinxext-opengraph`](https://github.com/sphinx-doc/sphinxext-opengraph)
-with the same `ogp_*` configuration surface, minus the matplotlib-based
-social-card generator.
+OpenGraph meta-tag emission for Sphinx. The package registers every
+`ogp_*` config value the upstream
+[`sphinxext-opengraph`](https://github.com/sphinx-doc/sphinxext-opengraph)
+exposes and emits the same `<meta>` tags, with one deliberate
+omission: the matplotlib-based social-card generator is not bundled.
+That is why the package has zero non-Sphinx runtime dependencies.
 
-```console
-$ pip install gp-opengraph
+For install, the full config-key reference, per-page overrides, and the
+verbatim deprecation-warning text, see the package
+[README](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-opengraph#readme).
+This page covers integration with gp-sphinx, the emission pipeline,
+and the trade-offs.
+
+## Integration with gp-sphinx
+
+`gp_opengraph` ships in {py:data}`~gp_sphinx.defaults.DEFAULT_EXTENSIONS`,
+so projects that build through {py:func}`~gp_sphinx.config.merge_sphinx_config`
+load it automatically. Passing `docs_url=` to that function auto-derives
+three of the most common config values:
+
+| Auto-derived | Source |
+| --- | --- |
+| `ogp_site_url` | `docs_url` |
+| `ogp_site_name` | `project` |
+| `ogp_image` | `"_static/img/icons/icon-192x192.png"` |
+
+The canonical reference for these and the other auto-derived values
+lives in [Configuration → From `docs_url`](#from-docs_url). Any value
+passed via `**overrides` to `merge_sphinx_config()` wins over the
+auto-derived default — auto-computation runs first, overrides apply
+last.
+
+## How the page-level meta tags are built
+
+For every page rendered by an HTML-family builder, the extension's
+`html-page-context` handler walks the resolved doctree and emits the
+following tags into `context["metatags"]`. The page is skipped when its
+front-matter sets `ogp_disable: true`.
+
+| Tag | Source |
+| --- | --- |
+| `og:title` | First heading of the page, with HTML stripped (`_title.py`) |
+| `og:type` | `ogp_type` (default `"website"`) |
+| `og:url` | `ogp_canonical_url or ogp_site_url`, joined with the page's relative URL |
+| `og:site_name` | `ogp_site_name`, or `project` when unset; suppressed when set to `False` |
+| `og:description` | First non-title body paragraph, truncated to `ogp_description_length`, HTML-escaped (`_description.py`) |
+| `og:image` | Page front-matter `og:image`, else `ogp_image`, else first in-page image when `ogp_use_first_image=True` |
+| `og:image:alt` | Front-matter `og:image:alt`, else `ogp_image_alt`, falling back to site name, then page title |
+| `<meta name="description">` | Mirror of `og:description` when `ogp_enable_meta_description=True` and the page does not already define one (`_meta.py`) |
+
+The description extractor walks the document, skips title nodes and
+empty paragraphs, takes the first prose paragraph, and truncates at the
+configured cap. Embedded HTML quote characters are escaped with
+`&quot;` before emission, so user content cannot break out of the
+attribute value.
+
+Custom raw markup listed in `ogp_custom_meta_tags` is appended verbatim
+after the structured tags — that is the supported escape hatch for
+Twitter card declarations and `og:image:width`/`og:image:height` hints.
+
+## Event hooks
+
+```text
+config-inited     →  _warn_if_social_cards_used     (deprecation warning)
+html-page-context →  html_page_context              (per-page meta-tag emission)
 ```
 
-When your docs site depends on `gp-sphinx`, this extension is already
-loaded in `DEFAULT_EXTENSIONS` and `ogp_site_url` / `ogp_site_name` /
-`ogp_image` are auto-computed from `docs_url`. No conf.py changes
-needed.
+Both hooks live in
+[`gp_opengraph/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-opengraph/src/gp_opengraph/__init__.py).
+There is no `builder-inited` or `build-finished` work — the extension
+is purely a per-page transformer.
 
-## What it emits
+## Trade-offs
 
-For every HTML-family builder page, the extension writes these `<meta>`
-tags into the page head:
+**`ogp_social_cards` is accepted but ignored.** The upstream extension
+ships a matplotlib renderer that builds per-page PNGs at
+`builder-inited`. gp-opengraph deliberately omits the dependency to
+keep the install graph small. The config key remains registered so
+existing `conf.py` files do not error; setting it logs a single
+`WARNING` at `config-inited` directing users to the static-image
+workflow documented in the README.
 
-- `og:title` — text of the page's first heading (HTML stripped)
-- `og:type` — always `"website"` (override via `ogp_type`)
-- `og:url` — resolved from `ogp_site_url` + the page's relative URL
-- `og:site_name` — defaults to `project`; suppressed when
-  `ogp_site_name = False`
-- `og:description` — first body paragraph, truncated to
-  `ogp_description_length` (default 200 chars)
-- `og:image` and `og:image:alt` — when `ogp_image` is set or the page
-  carries an `og:image` frontmatter override
-- `<meta name="description">` — auto-emitted to match `og:description`
-  unless the page already defines one or
-  `ogp_enable_meta_description = False`
-
-Plus any raw tags listed in `ogp_custom_meta_tags` (emit Twitter cards,
-`og:image:width`/`og:image:height` dimension hints, etc. here).
-
-## Migration from `sphinxext-opengraph`
-
-`conf.py` files using the upstream extension keep working — every
-`ogp_*` key is registered with identical semantics, **except**:
-
-- `ogp_social_cards` is accepted but **ignored**. gp-opengraph does not
-  bundle the matplotlib-based card generator. Setting this config key
-  emits a one-line warning pointing at the static-image workflow.
-
-For per-page social card images, use static PNGs and point frontmatter
-at them:
-
-```markdown
----
-og:image: _static/og/my-page.png
----
-
-# My page
-```
+**`parallel_read_safe` and `parallel_write_safe` are both `True`.**
+The extension never writes shared state — every emission is
+self-contained inside the per-page hook — so it is safe under any
+`sphinx-build -j N` value.
 
 ## Package reference
 

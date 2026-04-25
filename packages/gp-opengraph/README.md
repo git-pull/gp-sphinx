@@ -1,11 +1,13 @@
 # gp-opengraph
 
-OpenGraph and Twitter meta-tag emission for Sphinx — drop-in replacement
-for [`sphinxext-opengraph`](https://github.com/sphinx-doc/sphinxext-opengraph),
-matplotlib-free.
+OpenGraph meta-tag emission for Sphinx — a drop-in replacement for
+[`sphinxext-opengraph`](https://github.com/sphinx-doc/sphinxext-opengraph)
+that ships every `ogp_*` config key the upstream supports, minus the
+matplotlib-based social-card generator. No image-rendering dependencies,
+no system-fontconfig surprises.
 
-Part of the [gp-sphinx](https://github.com/git-pull/gp-sphinx) documentation
-platform.
+Part of the [gp-sphinx](https://github.com/git-pull/gp-sphinx)
+documentation platform.
 
 ## Install
 
@@ -13,40 +15,47 @@ platform.
 $ pip install gp-opengraph
 ```
 
-Or — when part of a gp-sphinx site — you already have it (gp-sphinx
-pulls this in by default).
+When you depend on gp-sphinx, this extension is already loaded — see
+[Auto-derived values](#auto-derived-values-when-used-with-gp-sphinx)
+below.
 
-## Usage
-
-Enable in your `docs/conf.py`:
+## Minimum viable conf.py
 
 ```python
 extensions = [
     "gp_opengraph",
 ]
-
-ogp_site_url = "https://example.com/"
-ogp_image = "_static/og-default.png"     # 1200×630 recommended for Slack/FB/Twitter
 ```
-
-That's the minimum. Every page rendered by the HTML-family builders
-gains an `og:title`, `og:type`, `og:url`, `og:site_name`,
-`og:description`, `og:image`, and `og:image:alt` meta tag.
-
-For Twitter cards, append to `ogp_custom_meta_tags`:
 
 ```python
-ogp_custom_meta_tags = [
-    '<meta name="twitter:card" content="summary_large_image" />',
-    '<meta property="og:image:width" content="1200" />',
-    '<meta property="og:image:height" content="630" />',
-]
+ogp_site_url = "https://example.com/"
 ```
+
+```python
+ogp_image = "_static/og-default.png"
+```
+
+A 1200×630 PNG works on Slack, Facebook, LinkedIn, and X/Twitter
+unfurlers. With these three values set, every page rendered by an
+HTML-family builder gains `og:title`, `og:type`, `og:url`,
+`og:site_name`, `og:description`, `og:image`, and `og:image:alt`. A
+matching `<meta name="description">` is emitted when the page does not
+already define one.
+
+## Auto-derived values when used with gp-sphinx
+
+Projects that build through {py:func}`gp_sphinx.config.merge_sphinx_config`
+do not need to set `ogp_site_url`, `ogp_site_name`, or `ogp_image`
+manually. Pass `docs_url=` to `merge_sphinx_config()` and gp-sphinx
+fills all three from that one value. See [the gp-opengraph package
+page](../../docs/packages/gp-opengraph.md) for the integration story
+and [`configuration.md`](../../docs/configuration.md#from-docs_url)
+for the canonical mapping table.
 
 ## Per-page overrides
 
-Override the site-wide defaults in each page's front matter (MyST
-syntax shown; Sphinx RST field lists work the same way):
+Set front-matter fields to override the site-wide defaults on a single
+page. MyST syntax shown; reST field-list syntax behaves the same way.
 
 ```markdown
 ---
@@ -60,50 +69,76 @@ og:image:alt: A tailored hero for this page
 Body paragraph that becomes og:description.
 ```
 
-Set `ogp_disable: true` to skip OG emission on a specific page.
+| Field | Effect |
+| --- | --- |
+| `og:image` | Replace the site-default image for this page |
+| `og:image:alt` | Replace the alt text for this page |
+| `ogp_description_length` | Override the description-length cap for this page |
+| `ogp_disable: true` | Skip OpenGraph emission entirely on this page |
 
-## Config reference
+Any other `og:*` field-list entry is forwarded to the page head verbatim,
+so `og:type`, `og:audio`, etc. work without code changes.
+
+## Config-key reference
+
+Every key is registered with `rebuild="html"` and the indicated default.
+Per-page front-matter wins over these site-wide values.
 
 | Key | Type | Default | Purpose |
-|---|---|---|---|
-| `ogp_site_url` | `str` | `""` | Base URL; required for absolute `og:url` |
-| `ogp_canonical_url` | `str` | `""` | Separate canonical URL; falls back to `ogp_site_url` |
-| `ogp_description_length` | `int` | `200` | Description truncation cap |
-| `ogp_image` | `str \| None` | `None` | Site-default OG image (1200×630 recommended) |
-| `ogp_image_alt` | `str \| bool \| None` | `None` | Alt text; falls back to site name or title |
-| `ogp_use_first_image` | `bool` | `False` | Use the first in-page image as `og:image` |
+| --- | --- | --- | --- |
+| `ogp_site_url` | `str` | `""` | Site base URL; required for absolute `og:url` (auto-derived under gp-sphinx) |
+| `ogp_canonical_url` | `str` | `""` | Separate canonical URL; falls back to `ogp_site_url` when empty |
+| `ogp_description_length` | `int` | `200` | Truncation cap for `og:description` |
+| `ogp_image` | `str \| None` | `None` | Site-default OG image (auto-derived under gp-sphinx) |
+| `ogp_image_alt` | `str \| bool \| None` | `None` | Alt text; falls back to `og:site_name`, then `og:title`. `False` suppresses the alt tag |
+| `ogp_use_first_image` | `bool` | `False` | Use the first in-page image as `og:image` when no override is set |
 | `ogp_type` | `str` | `"website"` | Value of the `og:type` tag |
-| `ogp_site_name` | `str \| bool \| None` | `None` (→ `project`) | `False` disables the tag |
-| `ogp_custom_meta_tags` | `list[str]` | `()` | Raw `<meta>` tags emitted verbatim |
+| `ogp_site_name` | `str \| bool \| None` | `None` (→ `project`) | `False` suppresses the `og:site_name` tag |
+| `ogp_social_cards` | `dict \| None` | `None` | Accepted-but-ignored — see [Migration](#migration-from-sphinxext-opengraph) |
+| `ogp_custom_meta_tags` | `list[str]` | `()` | Raw `<meta>` tags emitted verbatim — use this for Twitter cards |
 | `ogp_enable_meta_description` | `bool` | `True` | Emit a matching `<meta name="description">` |
 
-## Differences from `sphinxext-opengraph`
+### Twitter cards
 
-Configuration is **drop-in compatible** with upstream — switching to
-`gp-opengraph` does not require any conf.py changes for sites that
-don't use social cards.
+gp-opengraph does not register a separate `twitter_*` namespace;
+crawlers fall back to `og:*` for most fields. Append explicit Twitter
+markup through `ogp_custom_meta_tags` when you need it:
+
+```python
+ogp_custom_meta_tags = [
+    '<meta name="twitter:card" content="summary_large_image" />',
+    '<meta property="og:image:width" content="1200" />',
+    '<meta property="og:image:height" content="630" />',
+]
+```
+
+## Migration from `sphinxext-opengraph`
+
+Configuration is drop-in compatible — every `ogp_*` key is registered
+with the same name, type, and default — with one behavioural change:
 
 - **`ogp_social_cards` is accepted but ignored.** gp-opengraph does not
-  bundle the matplotlib-based card generator upstream ships. Setting
-  `ogp_social_cards` emits a one-line warning pointing at the static-
-  image workflow below. See [Static images per page](#static-images-per-page).
-- The three parser helpers (`_description`, `_title`, `_meta`) are
-  ported verbatim.
-- `setup()` returns `dict[str, Any]` following the gp-sphinx house
-  convention; the keys (`version`, `parallel_read_safe`,
-  `parallel_write_safe`) are identical.
+  bundle the matplotlib-based card generator the upstream ships. Setting
+  the value emits one `WARNING` at `config-inited`:
 
-## Static images per page
+  ```text
+  gp-opengraph: ogp_social_cards ignored — gp-opengraph ships no card generator; use a static PNG via ogp_image (site default) or per-page 'og:image' frontmatter
+  ```
 
-Instead of generating per-page PNGs at build time (the matplotlib
-feature gp-opengraph drops), provide static images and point
-frontmatter at them:
+  Grep your build log for `ogp_social_cards ignored` to find this
+  warning.
 
-```
+The recommended replacement is one static PNG per page. Drop them under
+`_static/og/` and point the per-page `og:image` field-list entry at
+each one. The downstream UX is the same as upstream's auto-generated
+cards — just explicit, and with no build-time dependency on matplotlib
+or PIL.
+
+```text
 docs/
 ├── _static/
 │   └── og/
-│       ├── default.png     ← 1200×630, used when no frontmatter override
+│       ├── default.png
 │       ├── quickstart.png
 │       └── reference.png
 ├── quickstart.md
@@ -118,12 +153,12 @@ og:image: _static/og/quickstart.png
 # Quickstart
 ```
 
-This is equivalent to upstream's auto-generated per-page cards — just
-explicit.
-
 ## See also
 
-- [gp-sitemap](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-sitemap) —
-  companion package for `sitemap.xml` emission
+- [gp-sitemap](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-sitemap)
+  — companion package for `sitemap.xml` emission
 - [gp-sphinx](https://github.com/git-pull/gp-sphinx) — the umbrella
-  docs platform that auto-wires this extension from `docs_url`
+  docs platform; auto-derives `ogp_site_url`, `ogp_site_name`, and
+  `ogp_image` from a single `docs_url` argument
+- [gp-opengraph package page](https://gp-sphinx.git-pull.com/packages/gp-opengraph/)
+  — integration story, event hooks, and how-it-works
