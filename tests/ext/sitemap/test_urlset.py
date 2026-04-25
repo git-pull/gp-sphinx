@@ -68,6 +68,16 @@ CASES: tuple[SitemapCase, ...] = (
         expected_loc_endings=("index.html", "about.html", "draft.html"),
         forbidden_loc_endings=(),
     ),
+    SitemapCase(
+        test_id="html-builder-honors-custom-file-suffix",
+        conf_overrides={
+            "site_url": "https://example.org/",
+            "html_file_suffix": ".htm",
+        },
+        buildername="html",
+        expected_loc_endings=("index.htm", "about.htm", "draft.htm"),
+        forbidden_loc_endings=("index.html", "about.html", "draft.html"),
+    ),
 )
 
 
