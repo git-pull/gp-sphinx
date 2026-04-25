@@ -134,6 +134,17 @@ re-initialise after navigation without a full page reload. Payload:
 
 ### Bug fixes
 
+#### `sphinx-gp-sitemap`: Complete sitemap under `sphinx-build -j N`
+
+`setup()` now returns `parallel_write_safe = False` explicitly. The
+key was previously omitted with the intent of disabling parallel
+writes, but Sphinx's `Extension` class defaults the missing key to
+`True`, so `_collect_page_link` ran in worker processes whose
+`env.temp_data` was never merged — producing a sitemap with only the
+pages handled by the main process. Declaring `False` makes Sphinx
+fall back to serial writes and the link list aggregates correctly.
+(#22)
+
 #### `sphinx-autodoc-docutils`: DEBUG breadcrumb when setup() replay fails
 
 The register-aware discovery path catches exceptions from the

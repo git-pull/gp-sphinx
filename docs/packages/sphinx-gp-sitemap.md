@@ -104,15 +104,17 @@ parallel-write trade-off below.
 
 ## Trade-offs
 
-**`parallel_write_safe` is not declared.** Sphinx's `temp_data` is
-explicitly per-process and is not merged across `sphinx-build -j N`
+**`parallel_write_safe` is declared `False`.** Sphinx's `temp_data`
+is explicitly per-process and is not merged across `sphinx-build -j N`
 workers. The upstream `sphinx-sitemap` worked around that with a
-`multiprocessing.Manager().Queue`; sphinx-gp-sitemap drops the Queue but
-does not yet implement an `env-merge-info`/`env-purge-doc` pair to
-preserve parallel-write semantics. Until that work lands, the
-extension advertises `parallel_read_safe = True` only. Parallel-read
-is the common case (it is what `sphinx-build -j` enables by default
-in CI matrices); parallel-write requires the operator to opt in. A
+`multiprocessing.Manager().Queue`; sphinx-gp-sitemap drops the Queue
+but does not yet implement an `env-merge-info` / `env-purge-doc` pair
+to preserve parallel-write semantics. Until that work lands, the
+extension advertises `parallel_write_safe = False` so Sphinx falls
+back to serial writes for the whole build whenever sphinx-gp-sitemap
+is loaded — which is necessary because Sphinx's `Extension` class
+defaults the missing key to `True`, not `False`. Parallel-read still
+works (`sphinx-build -j` enables it by default in CI matrices). A
 single-process write pass produces a complete sitemap.
 
 **`html_baseurl` is re-registered defensively.** Sphinx core

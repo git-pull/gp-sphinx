@@ -34,10 +34,11 @@ def test_setup_registers_config_values_and_connects_hooks() -> None:
     meta = sphinx_gp_sitemap.setup(t.cast("t.Any", _FakeApp()))
     assert meta["version"]
     assert meta["parallel_read_safe"] is True
-    # sphinx-gp-sitemap intentionally does not advertise parallel_write_safe:
-    # link collection lives in env.temp_data, which is per-process and
-    # not merged across parallel workers.
-    assert "parallel_write_safe" not in meta
+    # parallel_write_safe must be declared False explicitly. Sphinx's
+    # Extension defaults the missing key to True, which would route
+    # _collect_page_link into worker processes whose env.temp_data is
+    # never merged. See the module docstring for details.
+    assert meta["parallel_write_safe"] is False
 
     assert "site_url" in registered
     assert "sitemap_url_scheme" in registered

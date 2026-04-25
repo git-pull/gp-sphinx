@@ -6,10 +6,14 @@ modernizations:
 
 1. ``env.temp_data["sphinx_gp_sitemap_links"]`` is a plain ``list[tuple[...]]``
    rather than a ``multiprocessing.Queue``. Because ``temp_data`` is
-   per-process and not merged across parallel workers, sphinx-gp-sitemap only
-   advertises ``parallel_read_safe`` and intentionally omits
-   ``parallel_write_safe``: under ``sphinx-build -j N`` link collection
-   would be incomplete, so the extension is single-write-process only.
+   per-process and not merged across parallel workers, sphinx-gp-sitemap
+   explicitly declares ``parallel_write_safe = False``. Note that omitting
+   the key would not be opt-out — Sphinx's :class:`sphinx.extension.Extension`
+   defaults the kwarg to ``True`` when missing, so the parallel-write gate
+   would pass and ``_collect_page_link`` would run in worker processes whose
+   ``env.temp_data`` is never merged. Declaring ``False`` makes Sphinx fall
+   back to serial writes for the whole build, which keeps the link list
+   complete.
 2. Builder-kind detection uses the public ``app.builder.name == "dirhtml"``
    rather than monkey-patching ``env.is_directory_builder``.
 3. The ``html_baseurl`` config value is only registered when not already
@@ -184,6 +188,11 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     return {
         "version": _EXTENSION_VERSION,
         "parallel_read_safe": True,
+        # Must be explicit. Sphinx's Extension defaults this to True when the
+        # key is missing, which would route _collect_page_link into worker
+        # processes whose env.temp_data is never merged. See the module
+        # docstring for details.
+        "parallel_write_safe": False,
     }
 
 
