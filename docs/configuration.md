@@ -41,7 +41,7 @@ All parameters are keyword-only.
 | `source_branch` | `str` | `"main"` | Source branch stored in `html_theme_options["source_branch"]` |
 | `light_logo` | `str \| None` | `None` | Light-mode logo path merged into theme options |
 | `dark_logo` | `str \| None` | `None` | Dark-mode logo path merged into theme options |
-| `docs_url` | `str \| None` | `None` | Canonical docs URL used to derive Open Graph settings |
+| `docs_url` | `str \| None` | `None` | Canonical docs URL. When set, auto-derives `ogp_site_url`, `ogp_site_name`, `ogp_image` (for `sphinx_gp_opengraph`) and `site_url`, `sitemap_url_scheme` (for `sphinx_gp_sitemap`) — see {ref}`from-docs_url` |
 | `intersphinx_mapping` | `Mapping[str, tuple[str, str \| None]] \| None` | `None` | Mapping assigned to `intersphinx_mapping` when provided |
 | `**overrides` | `Any` | none | Final escape hatch for any Sphinx config key; applied after all defaults and auto-computed values |
 
@@ -54,6 +54,8 @@ All parameters are keyword-only.
 | `issue_url_tpl` | `"{repo}/issues/{issue_id}"` |
 | `html_theme_options["source_repository"]` | repository URL |
 | `html_theme_options["footer_icons"][0]["url"]` | repository URL for the GitHub footer icon |
+
+(from-docs_url)=
 
 ### From `docs_url`
 

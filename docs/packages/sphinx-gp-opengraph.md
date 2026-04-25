@@ -40,10 +40,9 @@ three of the most common config values:
 | `ogp_image` | `"_static/img/icons/icon-192x192.png"` |
 
 The canonical reference for these and the other auto-derived values
-lives in [Configuration → From `docs_url`](#from-docs_url). Any value
-passed via `**overrides` to `merge_sphinx_config()` wins over the
-auto-derived default — auto-computation runs first, overrides apply
-last.
+lives in {ref}`from-docs_url`. Any value passed via `**overrides` to
+`merge_sphinx_config()` wins over the auto-derived default —
+auto-computation runs first, overrides apply last.
 
 ## How the page-level meta tags are built
 
