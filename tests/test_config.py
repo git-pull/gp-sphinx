@@ -349,7 +349,7 @@ def test_merge_sphinx_config_auto_sitemap_url_scheme() -> None:
 def test_merge_sphinx_config_no_sitemap_url_scheme_without_docs_url() -> None:
     """sitemap_url_scheme is not auto-set when docs_url is absent.
 
-    Without docs_url gp-sitemap stays silent (no sitemap is emitted), so
+    Without docs_url sphinx-gp-sitemap stays silent (no sitemap is emitted), so
     leaving ``sitemap_url_scheme`` at the extension default is correct.
     """
     result = merge_sphinx_config(

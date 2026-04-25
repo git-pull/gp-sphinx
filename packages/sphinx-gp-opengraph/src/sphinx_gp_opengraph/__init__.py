@@ -27,10 +27,11 @@ import typing as t
 import urllib.parse
 
 from docutils import nodes
+from sphinx.application import Sphinx
+
 from sphinx_gp_opengraph._description import get_description
 from sphinx_gp_opengraph._meta import get_meta_description
 from sphinx_gp_opengraph._title import get_title
-from sphinx.application import Sphinx
 
 if t.TYPE_CHECKING:
     from sphinx.builders import Builder

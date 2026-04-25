@@ -139,5 +139,5 @@ packages/sphinx-gp-theme
 :hidden:
 
 packages/sphinx-gp-opengraph
-packages/gp-sitemap
+packages/sphinx-gp-sitemap
 ```

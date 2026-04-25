@@ -1,14 +1,14 @@
-"""Scaffolding-level smoke tests for gp-sitemap."""
+"""Scaffolding-level smoke tests for sphinx-gp-sitemap."""
 
 from __future__ import annotations
 
 import typing as t
 
-import gp_sitemap
+import sphinx_gp_sitemap
 
 
 def test_import_exposes_setup() -> None:
-    assert callable(gp_sitemap.setup)
+    assert callable(sphinx_gp_sitemap.setup)
 
 
 def test_setup_registers_config_values_and_connects_hooks() -> None:
@@ -31,10 +31,10 @@ def test_setup_registers_config_values_and_connects_hooks() -> None:
         def setup_extension(self, name: str) -> None:
             pass
 
-    meta = gp_sitemap.setup(t.cast("t.Any", _FakeApp()))
+    meta = sphinx_gp_sitemap.setup(t.cast("t.Any", _FakeApp()))
     assert meta["version"]
     assert meta["parallel_read_safe"] is True
-    # gp-sitemap intentionally does not advertise parallel_write_safe:
+    # sphinx-gp-sitemap intentionally does not advertise parallel_write_safe:
     # link collection lives in env.temp_data, which is per-process and
     # not merged across parallel workers.
     assert "parallel_write_safe" not in meta

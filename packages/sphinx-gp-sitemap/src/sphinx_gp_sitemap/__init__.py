@@ -4,9 +4,9 @@ Drop-in replacement for ``sphinx-sitemap`` with Sphinx 8.1+ idioms.
 Behavior is identical to upstream ``sphinx_sitemap`` v2.9.0 with three
 modernizations:
 
-1. ``env.temp_data["gp_sitemap_links"]`` is a plain ``list[tuple[...]]``
+1. ``env.temp_data["sphinx_gp_sitemap_links"]`` is a plain ``list[tuple[...]]``
    rather than a ``multiprocessing.Queue``. Because ``temp_data`` is
-   per-process and not merged across parallel workers, gp-sitemap only
+   per-process and not merged across parallel workers, sphinx-gp-sitemap only
    advertises ``parallel_read_safe`` and intentionally omits
    ``parallel_write_safe``: under ``sphinx-build -j N`` link collection
    would be incomplete, so the extension is single-write-process only.
@@ -18,7 +18,7 @@ modernizations:
 
 Examples
 --------
->>> from gp_sitemap import setup
+>>> from sphinx_gp_sitemap import setup
 >>> callable(setup)
 True
 """
@@ -44,11 +44,11 @@ if t.TYPE_CHECKING:
     from sphinx.util.typing import ExtensionMetadata
 
 _EXTENSION_VERSION = "0.0.1a9"
-_LINKS_KEY = "gp_sitemap_links"
+_LINKS_KEY = "sphinx_gp_sitemap_links"
 _SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9"
 _XHTML_NS = "http://www.w3.org/1999/xhtml"
 
-# gp-sitemap uses Sphinx's logger adapter so ``type=``/``subtype=`` kwargs
+# sphinx-gp-sitemap uses Sphinx's logger adapter so ``type=``/``subtype=`` kwargs
 # work for warning classification, but still attaches NullHandler to the
 # underlying stdlib logger so the library doesn't emit "no handlers" warnings
 # when imported outside a Sphinx build (per CLAUDE.md #Logger setup).
@@ -75,7 +75,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
 
     Examples
     --------
-    >>> from gp_sitemap import setup
+    >>> from sphinx_gp_sitemap import setup
     >>> callable(setup)
     True
     """
@@ -231,12 +231,12 @@ def _write_sitemap(app: Sphinx, exception: BaseException | None) -> None:
 
     site_url = app.builder.config.site_url or app.builder.config.html_baseurl
     if not site_url:
-        # INFO rather than WARNING because gp-sitemap is in gp-sphinx's
+        # INFO rather than WARNING because sphinx-gp-sitemap is in gp-sphinx's
         # DEFAULT_EXTENSIONS: users who haven't configured a deploy URL
         # should silently skip sitemap emission rather than break builds
         # that run with ``-W``.
         logger.info(
-            "gp-sitemap: skipping sitemap — set site_url or html_baseurl "
+            "sphinx-gp-sitemap: skipping sitemap — set site_url or html_baseurl "
             "in conf.py to enable",
             type="sitemap",
             subtype="configuration",
@@ -249,7 +249,7 @@ def _write_sitemap(app: Sphinx, exception: BaseException | None) -> None:
     )
     if not links:
         logger.info(
-            "gp-sitemap: no pages collected for %s",
+            "sphinx-gp-sitemap: no pages collected for %s",
             app.config.sitemap_filename,
             type="sitemap",
             subtype="information",
@@ -302,7 +302,7 @@ def _write_sitemap(app: Sphinx, exception: BaseException | None) -> None:
     )
 
     logger.info(
-        "gp-sitemap: %s generated for URL %s at %s",
+        "sphinx-gp-sitemap: %s generated for URL %s at %s",
         app.config.sitemap_filename,
         site_url,
         sitemap_path,

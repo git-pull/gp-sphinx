@@ -28,7 +28,7 @@ sphinx-autodoc-typehints-gp = { workspace = true }
 sphinx-ux-badges = { workspace = true }
 sphinx-ux-autodoc-layout = { workspace = true }
 sphinx-gp-opengraph = { workspace = true }
-gp-sitemap = { workspace = true }
+sphinx-gp-sitemap = { workspace = true }
 gp-sphinx = { workspace = true }
 
 [dependency-groups]
@@ -43,7 +43,7 @@ dev = [
   "sphinx-ux-badges",
   "sphinx-ux-autodoc-layout",
   "sphinx-gp-opengraph",
-  "gp-sitemap",
+  "sphinx-gp-sitemap",
   # Docs
   "sphinx-autobuild",
   # Testing
@@ -155,7 +155,7 @@ known-first-party = [
   "sphinx_ux_badges",
   "sphinx_ux_autodoc_layout",
   "sphinx_gp_opengraph",
-  "gp_sitemap",
+  "sphinx_gp_sitemap",
 ]
 combine-as-imports = true
 required-imports = [
@@ -204,7 +204,7 @@ testpaths = [
   "packages/sphinx-ux-autodoc-layout/src",
   "packages/sphinx-ux-badges/src",
   "packages/sphinx-gp-opengraph/src",
-  "packages/gp-sitemap/src",
+  "packages/sphinx-gp-sitemap/src",
 ]
 filterwarnings = [
   "ignore:distutils Version classes are deprecated. Use packaging.version instead.",

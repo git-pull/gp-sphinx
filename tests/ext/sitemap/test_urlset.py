@@ -1,4 +1,4 @@
-"""Functional tests for gp_sitemap's XML emission."""
+"""Functional tests for sphinx_gp_sitemap's XML emission."""
 
 from __future__ import annotations
 
@@ -121,7 +121,7 @@ def test_no_site_url_skips_sitemap_silently(
 ) -> None:
     """Without site_url/html_baseurl the sitemap is silently skipped.
 
-    gp-sitemap is in gp-sphinx's DEFAULT_EXTENSIONS, so an unset deploy
+    sphinx-gp-sitemap is in gp-sphinx's DEFAULT_EXTENSIONS, so an unset deploy
     URL should not break ``sphinx-build -W``. The missing-URL notice is
     logged at INFO, not WARNING.
     """

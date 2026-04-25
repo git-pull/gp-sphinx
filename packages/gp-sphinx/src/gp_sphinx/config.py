@@ -232,7 +232,7 @@ def merge_sphinx_config(
     When ``source_repository`` is provided, ``issue_url_tpl`` is auto-computed
     for the ``linkify_issues`` extension. When ``docs_url`` is provided,
     ``ogp_site_url``, ``ogp_image``, ``ogp_site_name`` (for ``sphinx_gp_opengraph``),
-    ``site_url`` and ``sitemap_url_scheme`` (for ``gp_sitemap``) are
+    ``site_url`` and ``sitemap_url_scheme`` (for ``sphinx_gp_sitemap``) are
     auto-computed. The sitemap scheme defaults to ``"{link}"`` because
     git-pull.com sites deploy flat at the project root, with no
     ``{lang}{version}`` path segments; multilingual or version-pinned
@@ -444,15 +444,15 @@ def merge_sphinx_config(
         repo = source_repository.rstrip("/")
         conf["issue_url_tpl"] = f"{repo}/issues/{{issue_id}}"
 
-    # Auto-compute sphinx_gp_opengraph + gp_sitemap config from docs_url
+    # Auto-compute sphinx_gp_opengraph + sphinx_gp_sitemap config from docs_url
     if docs_url:
         conf["ogp_site_url"] = docs_url
         conf["ogp_site_name"] = project
         conf["ogp_image"] = "_static/img/icons/icon-192x192.png"
-        # gp-sitemap: normalize to trailing slash so the URL scheme
+        # sphinx-gp-sitemap: normalize to trailing slash so the URL scheme
         # composition produces valid URLs.
         conf["site_url"] = docs_url if docs_url.endswith("/") else docs_url + "/"
-        # gp-sitemap: git-pull.com sites deploy at the project root with
+        # sphinx-gp-sitemap: git-pull.com sites deploy at the project root with
         # no language or version path segment, so override the upstream
         # default of "{lang}{version}{link}" to a flat scheme. Projects
         # with translated or version-pinned hosting can pass a different

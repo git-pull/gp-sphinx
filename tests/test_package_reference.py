@@ -20,7 +20,7 @@ def test_workspace_packages_lists_publishable_packages() -> None:
     names = {package["name"] for package in package_reference.workspace_packages()}
     assert names == {
         "sphinx-gp-opengraph",
-        "gp-sitemap",
+        "sphinx-gp-sitemap",
         "gp-sphinx",
         "sphinx-autodoc-argparse",
         "sphinx-autodoc-api-style",

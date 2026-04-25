@@ -41,7 +41,7 @@ All parameters are keyword-only.
 | `source_branch` | `str` | `"main"` | Source branch stored in `html_theme_options["source_branch"]` |
 | `light_logo` | `str \| None` | `None` | Light-mode logo path merged into theme options |
 | `dark_logo` | `str \| None` | `None` | Dark-mode logo path merged into theme options |
-| `docs_url` | `str \| None` | `None` | Canonical docs URL. When set, auto-derives `ogp_site_url`, `ogp_site_name`, `ogp_image` (for `sphinx_gp_opengraph`) and `site_url`, `sitemap_url_scheme` (for `gp_sitemap`) — see {ref}`from-docs_url` |
+| `docs_url` | `str \| None` | `None` | Canonical docs URL. When set, auto-derives `ogp_site_url`, `ogp_site_name`, `ogp_image` (for `sphinx_gp_opengraph`) and `site_url`, `sitemap_url_scheme` (for `sphinx_gp_sitemap`) — see {ref}`from-docs_url` |
 | `intersphinx_mapping` | `Mapping[str, tuple[str, str \| None]] \| None` | `None` | Mapping assigned to `intersphinx_mapping` when provided |
 | `**overrides` | `Any` | none | Final escape hatch for any Sphinx config key; applied after all defaults and auto-computed values |
 
@@ -111,7 +111,7 @@ These are injected even though they are not exposed as `DEFAULT_*` constants:
 
 | Constant | Value |
 | --- | --- |
-| `DEFAULT_EXTENSIONS` | `["sphinx.ext.autodoc", "sphinx_fonts", "sphinx.ext.intersphinx", "sphinx_autodoc_typehints_gp", "sphinx.ext.todo", "sphinx_inline_tabs", "sphinx_copybutton", "sphinx_gp_opengraph", "gp_sitemap", "sphinxext.rediraffe", "sphinx_design", "myst_parser", "linkify_issues"]` |
+| `DEFAULT_EXTENSIONS` | `["sphinx.ext.autodoc", "sphinx_fonts", "sphinx.ext.intersphinx", "sphinx_autodoc_typehints_gp", "sphinx.ext.todo", "sphinx_inline_tabs", "sphinx_copybutton", "sphinx_gp_opengraph", "sphinx_gp_sitemap", "sphinxext.rediraffe", "sphinx_design", "myst_parser", "linkify_issues"]` |
 | `DEFAULT_SOURCE_SUFFIX` | `{".rst": "restructuredtext", ".md": "markdown"}` |
 | `DEFAULT_MYST_EXTENSIONS` | `["colon_fence", "substitution", "replacements", "strikethrough", "linkify"]` |
 | `DEFAULT_MYST_HEADING_ANCHORS` | `4` |

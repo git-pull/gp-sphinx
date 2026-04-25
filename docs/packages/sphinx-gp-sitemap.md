@@ -1,8 +1,8 @@
-(gp-sitemap)=
+(sphinx-gp-sitemap)=
 
-# gp-sitemap
+# sphinx-gp-sitemap
 
-```{gp-sphinx-package-meta} gp-sitemap
+```{gp-sphinx-package-meta} sphinx-gp-sitemap
 ```
 
 :::{admonition} Alpha
@@ -24,13 +24,13 @@ soft on-demand load that activates only under
 
 For install, the full config-key reference, builder support, locale
 rules, and the lastmod / migration story, see the package
-[README](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-sitemap#readme).
+[README](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-sitemap#readme).
 This page covers integration with gp-sphinx, the emission pipeline,
 and the trade-offs.
 
 ## Integration with gp-sphinx
 
-`gp_sitemap` ships in {py:data}`~gp_sphinx.defaults.DEFAULT_EXTENSIONS`,
+`sphinx_gp_sitemap` ships in {py:data}`~gp_sphinx.defaults.DEFAULT_EXTENSIONS`,
 so projects that build through {py:func}`~gp_sphinx.config.merge_sphinx_config`
 load it automatically. Passing `docs_url=` to that function auto-derives
 both URL inputs the extension needs:
@@ -54,7 +54,7 @@ After every HTML-family build, the extension serializes one `<url>`
 element per built page to `sitemap.xml` in the output directory.
 
 1. **Init** — `builder-inited` initializes
-   `env.temp_data["gp_sitemap_links"]` to an empty list.
+   `env.temp_data["sphinx_gp_sitemap_links"]` to an empty list.
 2. **Collect** — `html-page-context` fires once per page. The handler
    computes the relative URL using the builder's suffix
    (`html_file_suffix or ".html"` for the `html` builder; `…/` for
@@ -80,7 +80,7 @@ element per built page to `sitemap.xml` in the output directory.
    `config-inited` handler runs
    `app.setup_extension("sphinx_last_updated_by_git")` once at the
    start of the build to lazy-load the supporting extension. If the
-   import fails, gp-sitemap logs a `WARNING` and disables the flag
+   import fails, sphinx-gp-sitemap logs a `WARNING` and disables the flag
    for the rest of the build — `<lastmod>` is omitted but everything
    else still emits.
 6. **Serialize** — `xml.etree.ElementTree.write()` produces the file.
@@ -98,7 +98,7 @@ build-finished    →  _write_sitemap             (XML serialization)
 ```
 
 All four live in
-[`gp_sitemap/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-sitemap/src/gp_sitemap/__init__.py).
+[`sphinx_gp_sitemap/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-sitemap/src/sphinx_gp_sitemap/__init__.py).
 There is no `env-merge-info` or `env-purge-doc` handler — see the
 parallel-write trade-off below.
 
@@ -107,7 +107,7 @@ parallel-write trade-off below.
 **`parallel_write_safe` is not declared.** Sphinx's `temp_data` is
 explicitly per-process and is not merged across `sphinx-build -j N`
 workers. The upstream `sphinx-sitemap` worked around that with a
-`multiprocessing.Manager().Queue`; gp-sitemap drops the Queue but
+`multiprocessing.Manager().Queue`; sphinx-gp-sitemap drops the Queue but
 does not yet implement an `env-merge-info`/`env-purge-doc` pair to
 preserve parallel-write semantics. Until that work lands, the
 extension advertises `parallel_read_safe = True` only. Parallel-read
@@ -125,7 +125,7 @@ is replaced by the narrow `ExtensionError` catch.
 
 ## Package reference
 
-```{package-reference} gp-sitemap
+```{package-reference} sphinx-gp-sitemap
 ```
 
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-sitemap) · [PyPI](https://pypi.org/project/gp-sitemap/)
+[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-sitemap) · [PyPI](https://pypi.org/project/sphinx-gp-sitemap/)

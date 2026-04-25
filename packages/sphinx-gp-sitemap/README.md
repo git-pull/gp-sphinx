@@ -1,4 +1,4 @@
-# gp-sitemap
+# sphinx-gp-sitemap
 
 Sitemap generator for Sphinx — a drop-in replacement for
 [`sphinx-sitemap`](https://github.com/jdillard/sphinx-sitemap) updated
@@ -13,7 +13,7 @@ documentation platform.
 ## Install
 
 ```console
-$ pip install gp-sitemap
+$ pip install sphinx-gp-sitemap
 ```
 
 When you depend on gp-sphinx, this extension is already loaded — see
@@ -24,7 +24,7 @@ below.
 
 ```python
 extensions = [
-    "gp_sitemap",
+    "sphinx_gp_sitemap",
 ]
 ```
 
@@ -50,8 +50,8 @@ do not need to set `site_url` or `sitemap_url_scheme` manually. Pass
   version path segment — because git-pull.com sites deploy at the
   project root.
 
-See the [gp-sitemap package
-page](../../docs/packages/gp-sitemap.md) for the integration story
+See the [sphinx-gp-sitemap package
+page](../../docs/packages/sphinx-gp-sitemap.md) for the integration story
 and [`configuration.md`](../../docs/configuration.md#from-docs_url)
 for the canonical mapping table.
 
@@ -118,12 +118,12 @@ match `draft/*` regardless of builder.
 sitemap_show_lastmod = True
 ```
 
-The first time `config-inited` fires with this flag set, gp-sitemap
+The first time `config-inited` fires with this flag set, sphinx-gp-sitemap
 runs `app.setup_extension("sphinx_last_updated_by_git")` to load
 [`sphinx-last-updated-by-git`](https://github.com/mgeier/sphinx-last-updated-by-git)
 on demand. Per-page `<lastmod>` values come from each source file's
 latest commit timestamp. If the supporting extension is not
-installed, gp-sitemap warns once and disables `sitemap_show_lastmod`
+installed, sphinx-gp-sitemap warns once and disables `sitemap_show_lastmod`
 for the rest of the build — `<lastmod>` is simply omitted.
 
 ## Differences from `sphinx-sitemap`
@@ -133,9 +133,9 @@ registered with the same name, type, and default. Behaviourally the
 package is the same except for one explicit trade-off:
 
 - **Parallel writes are not declared safe.** Collected links live in
-  `env.temp_data["gp_sitemap_links"]`, which Sphinx documents as
+  `env.temp_data["sphinx_gp_sitemap_links"]`, which Sphinx documents as
   per-process state and does not merge across `sphinx-build -j N`
-  workers. gp-sitemap therefore advertises `parallel_read_safe` only.
+  workers. sphinx-gp-sitemap therefore advertises `parallel_read_safe` only.
   Sites that need parallel writes should run a separate non-parallel
   pass for sitemap generation, or upstream the env-merge work to
   this package.
@@ -153,5 +153,5 @@ change the configuration surface.
 - [gp-sphinx](https://github.com/git-pull/gp-sphinx) — the umbrella
   docs platform; auto-derives `site_url` and `sitemap_url_scheme`
   from a single `docs_url` argument
-- [gp-sitemap package page](https://gp-sphinx.git-pull.com/packages/gp-sitemap/)
+- [sphinx-gp-sitemap package page](https://gp-sphinx.git-pull.com/packages/sphinx-gp-sitemap/)
   — integration story, event hooks, and the parallel-write trade-off

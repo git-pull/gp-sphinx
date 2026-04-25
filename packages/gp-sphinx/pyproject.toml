@@ -34,7 +34,7 @@ dependencies = [
   "sphinx-inline-tabs",
   "sphinx-copybutton",
   "sphinx-gp-opengraph==0.0.1a9",
-  "gp-sitemap==0.0.1a9",
+  "sphinx-gp-sitemap==0.0.1a9",
   "sphinxext-rediraffe",
   "sphinx-design",
   "linkify-it-py",

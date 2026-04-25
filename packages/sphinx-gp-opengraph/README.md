@@ -155,7 +155,7 @@ og:image: _static/og/quickstart.png
 
 ## See also
 
-- [gp-sitemap](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-sitemap)
+- [sphinx-gp-sitemap](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-sitemap)
   — companion package for `sitemap.xml` emission
 - [gp-sphinx](https://github.com/git-pull/gp-sphinx) — the umbrella
   docs platform; auto-derives `ogp_site_url`, `ogp_site_name`, and

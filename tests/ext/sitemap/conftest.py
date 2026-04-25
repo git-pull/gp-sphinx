@@ -1,4 +1,4 @@
-"""Fixtures for gp_sitemap integration tests.
+"""Fixtures for sphinx_gp_sitemap integration tests.
 
 Builds a tiny Sphinx project via the shared scenario cache, overriding
 ``sitemap_*`` config values per case, and reads the emitted
@@ -22,8 +22,8 @@ from tests._sphinx_scenarios import (
 )
 
 _BASE_CONF = """\
-project = "gp-sitemap-test"
-extensions = ["myst_parser", "gp_sitemap"]
+project = "sphinx-gp-sitemap-test"
+extensions = ["myst_parser", "sphinx_gp_sitemap"]
 master_doc = "index"
 source_suffix = {".md": "markdown"}
 exclude_patterns = []
@@ -73,7 +73,7 @@ def build_sitemap_site(
                 ScenarioFile("draft.md", _DRAFT),
                 *extra_files,
             ),
-            confoverrides={"extensions": ("myst_parser", "gp_sitemap")},
+            confoverrides={"extensions": ("myst_parser", "sphinx_gp_sitemap")},
         )
         # Ensure toctree references each page so Sphinx includes them.
         scenario = SphinxScenario(

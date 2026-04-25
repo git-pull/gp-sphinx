@@ -12,7 +12,7 @@ For shared defaults and configuration options, see {doc}`configuration`.
 
 When `docs_url` is provided, `merge_sphinx_config()` also auto-derives
 the `ogp_*` and `sitemap_*` keys consumed by the SEO extensions
-(`sphinx_gp_opengraph`, `gp_sitemap`). See {ref}`from-docs_url` for the full
+(`sphinx_gp_opengraph`, `sphinx_gp_sitemap`). See {ref}`from-docs_url` for the full
 mapping.
 
 ## make_linkcode_resolve

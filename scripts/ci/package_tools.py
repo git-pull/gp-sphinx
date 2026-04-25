@@ -660,8 +660,8 @@ def smoke_sphinx_gp_opengraph(dist_dir: pathlib.Path, version: str) -> None:
         )
 
 
-def smoke_gp_sitemap(dist_dir: pathlib.Path, version: str) -> None:
-    """Verify the gp-sitemap extension installs and imports cleanly."""
+def smoke_sphinx_gp_sitemap(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the sphinx-gp-sitemap extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
         python_path = _create_venv(pathlib.Path(tmp))
         _install_into_venv(
@@ -670,7 +670,11 @@ def smoke_gp_sitemap(dist_dir: pathlib.Path, version: str) -> None:
         )
         _run_python(
             python_path,
-            ("import gp_sitemap; from gp_sitemap import setup; assert callable(setup)"),
+            (
+                "import sphinx_gp_sitemap; "
+                "from sphinx_gp_sitemap import setup; "
+                "assert callable(setup)"
+            ),
         )
 
 
@@ -695,7 +699,7 @@ def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
 
 _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-gp-opengraph": smoke_sphinx_gp_opengraph,
-    "gp-sitemap": smoke_gp_sitemap,
+    "sphinx-gp-sitemap": smoke_sphinx_gp_sitemap,
     "gp-sphinx": smoke_gp_sphinx,
     "sphinx-autodoc-argparse": smoke_sphinx_autodoc_argparse,
     "sphinx-autodoc-api-style": smoke_sphinx_autodoc_api_style,
