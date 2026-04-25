@@ -84,42 +84,81 @@ def setup(app: Sphinx) -> ExtensionMetadata:
         default=None,
         rebuild="",
         types=frozenset({str, type(None)}),
+        description=(
+            "Site base URL prepended to every sitemap entry. Auto-derived "
+            "from ``docs_url`` (trailing-slash normalized) under "
+            "gp-sphinx; falls back to ``html_baseurl`` when unset. If "
+            "both are unset the build is skipped silently at INFO level."
+        ),
     )
     app.add_config_value(
         "sitemap_url_scheme",
         default="{lang}{version}{link}",
         rebuild="",
         types=frozenset({str}),
+        description=(
+            "Per-URL composition template formatted with ``lang`` "
+            "(``language/`` or empty), ``version`` (``version/`` or "
+            "empty), and ``link`` (the page's relative URL). Auto-set "
+            "to flat ``{link}`` under gp-sphinx; multilingual or "
+            "version-pinned hosts can pass ``{lang}{version}{link}`` "
+            "via ``**overrides``."
+        ),
     )
     app.add_config_value(
         "sitemap_locales",
         default=[],
         rebuild="",
         types=frozenset({list, type(None)}),
+        description=(
+            'Locales emitted as ``<xhtml:link rel="alternate" '
+            "hreflang=...>`` siblings on every URL. Empty list "
+            "auto-detects sub-directories of every ``locale_dirs`` entry; "
+            "``[None]`` explicitly suppresses hreflang alternates. "
+            "Underscores in locale codes become hyphens for IANA "
+            "compatibility."
+        ),
     )
     app.add_config_value(
         "sitemap_filename",
         default="sitemap.xml",
         rebuild="",
         types=frozenset({str}),
+        description=("Output filename written under the build's ``outdir``."),
     )
     app.add_config_value(
         "sitemap_excludes",
         default=[],
         rebuild="",
         types=frozenset({list}),
+        description=(
+            "fnmatch patterns matched against each page's relative URL "
+            "(after the builder applies its suffix). Matched pages are "
+            "dropped from the sitemap; everything else is included."
+        ),
     )
     app.add_config_value(
         "sitemap_show_lastmod",
         default=False,
         rebuild="",
         types=frozenset({bool}),
+        description=(
+            "When ``True``, lazy-loads ``sphinx-last-updated-by-git`` and "
+            "emits a ``<lastmod>`` element per page from the source "
+            "file's latest commit timestamp. If the supporting "
+            "extension is not installed, gp-sitemap warns once and "
+            "silently disables the flag."
+        ),
     )
     app.add_config_value(
         "sitemap_indent",
         default=0,
         rebuild="",
         types=frozenset({int}),
+        description=(
+            "XML indent width in spaces. ``0`` minifies the output; "
+            "any positive value pretty-prints via ``ElementTree.indent``."
+        ),
     )
     # html_baseurl is usually registered by Sphinx core already — suppress the
     # duplicate-registration error without losing the legitimate single-
@@ -130,6 +169,11 @@ def setup(app: Sphinx) -> ExtensionMetadata:
             default=None,
             rebuild="",
             types=frozenset({str, type(None)}),
+            description=(
+                "Sphinx core's canonical HTML base URL — re-registered "
+                "defensively here to serve as the ``site_url`` fallback "
+                "on Sphinx versions that ship without it."
+            ),
         )
 
     app.connect("config-inited", _maybe_enable_git_lastmod)
