@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 import inspect
+import logging
 import typing as t
 
 from docutils import nodes
@@ -25,6 +26,8 @@ from sphinx_ux_autodoc_layout import (
 
 if t.TYPE_CHECKING:
     from sphinx.util.typing import OptionSpec
+
+logger = logging.getLogger(__name__)
 
 
 def _summary(value: object) -> str:  # object: wraps inspect.getdoc()
@@ -113,6 +116,11 @@ def _replay_setup(module_name: str) -> _SetupRecorder | None:
     try:
         setup_fn(recorder)
     except Exception:  # noqa: BLE001 - extension setup errors are expected here
+        logger.debug(
+            "setup replay failed for %s; falling back to module introspection",
+            module_name,
+            exc_info=True,
+        )
         return None
     return recorder
 
