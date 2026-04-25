@@ -329,6 +329,49 @@ def test_merge_sphinx_config_no_ogp_without_docs_url() -> None:
     assert "ogp_site_url" not in result
 
 
+def test_merge_sphinx_config_auto_sitemap_url_scheme() -> None:
+    """sitemap_url_scheme defaults to flat ``{link}`` when docs_url is set.
+
+    git-pull.com sites deploy at the project root, so the upstream
+    sphinx-sitemap default of ``{lang}{version}{link}`` would generate
+    URLs that 404 against the actual deploy target.
+    """
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        docs_url="https://test.git-pull.com",
+    )
+    assert result["sitemap_url_scheme"] == "{link}"
+    assert result["site_url"] == "https://test.git-pull.com/"
+
+
+def test_merge_sphinx_config_no_sitemap_url_scheme_without_docs_url() -> None:
+    """sitemap_url_scheme is not auto-set when docs_url is absent.
+
+    Without docs_url sphinx-gp-sitemap stays silent (no sitemap is emitted), so
+    leaving ``sitemap_url_scheme`` at the extension default is correct.
+    """
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert "sitemap_url_scheme" not in result
+
+
+def test_merge_sphinx_config_sitemap_url_scheme_override_wins() -> None:
+    """An explicit sitemap_url_scheme override beats the auto-set."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        docs_url="https://test.git-pull.com",
+        sitemap_url_scheme="{lang}/{version}/{link}",
+    )
+    assert result["sitemap_url_scheme"] == "{lang}/{version}/{link}"
+
+
 def test_merge_sphinx_config_override_auto_computed() -> None:
     """Manual overrides take precedence over auto-computed values."""
     result = merge_sphinx_config(
