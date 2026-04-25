@@ -178,6 +178,16 @@ for a plain inline reference.
 .. fastmcp-tool-summary::
 ```
 
+## Config reference
+
+Generated from `app.add_config_value()` registrations in
+[`sphinx_autodoc_fastmcp/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-fastmcp/src/sphinx_autodoc_fastmcp/__init__.py).
+
+```{eval-rst}
+.. autoconfigvalue-index:: sphinx_autodoc_fastmcp
+.. autoconfigvalues:: sphinx_autodoc_fastmcp
+```
+
 ## Package reference
 
 ```{package-reference} sphinx-autodoc-fastmcp
