@@ -19,6 +19,7 @@ True
 
 from __future__ import annotations
 
+import html
 import logging
 import os
 import pathlib
@@ -246,8 +247,15 @@ def _make_tag(
     content: str,
     attr: t.Literal["property", "name"] = "property",
 ) -> str:
-    """Render one ``<meta>`` tag, HTML-escaping embedded quotes."""
-    safe_content = content.replace('"', "&quot;")
+    """Render one ``<meta>`` tag, HTML-escaping ``&``, ``<``, ``>``, and quotes.
+
+    Centralising the escape here is the boundary that keeps every meta tag
+    safe — titles, site names, descriptions, image alts, and custom
+    field-list values all flow through this function. Per-source escaping
+    (e.g. pre-escaping the description) would either leave other paths
+    unsafe or double-escape (``&`` → ``&amp;`` → ``&amp;amp;``).
+    """
+    safe_content = html.escape(content, quote=True)
     return f'<meta {attr}="{property_}" content="{safe_content}" />'
 
 

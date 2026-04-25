@@ -89,6 +89,31 @@ CASES: tuple[MetaCase, ...] = (
         expected_present={"og:type": "website"},
         expected_absent=("og:description", "description"),
     ),
+    MetaCase(
+        test_id="title-with-ampersand-is-html-escaped",
+        conf_overrides={"ogp_site_url": "https://example.org/"},
+        index_markdown="# AT&T Demo\n\nBody about AT&T services.\n",
+        expected_present={
+            # Title attribute carries the escaped &amp;, never the raw &.
+            "og:title": "AT&amp;T Demo",
+            # Description text from the body also escapes &; this guards
+            # against the previous double-escape regression where moving
+            # the escape into _make_tag plus a stale html.escape() call in
+            # _description.py would produce "&amp;amp;".
+            "og:description": "Body about AT&amp;T services.",
+        },
+        expected_absent=(),
+    ),
+    MetaCase(
+        test_id="site-name-with-lt-gt-is-html-escaped",
+        conf_overrides={
+            "ogp_site_url": "https://example.org/",
+            "ogp_site_name": "Foo <bar>",
+        },
+        index_markdown=_DEFAULT_INDEX,
+        expected_present={"og:site_name": "Foo &lt;bar&gt;"},
+        expected_absent=(),
+    ),
 )
 
 

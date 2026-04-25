@@ -134,6 +134,18 @@ re-initialise after navigation without a full page reload. Payload:
 
 ### Bug fixes
 
+#### `sphinx-gp-opengraph`: Centralise HTML escaping for every meta tag
+
+`_make_tag()` now runs `html.escape(content, quote=True)` for every
+attribute value, so `&`, `<`, `>`, `"`, and `'` inside titles, site
+names, image alts, and custom field-list values all reach the page
+head as their HTML-entity forms (`&amp;`, `&lt;`, …) rather than
+verbatim. The previous implementation only replaced double quotes
+and let titles/site names emit invalid attribute markup like
+`content="AT&T"`. The pre-emptive escape in `_description.py` is
+removed in the same commit so descriptions flow through the single
+boundary and aren't double-escaped. (#22)
+
 #### `gp-sphinx`: Preserve `docs_url` path component in derived URLs
 
 `merge_sphinx_config(docs_url=...)` now normalises the value to end

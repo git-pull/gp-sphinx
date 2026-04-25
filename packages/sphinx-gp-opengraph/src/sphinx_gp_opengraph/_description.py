@@ -20,7 +20,6 @@ True
 
 from __future__ import annotations
 
-import html
 import string
 import typing as t
 
@@ -125,8 +124,9 @@ class DescriptionParser(nodes.NodeVisitor):
         if len(node.children) == 0:
             text = node.astext().replace("\r", "").replace("\n", " ").strip()
 
-            # Ensure string contains HTML-safe characters
-            text = html.escape(text, quote=True)
+            # HTML escaping happens once at the boundary in _make_tag; doing
+            # it here too would double-escape (``&`` → ``&amp;`` →
+            # ``&amp;amp;``).
 
             # Remove double spaces
             while text.find("  ") != -1:
