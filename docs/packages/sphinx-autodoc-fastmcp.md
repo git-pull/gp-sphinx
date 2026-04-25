@@ -188,6 +188,18 @@ Generated from `app.add_config_value()` registrations in
 .. autoconfigvalues:: sphinx_autodoc_fastmcp
 ```
 
+## Directive and role reference
+
+Generated from `app.add_directive()` and `app.add_role()` registrations in
+[`sphinx_autodoc_fastmcp/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-fastmcp/src/sphinx_autodoc_fastmcp/__init__.py)
+via `sphinx-autodoc-docutils`.
+
+```{eval-rst}
+.. autodirective-index:: sphinx_autodoc_fastmcp
+
+.. autorole-index:: sphinx_autodoc_fastmcp
+```
+
 ## Package reference
 
 ```{package-reference} sphinx-autodoc-fastmcp
