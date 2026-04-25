@@ -670,7 +670,11 @@ def smoke_sphinx_gp_sitemap(dist_dir: pathlib.Path, version: str) -> None:
         )
         _run_python(
             python_path,
-            ("import sphinx_gp_sitemap; from sphinx_gp_sitemap import setup; assert callable(setup)"),
+            (
+                "import sphinx_gp_sitemap; "
+                "from sphinx_gp_sitemap import setup; "
+                "assert callable(setup)"
+            ),
         )
 
 
