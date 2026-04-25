@@ -269,6 +269,34 @@ def render_types(types: object, default: object) -> str:
 RecorderApp = SetupRecorder
 
 
+def _extract_arg(
+    index: int,
+    key: str,
+    args: tuple[object, ...],
+    kwargs: dict[str, object],
+) -> object | None:
+    """Pick a Sphinx app-method argument from positional or keyword form.
+
+    Sphinx APIs accept both forms — e.g. ``app.add_directive("foo", Foo)``
+    AND ``app.add_directive(name="foo", cls=Foo)`` — so a recorder consumer
+    that only indexes ``args[N]`` raises ``IndexError`` (or silently misses
+    the registration) on the keyword form. Mirror's the helper used in
+    ``sphinx_autodoc_docutils._directives``.
+
+    Examples
+    --------
+    >>> _extract_arg(0, "name", ("foo",), {})
+    'foo'
+    >>> _extract_arg(0, "name", (), {"name": "foo"})
+    'foo'
+    >>> _extract_arg(1, "cls", (), {}) is None
+    True
+    """
+    if len(args) > index:
+        return args[index]
+    return kwargs.get(key)
+
+
 def collect_extension_surface(module_name: str) -> SurfaceDict:
     """Collect config values, directives, roles, and lexers for an extension.
 
@@ -310,26 +338,28 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
 
     for name, args, kwargs in app.calls:
         if name == "add_config_value":
-            if len(args) < 1:
+            option = _extract_arg(0, "name", args, kwargs)
+            if option is None:
                 continue
-            option = str(args[0])
-            default = kwargs.get("default", args[1] if len(args) > 1 else None)
-            rebuild = str(kwargs.get("rebuild", args[2] if len(args) > 2 else ""))
-            types = kwargs.get("types")
+            default = _extract_arg(1, "default", args, kwargs)
+            rebuild = _extract_arg(2, "rebuild", args, kwargs) or ""
+            types = _extract_arg(3, "types", args, kwargs)
             config_values.append(
                 {
-                    "name": option,
+                    "name": str(option),
                     "default": render_value(default),
                     "rebuild": f"`{rebuild}`" if rebuild else "",
                     "types": render_types(types, default),
                 },
             )
         elif name == "add_directive":
-            directive_name = str(args[0])
-            directive_cls = args[1]
+            directive_name = _extract_arg(0, "name", args, kwargs)
+            directive_cls = _extract_arg(1, "cls", args, kwargs)
+            if directive_name is None or directive_cls is None:
+                continue
             directives.append(
                 {
-                    "name": directive_name,
+                    "name": str(directive_name),
                     "kind": "directive",
                     "callable": object_path(directive_cls),
                     "summary": summarize(getattr(directive_cls, "__doc__", None)),
@@ -337,9 +367,11 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                 },
             )
         elif name == "add_directive_to_domain":
-            domain = str(args[0])
-            directive_name = str(args[1])
-            directive_cls = args[2]
+            domain = _extract_arg(0, "domain", args, kwargs)
+            directive_name = _extract_arg(1, "name", args, kwargs)
+            directive_cls = _extract_arg(2, "cls", args, kwargs)
+            if domain is None or directive_name is None or directive_cls is None:
+                continue
             directives.append(
                 {
                     "name": f"{domain}:{directive_name}",
@@ -350,8 +382,10 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                 },
             )
         elif name == "add_crossref_type":
-            directive_name = str(args[0])
-            role_name = str(args[1] if len(args) > 1 else args[0])
+            directive_name = _extract_arg(0, "directivename", args, kwargs)
+            if directive_name is None:
+                continue
+            role_name = _extract_arg(1, "rolename", args, kwargs) or directive_name
             directives.append(
                 {
                     "name": f"std:{directive_name}",
@@ -370,20 +404,24 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                 },
             )
         elif name == "add_role":
-            role_name = str(args[0])
-            role_fn = args[1]
+            role_name = _extract_arg(0, "name", args, kwargs)
+            role_fn = _extract_arg(1, "role", args, kwargs)
+            if role_name is None or role_fn is None:
+                continue
             role_items.append(
                 {
-                    "name": role_name,
+                    "name": str(role_name),
                     "kind": "role",
                     "callable": object_path(role_fn),
                     "summary": summarize(getattr(role_fn, "__doc__", None)),
                 },
             )
         elif name == "add_role_to_domain":
-            domain = str(args[0])
-            role_name = str(args[1])
-            role_fn = args[2]
+            domain = _extract_arg(0, "domain", args, kwargs)
+            role_name = _extract_arg(1, "name", args, kwargs)
+            role_fn = _extract_arg(2, "role", args, kwargs)
+            if domain is None or role_name is None or role_fn is None:
+                continue
             role_items.append(
                 {
                     "name": f"{domain}:{role_name}",
@@ -393,17 +431,25 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                 },
             )
         elif name == "add_lexer":
+            alias = _extract_arg(0, "alias", args, kwargs)
+            lexer = _extract_arg(1, "lexer", args, kwargs)
+            if alias is None or lexer is None:
+                continue
             lexers.append(
                 {
-                    "name": str(args[0]),
-                    "callable": object_path(args[1]),
+                    "name": str(alias),
+                    "callable": object_path(lexer),
                 },
             )
         elif name == "add_html_theme":
+            theme_name = _extract_arg(0, "name", args, kwargs)
+            theme_path = _extract_arg(1, "theme_path", args, kwargs)
+            if theme_name is None or theme_path is None:
+                continue
             themes.append(
                 {
-                    "name": str(args[0]),
-                    "path": f"`{args[1]}`",
+                    "name": str(theme_name),
+                    "path": f"`{theme_path}`",
                 },
             )
 

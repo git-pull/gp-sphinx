@@ -108,6 +108,30 @@ def test_collect_extension_surface_skips_unimportable_module() -> None:
     assert surface["directives"] == []
 
 
+def test_extract_arg_returns_positional_first() -> None:
+    """The helper prefers positional args; kwargs are the fallback."""
+    assert package_reference._extract_arg(0, "name", ("foo",), {}) == "foo"
+    assert package_reference._extract_arg(0, "name", ("foo",), {"name": "bar"}) == "foo"
+
+
+def test_extract_arg_falls_back_to_kwargs() -> None:
+    """The helper picks the kwarg when the positional slot is empty.
+
+    Regression guard: Sphinx APIs accept both ``app.add_directive("foo", Foo)``
+    AND ``app.add_directive(name="foo", cls=Foo)``. A consumer that only
+    indexes ``args[N]`` raises ``IndexError`` (or silently misses the
+    registration) on the keyword form.
+    """
+    assert package_reference._extract_arg(0, "name", (), {"name": "foo"}) == "foo"
+    assert package_reference._extract_arg(1, "cls", (), {"cls": object}) is object
+
+
+def test_extract_arg_missing_returns_none() -> None:
+    """Neither positional nor kwarg present yields None for the caller to skip."""
+    assert package_reference._extract_arg(0, "name", (), {}) is None
+    assert package_reference._extract_arg(2, "cls", ("foo", object), {}) is None
+
+
 def test_package_reference_markdown_unknown_package_returns_empty() -> None:
     """Unknown package names return an empty string rather than crashing."""
     result = package_reference.package_reference_markdown("nonexistent-package")
