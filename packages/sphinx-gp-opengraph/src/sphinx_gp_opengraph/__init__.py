@@ -291,38 +291,84 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     """
     # ogp_site_url="" allows relative URLs by default. Not officially
     # supported by OGP but matches upstream sphinxext-opengraph.
-    app.add_config_value("ogp_site_url", "", "html", types=frozenset({str}))
-    app.add_config_value("ogp_canonical_url", "", "html", types=frozenset({str}))
+    app.add_config_value(
+        "ogp_site_url",
+        "",
+        "html",
+        types=frozenset({str}),
+        description=(
+            "Site base URL joined with each page's relative path to form "
+            "``og:url``. Required for absolute URLs; auto-derived from "
+            "``docs_url`` under gp-sphinx."
+        ),
+    )
+    app.add_config_value(
+        "ogp_canonical_url",
+        "",
+        "html",
+        types=frozenset({str}),
+        description=(
+            "Separate canonical URL used to build ``og:url``; falls back "
+            "to ``ogp_site_url`` when empty."
+        ),
+    )
     app.add_config_value(
         "ogp_description_length",
         DEFAULT_DESCRIPTION_LENGTH,
         "html",
         types=frozenset({int}),
+        description=(
+            "Truncation cap (characters) applied to ``og:description`` "
+            "after extracting the first body paragraph."
+        ),
     )
     app.add_config_value(
         "ogp_image",
         None,
         "html",
         types=frozenset({str, types.NoneType}),
+        description=(
+            "Site-default OpenGraph image path or absolute URL. "
+            "Auto-derived from ``docs_url`` under gp-sphinx; per-page "
+            "``og:image`` front-matter overrides."
+        ),
     )
     app.add_config_value(
         "ogp_image_alt",
         None,
         "html",
         types=frozenset({str, bool, types.NoneType}),
+        description=(
+            "Alt text for ``ogp_image``. Falls back to ``og:site_name`` "
+            "then ``og:title``; ``False`` suppresses the alt tag entirely."
+        ),
     )
     app.add_config_value(
         "ogp_use_first_image",
         False,
         "html",
         types=frozenset({bool}),
+        description=(
+            "When ``True`` and no per-page override is set, use the "
+            "first in-page image as ``og:image``."
+        ),
     )
-    app.add_config_value("ogp_type", "website", "html", types=frozenset({str}))
+    app.add_config_value(
+        "ogp_type",
+        "website",
+        "html",
+        types=frozenset({str}),
+        description="Value emitted as the ``og:type`` tag.",
+    )
     app.add_config_value(
         "ogp_site_name",
         None,
         "html",
         types=frozenset({str, bool, types.NoneType}),
+        description=(
+            "Value emitted as ``og:site_name``. Defaults to the Sphinx "
+            "``project`` name; ``False`` suppresses the tag."
+        ),
     )
     # Accepted-but-ignored: warned about in _warn_if_social_cards_used.
     app.add_config_value(
@@ -330,18 +376,34 @@ def setup(app: Sphinx) -> ExtensionMetadata:
         None,
         "html",
         types=frozenset({dict, types.NoneType}),
+        description=(
+            "Accepted-but-ignored compatibility shim for upstream "
+            "``sphinxext-opengraph``. Setting any value emits a one-line "
+            "WARNING at ``config-inited``; provide a static PNG via "
+            "``ogp_image`` or per-page ``og:image`` instead."
+        ),
     )
     app.add_config_value(
         "ogp_custom_meta_tags",
         (),
         "html",
         types=frozenset({list, tuple}),
+        description=(
+            "Raw ``<meta>`` tag strings appended verbatim after the "
+            "structured ``og:*`` block — the supported escape hatch for "
+            "Twitter card declarations and image-dimension hints."
+        ),
     )
     app.add_config_value(
         "ogp_enable_meta_description",
         True,
         "html",
         types=frozenset({bool}),
+        description=(
+            'When ``True``, emit a ``<meta name="description">`` '
+            "mirroring ``og:description`` unless the page already "
+            "defines one."
+        ),
     )
 
     app.connect("html-page-context", html_page_context)
