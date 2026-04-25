@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import functools
 import importlib
 import inspect
 import logging
@@ -94,8 +95,19 @@ class _SetupRecorder:
         return _recorder
 
 
+@functools.cache
 def _replay_setup(module_name: str) -> _SetupRecorder | None:
     """Run a module's ``setup()`` against a recorder; return None on failure.
+
+    Cached because every invocation of ``autodirective-index`` /
+    ``autodirectives`` / ``autorole-index`` / ``autoroles`` calls in
+    here, and a docs build with N package pages × M directive
+    invocations would otherwise re-import + re-replay each package's
+    ``setup()`` for every call. The recorder is read-only by contract
+    (consumers iterate ``recorder.calls`` and never mutate it). Tests
+    that depend on a side effect of replay (e.g. log emission for a
+    raising ``setup()``) should call ``_replay_setup.cache_clear()``
+    before asserting.
 
     Examples
     --------

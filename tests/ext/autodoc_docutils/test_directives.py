@@ -119,6 +119,7 @@ def test_replay_setup_logs_debug_when_setup_raises(
 
     fake_module.setup = _broken_setup  # type: ignore[attr-defined]
     sys.modules[module_name] = fake_module
+    _replay_setup.cache_clear()
     try:
         with caplog.at_level(
             logging.DEBUG, logger="sphinx_autodoc_docutils._directives"
@@ -126,10 +127,19 @@ def test_replay_setup_logs_debug_when_setup_raises(
             assert _replay_setup(module_name) is None
     finally:
         del sys.modules[module_name]
+        _replay_setup.cache_clear()
 
     matching = [r for r in caplog.records if "setup replay failed" in r.getMessage()]
     assert matching, "expected a DEBUG breadcrumb when setup() raises"
     assert matching[0].levelno == logging.DEBUG
+
+
+def test_replay_setup_cache_returns_same_recorder() -> None:
+    """Cached replay returns the same recorder object on subsequent calls."""
+    _replay_setup.cache_clear()
+    first = _replay_setup("sphinx_autodoc_fastmcp")
+    second = _replay_setup("sphinx_autodoc_fastmcp")
+    assert first is second
 
 
 def test_registered_directives_uses_real_registration_names_for_packages() -> None:
