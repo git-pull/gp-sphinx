@@ -2,9 +2,14 @@
 
 Architecture
 ------------
-This Sphinx extension auto-generates the "Registered Surface" and "Copyable
-config snippet" sections that appear at the bottom of every
-``docs/packages/<name>.md`` page.  It works in three layers:
+This Sphinx extension auto-generates the "Copyable config snippet" and
+"Package metadata" sections that appear on every ``docs/packages/<name>.md``
+page.  Surface documentation (config values, directives, roles) is owned by
+the autodoc directives in ``sphinx-autodoc-sphinx`` (``autoconfigvalue``)
+and ``sphinx-autodoc-docutils`` (``autodirective-index`` /
+``autorole-index``) — invoke them on the page directly.
+
+It works in three layers:
 
 1. **Workspace discovery** (``workspace_packages()``) — walks
    ``packages/*/pyproject.toml`` to find every publishable package and reads
@@ -14,23 +19,19 @@ config snippet" sections that appear at the bottom of every
    module and passes a lightweight ``RecorderApp`` to its ``setup()``.
    ``RecorderApp.__getattr__`` captures every ``app.add_*`` call so each
    registered item (config value, directive, role, lexer, theme) flows
-   into a ``SurfaceDict`` without monkey-patching docutils globals.
+   into a ``SurfaceDict`` without monkey-patching docutils globals.  The
+   collected surface is consumed by ``_register_extension_objects()`` to
+   populate the py-domain so cross-references resolve.
 
-3. **Rendering** (``package_reference_markdown()``) — converts the collected
-   surface into a Markdown fragment (config snippet + tables), which the
-   ``PackageReferenceDirective`` injects into the page via a raw docutils node.
+3. **Rendering** (``package_reference_markdown()``) — emits the copyable
+   conf snippet and metadata block, which the ``PackageReferenceDirective``
+   injects into the page via a raw docutils node.
 
 Adding a new package
 --------------------
 No code changes are required.  Once a ``packages/<name>/pyproject.toml``
 exists with a ``[project]`` table the package is picked up automatically on
 the next docs build.
-
-Extending the surface extractor
---------------------------------
-To capture a new ``app.add_*`` call, add a handler to the mock
-``RecorderApp`` class inside ``collect_extension_surface()``.  Follow the pattern
-of the existing ``add_directive`` / ``add_role`` handlers.
 
 Examples
 --------
@@ -56,7 +57,6 @@ True
 
 from __future__ import annotations
 
-import configparser
 import importlib
 import inspect
 import logging
@@ -489,33 +489,19 @@ def directive_options_markdown(directive_cls: object) -> str:
     return "\n".join(lines)
 
 
-def theme_options(package_dir: pathlib.Path) -> list[str]:
-    """Return theme option names declared in a package ``theme.conf`` file.
-
-    Examples
-    --------
-    >>> "light_logo" in theme_options(workspace_root() / "packages" / "sphinx-gp-theme")
-    True
-    """
-    theme_conf = package_dir / "src" / "sphinx_gp_theme" / "theme" / "theme.conf"
-    if not theme_conf.exists():
-        return []
-    parser = configparser.ConfigParser()
-    parser.read(theme_conf)
-    if "options" not in parser:
-        return []
-    return sorted(parser["options"].keys())
-
-
 def package_reference_markdown(package_name: str) -> str:
-    """Render the generated Markdown fragment for a workspace package page.
+    """Render the copyable conf snippet and metadata block for a package page.
+
+    Surface documentation (config values, directives, roles, lexers, themes)
+    is owned by the autodoc directives in ``sphinx-autodoc-sphinx`` and
+    ``sphinx-autodoc-docutils`` — invoke them directly on the page.
 
     Returns an empty string and logs a warning when ``package_name`` is not
     found among the workspace packages.
 
     Examples
     --------
-    >>> "Registered Surface" in package_reference_markdown("sphinx-fonts")
+    >>> "Copyable config snippet" in package_reference_markdown("sphinx-fonts")
     True
     >>> "pypi.org/project/sphinx-fonts" in package_reference_markdown("sphinx-fonts")
     True
@@ -529,7 +515,6 @@ def package_reference_markdown(package_name: str) -> str:
     if package is None:
         logger.warning("package-reference: unknown package %r", package_name)
         return ""
-    package_dir = pathlib.Path(package["package_dir"])
     module_name = package["module_name"]
     extension_blocks = [
         collect_extension_surface(name) for name in extension_modules(module_name)
@@ -568,117 +553,13 @@ def package_reference_markdown(package_name: str) -> str:
     if package_name == "gp-sphinx":
         lines.extend(
             [
-                "## Registered Surface",
+                "## Public surface",
                 "",
                 "This package is a coordinator rather than a Sphinx extension module.",
                 "Its public runtime surface is documented in {doc}`/configuration` and {doc}`/api`.",
                 "",
             ],
         )
-        return "\n".join(lines)
-
-    lines.extend(["## Registered Surface", ""])
-
-    for block in extension_blocks:
-        lines.extend([f"### {block['module']}", ""])
-        config_rows = block["config_values"]
-        if config_rows:
-            lines.extend(
-                [
-                    "#### Config values",
-                    "",
-                    "| Name | Default | Rebuild | Types |",
-                    "| --- | --- | --- | --- |",
-                ],
-            )
-            for row in config_rows:
-                lines.append(
-                    f"| `{row['name']}` | {row['default']} | {row['rebuild']} | {row['types']} |",
-                )
-            lines.append("")
-
-        directive_rows = block["directives"]
-        if directive_rows:
-            lines.extend(
-                [
-                    "#### Directives",
-                    "",
-                    "| Name | Kind | Callable | Summary |",
-                    "| --- | --- | --- | --- |",
-                ],
-            )
-            for row in directive_rows:
-                lines.append(
-                    f"| `{row['name']}` | {row['kind']} | {row['callable']} | {row['summary']} |",
-                )
-            lines.append("")
-            for row in directive_rows:
-                if row["options"]:
-                    lines.extend(
-                        [
-                            f"##### {row['name']} options",
-                            row["options"],
-                            "",
-                        ],
-                    )
-
-        role_rows = block["roles"]
-        if role_rows:
-            lines.extend(
-                [
-                    "#### Roles",
-                    "",
-                    "| Name | Kind | Callable | Summary |",
-                    "| --- | --- | --- | --- |",
-                ],
-            )
-            for row in role_rows:
-                lines.append(
-                    f"| `{row['name']}` | {row['kind']} | {row['callable']} | {row['summary']} |",
-                )
-            lines.append("")
-
-        lexer_rows = block["lexers"]
-        if lexer_rows:
-            lines.extend(
-                [
-                    "#### Lexers",
-                    "",
-                    "| Name | Callable |",
-                    "| --- | --- |",
-                ],
-            )
-            for row in lexer_rows:
-                lines.append(f"| `{row['name']}` | {row['callable']} |")
-            lines.append("")
-
-        theme_rows = block["themes"]
-        if theme_rows:
-            lines.extend(
-                [
-                    "#### Theme registration",
-                    "",
-                    "| Theme | Path |",
-                    "| --- | --- |",
-                ],
-            )
-            for row in theme_rows:
-                lines.append(f"| `{row['name']}` | {row['path']} |")
-            lines.append("")
-
-    if module_name == "sphinx_gp_theme":
-        options = theme_options(package_dir)
-        lines.extend(
-            [
-                "### Theme options (theme.conf)",
-                "",
-                "| Option |",
-                "| --- |",
-            ],
-        )
-        for option in options:
-            lines.append(f"| `{option}` |")
-        lines.append("")
 
     return "\n".join(lines)
 

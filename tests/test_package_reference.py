@@ -48,24 +48,33 @@ def test_collect_extension_surface_for_sphinx_fonts() -> None:
     }
 
 
-def test_package_reference_markdown_for_argparse_includes_roles() -> None:
-    """Generated markdown includes the exemplar role registrations."""
+def test_package_reference_markdown_emits_conf_snippet_for_argparse() -> None:
+    """Conf snippet wires the package's importable module name."""
     markdown = package_reference.package_reference_markdown("sphinx-autodoc-argparse")
-    assert "cli-option" in markdown
-    assert "argparse_examples_section_title" in markdown
+    assert '"sphinx_autodoc_argparse"' in markdown
+    assert "## Copyable config snippet" in markdown
 
 
-def test_package_reference_markdown_for_docutils_includes_directives() -> None:
-    """Generated markdown includes registered docutils autodoc directives."""
+def test_package_reference_markdown_emits_conf_snippet_for_docutils() -> None:
+    """Conf snippet wires the package's importable module name."""
     markdown = package_reference.package_reference_markdown("sphinx-autodoc-docutils")
-    assert "autodirective" in markdown
-    assert "autorole-index" in markdown
+    assert '"sphinx_autodoc_docutils"' in markdown
+    assert "## Copyable config snippet" in markdown
 
 
 def test_package_reference_markdown_uses_plain_config_heading() -> None:
     """Generated markdown avoids headings that become accidental autolinks."""
     markdown = package_reference.package_reference_markdown("sphinx-fonts")
     assert "## Copyable config snippet" in markdown
+
+
+def test_package_reference_markdown_omits_surface_tables() -> None:
+    """Surface documentation is owned by autoconfigvalue / autodirective directives."""
+    markdown = package_reference.package_reference_markdown("sphinx-autodoc-fastmcp")
+    assert "Registered Surface" not in markdown
+    assert "#### Config values" not in markdown
+    assert "#### Directives" not in markdown
+    assert "#### Roles" not in markdown
 
 
 def test_docs_package_pages_exist_for_every_workspace_package() -> None:
