@@ -316,9 +316,33 @@ def test_merge_sphinx_config_auto_ogp() -> None:
         copyright="2026",
         docs_url="https://test.git-pull.com",
     )
-    assert result["ogp_site_url"] == "https://test.git-pull.com"
+    # Trailing slash normalised so urllib.parse.urljoin keeps any path
+    # component intact when joining relative page paths and image paths.
+    assert result["ogp_site_url"] == "https://test.git-pull.com/"
     assert result["ogp_site_name"] == "test"
     assert result["ogp_image"] == "_static/img/icons/icon-192x192.png"
+
+
+def test_merge_sphinx_config_ogp_site_url_preserves_path_component() -> None:
+    """docs_url with a path keeps the path; urljoin against the result is correct.
+
+    Regression guard: without the trailing-slash normalisation,
+    urljoin("https://example.org/docs", "page.html") drops "/docs" and
+    returns "https://example.org/page.html", emitting broken canonical
+    URLs and image URLs for sites hosted at a path.
+    """
+    import urllib.parse
+
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        docs_url="https://example.org/docs",
+    )
+    assert result["ogp_site_url"] == "https://example.org/docs/"
+    assert result["site_url"] == "https://example.org/docs/"
+    joined = urllib.parse.urljoin(result["ogp_site_url"], "page.html")
+    assert joined == "https://example.org/docs/page.html"
 
 
 def test_merge_sphinx_config_no_ogp_without_docs_url() -> None:

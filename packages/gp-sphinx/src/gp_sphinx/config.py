@@ -337,7 +337,7 @@ def merge_sphinx_config(
     'https://github.com/org/test/issues/{issue_id}'
 
     >>> conf["ogp_site_url"]
-    'https://test.org'
+    'https://test.org/'
 
     >>> conf["sitemap_url_scheme"]
     '{link}'
@@ -449,12 +449,18 @@ def merge_sphinx_config(
 
     # Auto-compute sphinx_gp_opengraph + sphinx_gp_sitemap config from docs_url
     if docs_url:
-        conf["ogp_site_url"] = docs_url
+        # Normalize to trailing slash so urllib.parse.urljoin keeps any path
+        # component (e.g. "https://example.org/docs/") intact when joining
+        # relative page paths and image paths. urljoin drops the last path
+        # segment of the base when the base has no trailing slash, so
+        # docs_url="https://example.org/docs" would otherwise emit
+        # "https://example.org/page.html" (missing /docs) for both ogp_site_url
+        # and site_url consumers.
+        normalised_url = docs_url if docs_url.endswith("/") else docs_url + "/"
+        conf["ogp_site_url"] = normalised_url
         conf["ogp_site_name"] = project
         conf["ogp_image"] = "_static/img/icons/icon-192x192.png"
-        # sphinx-gp-sitemap: normalize to trailing slash so the URL scheme
-        # composition produces valid URLs.
-        conf["site_url"] = docs_url if docs_url.endswith("/") else docs_url + "/"
+        conf["site_url"] = normalised_url
         # sphinx-gp-sitemap: git-pull.com sites deploy at the project root with
         # no language or version path segment, so override the upstream
         # default of "{lang}{version}{link}" to a flat scheme. Projects

@@ -134,6 +134,17 @@ re-initialise after navigation without a full page reload. Payload:
 
 ### Bug fixes
 
+#### `gp-sphinx`: Preserve `docs_url` path component in derived URLs
+
+`merge_sphinx_config(docs_url=...)` now normalises the value to end
+with `/` before assigning it to `ogp_site_url` (and continues to do
+the same for `site_url`). `urllib.parse.urljoin` drops the last path
+segment of a base URL that lacks a trailing slash, so passing
+`docs_url="https://example.org/docs"` previously produced canonical
+URLs and image URLs like `https://example.org/page.html` (with
+`/docs` silently dropped). The site_url path was already normalised;
+the OG path was not. (#22)
+
 #### `sphinx-gp-sitemap`: Complete sitemap under `sphinx-build -j N`
 
 `setup()` now returns `parallel_write_safe = False` explicitly. The

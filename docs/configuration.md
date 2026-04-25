@@ -61,7 +61,7 @@ All parameters are keyword-only.
 
 | Key | Value |
 | --- | --- |
-| `ogp_site_url` | `docs_url` |
+| `ogp_site_url` | `docs_url` (trailing-slash normalized) |
 | `ogp_site_name` | `project` |
 | `ogp_image` | `"_static/img/icons/icon-192x192.png"` |
 | `site_url` | `docs_url` (trailing-slash normalized) |
