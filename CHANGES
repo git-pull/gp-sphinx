@@ -25,9 +25,10 @@ $ uv add gp-sphinx --prerelease allow
   `sphinx-ux-badges`, `sphinx-autodoc-layout` → `sphinx-ux-autodoc-layout`,
   `sphinx-typehints-gp` → `sphinx-autodoc-typehints-gp` (#18)
 - Sphinx floor bumped to 8.1 across the workspace (#18)
-- CSS classes and custom properties unified under a single `gp-sphinx-*`
-  BEM namespace (retires the per-package `sab-`, `smf-`, `spf-`, `api-`,
-  `gas-`, `gal-` prefixes and collapses their duplicate palettes) (#18)
+- All CSS classes and custom properties now live under the `gp-sphinx-*`
+  namespace. Downstream stylesheets overriding the legacy `sab-`, `smf-`,
+  `spf-`, `api-`, `gas-`, or `gal-` prefixes need to update their
+  selectors. (#18)
 
 ### What's new
 
@@ -48,10 +49,9 @@ warning. Replaces `sphinxext.opengraph` in `DEFAULT_EXTENSIONS`.
 
 #### New package: `sphinx-gp-sitemap`
 
-`sitemap.xml` generator. Drop-in for `sphinx-sitemap` with Sphinx
-8.1+ idioms — no `multiprocessing.Queue`, public `dirhtml` detection,
-narrow `ExtensionError` handling. Added to `DEFAULT_EXTENSIONS`.
-(#22)
+`sitemap.xml` generator. Drop-in for `sphinx-sitemap`. Added to
+`DEFAULT_EXTENSIONS`, so every gp-sphinx site emits one out of the
+box. (#22)
 
 #### New package: `sphinx-fonts`
 
@@ -73,14 +73,11 @@ help/usage output. (#5)
 
 #### New package: `sphinx-autodoc-pytest-fixtures`
 
-Sphinx autodocumenter for pytest fixtures. Registers `py:fixture`
-as a domain object type with `autofixture::`, `autofixtures::`, and
-`autofixture-index::` directives. Fixtures render with
-scope/kind/autouse badges, classified dependency lists, reverse-dep
-tracking, and auto-generated usage snippets. The `auto-pytest-plugin`
-directive generates a complete pytest plugin page (install block,
-`pytest11` autodiscovery note, fixture summary and reference) from
-a single call. (#6, #8)
+Sphinx autodocumenter for pytest fixtures. Renders fixtures as a
+first-class domain object with scope / kind / autouse badges,
+dependency tracking, and usage snippets. The `auto-pytest-plugin`
+directive generates a complete plugin reference page from one call.
+(#6, #8)
 
 #### New package: `sphinx-ux-badges`
 
@@ -97,25 +94,22 @@ managed signatures — used by every domain package in the workspace.
 #### New package: `sphinx-autodoc-typehints-gp`
 
 Single-package replacement for `sphinx-autodoc-typehints` +
-`sphinx.ext.napoleon`. Resolves annotations statically at build
-time with no monkey-patching. (#18)
+`sphinx.ext.napoleon`. Resolves annotations statically, so docs
+builds stay deterministic across runs. (#18)
 
 #### New package: `sphinx-autodoc-fastmcp`
 
-Sphinx extension for FastMCP tool docs — card-style layouts, safety
-badges, MyST directives, cross-reference roles. Point
-`fastmcp_server_module` at a live `FastMCP` instance and the
-prompt / resource / resource-template directives autodoc the same
-surface the server exposes. (#13, #21)
+Sphinx extension for FastMCP tool docs — card-style entries with
+safety badges and cross-reference roles. Point
+`fastmcp_server_module` at a live `FastMCP` instance to autodoc its
+prompts, resources, and resource templates from the same surface
+the server exposes. (#13, #21)
 
 #### `gp-sphinx`: Integrated autodoc design system
 
-Twelve workspace packages organised in three tiers (shared
-infrastructure, domain autodocumenters, theme/coordinator) share
-one badge palette, one componentized layout pipeline, and one
-typehint renderer. Python APIs, pytest fixtures, Sphinx config
-values, docutils directives, and FastMCP tools all render with
-consistent styling. (#18)
+Python APIs, pytest fixtures, Sphinx config values, docutils
+directives, and FastMCP tools all render with one shared badge
+palette and layout across the workspace. (#18)
 
 #### `gp-sphinx`: SEO config auto-wired from `docs_url`
 
@@ -126,27 +120,24 @@ from a single `docs_url`. (#22)
 #### `sphinx-autodoc-docutils`: Register-aware directive and role discovery
 
 `autodirective-index`, `autodirectives`, `autorole-index`, and
-`autoroles` now accept an extension package name in addition to a
-directive- or role-defining submodule. Each entry surfaces by the
-real name the package registers, so multi-word camel-case classes
-like `AutoconfigvalueIndexDirective` no longer render as the
-mangled `autoconfigvalueindex`. (#22)
+`autoroles` accept an extension package name and surface each entry
+under the name the package actually registers — so multi-word
+directive class names render correctly instead of getting collapsed
+to all-lowercase. (#22)
 
 #### `sphinx-autodoc-argparse`: New `argparse` Sphinx domain
 
-Adds a real Sphinx domain with `program` / `option` / `subcommand`
-/ `positional` ObjTypes, `:argparse:*` xref roles, and two
-auto-generated indices (`argparse-programsindex`,
-`argparse-optionsindex`). `:option:` / `std:cmdoption` continues to
-resolve for intersphinx consumers. (#18)
+A real `argparse` Sphinx domain ships with `:argparse:program:` /
+`:option:` / `:subcommand:` / `:positional:` cross-references and
+two auto-generated indices. Existing `:option:` and `std:cmdoption`
+consumers continue to resolve. (#18)
 
 #### `sphinx-ux-badges`: Shared badge surface
 
-Common badge node, builders, and base CSS for safety tiers, scope,
-and kind labels — used by `sphinx-autodoc-fastmcp`,
-`sphinx-autodoc-api-style`, and `sphinx-autodoc-pytest-fixtures`.
-Explicit size variants (`xs` / `sm` / `lg` / `xl`) compose with any
-fill, style, or color class. (#13)
+Shared badge node, builders, and CSS adopted by
+`sphinx-autodoc-fastmcp`, `sphinx-autodoc-api-style`, and
+`sphinx-autodoc-pytest-fixtures`. Size variants (`xs` / `sm` / `lg`
+/ `xl`) compose with any color or fill class. (#13)
 
 #### `sphinx-autodoc-pytest-fixtures`: `TypeAlias` resolution
 
@@ -156,60 +147,51 @@ rather than expanding them to the underlying union or generic type.
 
 #### `sphinx-gp-theme`: `gp-sphinx:navigated` event after SPA nav
 
-Dispatched on `document` after every SPA-nav DOM swap. Third-party
-widgets that bind to swapped DOM can listen for this event to
-re-initialise after navigation without a full page reload. Payload:
-`event.detail.url` is the new URL. (#20)
+A `gp-sphinx:navigated` event fires on `document` after every
+SPA-nav DOM swap, so third-party widgets can re-initialise without
+a full page reload. The new URL is on `event.detail.url`. (#20)
 
 ### Bug fixes
 
 #### `sphinx-gp-opengraph`: XHTML self-closing void tags no longer drop trailing title text
 
 Titles containing XHTML-style void elements (`<br/>`, `<img/>`,
-`<hr/>`) now keep every text chunk after the void element. The
-nesting-level counter previously went negative on the unbalanced
-end-tag emission, so `og:title`'s outside-text component lost
-everything past the first `<br/>`. (#22)
+`<hr/>`) keep every text chunk after the void element. Previously
+`og:title` lost everything past the first such tag. (#22)
 
 #### `sphinx-gp-opengraph`: HTML-escape every meta-tag attribute
 
 Titles, site names, image alts, and custom field-list values
-containing `&`, `<`, `>`, `"`, or `'` now reach the page head as
-HTML entities. The previous implementation only escaped double
-quotes, so a project named `AT&T` emitted invalid attribute markup.
-(#22)
+containing `&`, `<`, `>`, `"`, or `'` reach the page head as HTML
+entities. Previously a project named `AT&T` emitted invalid
+attribute markup. (#22)
 
 #### `gp-sphinx`: Preserve `docs_url` path component in derived URLs
 
 Sites hosted at a path (e.g. `docs_url="https://example.org/docs"`)
-no longer emit broken Open Graph canonical URLs and image URLs.
-`ogp_site_url` now applies the same trailing-slash normalisation as
-`site_url`. (#22)
+emit correct Open Graph canonical URLs and image URLs. The
+trailing-slash normalisation that already covered `site_url` now
+also covers `ogp_site_url`. (#22)
 
 #### `sphinx-gp-sitemap`: Complete sitemap on incremental and parallel builds
 
-Page enumeration moved from a per-page `html-page-context` handler
-to a single `build-finished` pass over `app.env.found_docs`. Two
-correctness wins fall out: incremental builds (which fire
-`html-page-context` only for re-written pages) emit a full sitemap,
-and `sphinx-build -j N` keeps it complete because `found_docs` is
-part of the env Sphinx merges across parallel-read workers. URLs
-are now built via `app.builder.get_target_uri(pagename)`, so they
-honour `html_link_suffix` and URL-quote special characters in
-pagenames the same way the HTML builder's own `<a href>` links do.
-(#22)
+Incremental builds (where Sphinx writes only the changed page) and
+parallel builds (`sphinx-build -j N`) emit a complete sitemap. URLs
+also match the `<a href>` paths the HTML builder emits — so sites
+that set `html_link_suffix` or have spaces in pagenames no longer
+get divergent sitemap links. (#22)
 
 #### `sphinx-autodoc-docutils`: Surface failed `setup()` replay in build log
 
-Extensions whose `setup()` raises during register-aware discovery
-now leave a DEBUG breadcrumb in the build log instead of silently
-reverting to class-name guessing. (#22)
+Extensions whose `setup()` raises during autodoc discovery now
+leave a DEBUG breadcrumb in the build log instead of silently
+emitting incorrect directive or role names. (#22)
 
 #### `sphinx-autodoc-fastmcp`: Section labels resolve by component name
 
-Prompt and resource card labels now carry the actual component name
-(e.g. `my_resource`) rather than a slugified round-trip, so `{ref}`
-lookups resolve against the human-readable identifier. (#21)
+Prompt and resource card labels carry the actual component name
+(e.g. `my_resource`), so `{ref}` lookups resolve against the
+human-readable identifier. (#21)
 
 #### `sphinx-autodoc-fastmcp`: Decorator-registered components no longer dropped
 
@@ -225,9 +207,9 @@ instead of being swallowed and producing silently empty docs.
 
 #### `sphinx-autodoc-typehints-gp`: `:exc:` references with `~mod.Foo` shorten to `Foo`
 
-The last-component shortener now applies to exception cross-refs
-written with the leading-tilde form, matching how the rest of the
-typehint renderer treats abbreviated paths. (#21)
+Exception cross-refs written as `~mod.Foo` render as just `Foo`,
+matching the abbreviated form used elsewhere in the typehint
+renderer. (#21)
 
 #### `sphinx-autodoc-typehints-gp`: `Raises` type fields preserve parameterised generics
 
@@ -238,8 +220,8 @@ split on commas between exception types as before. (#21)
 #### `sphinx-autodoc-typehints-gp`: Empty `Examples` / `References` sections render their rubric
 
 Empty `Examples` and `References` sections — common in legitimate
-stubs — now display their rubric. Empty `Notes` sections continue
-to drop theirs (intentional after `.. todo::` filtering). (#21)
+stubs — display their rubric. Empty `Notes` sections still drop
+theirs. (#21)
 
 #### `sphinx-gp-theme`: SPA nav scrolls to anchor on cross-page fragments
 
@@ -249,31 +231,29 @@ SPA navigation, including via browser back/forward. (#20)
 
 #### `sphinx-gp-theme`: Copy buttons survive SPA navigation
 
-Pages without code blocks no longer leave the copy-button template
-null — code-block pages reached via SPA navigation now show the
-copy affordance. Projects that extend `copybutton_selector` (e.g.
-prompt admonitions) can opt into the same re-application via
+Code-block pages reached via SPA navigation show the copy affordance
+even on builds where the entry page had no code blocks. Projects
+that extend `copybutton_selector` (e.g. prompt admonitions) opt
+their custom selectors into the same re-application via
 `window.GP_SPHINX_COPYBUTTON_SELECTOR`. (#20)
 
 #### `sphinx-fonts`: Full weight range for IBM Plex Sans and Mono
 
-Both faces now load weights 300–700. Badges render in monospace at
-700 and Furo code blocks at 300 — previously only Sans had the full
-range, so browsers synthesised the intermediate weights. Badge CSS
-bumped from non-standard 650 to 700 across `sphinx-autodoc-api-style`,
-`sphinx-autodoc-pytest-fixtures`, and `sphinx-gp-theme`. (#11, #12)
+IBM Plex Sans and Mono load weights 300–700, so badges and code
+blocks render in the real font weight instead of a browser-
+synthesised approximation. (#11, #12)
 
 #### `sphinx-ux-badges`: Restore background, border, and tooltip styling
 
-After the badge node moved from `<abbr>` to `<span>` in
-`sphinx-autodoc-api-style` and `sphinx-autodoc-pytest-fixtures` the
-visual treatment dropped. Restored via element-agnostic CSS
-selectors and correct fill defaults. (#13)
+Badges in `sphinx-autodoc-api-style` and
+`sphinx-autodoc-pytest-fixtures` regain their background, border,
+and tooltip — visual treatment that regressed when the underlying
+badge node changed. (#13)
 
 #### `sphinx-autodoc-argparse`: No more `duplicate label` warnings on multi-page docs
 
-Section IDs (`usage`, `options`, `positional arguments`, cross-page
-`examples`) are now namespaced by `id_prefix`, so multi-page docs
-that embed `.. argparse::` via MyST `{eval-rst}` build cleanly.
+Multi-page docs that embed `.. argparse::` via MyST `{eval-rst}`
+build cleanly. Section IDs are now namespaced per program so
+`usage`, `options`, and friends no longer collide across pages.
 (#16)
 
