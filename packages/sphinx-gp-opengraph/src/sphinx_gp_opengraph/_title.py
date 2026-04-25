@@ -50,8 +50,24 @@ class HTMLTextParser(html.parser.HTMLParser):
         self.level = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        """Increase the tag-nesting level."""
-        self.level += 1
+        """Increase the tag-nesting level (ignoring void elements)."""
+        if tag not in {
+            "br",
+            "img",
+            "hr",
+            "meta",
+            "link",
+            "input",
+            "area",
+            "base",
+            "col",
+            "embed",
+            "param",
+            "source",
+            "track",
+            "wbr",
+        }:
+            self.level += 1
 
     def handle_endtag(self, tag: str) -> None:
         """Decrease the tag-nesting level."""

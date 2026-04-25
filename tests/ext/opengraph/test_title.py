@@ -29,3 +29,10 @@ def test_nested_tags_nest_the_level_counter() -> None:
 def test_empty_title() -> None:
     """Empty input returns empty strings."""
     assert get_title("") == ("", "")
+
+
+def test_get_title_with_void_elements() -> None:
+    """Void elements like <br> and <img> do not permanently increase the nesting level."""
+    title, text_outside_tags = get_title("text<br>more text<img src='test.png'>final")
+    assert title == "textmore textfinal"
+    assert text_outside_tags == "textmore textfinal"
