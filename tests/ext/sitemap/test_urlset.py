@@ -10,6 +10,8 @@ import pytest
 if t.TYPE_CHECKING:
     from tests.ext.sitemap.conftest import SitemapBuildResult
 
+pytestmark = pytest.mark.integration
+
 _SITEMAP_NS = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
 _XHTML_NS = "{http://www.w3.org/1999/xhtml}"
 

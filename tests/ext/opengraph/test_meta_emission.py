@@ -13,6 +13,8 @@ import pytest
 if t.TYPE_CHECKING:
     from tests.ext.opengraph.conftest import OgBuildResult
 
+pytestmark = pytest.mark.integration
+
 
 class MetaCase(t.NamedTuple):
     """One emission test case."""
