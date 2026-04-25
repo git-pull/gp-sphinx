@@ -15,13 +15,13 @@ It works in three layers:
    ``packages/*/pyproject.toml`` to find every publishable package and reads
    its name, version, description, classifiers, and GitHub URL.
 
-2. **Surface extraction** (``collect_extension_surface()``) — imports the
-   module and passes a lightweight ``RecorderApp`` to its ``setup()``.
-   ``RecorderApp.__getattr__`` captures every ``app.add_*`` call so each
-   registered item (config value, directive, role, lexer, theme) flows
-   into a ``SurfaceDict`` without monkey-patching docutils globals.  The
-   collected surface is consumed by ``_register_extension_objects()`` to
-   populate the py-domain so cross-references resolve.
+2. **Surface extraction** (``collect_extension_surface()``) — replays the
+   extension's ``setup()`` against
+   :func:`sphinx_autodoc_docutils.replay_setup`, the shared workspace
+   recorder, and maps the captured ``app.add_*`` calls into a
+   ``SurfaceDict``.  The collected surface is consumed by
+   ``_register_extension_objects()`` to populate the py-domain so
+   cross-references resolve.
 
 3. **Rendering** (``package_reference_markdown()``) — emits the copyable
    conf snippet and metadata block, which the ``PackageReferenceDirective``
@@ -67,6 +67,8 @@ import sys
 import typing as t
 
 from sphinx.util.docutils import SphinxDirective
+
+from sphinx_autodoc_docutils import SetupRecorder, replay_setup
 
 if t.TYPE_CHECKING:
     from docutils import nodes
@@ -261,35 +263,10 @@ def render_types(types: object, default: object) -> str:
     return f"`{type(default).__name__}`"
 
 
-class RecorderApp:
-    """Lightweight recorder for Sphinx setup calls.
-
-    Examples
-    --------
-    >>> app = RecorderApp()
-    >>> app.add_config_value("demo", 1, "env")
-    >>> app.calls[0][0]
-    'add_config_value'
-    """
-
-    def __init__(self) -> None:
-        self.calls: list[tuple[str, tuple[object, ...], dict[str, object]]] = []
-
-    def __getattr__(self, name: str) -> t.Callable[..., None]:
-        """Record arbitrary Sphinx app API calls used by extension setup code.
-
-        Examples
-        --------
-        >>> app = RecorderApp()
-        >>> app.add_role("demo", object())
-        >>> app.calls[0][0]
-        'add_role'
-        """
-
-        def _record(*args: object, **kwargs: object) -> None:
-            self.calls.append((name, args, kwargs))
-
-        return _record
+# Re-export the shared recorder so existing references and doctests in this
+# module still work; new code should import SetupRecorder from
+# sphinx_autodoc_docutils directly.
+RecorderApp = SetupRecorder
 
 
 def collect_extension_surface(module_name: str) -> SurfaceDict:
@@ -303,7 +280,7 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
     """
     ensure_workspace_imports()
     try:
-        module = importlib.import_module(module_name)
+        importlib.import_module(module_name)
     except ImportError:
         logger.warning("package-reference: could not import %r", module_name)
         return SurfaceDict(
@@ -314,9 +291,16 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
             lexers=[],
             themes=[],
         )
-    app = RecorderApp()
-    setup = t.cast("t.Callable[[object], object]", getattr(module, "setup"))
-    setup(app)
+    app = replay_setup(module_name)
+    if app is None:
+        return SurfaceDict(
+            module=module_name,
+            config_values=[],
+            directives=[],
+            roles=[],
+            lexers=[],
+            themes=[],
+        )
 
     config_values: list[dict[str, str]] = []
     directives: list[dict[str, str]] = []
@@ -440,8 +424,8 @@ def object_path(value: object) -> str:
 
     Examples
     --------
-    >>> object_path(RecorderApp)
-    '{py:obj}`~package_reference.RecorderApp`'
+    >>> object_path(SurfaceDict)
+    '{py:obj}`~package_reference.SurfaceDict`'
     """
     module_name = getattr(value, "__module__", type(value).__module__)
     object_name = getattr(value, "__name__", type(value).__name__)
@@ -650,19 +634,8 @@ def _register_extension_objects(
         pkg_docname = f"packages/{package['name']}"
 
         for ext_module_name in extension_modules(package["module_name"]):
-            try:
-                module = importlib.import_module(ext_module_name)
-            except ImportError:
-                continue
-
-            setup_fn = getattr(module, "setup", None)
-            if not callable(setup_fn):
-                continue
-
-            recorder = RecorderApp()
-            try:
-                setup_fn(recorder)
-            except Exception:
+            recorder = replay_setup(ext_module_name)
+            if recorder is None:
                 continue
 
             raw_objs: list[tuple[object, str]] = []  # (obj, objtype)

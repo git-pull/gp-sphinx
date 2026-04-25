@@ -14,9 +14,9 @@ from sphinx_autodoc_docutils._directives import (
     _directive_markup,
     _registered_directives,
     _registered_roles,
-    _replay_setup,
     _role_callables,
     _role_markup,
+    replay_setup,
 )
 
 _RICH_DIRECTIVE_BLOCK_HEADER = ".. rst:directive::"
@@ -84,7 +84,7 @@ def test_role_markup_contains_role_name_and_path() -> None:
 
 def test_replay_setup_records_add_directive_calls() -> None:
     """Replaying a package's setup() captures every app.add_directive call."""
-    recorder = _replay_setup("sphinx_autodoc_fastmcp")
+    recorder = replay_setup("sphinx_autodoc_fastmcp")
     assert recorder is not None
     directive_names = [
         args[0] for name, args, _ in recorder.calls if name == "add_directive"
@@ -95,12 +95,12 @@ def test_replay_setup_records_add_directive_calls() -> None:
 
 def test_replay_setup_returns_none_for_module_without_setup() -> None:
     """A module with no setup() callable yields None instead of raising."""
-    assert _replay_setup("sphinx_autodoc_docutils._directives") is None
+    assert replay_setup("sphinx_autodoc_docutils._directives") is None
 
 
 def test_replay_setup_returns_none_for_unimportable_module() -> None:
     """An ImportError yields None instead of bubbling out."""
-    assert _replay_setup("_does_not_exist_module_") is None
+    assert replay_setup("_does_not_exist_module_") is None
 
 
 def test_replay_setup_logs_debug_when_setup_raises(
@@ -119,15 +119,15 @@ def test_replay_setup_logs_debug_when_setup_raises(
 
     fake_module.setup = _broken_setup  # type: ignore[attr-defined]
     sys.modules[module_name] = fake_module
-    _replay_setup.cache_clear()
+    replay_setup.cache_clear()
     try:
         with caplog.at_level(
             logging.DEBUG, logger="sphinx_autodoc_docutils._directives"
         ):
-            assert _replay_setup(module_name) is None
+            assert replay_setup(module_name) is None
     finally:
         del sys.modules[module_name]
-        _replay_setup.cache_clear()
+        replay_setup.cache_clear()
 
     matching = [r for r in caplog.records if "setup replay failed" in r.getMessage()]
     assert matching, "expected a DEBUG breadcrumb when setup() raises"
@@ -136,9 +136,9 @@ def test_replay_setup_logs_debug_when_setup_raises(
 
 def test_replay_setup_cache_returns_same_recorder() -> None:
     """Cached replay returns the same recorder object on subsequent calls."""
-    _replay_setup.cache_clear()
-    first = _replay_setup("sphinx_autodoc_fastmcp")
-    second = _replay_setup("sphinx_autodoc_fastmcp")
+    replay_setup.cache_clear()
+    first = replay_setup("sphinx_autodoc_fastmcp")
+    second = replay_setup("sphinx_autodoc_fastmcp")
     assert first is second
 
 

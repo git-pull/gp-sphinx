@@ -69,16 +69,18 @@ def _module_members(
     ]
 
 
-class _SetupRecorder:
+class SetupRecorder:
     """Record ``app.add_*`` calls made during a Sphinx extension's ``setup()``.
 
-    Used by :func:`_registered_directives` and :func:`_registered_roles` to
-    discover the names a package registers (e.g., ``fastmcp-tool``) instead
-    of guessing them from class names.
+    Public discovery primitive shared with other workspace consumers
+    (notably ``docs/_ext/package_reference.py``) so the recorder pattern
+    has one implementation. Consumers iterate ``calls`` and never mutate
+    it — that read-only contract is what makes :func:`replay_setup`'s
+    cache safe.
 
     Examples
     --------
-    >>> recorder = _SetupRecorder()
+    >>> recorder = SetupRecorder()
     >>> recorder.add_directive("foo-bar", object)
     >>> recorder.add_role("baz-quux", lambda *a, **k: None)
     >>> [name for name, _, _ in recorder.calls]
@@ -96,7 +98,7 @@ class _SetupRecorder:
 
 
 @functools.cache
-def _replay_setup(module_name: str) -> _SetupRecorder | None:
+def replay_setup(module_name: str) -> SetupRecorder | None:
     """Run a module's ``setup()`` against a recorder; return None on failure.
 
     Cached because every invocation of ``autodirective-index`` /
@@ -106,12 +108,12 @@ def _replay_setup(module_name: str) -> _SetupRecorder | None:
     ``setup()`` for every call. The recorder is read-only by contract
     (consumers iterate ``recorder.calls`` and never mutate it). Tests
     that depend on a side effect of replay (e.g. log emission for a
-    raising ``setup()``) should call ``_replay_setup.cache_clear()``
+    raising ``setup()``) should call ``replay_setup.cache_clear()``
     before asserting.
 
     Examples
     --------
-    >>> recorder = _replay_setup("sphinx_autodoc_docutils")
+    >>> recorder = replay_setup("sphinx_autodoc_docutils")
     >>> recorder is not None
     True
     >>> any(name == "add_directive" for name, _, _ in recorder.calls)
@@ -124,7 +126,7 @@ def _replay_setup(module_name: str) -> _SetupRecorder | None:
     setup_fn = getattr(module, "setup", None)
     if not callable(setup_fn):
         return None
-    recorder = _SetupRecorder()
+    recorder = SetupRecorder()
     try:
         setup_fn(recorder)
     except Exception:  # noqa: BLE001 - extension setup errors are expected here
@@ -150,7 +152,7 @@ def _registered_directives(module_name: str) -> list[tuple[str, type[Directive]]
     >>> ("autodirective-index", AutoDirectiveIndex) in pairs
     True
     """
-    recorder = _replay_setup(module_name)
+    recorder = replay_setup(module_name)
     if recorder is not None:
         pairs: list[tuple[str, type[Directive]]] = []
         for call_name, args, _kwargs in recorder.calls:
@@ -194,7 +196,7 @@ def _registered_roles(module_name: str) -> list[tuple[str, object]]:
     >>> any(name == "cli-option" for name, _ in pairs)
     True
     """
-    recorder = _replay_setup(module_name)
+    recorder = replay_setup(module_name)
     if recorder is not None:
         pairs: list[tuple[str, object]] = []
         for call_name, args, _kwargs in recorder.calls:
