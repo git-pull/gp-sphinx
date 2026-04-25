@@ -51,6 +51,18 @@ narrow `ExtensionError` handling. Added to `DEFAULT_EXTENSIONS`.
 `ogp_image`, `site_url`, and `sitemap_url_scheme` (flat `"{link}"`)
 from a single `docs_url`. (#22)
 
+#### `sphinx-autodoc-docutils`: Register-aware directive and role discovery
+
+`autodirective-index`, `autodirectives`, `autorole-index`, and
+`autoroles` now accept an extension package name (e.g.
+`sphinx_autodoc_fastmcp`) in addition to a directive- or
+role-defining submodule. The directive replays the package's
+`setup()` against a recorder so each entry surfaces by the real
+name passed to `app.add_directive(...)` / `app.add_role(...)` —
+no more class-name guessing that produced `autoconfigvalueindex`
+for `AutoconfigvalueIndexDirective`. Module introspection remains
+the fallback when a module exposes no `setup()`. (#22)
+
 #### Initial release: `gp-sphinx`
 
 Shared documentation platform for git-pull projects.
@@ -121,6 +133,14 @@ re-initialise after navigation without a full page reload. Payload:
 `event.detail.url` is the new URL.
 
 ### Bug fixes
+
+#### `sphinx-autodoc-docutils`: DEBUG breadcrumb when setup() replay fails
+
+The register-aware discovery path catches exceptions from the
+extension's `setup()` and degrades to module introspection. A
+`logger.debug(..., exc_info=True)` now records the failure so a
+broken `setup()` (which would silently revert to mis-derived
+class-name kebab-casing) is recoverable from the build log. (#22)
 
 #### `sphinx-autodoc-fastmcp`: Section labels resolve by component name
 
