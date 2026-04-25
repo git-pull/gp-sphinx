@@ -36,6 +36,7 @@ from sphinx_gp_opengraph._title import get_title
 if t.TYPE_CHECKING:
     from sphinx.builders import Builder
     from sphinx.config import Config
+    from sphinx.util.typing import ExtensionMetadata
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -269,7 +270,7 @@ def _warn_if_social_cards_used(app: Sphinx, config: Config) -> None:
         )
 
 
-def setup(app: Sphinx) -> dict[str, t.Any]:
+def setup(app: Sphinx) -> ExtensionMetadata:
     """Register config values and connect the html-page-context hook.
 
     Parameters
@@ -279,8 +280,9 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
 
     Returns
     -------
-    dict[str, Any]
-        Extension metadata — version plus parallel-build flags.
+    ExtensionMetadata
+        Extension metadata — version, env_version, and parallel-build
+        flags.
 
     Examples
     --------
@@ -348,6 +350,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
 
     return {
         "version": _EXTENSION_VERSION,
+        "env_version": 1,
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }
