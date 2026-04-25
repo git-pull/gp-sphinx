@@ -1,6 +1,6 @@
 # Packages
 
-Twelve workspace packages in three tiers.
+Fourteen workspace packages in four tiers.
 
 **Shared infrastructure** — the rendering pipeline that all domain packages consume:
 - `sphinx-ux-badges` — badge primitives and colour palette
@@ -17,6 +17,10 @@ directives, roles, and per-domain indices:
 **Theme and coordinator** — shared Sphinx configuration and presentation
 assets:
 - `gp-sphinx`, `sphinx-gp-theme`, `sphinx-fonts`
+
+**SEO** — meta-tag and crawlability extensions auto-loaded by
+`gp-sphinx` when `docs_url` is set:
+- `sphinx-gp-opengraph`, `sphinx-gp-sitemap`
 
 `gp-sphinx` is the umbrella entry point: `merge_sphinx_config()` wires up the
 full stack for downstream projects.

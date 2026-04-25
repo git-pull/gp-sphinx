@@ -13,7 +13,21 @@ from sphinx_autodoc_docutils._directives import (
     AutoRole,
     AutoRoleIndex,
     AutoRoles,
+    SetupRecorder,
+    replay_setup,
 )
+
+__all__ = [
+    "AutoDirective",
+    "AutoDirectiveIndex",
+    "AutoDirectives",
+    "AutoRole",
+    "AutoRoleIndex",
+    "AutoRoles",
+    "SetupRecorder",
+    "replay_setup",
+    "setup",
+]
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx

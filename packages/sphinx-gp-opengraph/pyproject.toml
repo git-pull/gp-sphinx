@@ -1,7 +1,7 @@
 [project]
-name = "gp-sphinx"
+name = "sphinx-gp-opengraph"
 version = "0.0.1a9"
-description = "Shared Sphinx documentation platform for git-pull projects"
+description = "OpenGraph and Twitter meta-tag emission for Sphinx — matplotlib-free"
 requires-python = ">=3.10,<4.0"
 authors = [
   {name = "Tony Narlock", email = "tony@git-pull.com"}
@@ -11,6 +11,7 @@ classifiers = [
   "Development Status :: 3 - Alpha",
   "License :: OSI Approved :: MIT License",
   "Framework :: Sphinx",
+  "Framework :: Sphinx :: Extension",
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
@@ -23,38 +24,17 @@ classifiers = [
   "Typing :: Typed",
 ]
 readme = "README.md"
-keywords = ["sphinx", "documentation", "configuration"]
+keywords = ["sphinx", "opengraph", "meta", "social", "documentation"]
 dependencies = [
-  "sphinx>=8.1,<9",
-  "sphinx-gp-theme==0.0.1a9",
-  "sphinx-fonts==0.0.1a9",
-  "myst-parser",
-  "docutils",
-  "sphinx-autodoc-typehints-gp==0.0.1a9",
-  "sphinx-inline-tabs",
-  "sphinx-copybutton",
-  "sphinx-gp-opengraph==0.0.1a9",
-  "sphinx-gp-sitemap==0.0.1a9",
-  "sphinxext-rediraffe",
-  "sphinx-design",
-  "linkify-it-py",
-  "gp-libs",
-]
-
-[project.optional-dependencies]
-argparse = [
-  "sphinx-autodoc-argparse==0.0.1a9",
+  "sphinx>=8.1",
 ]
 
 [project.urls]
-"Bug Tracker" = "https://github.com/git-pull/gp-sphinx/issues"
-Documentation = "https://gp-sphinx.git-pull.com"
 Repository = "https://github.com/git-pull/gp-sphinx"
-Changes = "https://github.com/git-pull/gp-sphinx/blob/master/CHANGES"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/gp_sphinx"]
+packages = ["src/sphinx_gp_opengraph"]

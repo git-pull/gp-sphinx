@@ -19,6 +19,8 @@ def test_workspace_packages_lists_publishable_packages() -> None:
     """Workspace package discovery includes every published package."""
     names = {package["name"] for package in package_reference.workspace_packages()}
     assert names == {
+        "sphinx-gp-opengraph",
+        "sphinx-gp-sitemap",
         "gp-sphinx",
         "sphinx-autodoc-argparse",
         "sphinx-autodoc-api-style",
@@ -46,24 +48,33 @@ def test_collect_extension_surface_for_sphinx_fonts() -> None:
     }
 
 
-def test_package_reference_markdown_for_argparse_includes_roles() -> None:
-    """Generated markdown includes the exemplar role registrations."""
+def test_package_reference_markdown_emits_conf_snippet_for_argparse() -> None:
+    """Conf snippet wires the package's importable module name."""
     markdown = package_reference.package_reference_markdown("sphinx-autodoc-argparse")
-    assert "cli-option" in markdown
-    assert "argparse_examples_section_title" in markdown
+    assert '"sphinx_autodoc_argparse"' in markdown
+    assert "## Copyable config snippet" in markdown
 
 
-def test_package_reference_markdown_for_docutils_includes_directives() -> None:
-    """Generated markdown includes registered docutils autodoc directives."""
+def test_package_reference_markdown_emits_conf_snippet_for_docutils() -> None:
+    """Conf snippet wires the package's importable module name."""
     markdown = package_reference.package_reference_markdown("sphinx-autodoc-docutils")
-    assert "autodirective" in markdown
-    assert "autorole-index" in markdown
+    assert '"sphinx_autodoc_docutils"' in markdown
+    assert "## Copyable config snippet" in markdown
 
 
 def test_package_reference_markdown_uses_plain_config_heading() -> None:
     """Generated markdown avoids headings that become accidental autolinks."""
     markdown = package_reference.package_reference_markdown("sphinx-fonts")
     assert "## Copyable config snippet" in markdown
+
+
+def test_package_reference_markdown_omits_surface_tables() -> None:
+    """Surface documentation is owned by autoconfigvalue / autodirective directives."""
+    markdown = package_reference.package_reference_markdown("sphinx-autodoc-fastmcp")
+    assert "Registered Surface" not in markdown
+    assert "#### Config values" not in markdown
+    assert "#### Directives" not in markdown
+    assert "#### Roles" not in markdown
 
 
 def test_docs_package_pages_exist_for_every_workspace_package() -> None:
@@ -95,6 +106,30 @@ def test_collect_extension_surface_skips_unimportable_module() -> None:
     assert surface["module"] == "_this_module_does_not_exist_"
     assert surface["config_values"] == []
     assert surface["directives"] == []
+
+
+def test_extract_arg_returns_positional_first() -> None:
+    """The helper prefers positional args; kwargs are the fallback."""
+    assert package_reference._extract_arg(0, "name", ("foo",), {}) == "foo"
+    assert package_reference._extract_arg(0, "name", ("foo",), {"name": "bar"}) == "foo"
+
+
+def test_extract_arg_falls_back_to_kwargs() -> None:
+    """The helper picks the kwarg when the positional slot is empty.
+
+    Regression guard: Sphinx APIs accept both ``app.add_directive("foo", Foo)``
+    AND ``app.add_directive(name="foo", cls=Foo)``. A consumer that only
+    indexes ``args[N]`` raises ``IndexError`` (or silently misses the
+    registration) on the keyword form.
+    """
+    assert package_reference._extract_arg(0, "name", (), {"name": "foo"}) == "foo"
+    assert package_reference._extract_arg(1, "cls", (), {"cls": object}) is object
+
+
+def test_extract_arg_missing_returns_none() -> None:
+    """Neither positional nor kwarg present yields None for the caller to skip."""
+    assert package_reference._extract_arg(0, "name", (), {}) is None
+    assert package_reference._extract_arg(2, "cls", ("foo", object), {}) is None
 
 
 def test_package_reference_markdown_unknown_package_returns_empty() -> None:

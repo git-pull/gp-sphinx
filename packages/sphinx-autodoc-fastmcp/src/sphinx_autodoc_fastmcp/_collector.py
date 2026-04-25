@@ -578,9 +578,7 @@ def collect_prompts_and_resources(app: Sphinx) -> None:
                     "sphinx_autodoc_fastmcp: could not import fastmcp types",
                     exc_info=True,
                 )
-                _Prompt = _Resource = _ResourceTemplate = None
-
-            if _Prompt is not None:
+            else:
                 for component in _iter_components(server):
                     if isinstance(component, _ResourceTemplate):
                         info_tpl = _resource_template_from_component(component)

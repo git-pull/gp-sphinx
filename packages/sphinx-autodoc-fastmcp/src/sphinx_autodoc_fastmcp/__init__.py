@@ -77,14 +77,90 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.setup_extension("sphinx_ux_autodoc_layout")
     app.setup_extension("sphinx_autodoc_typehints_gp")
 
-    app.add_config_value("fastmcp_tool_modules", [], "env")
-    app.add_config_value("fastmcp_area_map", {}, "env")
-    app.add_config_value("fastmcp_model_module", "", "env")
-    app.add_config_value("fastmcp_model_classes", (), "env")
-    app.add_config_value("fastmcp_section_badge_map", {}, "env")
-    app.add_config_value("fastmcp_section_badge_pages", (), "env")
-    app.add_config_value("fastmcp_collector_mode", "register", "env")
-    app.add_config_value("fastmcp_server_module", "", "env")
+    app.add_config_value(
+        "fastmcp_tool_modules",
+        [],
+        "env",
+        description=(
+            "Dotted module paths whose ``register(server)`` hooks expose "
+            "FastMCP tools to autodoc. Each module is imported once at "
+            "``builder-inited`` and its tools are added to the rendered "
+            "reference."
+        ),
+    )
+    app.add_config_value(
+        "fastmcp_area_map",
+        {},
+        "env",
+        description=(
+            'Mapping of tool-module suffix (e.g. ``"session_tools"``) '
+            "to the docs area page that owns its tools (e.g. "
+            '``"sessions"``). Drives cross-reference resolution and '
+            "the area badge in card layouts."
+        ),
+    )
+    app.add_config_value(
+        "fastmcp_model_module",
+        "",
+        "env",
+        description=(
+            "Dotted module containing the Pydantic model classes "
+            "referenced by tool return types. Used to resolve "
+            "``{fastmcp-model}`` cross-references."
+        ),
+    )
+    app.add_config_value(
+        "fastmcp_model_classes",
+        (),
+        "env",
+        description=(
+            "Iterable of model class names within ``fastmcp_model_module`` "
+            "to autodoc. Empty default skips model rendering entirely."
+        ),
+    )
+    app.add_config_value(
+        "fastmcp_section_badge_map",
+        {},
+        "env",
+        description=(
+            'Mapping of docstring section heading (e.g. ``"Inspect"``) '
+            "to the safety badge it should render with (e.g. "
+            '``"readonly"``, ``"mutating"``, ``"destructive"``). '
+            "Drives the inline section pills next to grouped tool lists."
+        ),
+    )
+    app.add_config_value(
+        "fastmcp_section_badge_pages",
+        (),
+        "env",
+        description=(
+            "Iterable of docnames where ``fastmcp_section_badge_map`` "
+            "should be applied. Pages outside this list render plain "
+            "section headings."
+        ),
+    )
+    app.add_config_value(
+        "fastmcp_collector_mode",
+        "register",
+        "env",
+        description=(
+            "How tools are gathered from each ``fastmcp_tool_modules`` "
+            'entry. ``"register"`` calls the module\'s ``register(server)`` '
+            'hook (the FastMCP convention); ``"introspect"`` walks '
+            "module attributes for ``@server.tool``-decorated callables."
+        ),
+    )
+    app.add_config_value(
+        "fastmcp_server_module",
+        "",
+        "env",
+        description=(
+            '``"pkg.module:attribute"`` path to a live ``FastMCP`` '
+            "instance. When set, the prompt / resource collector reads "
+            "``local_provider._components`` directly so docs enumerate "
+            "the same surface as the running server."
+        ),
+    )
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
 

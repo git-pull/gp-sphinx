@@ -112,6 +112,7 @@ def make_linkcode_resolve(
     package_module: types.ModuleType,
     github_url: str,
     src_dir: str = "src",
+    source_branch: str = "main",
 ) -> Callable[[str, dict[str, str]], str | None]:
     """Create a ``linkcode_resolve`` function for ``sphinx.ext.linkcode``.
 
@@ -129,6 +130,8 @@ def make_linkcode_resolve(
         ``"https://github.com/tmux-python/libtmux"``).
     src_dir : str
         Directory containing the source package (default ``"src"``).
+    source_branch : str
+        The fallback branch for development versions (default ``"main"``).
 
     Returns
     -------
@@ -197,7 +200,7 @@ def make_linkcode_resolve(
 
         version = getattr(package_module, "__version__", "")
         if "dev" in version:
-            return f"{github_url}/blob/master/{src_dir}/{fn}{linespec}"
+            return f"{github_url}/blob/{source_branch}/{src_dir}/{fn}{linespec}"
         return f"{github_url}/blob/v{version}/{src_dir}/{fn}{linespec}"
 
     return linkcode_resolve
@@ -231,9 +234,13 @@ def merge_sphinx_config(
 
     When ``source_repository`` is provided, ``issue_url_tpl`` is auto-computed
     for the ``linkify_issues`` extension. When ``docs_url`` is provided,
-    ``ogp_site_url``, ``ogp_image``, and ``ogp_site_name`` are auto-computed
-    for ``sphinxext.opengraph``. All auto-computed values can be overridden
-    via ``overrides``.
+    ``ogp_site_url``, ``ogp_image``, ``ogp_site_name`` (for ``sphinx_gp_opengraph``),
+    ``site_url`` and ``sitemap_url_scheme`` (for ``sphinx_gp_sitemap``) are
+    auto-computed. The sitemap scheme defaults to ``"{link}"`` because
+    git-pull.com sites deploy flat at the project root, with no
+    ``{lang}{version}`` path segments; multilingual or version-pinned
+    deployments can override it via ``overrides``. All auto-computed
+    values can be overridden via ``overrides``.
 
     Parameters
     ----------
@@ -330,7 +337,22 @@ def merge_sphinx_config(
     'https://github.com/org/test/issues/{issue_id}'
 
     >>> conf["ogp_site_url"]
-    'https://test.org'
+    'https://test.org/'
+
+    >>> conf["sitemap_url_scheme"]
+    '{link}'
+
+    The sitemap scheme can still be overridden when needed:
+
+    >>> conf = merge_sphinx_config(
+    ...     project="test",
+    ...     version="1.0",
+    ...     copyright="2026",
+    ...     docs_url="https://test.org",
+    ...     sitemap_url_scheme="{lang}/{version}/{link}",
+    ... )
+    >>> conf["sitemap_url_scheme"]
+    '{lang}/{version}/{link}'
     """
     # Extensions
     ext_list = list(extensions) if extensions is not None else list(DEFAULT_EXTENSIONS)
@@ -425,11 +447,26 @@ def merge_sphinx_config(
         repo = source_repository.rstrip("/")
         conf["issue_url_tpl"] = f"{repo}/issues/{{issue_id}}"
 
-    # Auto-compute sphinxext.opengraph config
+    # Auto-compute sphinx_gp_opengraph + sphinx_gp_sitemap config from docs_url
     if docs_url:
-        conf["ogp_site_url"] = docs_url
+        # Normalize to trailing slash so urllib.parse.urljoin keeps any path
+        # component (e.g. "https://example.org/docs/") intact when joining
+        # relative page paths and image paths. urljoin drops the last path
+        # segment of the base when the base has no trailing slash, so
+        # docs_url="https://example.org/docs" would otherwise emit
+        # "https://example.org/page.html" (missing /docs) for both ogp_site_url
+        # and site_url consumers.
+        normalised_url = docs_url if docs_url.endswith("/") else docs_url + "/"
+        conf["ogp_site_url"] = normalised_url
         conf["ogp_site_name"] = project
         conf["ogp_image"] = "_static/img/icons/icon-192x192.png"
+        conf["site_url"] = normalised_url
+        # sphinx-gp-sitemap: git-pull.com sites deploy at the project root with
+        # no language or version path segment, so override the upstream
+        # default of "{lang}{version}{link}" to a flat scheme. Projects
+        # with translated or version-pinned hosting can pass a different
+        # ``sitemap_url_scheme`` via ``**overrides``.
+        conf["sitemap_url_scheme"] = "{link}"
 
     # Apply overrides last (can override auto-computed values)
     conf.update(overrides)

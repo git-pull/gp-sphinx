@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 import gp_sphinx
 from gp_sphinx.config import deep_merge, make_linkcode_resolve, merge_sphinx_config
 from gp_sphinx.defaults import DEFAULT_EXTENSIONS, DEFAULT_MYST_EXTENSIONS
@@ -314,9 +316,33 @@ def test_merge_sphinx_config_auto_ogp() -> None:
         copyright="2026",
         docs_url="https://test.git-pull.com",
     )
-    assert result["ogp_site_url"] == "https://test.git-pull.com"
+    # Trailing slash normalised so urllib.parse.urljoin keeps any path
+    # component intact when joining relative page paths and image paths.
+    assert result["ogp_site_url"] == "https://test.git-pull.com/"
     assert result["ogp_site_name"] == "test"
     assert result["ogp_image"] == "_static/img/icons/icon-192x192.png"
+
+
+def test_merge_sphinx_config_ogp_site_url_preserves_path_component() -> None:
+    """docs_url with a path keeps the path; urljoin against the result is correct.
+
+    Regression guard: without the trailing-slash normalisation,
+    urljoin("https://example.org/docs", "page.html") drops "/docs" and
+    returns "https://example.org/page.html", emitting broken canonical
+    URLs and image URLs for sites hosted at a path.
+    """
+    import urllib.parse
+
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        docs_url="https://example.org/docs",
+    )
+    assert result["ogp_site_url"] == "https://example.org/docs/"
+    assert result["site_url"] == "https://example.org/docs/"
+    joined = urllib.parse.urljoin(result["ogp_site_url"], "page.html")
+    assert joined == "https://example.org/docs/page.html"
 
 
 def test_merge_sphinx_config_no_ogp_without_docs_url() -> None:
@@ -327,6 +353,49 @@ def test_merge_sphinx_config_no_ogp_without_docs_url() -> None:
         copyright="2026",
     )
     assert "ogp_site_url" not in result
+
+
+def test_merge_sphinx_config_auto_sitemap_url_scheme() -> None:
+    """sitemap_url_scheme defaults to flat ``{link}`` when docs_url is set.
+
+    git-pull.com sites deploy at the project root, so the upstream
+    sphinx-sitemap default of ``{lang}{version}{link}`` would generate
+    URLs that 404 against the actual deploy target.
+    """
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        docs_url="https://test.git-pull.com",
+    )
+    assert result["sitemap_url_scheme"] == "{link}"
+    assert result["site_url"] == "https://test.git-pull.com/"
+
+
+def test_merge_sphinx_config_no_sitemap_url_scheme_without_docs_url() -> None:
+    """sitemap_url_scheme is not auto-set when docs_url is absent.
+
+    Without docs_url sphinx-gp-sitemap stays silent (no sitemap is emitted), so
+    leaving ``sitemap_url_scheme`` at the extension default is correct.
+    """
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert "sitemap_url_scheme" not in result
+
+
+def test_merge_sphinx_config_sitemap_url_scheme_override_wins() -> None:
+    """An explicit sitemap_url_scheme override beats the auto-set."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        docs_url="https://test.git-pull.com",
+        sitemap_url_scheme="{lang}/{version}/{link}",
+    )
+    assert result["sitemap_url_scheme"] == "{lang}/{version}/{link}"
 
 
 def test_merge_sphinx_config_override_auto_computed() -> None:
@@ -406,3 +475,31 @@ def test_merge_sphinx_config_release_matches_version() -> None:
         copyright="2026",
     )
     assert result["release"] == "1.2.3"
+
+
+def test_make_linkcode_resolve_uses_source_branch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """make_linkcode_resolve uses the provided source_branch for dev versions."""
+    import sys
+    import types
+
+    fake_module = types.ModuleType("fake")
+    fake_module.__file__ = "/tmp/fake/src/fake/__init__.py"
+    fake_module.__version__ = "1.0.0.dev0"  # type: ignore[attr-defined]
+
+    def dummy() -> None:
+        pass
+
+    fake_module.dummy = dummy  # type: ignore[attr-defined]
+
+    monkeypatch.setitem(sys.modules, "fake", fake_module)
+
+    resolver = make_linkcode_resolve(
+        fake_module,
+        "https://github.com/org/repo",
+        source_branch="custom-branch",
+    )
+    url = resolver("py", {"module": "fake", "fullname": "dummy"})
+    assert url is not None
+    assert "/blob/custom-branch/src/" in url

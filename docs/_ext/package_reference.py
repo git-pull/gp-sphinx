@@ -2,23 +2,30 @@
 
 Architecture
 ------------
-This Sphinx extension auto-generates the "Registered Surface" and "Copyable
-config snippet" sections that appear at the bottom of every
-``docs/packages/<name>.md`` page.  It works in three layers:
+This Sphinx extension auto-generates the "Copyable config snippet" and
+"Package metadata" sections that appear on every ``docs/packages/<name>.md``
+page.  Surface documentation (config values, directives, roles) is owned by
+the autodoc directives in ``sphinx-autodoc-sphinx`` (``autoconfigvalue``)
+and ``sphinx-autodoc-docutils`` (``autodirective-index`` /
+``autorole-index``) — invoke them on the page directly.
+
+It works in three layers:
 
 1. **Workspace discovery** (``workspace_packages()``) — walks
    ``packages/*/pyproject.toml`` to find every publishable package and reads
    its name, version, description, classifiers, and GitHub URL.
 
-2. **Surface extraction** (``collect_extension_surface()``) — imports the
-   module and passes a lightweight ``RecorderApp`` to its ``setup()``.
-   ``RecorderApp.__getattr__`` captures every ``app.add_*`` call so each
-   registered item (config value, directive, role, lexer, theme) flows
-   into a ``SurfaceDict`` without monkey-patching docutils globals.
+2. **Surface extraction** (``collect_extension_surface()``) — replays the
+   extension's ``setup()`` against
+   :func:`sphinx_autodoc_docutils.replay_setup`, the shared workspace
+   recorder, and maps the captured ``app.add_*`` calls into a
+   ``SurfaceDict``.  The collected surface is consumed by
+   ``_register_extension_objects()`` to populate the py-domain so
+   cross-references resolve.
 
-3. **Rendering** (``package_reference_markdown()``) — converts the collected
-   surface into a Markdown fragment (config snippet + tables), which the
-   ``PackageReferenceDirective`` injects into the page via a raw docutils node.
+3. **Rendering** (``package_reference_markdown()``) — emits the copyable
+   conf snippet and metadata block, which the ``PackageReferenceDirective``
+   injects into the page via a raw docutils node.
 
 Adding a new package
 --------------------
@@ -26,16 +33,12 @@ No code changes are required.  Once a ``packages/<name>/pyproject.toml``
 exists with a ``[project]`` table the package is picked up automatically on
 the next docs build.
 
-Extending the surface extractor
---------------------------------
-To capture a new ``app.add_*`` call, add a handler to the mock
-``RecorderApp`` class inside ``collect_extension_surface()``.  Follow the pattern
-of the existing ``add_directive`` / ``add_role`` handlers.
-
 Examples
 --------
 >>> package = workspace_packages()[0]
 >>> package["name"] in {
+...     "sphinx-gp-opengraph",
+...     "sphinx-gp-sitemap",
 ...     "gp-sphinx",
 ...     "sphinx-fonts",
 ...     "sphinx-gp-theme",
@@ -54,7 +57,6 @@ True
 
 from __future__ import annotations
 
-import configparser
 import importlib
 import inspect
 import logging
@@ -65,6 +67,8 @@ import sys
 import typing as t
 
 from sphinx.util.docutils import SphinxDirective
+
+from sphinx_autodoc_docutils import SetupRecorder, replay_setup
 
 if t.TYPE_CHECKING:
     from docutils import nodes
@@ -259,35 +263,38 @@ def render_types(types: object, default: object) -> str:
     return f"`{type(default).__name__}`"
 
 
-class RecorderApp:
-    """Lightweight recorder for Sphinx setup calls.
+# Re-export the shared recorder so existing references and doctests in this
+# module still work; new code should import SetupRecorder from
+# sphinx_autodoc_docutils directly.
+RecorderApp = SetupRecorder
+
+
+def _extract_arg(
+    index: int,
+    key: str,
+    args: tuple[object, ...],
+    kwargs: dict[str, object],
+) -> object | None:
+    """Pick a Sphinx app-method argument from positional or keyword form.
+
+    Sphinx APIs accept both forms — e.g. ``app.add_directive("foo", Foo)``
+    AND ``app.add_directive(name="foo", cls=Foo)`` — so a recorder consumer
+    that only indexes ``args[N]`` raises ``IndexError`` (or silently misses
+    the registration) on the keyword form. Mirror's the helper used in
+    ``sphinx_autodoc_docutils._directives``.
 
     Examples
     --------
-    >>> app = RecorderApp()
-    >>> app.add_config_value("demo", 1, "env")
-    >>> app.calls[0][0]
-    'add_config_value'
+    >>> _extract_arg(0, "name", ("foo",), {})
+    'foo'
+    >>> _extract_arg(0, "name", (), {"name": "foo"})
+    'foo'
+    >>> _extract_arg(1, "cls", (), {}) is None
+    True
     """
-
-    def __init__(self) -> None:
-        self.calls: list[tuple[str, tuple[object, ...], dict[str, object]]] = []
-
-    def __getattr__(self, name: str) -> t.Callable[..., None]:
-        """Record arbitrary Sphinx app API calls used by extension setup code.
-
-        Examples
-        --------
-        >>> app = RecorderApp()
-        >>> app.add_role("demo", object())
-        >>> app.calls[0][0]
-        'add_role'
-        """
-
-        def _record(*args: object, **kwargs: object) -> None:
-            self.calls.append((name, args, kwargs))
-
-        return _record
+    if len(args) > index:
+        return args[index]
+    return kwargs.get(key)
 
 
 def collect_extension_surface(module_name: str) -> SurfaceDict:
@@ -301,7 +308,7 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
     """
     ensure_workspace_imports()
     try:
-        module = importlib.import_module(module_name)
+        importlib.import_module(module_name)
     except ImportError:
         logger.warning("package-reference: could not import %r", module_name)
         return SurfaceDict(
@@ -312,9 +319,16 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
             lexers=[],
             themes=[],
         )
-    app = RecorderApp()
-    setup = t.cast("t.Callable[[object], object]", getattr(module, "setup"))
-    setup(app)
+    app = replay_setup(module_name)
+    if app is None:
+        return SurfaceDict(
+            module=module_name,
+            config_values=[],
+            directives=[],
+            roles=[],
+            lexers=[],
+            themes=[],
+        )
 
     config_values: list[dict[str, str]] = []
     directives: list[dict[str, str]] = []
@@ -324,26 +338,28 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
 
     for name, args, kwargs in app.calls:
         if name == "add_config_value":
-            if len(args) < 1:
+            option = _extract_arg(0, "name", args, kwargs)
+            if option is None:
                 continue
-            option = str(args[0])
-            default = kwargs.get("default", args[1] if len(args) > 1 else None)
-            rebuild = str(kwargs.get("rebuild", args[2] if len(args) > 2 else ""))
-            types = kwargs.get("types")
+            default = _extract_arg(1, "default", args, kwargs)
+            rebuild = _extract_arg(2, "rebuild", args, kwargs) or ""
+            types = _extract_arg(3, "types", args, kwargs)
             config_values.append(
                 {
-                    "name": option,
+                    "name": str(option),
                     "default": render_value(default),
                     "rebuild": f"`{rebuild}`" if rebuild else "",
                     "types": render_types(types, default),
                 },
             )
         elif name == "add_directive":
-            directive_name = str(args[0])
-            directive_cls = args[1]
+            directive_name = _extract_arg(0, "name", args, kwargs)
+            directive_cls = _extract_arg(1, "cls", args, kwargs)
+            if directive_name is None or directive_cls is None:
+                continue
             directives.append(
                 {
-                    "name": directive_name,
+                    "name": str(directive_name),
                     "kind": "directive",
                     "callable": object_path(directive_cls),
                     "summary": summarize(getattr(directive_cls, "__doc__", None)),
@@ -351,9 +367,11 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                 },
             )
         elif name == "add_directive_to_domain":
-            domain = str(args[0])
-            directive_name = str(args[1])
-            directive_cls = args[2]
+            domain = _extract_arg(0, "domain", args, kwargs)
+            directive_name = _extract_arg(1, "name", args, kwargs)
+            directive_cls = _extract_arg(2, "cls", args, kwargs)
+            if domain is None or directive_name is None or directive_cls is None:
+                continue
             directives.append(
                 {
                     "name": f"{domain}:{directive_name}",
@@ -364,8 +382,10 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                 },
             )
         elif name == "add_crossref_type":
-            directive_name = str(args[0])
-            role_name = str(args[1] if len(args) > 1 else args[0])
+            directive_name = _extract_arg(0, "directivename", args, kwargs)
+            if directive_name is None:
+                continue
+            role_name = _extract_arg(1, "rolename", args, kwargs) or directive_name
             directives.append(
                 {
                     "name": f"std:{directive_name}",
@@ -384,20 +404,24 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                 },
             )
         elif name == "add_role":
-            role_name = str(args[0])
-            role_fn = args[1]
+            role_name = _extract_arg(0, "name", args, kwargs)
+            role_fn = _extract_arg(1, "role", args, kwargs)
+            if role_name is None or role_fn is None:
+                continue
             role_items.append(
                 {
-                    "name": role_name,
+                    "name": str(role_name),
                     "kind": "role",
                     "callable": object_path(role_fn),
                     "summary": summarize(getattr(role_fn, "__doc__", None)),
                 },
             )
         elif name == "add_role_to_domain":
-            domain = str(args[0])
-            role_name = str(args[1])
-            role_fn = args[2]
+            domain = _extract_arg(0, "domain", args, kwargs)
+            role_name = _extract_arg(1, "name", args, kwargs)
+            role_fn = _extract_arg(2, "role", args, kwargs)
+            if domain is None or role_name is None or role_fn is None:
+                continue
             role_items.append(
                 {
                     "name": f"{domain}:{role_name}",
@@ -407,17 +431,25 @@ def collect_extension_surface(module_name: str) -> SurfaceDict:
                 },
             )
         elif name == "add_lexer":
+            alias = _extract_arg(0, "alias", args, kwargs)
+            lexer = _extract_arg(1, "lexer", args, kwargs)
+            if alias is None or lexer is None:
+                continue
             lexers.append(
                 {
-                    "name": str(args[0]),
-                    "callable": object_path(args[1]),
+                    "name": str(alias),
+                    "callable": object_path(lexer),
                 },
             )
         elif name == "add_html_theme":
+            theme_name = _extract_arg(0, "name", args, kwargs)
+            theme_path = _extract_arg(1, "theme_path", args, kwargs)
+            if theme_name is None or theme_path is None:
+                continue
             themes.append(
                 {
-                    "name": str(args[0]),
-                    "path": f"`{args[1]}`",
+                    "name": str(theme_name),
+                    "path": f"`{theme_path}`",
                 },
             )
 
@@ -438,8 +470,8 @@ def object_path(value: object) -> str:
 
     Examples
     --------
-    >>> object_path(RecorderApp)
-    '{py:obj}`~package_reference.RecorderApp`'
+    >>> object_path(SurfaceDict)
+    '{py:obj}`~package_reference.SurfaceDict`'
     """
     module_name = getattr(value, "__module__", type(value).__module__)
     object_name = getattr(value, "__name__", type(value).__name__)
@@ -487,33 +519,19 @@ def directive_options_markdown(directive_cls: object) -> str:
     return "\n".join(lines)
 
 
-def theme_options(package_dir: pathlib.Path) -> list[str]:
-    """Return theme option names declared in a package ``theme.conf`` file.
-
-    Examples
-    --------
-    >>> "light_logo" in theme_options(workspace_root() / "packages" / "sphinx-gp-theme")
-    True
-    """
-    theme_conf = package_dir / "src" / "sphinx_gp_theme" / "theme" / "theme.conf"
-    if not theme_conf.exists():
-        return []
-    parser = configparser.ConfigParser()
-    parser.read(theme_conf)
-    if "options" not in parser:
-        return []
-    return sorted(parser["options"].keys())
-
-
 def package_reference_markdown(package_name: str) -> str:
-    """Render the generated Markdown fragment for a workspace package page.
+    """Render the copyable conf snippet and metadata block for a package page.
+
+    Surface documentation (config values, directives, roles, lexers, themes)
+    is owned by the autodoc directives in ``sphinx-autodoc-sphinx`` and
+    ``sphinx-autodoc-docutils`` — invoke them directly on the page.
 
     Returns an empty string and logs a warning when ``package_name`` is not
     found among the workspace packages.
 
     Examples
     --------
-    >>> "Registered Surface" in package_reference_markdown("sphinx-fonts")
+    >>> "Copyable config snippet" in package_reference_markdown("sphinx-fonts")
     True
     >>> "pypi.org/project/sphinx-fonts" in package_reference_markdown("sphinx-fonts")
     True
@@ -527,7 +545,6 @@ def package_reference_markdown(package_name: str) -> str:
     if package is None:
         logger.warning("package-reference: unknown package %r", package_name)
         return ""
-    package_dir = pathlib.Path(package["package_dir"])
     module_name = package["module_name"]
     extension_blocks = [
         collect_extension_surface(name) for name in extension_modules(module_name)
@@ -566,117 +583,13 @@ def package_reference_markdown(package_name: str) -> str:
     if package_name == "gp-sphinx":
         lines.extend(
             [
-                "## Registered Surface",
+                "## Public surface",
                 "",
                 "This package is a coordinator rather than a Sphinx extension module.",
                 "Its public runtime surface is documented in {doc}`/configuration` and {doc}`/api`.",
                 "",
             ],
         )
-        return "\n".join(lines)
-
-    lines.extend(["## Registered Surface", ""])
-
-    for block in extension_blocks:
-        lines.extend([f"### {block['module']}", ""])
-        config_rows = block["config_values"]
-        if config_rows:
-            lines.extend(
-                [
-                    "#### Config values",
-                    "",
-                    "| Name | Default | Rebuild | Types |",
-                    "| --- | --- | --- | --- |",
-                ],
-            )
-            for row in config_rows:
-                lines.append(
-                    f"| `{row['name']}` | {row['default']} | {row['rebuild']} | {row['types']} |",
-                )
-            lines.append("")
-
-        directive_rows = block["directives"]
-        if directive_rows:
-            lines.extend(
-                [
-                    "#### Directives",
-                    "",
-                    "| Name | Kind | Callable | Summary |",
-                    "| --- | --- | --- | --- |",
-                ],
-            )
-            for row in directive_rows:
-                lines.append(
-                    f"| `{row['name']}` | {row['kind']} | {row['callable']} | {row['summary']} |",
-                )
-            lines.append("")
-            for row in directive_rows:
-                if row["options"]:
-                    lines.extend(
-                        [
-                            f"##### {row['name']} options",
-                            row["options"],
-                            "",
-                        ],
-                    )
-
-        role_rows = block["roles"]
-        if role_rows:
-            lines.extend(
-                [
-                    "#### Roles",
-                    "",
-                    "| Name | Kind | Callable | Summary |",
-                    "| --- | --- | --- | --- |",
-                ],
-            )
-            for row in role_rows:
-                lines.append(
-                    f"| `{row['name']}` | {row['kind']} | {row['callable']} | {row['summary']} |",
-                )
-            lines.append("")
-
-        lexer_rows = block["lexers"]
-        if lexer_rows:
-            lines.extend(
-                [
-                    "#### Lexers",
-                    "",
-                    "| Name | Callable |",
-                    "| --- | --- |",
-                ],
-            )
-            for row in lexer_rows:
-                lines.append(f"| `{row['name']}` | {row['callable']} |")
-            lines.append("")
-
-        theme_rows = block["themes"]
-        if theme_rows:
-            lines.extend(
-                [
-                    "#### Theme registration",
-                    "",
-                    "| Theme | Path |",
-                    "| --- | --- |",
-                ],
-            )
-            for row in theme_rows:
-                lines.append(f"| `{row['name']}` | {row['path']} |")
-            lines.append("")
-
-    if module_name == "sphinx_gp_theme":
-        options = theme_options(package_dir)
-        lines.extend(
-            [
-                "### Theme options (theme.conf)",
-                "",
-                "| Option |",
-                "| --- |",
-            ],
-        )
-        for option in options:
-            lines.append(f"| `{option}` |")
-        lines.append("")
 
     return "\n".join(lines)
 
@@ -767,19 +680,8 @@ def _register_extension_objects(
         pkg_docname = f"packages/{package['name']}"
 
         for ext_module_name in extension_modules(package["module_name"]):
-            try:
-                module = importlib.import_module(ext_module_name)
-            except ImportError:
-                continue
-
-            setup_fn = getattr(module, "setup", None)
-            if not callable(setup_fn):
-                continue
-
-            recorder = RecorderApp()
-            try:
-                setup_fn(recorder)
-            except Exception:
+            recorder = replay_setup(ext_module_name)
+            if recorder is None:
                 continue
 
             raw_objs: list[tuple[object, str]] = []  # (obj, objtype)
