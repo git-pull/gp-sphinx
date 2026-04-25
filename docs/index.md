@@ -138,6 +138,6 @@ packages/sphinx-gp-theme
 :caption: SEO
 :hidden:
 
-packages/gp-opengraph
+packages/sphinx-gp-opengraph
 packages/gp-sitemap
 ```

@@ -49,7 +49,7 @@ globals().update(conf)
 
 - Shared extension defaults, theme defaults, fonts, MyST, napoleon, copybutton, and rediraffe settings.
 - Auto-computed `issue_url_tpl` and theme source-repository wiring from `source_repository`.
-- Auto-computed SEO values when `docs_url` is set: `ogp_site_url`, `ogp_site_name`, `ogp_image` for {doc}`gp-opengraph`, plus `site_url` and `sitemap_url_scheme` for {doc}`gp-sitemap`. See {ref}`from-docs_url` for the canonical mapping.
+- Auto-computed SEO values when `docs_url` is set: `ogp_site_url`, `ogp_site_name`, `ogp_image` for {doc}`sphinx-gp-opengraph`, plus `site_url` and `sitemap_url_scheme` for {doc}`gp-sitemap`. See {ref}`from-docs_url` for the canonical mapping.
 - A `setup(app)` hook that registers `js/spa-nav.js` and removes `tabs.js` after HTML builds.
 - Support for appending {py:mod}`sphinx:sphinx.ext.linkcode` automatically when `linkcode_resolve` is supplied in `**overrides`.
 
@@ -57,12 +57,12 @@ See {doc}`/configuration` for the complete parameter reference and every shared 
 
 ## SEO emission for free
 
-`gp_opengraph` and `gp_sitemap` are members of
+`sphinx_gp_opengraph` and `gp_sitemap` are members of
 {py:data}`~gp_sphinx.defaults.DEFAULT_EXTENSIONS`, so every project
 that calls `merge_sphinx_config()` loads them automatically. Passing
 `docs_url=` is the only step required for default SEO emission —
 gp-sphinx fills in the upstream config keys both extensions need.
-Per-package details live on the {doc}`gp-opengraph` and
+Per-package details live on the {doc}`sphinx-gp-opengraph` and
 {doc}`gp-sitemap` pages.
 
 :::{admonition} Live example

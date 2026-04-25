@@ -1,4 +1,4 @@
-"""Tests for gp_opengraph._description.
+"""Tests for sphinx_gp_opengraph._description.
 
 Build small doctrees via docutils and feed them into ``DescriptionParser``,
 asserting the visitor extracts the expected prose and honors length caps.
@@ -10,7 +10,7 @@ from docutils.frontend import OptionParser
 from docutils.parsers.rst import Parser as RstParser
 from docutils.utils import new_document
 
-from gp_opengraph._description import get_description
+from sphinx_gp_opengraph._description import get_description
 
 
 def _parse_rst(source: str):  # type: ignore[no-untyped-def]

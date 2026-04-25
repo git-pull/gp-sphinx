@@ -4,7 +4,7 @@ Ported verbatim from ``sphinxext.opengraph._title_parser`` (v0.13.0).
 
 Examples
 --------
->>> from gp_opengraph._title import get_title
+>>> from sphinx_gp_opengraph._title import get_title
 >>> get_title("<em>libtmux</em>-mcp")
 ('libtmux-mcp', '-mcp')
 """

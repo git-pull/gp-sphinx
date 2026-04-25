@@ -1,4 +1,4 @@
-"""Fixtures for gp_opengraph integration tests.
+"""Fixtures for sphinx_gp_opengraph integration tests.
 
 Builds a tiny Sphinx project via the shared scenario cache (see
 ``tests/_sphinx_scenarios.py``), overriding ``ogp_*`` config values per
@@ -25,8 +25,8 @@ from tests._sphinx_scenarios import (
 )
 
 _BASE_CONF = """\
-project = "gp-opengraph-test"
-extensions = ["myst_parser", "gp_opengraph"]
+project = "sphinx-gp-opengraph-test"
+extensions = ["myst_parser", "sphinx_gp_opengraph"]
 master_doc = "index"
 source_suffix = {".md": "markdown"}
 exclude_patterns = []
@@ -34,7 +34,7 @@ html_theme = "basic"
 """
 
 _BASE_INDEX = """\
-# Welcome to gp-opengraph-test
+# Welcome to sphinx-gp-opengraph-test
 
 This is the body paragraph that should become the og:description.
 

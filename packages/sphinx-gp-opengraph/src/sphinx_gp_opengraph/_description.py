@@ -11,7 +11,7 @@ Ported verbatim from ``sphinxext.opengraph._description_parser`` (v0.13.0).
 
 Examples
 --------
->>> from gp_opengraph._description import get_description, DescriptionParser
+>>> from sphinx_gp_opengraph._description import get_description, DescriptionParser
 >>> callable(get_description)
 True
 >>> issubclass(DescriptionParser, object)

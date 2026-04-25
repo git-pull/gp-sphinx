@@ -1,6 +1,6 @@
-"""Warning-emission tests for gp_opengraph.
+"""Warning-emission tests for sphinx_gp_opengraph.
 
-``ogp_social_cards`` is accepted-but-ignored in gp-opengraph. Setting it
+``ogp_social_cards`` is accepted-but-ignored in sphinx-gp-opengraph. Setting it
 must emit a one-line warning pointing users at the static-image
 workflow.
 """
@@ -12,7 +12,7 @@ import typing as t
 
 import pytest
 
-from gp_opengraph import _warn_if_social_cards_used
+from sphinx_gp_opengraph import _warn_if_social_cards_used
 
 
 class WarnCase(t.NamedTuple):
@@ -58,7 +58,7 @@ def test_deprecation_warning(
         ogp_social_cards = case.ogp_social_cards
 
     caplog.clear()
-    with caplog.at_level(logging.WARNING, logger="gp_opengraph"):
+    with caplog.at_level(logging.WARNING, logger="sphinx_gp_opengraph"):
         _warn_if_social_cards_used(
             app=None,  # type: ignore[arg-type]
             config=t.cast("t.Any", _Config()),

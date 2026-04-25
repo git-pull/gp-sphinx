@@ -1,4 +1,4 @@
-"""Functional tests for gp_opengraph's html-page-context meta emission.
+"""Functional tests for sphinx_gp_opengraph's html-page-context meta emission.
 
 Each case builds a tiny real Sphinx site with the extension active and
 asserts the emitted ``<meta ...>`` tags under the expected keys.
@@ -34,8 +34,8 @@ CASES: tuple[MetaCase, ...] = (
         index_markdown=_DEFAULT_INDEX,
         expected_present={
             "og:type": "website",
-            "og:title": "Welcome to gp-opengraph-test",
-            "og:site_name": "gp-opengraph-test",
+            "og:title": "Welcome to sphinx-gp-opengraph-test",
+            "og:site_name": "sphinx-gp-opengraph-test",
             "og:url": "https://example.org/index.html",
         },
         expected_absent=("og:image", "og:image:alt"),
@@ -121,5 +121,5 @@ def test_og_description_extracted_from_body(
     assert "og:description" in built.meta
     description = built.meta["og:description"]
     # Title should be elided; body should be present.
-    assert "Welcome to gp-opengraph-test" not in description
+    assert "Welcome to sphinx-gp-opengraph-test" not in description
     assert "body paragraph" in description

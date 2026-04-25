@@ -642,8 +642,8 @@ def smoke_sphinx_ux_autodoc_layout(dist_dir: pathlib.Path, version: str) -> None
         )
 
 
-def smoke_gp_opengraph(dist_dir: pathlib.Path, version: str) -> None:
-    """Verify the gp-opengraph extension installs and imports cleanly."""
+def smoke_sphinx_gp_opengraph(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the sphinx-gp-opengraph extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
         python_path = _create_venv(pathlib.Path(tmp))
         _install_into_venv(
@@ -653,8 +653,8 @@ def smoke_gp_opengraph(dist_dir: pathlib.Path, version: str) -> None:
         _run_python(
             python_path,
             (
-                "import gp_opengraph; "
-                "from gp_opengraph import setup; "
+                "import sphinx_gp_opengraph; "
+                "from sphinx_gp_opengraph import setup; "
                 "assert callable(setup)"
             ),
         )
@@ -694,7 +694,7 @@ def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
 
 
 _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
-    "gp-opengraph": smoke_gp_opengraph,
+    "sphinx-gp-opengraph": smoke_sphinx_gp_opengraph,
     "gp-sitemap": smoke_gp_sitemap,
     "gp-sphinx": smoke_gp_sphinx,
     "sphinx-autodoc-argparse": smoke_sphinx_autodoc_argparse,

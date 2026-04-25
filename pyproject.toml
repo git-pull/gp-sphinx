@@ -27,7 +27,7 @@ sphinx-autodoc-fastmcp = { workspace = true }
 sphinx-autodoc-typehints-gp = { workspace = true }
 sphinx-ux-badges = { workspace = true }
 sphinx-ux-autodoc-layout = { workspace = true }
-gp-opengraph = { workspace = true }
+sphinx-gp-opengraph = { workspace = true }
 gp-sitemap = { workspace = true }
 gp-sphinx = { workspace = true }
 
@@ -42,7 +42,7 @@ dev = [
   "sphinx-autodoc-fastmcp",
   "sphinx-ux-badges",
   "sphinx-ux-autodoc-layout",
-  "gp-opengraph",
+  "sphinx-gp-opengraph",
   "gp-sitemap",
   # Docs
   "sphinx-autobuild",
@@ -154,7 +154,7 @@ known-first-party = [
   "sphinx_autodoc_typehints_gp",
   "sphinx_ux_badges",
   "sphinx_ux_autodoc_layout",
-  "gp_opengraph",
+  "sphinx_gp_opengraph",
   "gp_sitemap",
 ]
 combine-as-imports = true
@@ -203,7 +203,7 @@ testpaths = [
   "packages/sphinx-autodoc-typehints-gp/src",
   "packages/sphinx-ux-autodoc-layout/src",
   "packages/sphinx-ux-badges/src",
-  "packages/gp-opengraph/src",
+  "packages/sphinx-gp-opengraph/src",
   "packages/gp-sitemap/src",
 ]
 filterwarnings = [

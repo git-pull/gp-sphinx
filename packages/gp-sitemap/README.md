@@ -148,7 +148,7 @@ change the configuration surface.
 
 ## See also
 
-- [gp-opengraph](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-opengraph)
+- [sphinx-gp-opengraph](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-opengraph)
   — companion package for OpenGraph meta-tag emission
 - [gp-sphinx](https://github.com/git-pull/gp-sphinx) — the umbrella
   docs platform; auto-derives `site_url` and `sitemap_url_scheme`

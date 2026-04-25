@@ -12,7 +12,7 @@ tags alongside an optional ``<meta name="description">``.
 
 Examples
 --------
->>> from gp_opengraph import setup
+>>> from sphinx_gp_opengraph import setup
 >>> callable(setup)
 True
 """
@@ -27,11 +27,10 @@ import typing as t
 import urllib.parse
 
 from docutils import nodes
+from sphinx_gp_opengraph._description import get_description
+from sphinx_gp_opengraph._meta import get_meta_description
+from sphinx_gp_opengraph._title import get_title
 from sphinx.application import Sphinx
-
-from gp_opengraph._description import get_description
-from gp_opengraph._meta import get_meta_description
-from gp_opengraph._title import get_title
 
 if t.TYPE_CHECKING:
     from sphinx.builders import Builder
@@ -254,7 +253,7 @@ def _make_tag(
 def _warn_if_social_cards_used(app: Sphinx, config: Config) -> None:
     """Emit a one-line deprecation warning when ``ogp_social_cards`` is set.
 
-    gp-opengraph deliberately omits the matplotlib-based card generator
+    sphinx-gp-opengraph deliberately omits the matplotlib-based card generator
     upstream ships. The ``ogp_social_cards`` config value remains
     registered so existing ``conf.py`` files do not error — but its value
     is ignored. Users who want per-page social preview images should
@@ -264,7 +263,7 @@ def _warn_if_social_cards_used(app: Sphinx, config: Config) -> None:
     del app  # unused; required by Sphinx's config-inited signature
     if config.ogp_social_cards:
         logger.warning(
-            "gp-opengraph: ogp_social_cards ignored — gp-opengraph ships "
+            "sphinx-gp-opengraph: ogp_social_cards ignored — sphinx-gp-opengraph ships "
             "no card generator; use a static PNG via ogp_image (site "
             "default) or per-page 'og:image' frontmatter",
         )
@@ -285,7 +284,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
 
     Examples
     --------
-    >>> from gp_opengraph import setup
+    >>> from sphinx_gp_opengraph import setup
     >>> callable(setup)
     True
     """

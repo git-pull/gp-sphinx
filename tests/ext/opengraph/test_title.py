@@ -1,8 +1,8 @@
-"""Tests for gp_opengraph._title.get_title."""
+"""Tests for sphinx_gp_opengraph._title.get_title."""
 
 from __future__ import annotations
 
-from gp_opengraph._title import get_title
+from sphinx_gp_opengraph._title import get_title
 
 
 def test_plain_text_title_round_trips() -> None:

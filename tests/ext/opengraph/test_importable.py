@@ -1,15 +1,15 @@
-"""Scaffolding-level smoke tests for gp-opengraph."""
+"""Scaffolding-level smoke tests for sphinx-gp-opengraph."""
 
 from __future__ import annotations
 
 import types
 import typing as t
 
-import gp_opengraph
+import sphinx_gp_opengraph
 
 
 def test_import_exposes_setup() -> None:
-    assert callable(gp_opengraph.setup)
+    assert callable(sphinx_gp_opengraph.setup)
 
 
 def test_setup_registers_config_values_and_connects_hook() -> None:
@@ -24,7 +24,7 @@ def test_setup_registers_config_values_and_connects_hook() -> None:
         def connect(self, event: str, handler: t.Callable[..., t.Any]) -> None:
             connected.append(event)
 
-    meta = gp_opengraph.setup(t.cast("t.Any", _FakeApp()))
+    meta = sphinx_gp_opengraph.setup(t.cast("t.Any", _FakeApp()))
     assert meta["version"]
     assert meta["parallel_read_safe"] is True
     assert meta["parallel_write_safe"] is True

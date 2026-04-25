@@ -33,7 +33,7 @@ dependencies = [
   "sphinx-autodoc-typehints-gp==0.0.1a9",
   "sphinx-inline-tabs",
   "sphinx-copybutton",
-  "gp-opengraph==0.0.1a9",
+  "sphinx-gp-opengraph==0.0.1a9",
   "gp-sitemap==0.0.1a9",
   "sphinxext-rediraffe",
   "sphinx-design",

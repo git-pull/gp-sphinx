@@ -84,7 +84,7 @@ DEFAULT_EXTENSIONS: list[str] = [
     "sphinx.ext.todo",
     "sphinx_inline_tabs",
     "sphinx_copybutton",
-    "gp_opengraph",
+    "sphinx_gp_opengraph",
     "gp_sitemap",
     "sphinxext.rediraffe",
     "sphinx_design",

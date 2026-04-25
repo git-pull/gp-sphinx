@@ -1,8 +1,8 @@
-"""Tests for gp_opengraph._meta.get_meta_description."""
+"""Tests for sphinx_gp_opengraph._meta.get_meta_description."""
 
 from __future__ import annotations
 
-from gp_opengraph._meta import get_meta_description
+from sphinx_gp_opengraph._meta import get_meta_description
 
 
 def test_detects_description_with_content() -> None:

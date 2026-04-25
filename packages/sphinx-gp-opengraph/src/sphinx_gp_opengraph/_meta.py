@@ -6,7 +6,7 @@ returns ``str | bool | None``).
 
 Examples
 --------
->>> from gp_opengraph._meta import get_meta_description
+>>> from sphinx_gp_opengraph._meta import get_meta_description
 >>> get_meta_description('<meta name="description" content="hello">')
 'hello'
 >>> get_meta_description('<meta name="other" content="hi">') is None
