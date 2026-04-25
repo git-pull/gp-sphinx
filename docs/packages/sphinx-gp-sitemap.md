@@ -22,11 +22,11 @@ dependency on `sphinx-last-updated-by-git` is downgraded to a
 soft on-demand load that activates only under
 `sitemap_show_lastmod = True`.
 
-For install, the full config-key reference, builder support, locale
-rules, and the lastmod / migration story, see the package
+For install, builder support, locale rules, and the lastmod /
+migration story, see the package
 [README](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-sitemap#readme).
 This page covers integration with gp-sphinx, the emission pipeline,
-and the trade-offs.
+the trade-offs, and the auto-generated config-value reference.
 
 ## Integration with gp-sphinx
 
@@ -122,6 +122,16 @@ some custom builders skip it. The `setup()` body wraps the
 `contextlib.suppress(ExtensionError)` so the extension is robust
 against either layout. The bare `except BaseException` upstream uses
 is replaced by the narrow `ExtensionError` catch.
+
+## Config reference
+
+Generated from `app.add_config_value()` registrations in
+[`sphinx_gp_sitemap/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-sitemap/src/sphinx_gp_sitemap/__init__.py).
+
+```{eval-rst}
+.. autoconfigvalue-index:: sphinx_gp_sitemap
+.. autoconfigvalues:: sphinx_gp_sitemap
+```
 
 ## Package reference
 

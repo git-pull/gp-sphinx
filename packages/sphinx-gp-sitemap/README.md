@@ -18,7 +18,9 @@ $ pip install sphinx-gp-sitemap
 
 When you depend on gp-sphinx, this extension is already loaded — see
 [Auto-derived values](#auto-derived-values-when-used-with-gp-sphinx)
-below.
+below. The full config-key reference is auto-generated on the
+[package docs page](https://gp-sphinx.git-pull.com/packages/sphinx-gp-sitemap/)
+from the live `app.add_config_value()` registrations.
 
 ## Minimum viable conf.py
 
@@ -64,24 +66,6 @@ for the canonical mapping table.
 
 Other builders (`text`, `latex`, `singlehtml`, …) are unaffected — they
 do not fire `html-page-context`, so no sitemap is written.
-
-## Config-key reference
-
-Every key is registered with `rebuild=""` and the indicated default.
-
-| Key | Type | Default | Purpose |
-| --- | --- | --- | --- |
-| `site_url` | `str \| None` | `None` | Site base URL (auto-derived under gp-sphinx). Falls back to `html_baseurl` |
-| `sitemap_url_scheme` | `str` | `"{lang}{version}{link}"` | Per-URL template (auto-derived under gp-sphinx as `"{link}"`) |
-| `sitemap_locales` | `list \| None` | `[]` (auto-detect) | Locales to emit as `hreflang` alternates |
-| `sitemap_filename` | `str` | `"sitemap.xml"` | Output filename written under the build's `outdir` |
-| `sitemap_excludes` | `list[str]` | `[]` | fnmatch patterns matched against the relative URL |
-| `sitemap_show_lastmod` | `bool` | `False` | Emit `<lastmod>` dates sourced from git commit timestamps |
-| `sitemap_indent` | `int` | `0` | XML indent width; `0` minifies, `>0` pretty-prints |
-
-The implicit `html_baseurl` config value is also (re-)registered when
-no upstream extension has done so — it serves as the resolution
-fallback for `site_url`.
 
 ## Multi-language sites
 
