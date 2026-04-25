@@ -20,11 +20,11 @@ exposes and emits the same `<meta>` tags, with one deliberate
 omission: the matplotlib-based social-card generator is not bundled.
 That is why the package has zero non-Sphinx runtime dependencies.
 
-For install, the full config-key reference, per-page overrides, and the
+For install, per-page overrides, Twitter-card markup, and the
 verbatim deprecation-warning text, see the package
 [README](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-opengraph#readme).
 This page covers integration with gp-sphinx, the emission pipeline,
-and the trade-offs.
+the trade-offs, and the auto-generated config-value reference.
 
 ## Integration with gp-sphinx
 
@@ -98,6 +98,16 @@ workflow documented in the README.
 The extension never writes shared state — every emission is
 self-contained inside the per-page hook — so it is safe under any
 `sphinx-build -j N` value.
+
+## Config reference
+
+Generated from `app.add_config_value()` registrations in
+[`sphinx_gp_opengraph/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-opengraph/src/sphinx_gp_opengraph/__init__.py).
+
+```{eval-rst}
+.. autoconfigvalue-index:: sphinx_gp_opengraph
+.. autoconfigvalues:: sphinx_gp_opengraph
+```
 
 ## Package reference
 

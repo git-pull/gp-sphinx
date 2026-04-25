@@ -17,7 +17,9 @@ $ pip install sphinx-gp-opengraph
 
 When you depend on gp-sphinx, this extension is already loaded — see
 [Auto-derived values](#auto-derived-values-when-used-with-gp-sphinx)
-below.
+below. The full config-key reference is auto-generated on the
+[package docs page](https://gp-sphinx.git-pull.com/packages/sphinx-gp-opengraph/)
+from the live `app.add_config_value()` registrations.
 
 ## Minimum viable conf.py
 
@@ -79,26 +81,7 @@ Body paragraph that becomes og:description.
 Any other `og:*` field-list entry is forwarded to the page head verbatim,
 so `og:type`, `og:audio`, etc. work without code changes.
 
-## Config-key reference
-
-Every key is registered with `rebuild="html"` and the indicated default.
-Per-page front-matter wins over these site-wide values.
-
-| Key | Type | Default | Purpose |
-| --- | --- | --- | --- |
-| `ogp_site_url` | `str` | `""` | Site base URL; required for absolute `og:url` (auto-derived under gp-sphinx) |
-| `ogp_canonical_url` | `str` | `""` | Separate canonical URL; falls back to `ogp_site_url` when empty |
-| `ogp_description_length` | `int` | `200` | Truncation cap for `og:description` |
-| `ogp_image` | `str \| None` | `None` | Site-default OG image (auto-derived under gp-sphinx) |
-| `ogp_image_alt` | `str \| bool \| None` | `None` | Alt text; falls back to `og:site_name`, then `og:title`. `False` suppresses the alt tag |
-| `ogp_use_first_image` | `bool` | `False` | Use the first in-page image as `og:image` when no override is set |
-| `ogp_type` | `str` | `"website"` | Value of the `og:type` tag |
-| `ogp_site_name` | `str \| bool \| None` | `None` (→ `project`) | `False` suppresses the `og:site_name` tag |
-| `ogp_social_cards` | `dict \| None` | `None` | Accepted-but-ignored — see [Migration](#migration-from-sphinxext-opengraph) |
-| `ogp_custom_meta_tags` | `list[str]` | `()` | Raw `<meta>` tags emitted verbatim — use this for Twitter cards |
-| `ogp_enable_meta_description` | `bool` | `True` | Emit a matching `<meta name="description">` |
-
-### Twitter cards
+## Twitter cards
 
 sphinx-gp-opengraph does not register a separate `twitter_*` namespace;
 crawlers fall back to `og:*` for most fields. Append explicit Twitter
