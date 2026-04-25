@@ -374,15 +374,23 @@ def _hreflang_formatter(lang: str) -> str:
 def _resolve_locales(app: Sphinx) -> list[str]:
     """Return the list of locale codes to emit as hreflang alternates.
 
-    If ``sitemap_locales`` is explicitly set (and not ``[None]``), its
-    values win. Otherwise, auto-detect by listing sub-directories of
-    each ``locale_dirs`` entry.
+    If ``sitemap_locales`` is explicitly set, its values win — except
+    that any sequence whose elements are all ``None`` is treated as
+    the documented suppress-hreflang sentinel (``[None]`` in the
+    README, ``(None,)`` if the user wrote a tuple). Otherwise,
+    auto-detect by listing sub-directories of each ``locale_dirs``
+    entry.
     """
     configured: list[str] | None = app.builder.config.sitemap_locales
     if configured:
-        if configured == [None]:
+        # Sentinel: any sequence of only-None elements suppresses
+        # alternates. The list-vs-tuple distinction is invisible to
+        # the user (Sphinx accepts both with only an advisory warning),
+        # so accept either spelling rather than crashing in
+        # _hreflang_formatter on a stray None.
+        if all(item is None for item in configured):
             return []
-        return list(configured)
+        return [item for item in configured if item is not None]
 
     locales: list[str] = []
     confdir = pathlib.Path(app.confdir)
