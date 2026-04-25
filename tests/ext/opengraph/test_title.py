@@ -36,3 +36,21 @@ def test_get_title_with_void_elements() -> None:
     title, text_outside_tags = get_title("text<br>more text<img src='test.png'>final")
     assert title == "textmore textfinal"
     assert text_outside_tags == "textmore textfinal"
+
+
+def test_get_title_with_xhtml_self_closing_void_elements() -> None:
+    """XHTML self-closing void tags (e.g. <br/>) keep level balanced.
+
+    ``HTMLParser`` routes ``<br/>`` through ``handle_startendtag``, whose
+    default fires both ``handle_starttag`` AND ``handle_endtag``. Filtering
+    only the start path would leave the unbalanced end decrement, sending
+    ``self.level`` negative and dropping every subsequent chunk from
+    ``text_outside_tags``.
+    """
+    all_text, outside = get_title("before<br/>after")
+    assert all_text == "beforeafter"
+    assert outside == "beforeafter"
+
+    all_text, outside = get_title("a<img src='x'/>b<hr/>c")
+    assert all_text == "abc"
+    assert outside == "abc"

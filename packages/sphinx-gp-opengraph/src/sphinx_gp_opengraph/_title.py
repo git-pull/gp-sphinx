@@ -38,6 +38,26 @@ def get_title(title: str) -> tuple[str, str]:
     return htp.text, htp.text_outside_tags
 
 
+_VOID_ELEMENTS = frozenset(
+    {
+        "area",
+        "base",
+        "br",
+        "col",
+        "embed",
+        "hr",
+        "img",
+        "input",
+        "link",
+        "meta",
+        "param",
+        "source",
+        "track",
+        "wbr",
+    },
+)
+
+
 class HTMLTextParser(html.parser.HTMLParser):
     """Track text-inside-tags vs text-outside-tags while parsing HTML."""
 
@@ -51,27 +71,21 @@ class HTMLTextParser(html.parser.HTMLParser):
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         """Increase the tag-nesting level (ignoring void elements)."""
-        if tag not in {
-            "br",
-            "img",
-            "hr",
-            "meta",
-            "link",
-            "input",
-            "area",
-            "base",
-            "col",
-            "embed",
-            "param",
-            "source",
-            "track",
-            "wbr",
-        }:
+        if tag not in _VOID_ELEMENTS:
             self.level += 1
 
     def handle_endtag(self, tag: str) -> None:
-        """Decrease the tag-nesting level."""
-        self.level -= 1
+        """Decrease the tag-nesting level (ignoring void elements).
+
+        ``html.parser.HTMLParser`` routes XHTML self-closing forms like
+        ``<br/>`` through ``handle_startendtag``, whose default impl
+        calls both ``handle_starttag`` and ``handle_endtag``. Filtering
+        only the start path would leave the unbalanced end decrement,
+        sending ``self.level`` negative and dropping every subsequent
+        chunk from ``text_outside_tags``.
+        """
+        if tag not in _VOID_ELEMENTS:
+            self.level -= 1
 
     def handle_data(self, data: str) -> None:
         """Accumulate text, tracking whether it fell outside any tag."""

@@ -163,6 +163,14 @@ re-initialise after navigation without a full page reload. Payload:
 
 ### Bug fixes
 
+#### `sphinx-gp-opengraph`: XHTML self-closing void tags no longer drop trailing title text
+
+Titles containing XHTML-style void elements (`<br/>`, `<img/>`,
+`<hr/>`) now keep every text chunk after the void element. The
+nesting-level counter previously went negative on the unbalanced
+end-tag emission, so `og:title`'s outside-text component lost
+everything past the first `<br/>`. (#22)
+
 #### `sphinx-gp-opengraph`: HTML-escape every meta-tag attribute
 
 Titles, site names, image alts, and custom field-list values
