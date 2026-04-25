@@ -80,23 +80,19 @@ Renders all config values from a module at once:
 .. autoconfigvalues:: sphinx_config_demo
 ```
 
-### Document the extension's own directive helper
-
-```{eval-rst}
-.. autodirective:: sphinx_autodoc_sphinx._directives.AutoconfigvalueDirective
-   :no-index:
-```
-
 ## Directive reference
 
 Generated from `app.add_directive()` registrations in
 [`sphinx_autodoc_sphinx/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-sphinx/src/sphinx_autodoc_sphinx/__init__.py)
 via `sphinx-autodoc-docutils` — a meta-loop where the package that
 documents config values uses its sibling package to document its own
-directives.
+directives. The summary table indexes every directive; the descriptor
+blocks below carry the per-item signature, badge, and options.
 
 ```{eval-rst}
 .. autodirective-index:: sphinx_autodoc_sphinx
+
+.. autodirectives:: sphinx_autodoc_sphinx
 ```
 
 ## Package reference
