@@ -39,6 +39,7 @@ if t.TYPE_CHECKING:
     from collections.abc import Iterable
 
     from docutils import nodes
+    from sphinx.util.typing import ExtensionMetadata
 
 _EXTENSION_VERSION = "0.0.1a9"
 _LINKS_KEY = "sphinx_gp_sitemap_links"
@@ -57,7 +58,7 @@ SitemapLink = tuple[str, str | None]  # (relative link, last_updated ISO8601 or 
 __all__ = ["setup"]
 
 
-def setup(app: Sphinx) -> dict[str, t.Any]:
+def setup(app: Sphinx) -> ExtensionMetadata:
     """Register config values and connect sitemap-emission hooks.
 
     Parameters
@@ -67,7 +68,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
 
     Returns
     -------
-    dict[str, Any]
+    ExtensionMetadata
         Extension metadata — version plus parallel-build flags.
 
     Examples
