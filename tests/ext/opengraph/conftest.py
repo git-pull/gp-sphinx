@@ -9,7 +9,6 @@ case. Returns a helper that reads ``index.html`` and parses out its
 
 from __future__ import annotations
 
-import pathlib
 import re
 import typing as t
 
@@ -20,7 +19,6 @@ from tests._sphinx_scenarios import (
     SharedSphinxResult,
     SphinxScenario,
     build_shared_sphinx_result,
-    derive_sphinx_scenario_cache_root,
     read_output,
 )
 
@@ -69,9 +67,9 @@ def _parse_meta(html: str) -> dict[str, str]:
     return out
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def build_og_site(
-    tmp_path: pathlib.Path,
+    tmp_path_factory: pytest.TempPathFactory,
 ) -> t.Callable[..., OgBuildResult]:
     """Return a helper that builds a synthetic OG-enabled Sphinx site.
 
@@ -80,13 +78,13 @@ def build_og_site(
     returns the completed build result plus a pre-parsed ``meta`` dict
     keyed on the meta tag's ``property`` / ``name`` attribute.
     """
+    cache_root = tmp_path_factory.mktemp("opengraph-build")
 
     def _build(
         *,
         conf_overrides: dict[str, t.Any] | None = None,
         index_markdown: str | None = None,
     ) -> OgBuildResult:
-        cache_root = derive_sphinx_scenario_cache_root(tmp_path)
         conf = _BASE_CONF + _confoverrides_to_conf_py(conf_overrides or {})
         index = index_markdown if index_markdown is not None else _BASE_INDEX
         scenario = SphinxScenario(

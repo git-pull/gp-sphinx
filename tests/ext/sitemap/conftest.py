@@ -18,7 +18,6 @@ from tests._sphinx_scenarios import (
     SharedSphinxResult,
     SphinxScenario,
     build_shared_sphinx_result,
-    derive_sphinx_scenario_cache_root,
 )
 
 _BASE_CONF = """\
@@ -50,11 +49,12 @@ def _confoverrides_to_conf_py(overrides: dict[str, t.Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def build_sitemap_site(
-    tmp_path: pathlib.Path,
+    tmp_path_factory: pytest.TempPathFactory,
 ) -> t.Callable[..., SitemapBuildResult]:
     """Return a helper that builds a synthetic sitemap-enabled Sphinx site."""
+    cache_root = tmp_path_factory.mktemp("sitemap-build")
 
     def _build(
         *,
@@ -62,7 +62,6 @@ def build_sitemap_site(
         buildername: str = "html",
         extra_files: tuple[ScenarioFile, ...] = (),
     ) -> SitemapBuildResult:
-        cache_root = derive_sphinx_scenario_cache_root(tmp_path)
         conf = _BASE_CONF + _confoverrides_to_conf_py(conf_overrides or {})
         scenario = SphinxScenario(
             buildername=buildername,
