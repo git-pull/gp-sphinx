@@ -113,12 +113,13 @@ The class above renders with:
 
 ## Configuration
 
-| Setting | Default | Meaning |
-|---------|---------|---------|
-| `api_layout_enabled` | `False` | Enables the transform |
-| `api_fold_parameters` | `True` | Folds large field-list sections |
-| `api_collapsed_threshold` | `10` | Minimum field count before folding |
-| `api_signature_show_annotations` | `True` | Shows `name: type` in expanded folded signatures when type data is available |
+Generated from `app.add_config_value()` registrations in
+[`sphinx_ux_autodoc_layout/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-ux-autodoc-layout/src/sphinx_ux_autodoc_layout/__init__.py).
+
+```{eval-rst}
+.. autoconfigvalue-index:: sphinx_ux_autodoc_layout
+.. autoconfigvalues:: sphinx_ux_autodoc_layout
+```
 
 ## Shared helper surface
 
