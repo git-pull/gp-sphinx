@@ -108,16 +108,52 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     """
     # Config values
     app.add_config_value(
-        "api_layout_enabled", default=False, rebuild="env", types=(bool,)
+        "api_layout_enabled",
+        default=False,
+        rebuild="env",
+        types=(bool,),
+        description=(
+            "Master switch for the componentized autodoc layout. When "
+            "``True``, ``desc`` nodes emitted by domain autodocumenters "
+            "are wrapped in ``api_region`` / ``api_signature`` / "
+            "``api_fold`` containers; when ``False``, default Sphinx "
+            "rendering is preserved unchanged."
+        ),
     )
     app.add_config_value(
-        "api_fold_parameters", default=True, rebuild="env", types=(bool,)
+        "api_fold_parameters",
+        default=True,
+        rebuild="env",
+        types=(bool,),
+        description=(
+            "When ``True``, parameter lists exceeding "
+            "``api_collapsed_threshold`` items are wrapped in a "
+            "click-to-expand ``<details>`` element. Set to ``False`` "
+            "to render every parameter inline regardless of count."
+        ),
     )
     app.add_config_value(
-        "api_collapsed_threshold", default=10, rebuild="env", types=(int,)
+        "api_collapsed_threshold",
+        default=10,
+        rebuild="env",
+        types=(int,),
+        description=(
+            "Minimum number of parameters before "
+            "``api_fold_parameters=True`` collapses the list. Has no "
+            "effect when folding is disabled."
+        ),
     )
     app.add_config_value(
-        "api_signature_show_annotations", default=True, rebuild="env", types=(bool,)
+        "api_signature_show_annotations",
+        default=True,
+        rebuild="env",
+        types=(bool,),
+        description=(
+            "When ``True``, signature blocks render type annotations "
+            "inline next to each parameter. ``False`` strips them — "
+            "useful when annotations are documented separately in a "
+            "Parameters section to avoid duplication."
+        ),
     )
 
     # Custom nodes with HTML visitors + passthrough for other builders
