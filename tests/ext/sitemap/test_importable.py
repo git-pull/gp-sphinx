@@ -34,15 +34,18 @@ def test_setup_registers_config_values_and_connects_hooks() -> None:
     meta = sphinx_gp_sitemap.setup(t.cast("t.Any", _FakeApp()))
     assert meta["version"]
     assert meta["parallel_read_safe"] is True
-    # parallel_write_safe must be declared False explicitly. Sphinx's
-    # Extension defaults the missing key to True, which would route
-    # _collect_page_link into worker processes whose env.temp_data is
-    # never merged. See the module docstring for details.
-    assert meta["parallel_write_safe"] is False
+    # Safe at True: page enumeration runs at build-finished in the main
+    # process via app.env.found_docs (env-merged across parallel-read
+    # workers), so no per-handler state needs merging.
+    assert meta["parallel_write_safe"] is True
 
     assert "site_url" in registered
     assert "sitemap_url_scheme" in registered
     assert "sitemap_filename" in registered
-    assert "builder-inited" in connected
-    assert "html-page-context" in connected
+    # No builder-inited / html-page-context: the rewrite collects pages
+    # at build-finished time so incremental builds emit a complete
+    # sitemap (Sphinx fires html-page-context only for re-written pages).
+    assert "builder-inited" not in connected
+    assert "html-page-context" not in connected
+    assert "config-inited" in connected
     assert "build-finished" in connected

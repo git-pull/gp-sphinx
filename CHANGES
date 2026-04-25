@@ -178,12 +178,18 @@ no longer emit broken Open Graph canonical URLs and image URLs.
 `ogp_site_url` now applies the same trailing-slash normalisation as
 `site_url`. (#22)
 
-#### `sphinx-gp-sitemap`: Complete sitemap under `sphinx-build -j N`
+#### `sphinx-gp-sitemap`: Complete sitemap on incremental and parallel builds
 
-`sphinx-build -j N` no longer emits an incomplete `sitemap.xml`.
-The extension previously relied on Sphinx's parallel-write default
-to opt out, which silently routed page collection into worker
-processes; the gate is now declared explicitly. (#22)
+Page enumeration moved from a per-page `html-page-context` handler
+to a single `build-finished` pass over `app.env.found_docs`. Two
+correctness wins fall out: incremental builds (which fire
+`html-page-context` only for re-written pages) emit a full sitemap,
+and `sphinx-build -j N` keeps it complete because `found_docs` is
+part of the env Sphinx merges across parallel-read workers. URLs
+are now built via `app.builder.get_target_uri(pagename)`, so they
+honour `html_link_suffix` and URL-quote special characters in
+pagenames the same way the HTML builder's own `<a href>` links do.
+(#22)
 
 #### `sphinx-autodoc-docutils`: Surface failed `setup()` replay in build log
 

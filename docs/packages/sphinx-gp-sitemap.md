@@ -91,31 +91,30 @@ element per built page to `sitemap.xml` in the output directory.
 ## Event hooks
 
 ```text
-config-inited     →  _maybe_enable_git_lastmod  (lazy-load lastmod ext)
-builder-inited    →  _init_link_store           (init temp_data list)
-html-page-context →  _collect_page_link         (one entry per page)
-build-finished    →  _write_sitemap             (XML serialization)
+config-inited  →  _maybe_enable_git_lastmod  (lazy-load lastmod ext)
+build-finished →  _write_sitemap             (enumerate found_docs +
+                                              XML serialization)
 ```
 
-All four live in
+Both live in
 [`sphinx_gp_sitemap/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-sitemap/src/sphinx_gp_sitemap/__init__.py).
-There is no `env-merge-info` or `env-purge-doc` handler — see the
-parallel-write trade-off below.
+Page enumeration runs once at `build-finished` over `app.env.found_docs`
+using `app.builder.get_target_uri(pagename)` for each URL — no
+`html-page-context` handler, so incremental builds (where Sphinx
+fires the hook only for re-written pages) still emit a complete
+sitemap. `app.env.found_docs` is part of the env Sphinx merges across
+parallel-read workers, so the extension is `parallel_write_safe`
+without per-handler aggregation logic.
 
 ## Trade-offs
 
-**`parallel_write_safe` is declared `False`.** Sphinx's `temp_data`
-is explicitly per-process and is not merged across `sphinx-build -j N`
-workers. The upstream `sphinx-sitemap` worked around that with a
-`multiprocessing.Manager().Queue`; sphinx-gp-sitemap drops the Queue
-but does not yet implement an `env-merge-info` / `env-purge-doc` pair
-to preserve parallel-write semantics. Until that work lands, the
-extension advertises `parallel_write_safe = False` so Sphinx falls
-back to serial writes for the whole build whenever sphinx-gp-sitemap
-is loaded — which is necessary because Sphinx's `Extension` class
-defaults the missing key to `True`, not `False`. Parallel-read still
-works (`sphinx-build -j` enables it by default in CI matrices). A
-single-process write pass produces a complete sitemap.
+**Drop-in for `sphinx-sitemap` with stricter URL handling.** Upstream
+reconstructed page URLs as `pagename + html_file_suffix`, which
+diverges from the HTML builder's actual `<a href>` output when
+`html_link_suffix` is set (e.g. `"/"` for clean URLs) or when a
+pagename contains characters Sphinx URL-quotes. sphinx-gp-sitemap
+calls `app.builder.get_target_uri(pagename)` directly, matching the
+links Sphinx emits on the page itself.
 
 **`html_baseurl` is re-registered defensively.** Sphinx core
 registers `html_baseurl` on most modern versions, but older trees and

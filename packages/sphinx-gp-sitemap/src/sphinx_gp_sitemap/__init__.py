@@ -4,18 +4,19 @@ Drop-in replacement for ``sphinx-sitemap`` with Sphinx 8.1+ idioms.
 Behavior is identical to upstream ``sphinx_sitemap`` v2.9.0 with three
 modernizations:
 
-1. ``env.temp_data["sphinx_gp_sitemap_links"]`` is a plain ``list[tuple[...]]``
-   rather than a ``multiprocessing.Queue``. Because ``temp_data`` is
-   per-process and not merged across parallel workers, sphinx-gp-sitemap
-   explicitly declares ``parallel_write_safe = False``. Note that omitting
-   the key would not be opt-out — Sphinx's :class:`sphinx.extension.Extension`
-   defaults the kwarg to ``True`` when missing, so the parallel-write gate
-   would pass and ``_collect_page_link`` would run in worker processes whose
-   ``env.temp_data`` is never merged. Declaring ``False`` makes Sphinx fall
-   back to serial writes for the whole build, which keeps the link list
-   complete.
+1. Page enumeration runs once at ``build-finished`` over
+   ``app.env.found_docs`` (the env-merged set of all documented files),
+   using ``app.builder.get_target_uri(pagename)`` for each URL. This
+   keeps sitemaps complete on incremental builds — where Sphinx fires
+   ``html-page-context`` only for re-written pages — and across
+   ``sphinx-build -j N`` workers, since ``found_docs`` is part of the
+   merged env. Upstream ``sphinx-sitemap`` collected per-page via
+   ``html-page-context`` and reconstructed URLs from ``html_file_suffix``,
+   missing ``html_link_suffix`` divergence and the URL-quoting that
+   ``get_target_uri`` performs.
 2. Builder-kind detection uses the public ``app.builder.name == "dirhtml"``
-   rather than monkey-patching ``env.is_directory_builder``.
+   rather than monkey-patching ``env.is_directory_builder``. (Now folded
+   into ``get_target_uri``, which already routes per builder.)
 3. The ``html_baseurl`` config value is only registered when not already
    registered — via a small ``try/except sphinx.errors.ExtensionError``
    rather than a bare ``except BaseException``.
@@ -44,11 +45,9 @@ from sphinx.util.logging import getLogger
 if t.TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from docutils import nodes
     from sphinx.util.typing import ExtensionMetadata
 
 _EXTENSION_VERSION = "0.0.1a9"
-_LINKS_KEY = "sphinx_gp_sitemap_links"
 _SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9"
 _XHTML_NS = "http://www.w3.org/1999/xhtml"
 
@@ -181,18 +180,15 @@ def setup(app: Sphinx) -> ExtensionMetadata:
         )
 
     app.connect("config-inited", _maybe_enable_git_lastmod)
-    app.connect("builder-inited", _init_link_store)
-    app.connect("html-page-context", _collect_page_link)
     app.connect("build-finished", _write_sitemap)
 
     return {
         "version": _EXTENSION_VERSION,
         "parallel_read_safe": True,
-        # Must be explicit. Sphinx's Extension defaults this to True when the
-        # key is missing, which would route _collect_page_link into worker
-        # processes whose env.temp_data is never merged. See the module
-        # docstring for details.
-        "parallel_write_safe": False,
+        # Safe at True because page enumeration runs once at build-finished
+        # in the main process, iterating app.env.found_docs (which Sphinx
+        # merges across parallel-read workers). No per-handler state.
+        "parallel_write_safe": True,
     }
 
 
@@ -220,56 +216,8 @@ def _maybe_enable_git_lastmod(
         config.sitemap_show_lastmod = False
 
 
-def _init_link_store(app: Sphinx) -> None:
-    """Initialize the shared ``env.temp_data`` list on each build start."""
-    app.env.temp_data[_LINKS_KEY] = []
-
-
-def _collect_page_link(
-    app: Sphinx,
-    pagename: str,
-    templatename: str,
-    context: dict[str, t.Any],
-    doctree: nodes.document | None,
-) -> None:
-    """Append one ``(relative_link, last_updated)`` entry per built page.
-
-    Called once per page during HTML emission via ``html-page-context``.
-    """
-    del templatename, context, doctree  # unused
-    config = app.builder.config
-    file_suffix = config.html_file_suffix or ".html"
-
-    last_updated: str | None = None
-    if config.sitemap_show_lastmod:
-        git_last_updated = getattr(app.env, "git_last_updated", None) or {}
-        entry = git_last_updated.get(pagename)
-        if entry:
-            timestamp, _show_sourcelink = entry
-            if timestamp:
-                last_updated = dt.datetime.fromtimestamp(
-                    int(timestamp), dt.timezone.utc
-                ).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    if app.builder.name == "dirhtml":
-        if pagename == "index":
-            sitemap_link = ""
-        elif pagename.endswith("/index"):
-            sitemap_link = pagename[: -len("/index")] + "/"
-        else:
-            sitemap_link = pagename + "/"
-    else:
-        sitemap_link = pagename + file_suffix
-
-    if _is_excluded(sitemap_link, list(config.sitemap_excludes)):
-        return
-
-    links = t.cast("list[SitemapLink]", app.env.temp_data.setdefault(_LINKS_KEY, []))
-    links.append((sitemap_link, last_updated))
-
-
 def _write_sitemap(app: Sphinx, exception: BaseException | None) -> None:
-    """Serialize the collected links to ``<outdir>/<sitemap_filename>``.
+    """Enumerate ``app.env.found_docs`` and serialize the sitemap.
 
     Parameters
     ----------
@@ -280,6 +228,11 @@ def _write_sitemap(app: Sphinx, exception: BaseException | None) -> None:
         written on clean builds; on failures it's suppressed.
     """
     if exception is not None:
+        return
+
+    if not hasattr(app.builder, "get_target_uri"):
+        # Non-HTML-family builders (text, json, manpage, …) have no
+        # canonical URL surface; nothing to emit.
         return
 
     site_url = app.builder.config.site_url or app.builder.config.html_baseurl
@@ -302,10 +255,38 @@ def _write_sitemap(app: Sphinx, exception: BaseException | None) -> None:
     if not site_url.endswith("/"):
         site_url = site_url + "/"
 
-    links = t.cast(
-        "list[SitemapLink]",
-        app.env.temp_data.get(_LINKS_KEY, []),
-    )
+    config = app.builder.config
+    excludes = list(config.sitemap_excludes)
+
+    git_last_updated: dict[str, t.Any] = {}
+    if config.sitemap_show_lastmod:
+        git_last_updated = getattr(app.env, "git_last_updated", None) or {}
+
+    links: list[SitemapLink] = []
+    # Iterate in sorted order so the emitted sitemap is byte-stable across
+    # builds — env.found_docs is a set with no defined iteration order.
+    for pagename in sorted(app.env.found_docs):
+        # get_target_uri applies html_link_suffix and URL-quotes the
+        # pagename, matching what the HTML builder emits in <a href>
+        # links. Doing it ourselves with html_file_suffix would diverge
+        # for sites that set html_link_suffix (e.g. "/" for clean URLs)
+        # and for pages whose names contain spaces or other reserved
+        # characters.
+        sitemap_link = app.builder.get_target_uri(pagename)
+        if _is_excluded(sitemap_link, excludes):
+            continue
+
+        last_updated: str | None = None
+        entry = git_last_updated.get(pagename)
+        if entry:
+            timestamp, _show_sourcelink = entry
+            if timestamp:
+                last_updated = dt.datetime.fromtimestamp(
+                    int(timestamp), dt.timezone.utc
+                ).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        links.append((sitemap_link, last_updated))
+
     if not links:
         logger.info(
             "sphinx-gp-sitemap: no pages collected for %s",
