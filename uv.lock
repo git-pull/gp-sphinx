@@ -6,6 +6,10 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 
+[options]
+exclude-newer = "2026-04-22T00:45:15.087661083Z"
+exclude-newer-span = "P3D"
+
 [manifest]
 members = [
     "gp-sphinx",
