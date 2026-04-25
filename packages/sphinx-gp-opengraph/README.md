@@ -105,11 +105,11 @@ with the same name, type, and default — with one behavioural change:
   the value emits one `WARNING` at `config-inited`:
 
   ```text
-  sphinx-gp-opengraph: ogp_social_cards ignored — sphinx-gp-opengraph ships no card generator; use a static PNG via ogp_image (site default) or per-page 'og:image' frontmatter
+  sphinx-gp-opengraph: ogp_social_cards ignored — sphinx-gp-opengraph ships no card generator
   ```
 
   Grep your build log for `ogp_social_cards ignored` to find this
-  warning.
+  warning. The replacement workflow lives in the next section.
 
 The recommended replacement is one static PNG per page. Drop them under
 `_static/og/` and point the per-page `og:image` field-list entry at

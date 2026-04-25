@@ -280,8 +280,7 @@ def _write_sitemap(app: Sphinx, exception: BaseException | None) -> None:
         # should silently skip sitemap emission rather than break builds
         # that run with ``-W``.
         logger.info(
-            "sphinx-gp-sitemap: skipping sitemap — set site_url or html_baseurl "
-            "in conf.py to enable",
+            "sphinx-gp-sitemap: sitemap skipped — site_url and html_baseurl both unset",
             type="sitemap",
             subtype="configuration",
         )

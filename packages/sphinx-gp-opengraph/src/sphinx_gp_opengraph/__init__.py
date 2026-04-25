@@ -264,9 +264,8 @@ def _warn_if_social_cards_used(app: Sphinx, config: Config) -> None:
     del app  # unused; required by Sphinx's config-inited signature
     if config.ogp_social_cards:
         logger.warning(
-            "sphinx-gp-opengraph: ogp_social_cards ignored — sphinx-gp-opengraph ships "
-            "no card generator; use a static PNG via ogp_image (site "
-            "default) or per-page 'og:image' frontmatter",
+            "sphinx-gp-opengraph: ogp_social_cards ignored — "
+            "sphinx-gp-opengraph ships no card generator",
         )
 
 
