@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 import gp_sphinx
 from gp_sphinx.config import deep_merge, make_linkcode_resolve, merge_sphinx_config
 from gp_sphinx.defaults import DEFAULT_EXTENSIONS, DEFAULT_MYST_EXTENSIONS
@@ -449,3 +451,31 @@ def test_merge_sphinx_config_release_matches_version() -> None:
         copyright="2026",
     )
     assert result["release"] == "1.2.3"
+
+
+def test_make_linkcode_resolve_uses_source_branch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """make_linkcode_resolve uses the provided source_branch for dev versions."""
+    import sys
+    import types
+
+    fake_module = types.ModuleType("fake")
+    fake_module.__file__ = "/tmp/fake/src/fake/__init__.py"
+    fake_module.__version__ = "1.0.0.dev0"  # type: ignore[attr-defined]
+
+    def dummy() -> None:
+        pass
+
+    fake_module.dummy = dummy  # type: ignore[attr-defined]
+
+    monkeypatch.setitem(sys.modules, "fake", fake_module)
+
+    resolver = make_linkcode_resolve(
+        fake_module,
+        "https://github.com/org/repo",
+        source_branch="custom-branch",
+    )
+    url = resolver("py", {"module": "fake", "fullname": "dummy"})
+    assert url is not None
+    assert "/blob/custom-branch/src/" in url

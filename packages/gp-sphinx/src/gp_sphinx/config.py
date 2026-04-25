@@ -112,6 +112,7 @@ def make_linkcode_resolve(
     package_module: types.ModuleType,
     github_url: str,
     src_dir: str = "src",
+    source_branch: str = "main",
 ) -> Callable[[str, dict[str, str]], str | None]:
     """Create a ``linkcode_resolve`` function for ``sphinx.ext.linkcode``.
 
@@ -129,6 +130,8 @@ def make_linkcode_resolve(
         ``"https://github.com/tmux-python/libtmux"``).
     src_dir : str
         Directory containing the source package (default ``"src"``).
+    source_branch : str
+        The fallback branch for development versions (default ``"main"``).
 
     Returns
     -------
@@ -197,7 +200,7 @@ def make_linkcode_resolve(
 
         version = getattr(package_module, "__version__", "")
         if "dev" in version:
-            return f"{github_url}/blob/master/{src_dir}/{fn}{linespec}"
+            return f"{github_url}/blob/{source_branch}/{src_dir}/{fn}{linespec}"
         return f"{github_url}/blob/v{version}/{src_dir}/{fn}{linespec}"
 
     return linkcode_resolve
