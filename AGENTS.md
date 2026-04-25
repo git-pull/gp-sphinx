@@ -603,10 +603,15 @@ Format commit messages as:
 Scope(type[detail]): concise description
 
 why: Explanation of necessity or impact.
+
 what:
 - Specific technical changes made
 - Focused on a single topic
 ```
+
+The blank line between the `why:` block and the `what:` block is
+optional — useful when the `why:` body runs to multiple lines and the
+two sections benefit from visual separation.
 
 Common commit types:
 - **feat**: New features or enhancements
@@ -627,6 +632,7 @@ Example:
 config(feat[merge]): Add deep-merge support for theme options
 
 why: Enable per-project theme overrides without replacing entire dict
+
 what:
 - Add deep_merge() helper for nested dict merging
 - Update merge_sphinx_config() to deep-merge theme_options
@@ -638,6 +644,7 @@ git commit -m "$(cat <<'EOF'
 feat(Component[method]) add feature description
 
 why: Explanation of the change.
+
 what:
 - First change
 - Second change
