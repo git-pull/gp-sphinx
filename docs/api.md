@@ -10,6 +10,11 @@ For shared defaults and configuration options, see {doc}`configuration`.
 .. autofunction:: gp_sphinx.config.merge_sphinx_config
 ```
 
+When `docs_url` is provided, `merge_sphinx_config()` also auto-derives
+the `ogp_*` and `sitemap_*` keys consumed by the SEO extensions
+(`gp_opengraph`, `gp_sitemap`). See {ref}`from-docs_url` for the full
+mapping.
+
 ## make_linkcode_resolve
 
 ```{eval-rst}

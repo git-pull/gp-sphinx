@@ -46,7 +46,7 @@ project root, with no language or version directory in the URL space.
 Multilingual or version-pinned hosts can still pass an explicit
 `sitemap_url_scheme` through `**overrides` — `merge_sphinx_config()`
 runs auto-derivation first and overrides last. The canonical mapping
-lives in [Configuration → From `docs_url`](#from-docs_url).
+lives in {ref}`from-docs_url`.
 
 ## How `sitemap.xml` is built
 
