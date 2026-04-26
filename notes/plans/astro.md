@@ -145,110 +145,676 @@ records without scraping body fragments. We do not pre-commit.
 ## 2. Phase 0 — source-of-truth spike
 
 **Cost:** one engineer-day, two at most.
-**Output:** `notes/plans/astro-phase-0-verdict.md` plus a fixture
-in `astro/fixtures/spike/` that backs the verdict.
+**Output:** `notes/plans/astro-phase-0-verdict.md` plus committed
+fixtures in `astro/fixtures/spike/` that back the verdict and seed
+the §11 wire-contract snapshots.
 
-Three architectures plus a parallel-with-incomplete-contributors
-fallback:
+Phase 0's question is narrower than "S vs P." It is:
+
+> For each symbol kind this docs platform actually needs to render,
+> what is the smallest source of truth that emits schema-shaped data
+> *without parsing rendered HTML*?
+
+Architectures still in play:
 
 - **S** — Sphinx-as-source. Stitch `.fjson` body fragments,
-  `objects.inv`, and `env.domains.python_domain` into a flat typed
+  `objects.inv`, typed `env.domains.python_domain.data["objects"]`,
+  doctree walks, and extension-owned env stores into a flat typed
   `ApiIndex`. No new sidecar.
 - **P** — Parallel sidecar. New Python process introspects the
   packages, emits schema-shaped JSON. Existing autodoc packages add
-  small entry-point shims.
-- **H** — Hybrid. Sphinx export is the default; sidecar contributor
-  protocol is the fallback for symbol kinds that don't survive the
-  export.
+  small entry-point shims (the contributor protocol, §7).
+- **H** — Hybrid. Sphinx export covers what it covers cleanly;
+  contributor protocol shims fill the gaps for symbol kinds whose
+  metadata already lives in package-specific code.
 - **P-minimal** — Parallel stack, sidecar re-implements
-  introspection where contributors aren't ready.
+  introspection where contributors aren't ready. Fallback, not goal.
+- **Deferred-H** — Phase 0 produces fixtures and a provisional P
+  scaffold, but the architecture is **re-scored at Phase 4** once
+  the Astro integration has a real cache/HMR loop. Deferred-H is
+  not "H but uncertain": H has already proven both halves — Sphinx
+  carries the common API data and contributor adapters carry
+  extension-specific data. Deferred-H has proven only the first
+  half (S/A2 works for ordinary Python API objects on at least the
+  gp-sphinx subset) and has a *bounded* deferral for the second
+  half (the libtmux must-pass set or the extension-owned-metadata
+  cases). The deferral is bounded by an explicit Phase-4 re-score
+  of §2.2 against a real libtmux+Astro+sidecar build, with the
+  re-score date written into the verdict YAML. Without the dated
+  re-score, "Deferred-H" collapses back into "H but unsure" — the
+  failure mode this cell exists to prevent. If the failures are
+  not extension-owned metadata or do not lend themselves to a
+  Phase-4 re-test, the verdict is **P**, not Deferred-H.
 
-### 2.1 Spike A — does Sphinx-as-source work?
+The fifth cell is intentional. The original four-cell partition
+forced a binary verdict in cases where the evidence is lopsided —
+Sphinx may be clearly good for libtmux classes/functions while
+clearly weak for FastMCP or pytest metadata. Forcing P (or H)
+before the renderer has consumed the first fixtures throws away
+one engineer-week of architectural information.
+
+### 2.1 Reproducibility gate (run *before* scoring)
+
+The spike command itself does not run cleanly on the gp-sphinx
+docs site as currently configured. Verified at HEAD
+(`5b750aae44c6af1d70f37f24b1fe542614f9527b`). The blocker is a
+producer/consumer mismatch on the `pagename` context key:
+
+| Component | File:line | Behaviour |
+|---|---|---|
+| `sphinx.builders.html.StandaloneHTMLBuilder.update_page_context` (control — standard HTML builder) | `.venv/lib/python3.14/site-packages/sphinx/builders/html/__init__.py:1083` (`ctx['pagename'] = ctx['current_page_name'] = pagename`) | Writes **both** `pagename` and `current_page_name`. This is why the consumer mismatch has gone undetected in production HTML builds. |
+| `sphinxcontrib.serializinghtml.JSONHTMLBuilder.handle_page` (the spike's builder) | `.venv/lib/python3.14/site-packages/sphinxcontrib/serializinghtml/__init__.py:88-105` (assignment at `:90`: `ctx['current_page_name'] = pagename`) | Writes **only** `current_page_name`; never sets `pagename`. |
+| `sphinx_gp_opengraph.get_tags` (workspace consumer) | `packages/sphinx-gp-opengraph/src/sphinx_gp_opengraph/__init__.py:144` (`builder.get_target_uri(context["pagename"])`) | Reads `context["pagename"]` directly. KeyError under `-b json`. |
+
+**Workspace audit.** `rg -n 'context\["pagename"\]'
+/home/d/work/python/gp-sphinx/packages/` returns exactly one hit —
+the `sphinx_gp_opengraph` line above. The blocker is precisely
+scoped to *one* extension. `sphinx_gp_sitemap` is unaffected
+(it iterates `app.env.found_docs` at
+`packages/sphinx-gp-sitemap/src/sphinx_gp_sitemap/__init__.py:268-275`,
+not `html-page-context`). `sphinx_fonts`,
+`gp_sphinx.config._inject_copybutton_bridge`, and the other
+`html-page-context` consumers in the workspace receive `pagename`
+as a positional argument from the event signature and never index
+`context["pagename"]`. `sphinx_gp_opengraph` is in the default
+extension list (`packages/gp-sphinx/src/gp_sphinx/defaults.py`)
+and ships in every docs build that uses `merge_sphinx_config()`.
+
+**Gate (mechanical, before scoring symbol coverage):**
 
 ```console
-$ uv run sphinx-build -E -a -b json docs/ /tmp/gp-sphinx-fjson
+$ UV_CACHE_DIR=/tmp/uv-cache uv run sphinx-build \
+    -E -a -b json \
+    docs/ /tmp/gp-sphinx-fjson
 ```
 
-For each of these representative cases, inspect the resulting
-`.fjson` plus an `env-updated`-time snapshot of
-`env.domains.python_domain.data["objects"]`:
+Three legal outcomes:
 
-| # | Case | Source | What we need to render |
+1. **Clean exit, zero `KeyError`.** Proceed to §2.2.
+2. **Clean exit, only after a documented workaround** — either a
+   one-line patch in `sphinx_gp_opengraph` (`context.get("pagename")
+   or context.get("current_page_name")`) or a spike-only
+   `confoverrides={"extensions": [<filtered>]}` in the spike's
+   `conf.py`. The exact workaround is recorded in
+   `astro-phase-0-verdict.md` under "Reproducibility workarounds."
+   Proceed to §2.2 with a flag noted in the verdict.
+3. **Cannot run without disabling extensions whose output Astro
+   needs** (e.g., must drop `sphinx_gp_opengraph` whose OpenGraph
+   tags Astro must reproduce). **S cannot be the default
+   architecture.** The verdict short-circuits to P — or to H once
+   the JSON build runs after the one-line patch lands upstream.
+
+This is a hard precondition. A spike that scores A1 and A2 against
+a configuration the production docs site cannot use is theatre.
+
+### 2.2 Spike A — what is the smallest path that emits structured data?
+
+The committed §2.1 conflated two separable questions:
+
+- **A1 — `-b json` baseline.** Does the JSON builder, plus
+  `objects.inv`, plus `env.domains.python_domain.data["objects"]`,
+  carry the fields a typed `SymbolCard` needs *without parsing the
+  `.fjson` `body` HTML*? `ObjectEntry` is a 4-field NamedTuple at
+  `~/study/python/sphinx/sphinx/domains/python/__init__.py:60-65`:
+
+  ```python
+  class ObjectEntry(NamedTuple):
+      docname: str
+      node_id: str
+      objtype: str
+      aliased: bool
+  ```
+
+  No signature. No parameter list. No return annotation. No
+  docstring. Those live only in the rendered `desc` node tree that
+  the JSON builder serializes *as HTML strings* in `body`. A1's
+  expected outcome is therefore *partial pass on identity/linkage,
+  fail on signature data*. We run it anyway because the recorded
+  failure is what future readers need when they re-ask "why didn't
+  we just use `-b json`?"
+
+- **A2 — custom doctree-walk extension.** A small Sphinx extension
+  that hooks `env-updated`, walks `env.get_doctree(docname)` for
+  `addnodes.desc` nodes, reads extension env stores where
+  available, and emits schema-shaped JSON directly *before*
+  `JSONHTMLBuilder` flattens the body to HTML. This is the path S
+  would actually use; the load-bearing question is whether the
+  doctree carries enough structure to skip HTML rendering
+  entirely.
+
+#### 2.2.1 Step 0 — pin the source corpora (gp-sphinx **and** libtmux)
+
+Spike A runs against **two** corpora:
+
+| Corpus | Source root | conf | Why |
 |---|---|---|---|
-| 1 | Plain function | `gp_sphinx.config.merge_sphinx_config` (`/home/d/work/python/gp-sphinx/packages/gp-sphinx/src/gp_sphinx/config.py:209`) | name, signature, params, return annotation, docstring |
-| 2 | Type-annotated symbol | `sphinx-autodoc-typehints-gp` exports | raw annotation text, resolved cross-refs |
-| 3 | Sphinx config value | `sphinx-autodoc-sphinx`, `sphinx-gp-opengraph` | name, type, default, scope, rebuild trigger |
-| 4 | docutils directive | `sphinx-ux-badges` badge directive | name, options, content model |
-| 5 | pytest fixture | `sphinx-autodoc-pytest-fixtures` self-doc | name, scope, params, yield/return |
-| 6 | FastMCP tool | `sphinx-autodoc-fastmcp` self-doc | name, safety level, parameter schema |
+| gp-sphinx (dogfood) | `/home/d/work/python/gp-sphinx/docs/` | existing `docs/conf.py` | Dogfood site this plan eventually replaces. Production config; no overrides. |
+| libtmux (external target) | `/home/d/work/python/libtmux/docs/` | existing `docs/conf.py` | The original target consumer. Read-only — vendor a minimal `conf.py` mirror into `astro/fixtures/spike/libtmux-conf.py` so the spike is reproducible without network access and never edits the libtmux tree. |
 
-**Pass threshold:** ≥**5 of 6** cases yield structured data
-sufficient for a typed `SymbolCard` *without HTML scraping* (no
-`cheerio` / `htmlparser2` reads of `.fjson` `body` fields).
-Reading metadata, `title`, the resolved domain object index, and
-`objects.inv` is allowed.
+The libtmux read-only requirement is a CLAUDE.md
+"project-read-only" constraint (cannot inject test fixtures into a
+third-party repo during a spike). Synthetic `class
+DummyCase(t.NamedTuple)` injection is rejected on this basis — and
+is moot anyway, because libtmux has *zero* `NamedTuple` classes
+and *zero* `async def` functions in `src/libtmux/*.py` (`rg -c
+NamedTuple ~/work/python/libtmux/src/libtmux/` and `rg -c '^async
+def' ~/work/python/libtmux/src/libtmux/` both return no hits).
+gp-sphinx-only would skew the corpus toward directives, fixtures,
+and config values that gp-sphinx itself produces — producer-side
+bias against the external consumer that motivates this whole
+effort.
 
-5/6 (not 4/6) is the right bar: pytest fixtures, directives, and
-config values are all common in the gp-sphinx corpus. If a single
-common case requires HTML scraping, S has lost its appeal.
+#### 2.2.2 Step 1 — produce both artifacts in one run
 
-### 2.2 Spike B — does the contributor protocol save work?
+For each corpus:
 
-Prototype a `PytestFixtureContributor` shim inside
-`sphinx-autodoc-pytest-fixtures` (verified to exist at
-`/home/d/work/python/gp-sphinx/packages/sphinx-autodoc-pytest-fixtures/`).
-Run a standalone Python script that loads the shim via the
-`gp_sphinx_sidecar.contributors` entry-point group and emits JSON
-for one fixture.
+```console
+$ uv run sphinx-build \
+    -E -a -b json \
+    docs/ /tmp/<corpus>-fjson \
+    -D gp_sphinx_phase0_dump=/tmp/<corpus>-objects.json
+```
 
-**Pass threshold (both required):**
+The `-D gp_sphinx_phase0_dump=…` flag is consumed by a small
+spike-only `conf.py` shim, committed to `astro/fixtures/spike/`,
+not to either docs tree:
 
-1. **Quantitative.** Standalone script ≤80 LOC and contains no
-   `import pytest` (measured by `wc -l` and literal `grep`). The
-   protocol is the value; if the script needs the package's runtime
-   to do its own introspection, the protocol is leaking.
-2. **Semantic.** JSON payload contains `scope`, `params`, and
-   yield/return shape, and producing those fields does **not**
-   reimplement fixture introspection inside the sidecar. All
-   pytest-specific knowledge stays in the contributor.
+```python
+# astro/fixtures/spike/_dump.py
+from __future__ import annotations
+import json
+import pathlib
+import typing as t
 
-The dual gate is deliberate. A 60-LOC shim that copies
-`pytest._pytest.fixtures` introspection wholesale into the sidecar
-is a failure even though it passes the LOC bar — the protocol has
-no value if it doesn't keep package-specific knowledge inside the
-package.
+from sphinx.application import Sphinx
 
-### 2.3 Decision matrix
 
-| Sphinx export (Spike A) | Contributor (Spike B) | Decision |
-|---|---|---|
-| 5/6 cases structured without HTML body parsing | any | **Architecture S** (no sidecar) |
-| under 5/6 | contributor passes | **Architecture P** (sidecar + contributors) |
-| under 5/6 | contributor fails | **Architecture P-minimal** (sidecar re-implements) |
-| 5/6 and contributor passes | both | **Architecture H** (S default, contributors as fallback) |
+def setup(app: Sphinx) -> dict[str, t.Any]:
+    def _dump(app: Sphinx, env: t.Any) -> list[str]:
+        target = app.config._raw_config.get("gp_sphinx_phase0_dump")
+        if not target:
+            return []
+        py = env.domains.python_domain
+        std = env.domains.standard_domain
+        out: dict[str, t.Any] = {
+            "py_objects": {
+                name: {
+                    "docname": e.docname,
+                    "node_id": e.node_id,
+                    "objtype": e.objtype,
+                    "aliased": e.aliased,
+                }
+                for name, e in py.data["objects"].items()
+            },
+            "std_objects": {k: list(v) for k, v in std.data["objects"].items()},
+            "modules": {
+                name: {"docname": m.docname, "node_id": m.node_id}
+                for name, m in py.data.get("modules", {}).items()
+            },
+        }
+        pathlib.Path(target).write_text(json.dumps(out, indent=2))
+        return []
 
-**Default if Phase 0 is skipped or inconclusive: P.** Every section
-below describes P; §6.5 documents the S divergence.
+    app.connect("env-updated", _dump)
+    return {"version": "0", "parallel_read_safe": True}
+```
 
-### 2.4 Why the spike is non-negotiable
+`env.domains.python_domain` is the workspace-floor accessor (Sphinx
+8.1+ `_DomainsContainer`; CLAUDE.md "Sphinx domain access"). The
+dump is written before `JSONHTMLBuilder` ever serializes a body, so
+it is a pristine view of what the Python domain knows.
+
+#### 2.2.3 Step 2 — load the inventory (third evidence stream)
+
+```console
+$ uv run python -c \
+    "from sphinx.util.inventory import InventoryFile; \
+     import json, pathlib; \
+     inv = InventoryFile.load( \
+         open('/tmp/gp-sphinx-fjson/objects.inv','rb'), \
+         '/tmp/gp-sphinx-fjson/', \
+         lambda b, u: u + b.decode()); \
+     pathlib.Path('/tmp/gp-sphinx-inv.json').write_text( \
+         json.dumps({k: list(v) for k, v in inv.items()}, indent=2))"
+```
+
+`_InventoryItem` carries `(project_name, project_version, uri,
+display_name)` — verified at
+`~/study/python/sphinx/sphinx/util/inventory.py:245-264` (class
+declared at `:245`, `__slots__` at `:246`, kw-only `__init__`
+populating the four fields at `:253-264`). URI plus display name
+only; signatures still cannot come from this stream.
+
+#### 2.2.4 Step 3 — A2 doctree-walk extension prototype
+
+A 50-LOC sibling extension to `_dump.py`, also committed under
+`astro/fixtures/spike/`, that hooks `env-updated`, walks
+`env.get_doctree(docname)` for `addnodes.desc` nodes, and emits a
+parallel `api-index.json`. It is the *honest* test of S — the
+pristine doctree before HTML rendering. The full `_extract()`
+implementation is left to the spike runner, deliberately: the
+author of the spike will encounter the doctree-shape surprises
+that motivate the verdict, and pre-writing `_extract()` would
+prejudge the answer.
+
+#### 2.2.5 Step 4 — score each case against the rubric
+
+For each case, inspect the matching `.fjson`, the dumped
+`py_objects`/`std_objects` JSON, the `objects.inv` row, **and**
+the A2 `api-index.json`. Record in the spike fixture:
+
+- Which fields the structured streams (domain `data`,
+  `objects.inv`, `searchindex.json`, A2 doctree walk) provide
+  directly.
+- Which fields require parsing the `.fjson` `body` HTML.
+- For each field requiring HTML parsing, whether the markup is
+  *structurally addressable* (a stable `id=` anchor on a
+  `<dl class="py …">` element with predictable child selectors)
+  or *visually addressable only*. **Structurally addressable HTML
+  still counts as an "HTML scrape" failure** — the bar is whether
+  the field is a value in a JSON/typed object, not whether the
+  HTML selector happens to be stable.
+- For each case that needs contributor cooperation (extension-
+  owned env stores or per-symbol metadata attached to `desc`
+  nodes), the smallest adapter LOC that would yield the field.
+  This is the "adapter-not-invention" measurement that decides
+  H vs P.
+
+#### 2.2.6 Case set — six gp-sphinx + four libtmux
+
+The matrix has 10 cases drawn from both corpora. The libtmux
+selections were verified live; line numbers cite HEAD of
+`/home/d/work/python/libtmux`:
+
+| # | Corpus | Case | Verified source | Required card fields |
+|---|---|---|---|---|
+| 1 | gp-sphinx | Plain function | `gp_sphinx.config.merge_sphinx_config` (`packages/gp-sphinx/src/gp_sphinx/config.py:209`) | name, signature, params, return annotation, docstring |
+| 2 | gp-sphinx | Type-annotated symbol | `sphinx-autodoc-typehints-gp` exports | raw annotation text, resolved cross-refs |
+| 3 | gp-sphinx | Sphinx config value | `sphinx-autodoc-sphinx`, `sphinx-gp-opengraph` config registrations | name, type, default, scope, rebuild trigger |
+| 4 | gp-sphinx | Custom docutils node | `sphinx-ux-badges` `BadgeNode` (registered via `app.add_node`, *not* `app.add_directive`, at `packages/sphinx-ux-badges/src/sphinx_ux_badges/__init__.py:73`) | node class, visit/depart payload, options |
+| 5 | gp-sphinx | pytest fixture (env-store) | `sphinx-autodoc-pytest-fixtures` `FixtureMeta` at `packages/sphinx-autodoc-pytest-fixtures/src/sphinx_autodoc_pytest_fixtures/_models.py:35-90` — **16 stable-primitive fields**: `docname`, `canonical_name`, `public_name`, `source_name`, `scope`, `autouse`, `kind`, `return_display`, `deps`, `param_reprs`, `has_teardown`, `is_async`, `summary`, `deprecated`, `replacement`, `teardown_summary` | name, scope, autouse, kind, deps, param_reprs, has_teardown, is_async, summary, deprecated, replacement, teardown_summary |
+| 6 | gp-sphinx | FastMCP tool | `sphinx-autodoc-fastmcp` self-doc (registered as plain `app.add_directive("fastmcp-tool", ...)` at `packages/sphinx-autodoc-fastmcp/src/sphinx_autodoc_fastmcp/__init__.py:190`; lands in the **std** domain, not py) | name, safety level, parameter schema |
+| 7 | libtmux | Multi-mixin class | `libtmux.Server` at `~/work/python/libtmux/src/libtmux/server.py:49-53` (`class Server(EnvironmentMixin, OptionsMixin, HooksMixin):`); `__init__` signature at `:134-144` accepts seven named kwargs (`socket_name`, `socket_path`, `config_file`, `colors`, `on_init`, `socket_name_factory`, `tmux_bin`) plus `**kwargs: t.Any`; NumPy docstring with `Parameters`, `Examples`, `References` sections at `:54-112` | class hierarchy, `__init__` signature, `@property` list, NumPy docstring sections |
+| 8 | libtmux | `enum.Enum` subclass | `libtmux.constants.OptionScope` at `~/work/python/libtmux/src/libtmux/constants.py:64` (4 members: `Server`, `Session`, `Window`, `Pane`) — plus 3 sibling enums `ResizeAdjustmentDirection` (`:8`), `WindowDirection` (`:25`), `PaneDirection` (`:38`) | enum name, member name/value pairs, member docstrings |
+| 9 | libtmux | `@dataclasses.dataclass()` with mixins | `libtmux.session.Session` at `~/work/python/libtmux/src/libtmux/session.py:50` (`@dataclasses.dataclass()` decorator on a class that also inherits `Obj`, `EnvironmentMixin`, ...) — sibling dataclasses `Window` (`window.py:52`), `Pane` (`pane.py:47`), `neo.Obj` (`neo.py:29`) | dataclass name, field name/type/default tuples, dataclass options, mixin MRO |
+| 10 | libtmux | pytest fixture **with embedded doctest** | `libtmux.pytest_plugin.server` fixture at `~/work/python/libtmux/src/libtmux/pytest_plugin.py:144-182` — `@pytest.fixture` decorator at `:144`, `def server(...)` at `:145`, visible doctest in docstring (`>>> def test_example(server: Server) -> None:` at `:154`), `.. ::` hidden meta-test block at `:160-173` that runs through `request._pyfuncitem.dtest.examples` | fixture name, scope, params, deps, the visible doctest preserved verbatim, the hidden `.. ::` block preserved or recoverable |
+
+**Why these libtmux cases specifically.**
+
+- Case 7 stresses MRO and mixins. `Server` inherits from
+  `EnvironmentMixin`, `OptionsMixin`, `HooksMixin` and exposes a
+  7-named-kwarg `__init__` (plus `**kwargs`). The Python domain
+  emits these as `class` objects; whether the field annotations
+  and mixin-inherited methods round-trip cleanly through A1/A2 is
+  the spike's whole point. Note: `Server` is **not** a
+  `@dataclasses.dataclass` — it is a multi-mixin class, distinct
+  from case 9.
+- Case 8 stresses `enum.Enum` rendering, which Sphinx's autodoc
+  historically gets wrong (members surfaced as bare class
+  attributes; missing member docstrings).
+- Case 9 stresses dataclass-on-mixin-base field rendering — a
+  different code path again.
+- Case 10 stresses the **doctest-inside-fixture-docstring** pattern
+  with hidden `.. ::` self-test blocks. Unique to libtmux among
+  reference codebases. Exactly the kind of "weird shape" a
+  contrived spike would miss.
+
+Cases 4, 6, 8, and 10 are deliberately **non-py-domain** or
+non-py-only symbols; they will not appear cleanly in
+`env.domains.python_domain.data["objects"]`. They live in the
+standard domain (4, 6), in `enum`'s class machinery (8), or in
+fixture-layer metadata (5, 10) where contributor cooperation is the
+question.
+
+**Note on fabricated libtmux shapes.** Earlier brainstorm passes
+anchored cases on libtmux `t.Self` annotations, NamedTuples, and
+async functions. Verified false: the only real `-> Self`
+annotation is at `~/work/python/libtmux/src/libtmux/window.py:116`
+(`def __enter__(self) -> Self:`); libtmux exercises **fluent
+chaining via concrete return types** (`-> Window`, `-> Pane`), not
+`-> Self`. Async functions: zero in `src/libtmux/*.py`.
+NamedTuple classes: zero. Do not include cases that depend on
+shapes libtmux does not actually have. What libtmux *does* have,
+beyond cases 7-10, that future Phase-1 work will need to revisit:
+22 `LibTmuxException` subclasses (`exc.py`),
+`@t.overload`-decorated methods with `t.Literal`-typed
+discriminators (e.g., `Pane.display_message` at
+`pane.py:476-490`), and 11 `@pytest.fixture`-decorated functions
+in `pytest_plugin.py`. Cases 7-10 cover the four shapes that most
+stress the JSON-export path; the others are Phase-1 follow-ups.
+
+#### 2.2.7 Pass thresholds
+
+**Spike A1 (`-b json`, structured streams only):** ≥ 7 of 10
+cases yield structured data sufficient for a typed `SymbolCard`
+*without parsing `.fjson["body"]` HTML* (structurally addressable
+HTML still counts as a scrape — see §2.2.5). Recorded primarily
+as counter-evidence. A1 ≥ 7/10 *might* permit an even simpler S
+than A2 (no Sphinx-extension code at all); A1 < 7/10 is the
+expected result.
+
+**Spike A2 (custom doctree-walk extension):** all of the following:
+
+- ≥ **8 of 10** cases extract the required fields from the
+  doctree (`addnodes.desc`, contributor env-stores, std-domain
+  data) without invoking HTML rendering. Threshold raised from the
+  committed 5/6 because adding 4 libtmux cases makes 5/10
+  trivially achievable on gp-sphinx alone — exactly the
+  producer-side bias this spike now corrects.
+- **No required libtmux case (7, 8, 9, 10) may be in the failing
+  set.** libtmux is the original target consumer; passing
+  gp-sphinx dogfood while failing libtmux is a *false positive*.
+- **Cases 1 (plain function) and 5 (pytest fixture) must pass.**
+  These are load-bearing for the existing 14 gp-sphinx packages.
+- Dev-refresh cost is measured. If S requires a full Sphinx
+  rebuild for every Python edit and cannot hit acceptable HMR
+  feedback, S does not replace P even if its static export is
+  accurate.
+
+8/10 with the libtmux must-pass set and case-1/case-5 tiebreaker
+replaces the committed 5/6. The bar increased because the case
+set doubled in size and because we are now grading on the corpus
+that matters.
+
+### 2.3 Spike B — does the contributor protocol save work?
+
+The committed §2.2 had a dual gate (LOC ≤ 80 *and* "no leakage").
+LOC alone is a proxy; "no leakage" alone is judgment-leaky. The
+refined version operationalises the dual gate's intent through two
+complementary frames.
+
+**Frame 1 — adapter, not invention.** The strongest Spike B framing
+isn't "hand-write a new contributor in ≤ 80 LOC." It is:
+
+> Can a small adapter convert existing
+> `sphinx_autodoc_pytest_fixtures.FixtureMeta` records
+> (`packages/sphinx-autodoc-pytest-fixtures/src/sphinx_autodoc_pytest_fixtures/_models.py:35-90`,
+> 16 primitive fields including `scope`, `autouse`, `kind`,
+> `deps`, `param_reprs`, `has_teardown`, `is_async`, `summary`,
+> `deprecated`, `replacement`, `teardown_summary`) into the
+> proposed `ContributorResult` shape?
+
+If the answer is yes in ≤ **40 LOC**, pytest fixtures are not
+evidence for P — they are evidence for **H**: Sphinx (or the
+package) already owns the semantic metadata; the sidecar only
+needs an adapter. The 80-LOC budget remains in force when the
+contributor must construct the metadata from scratch. The
+metadata builder that populates `FixtureMeta` lives at
+`packages/sphinx-autodoc-pytest-fixtures/src/sphinx_autodoc_pytest_fixtures/_metadata.py:268-327`
+— useful as the producer-side reference when designing the
+adapter.
+
+**Frame 2 — import discipline as the operational gate.** PR
+reviewers apply a four-question mechanical checklist to the
+standalone harness without reading pytest internals. Each check is
+performable by a single `rg` invocation plus, where noted, one
+runtime probe:
+
+- **Q-Sem-1** *(import surface).* Does the script import any
+  module whose dotted path begins with `_pytest.`,
+  `pytest.fixtures`, `pytest.Function`, `pytest.FixtureDef`, or
+  any module importable only after `import pytest`? *(Mechanical:
+  `rg -nE '^(import|from)\s+(_pytest\.|pytest\.fixtures|pytest\.Function|pytest\.FixtureDef)' <script>`.)*
+  If any hit → fail.
+- **Q-Sem-2** *(internal-attribute surface).* Does the script
+  reach into pytest's wrapper objects directly:
+  `obj.__pytest_wrapped__`, `_fixturefunc`, `_fixturedef`, fixture
+  marker dicts? *(Mechanical:
+  `rg -nE '__pytest_wrapped__|_fixturefunc|_fixturedef' <script>`.)*
+  If any hit → fail.
+- **Q-Sem-3** *(genericity, two-part mechanical check).* The
+  script must compile against an interface that does not name any
+  package. Both subparts are `rg`-able and visible at the
+  argparse-flag definition; neither requires a hypothetical
+  contributor to exist:
+  - **Q-Sem-3a (body grep).** `rg -n 'FixtureMeta|sphinx_autodoc_pytest_fixtures'
+    <script>` must return no hits in the script body. The harness
+    must not name any contributor package in its source. The only
+    legal places `pytest`/`fixture` may appear are inside
+    `--contributor`-style CLI argument names, argparse `help=`
+    strings, or path strings.
+  - **Q-Sem-3b (argparse inspection + entry-point loading).**
+    The `--contributor` flag must accept an arbitrary dotted path
+    and load contributors from config or entry points (e.g.,
+    `[project.entry-points."gp_sphinx.contributors"]`). Read the
+    argparse setup directly: if the flag hardcodes the
+    `sphinx_autodoc_pytest_fixtures:FixtureContributor` entry
+    rather than accepting an arbitrary dotted path, fail.
+    Replacing the configured contributor with a future
+    `sphinx_ux_badges:BadgeContributor` (or any other) must not
+    require editing the harness body — the diff must be confined
+    to the configured entry-point name or the `--contributor`
+    argument value.
+
+  Q-Sem-3 stays mechanical because both subparts are `rg`-able and
+  inspectable at flag-definition time; it does not require a
+  hypothetical contributor to be implemented.
+- **Q-Sem-4** *(absence-tolerance probe).* If
+  `sphinx-autodoc-pytest-fixtures` were uninstalled
+  (`uv remove sphinx-autodoc-pytest-fixtures` in a scratch venv
+  built from the harness manifest), would the script's `import`
+  statements still resolve and produce a clear "no contributors
+  registered" message rather than an `ImportError`? *(Mechanical:
+  actually try it once.)* If `ImportError` → fail.
+
+**Pass:** all four Q-Sem questions answered cleanly **and** either
+(a) the adapter frame succeeds in ≤ 40 LOC, or (b) the
+hand-written contributor frame succeeds in ≤ 80 LOC. LOC is
+recorded as evidence — a 200-LOC script that imports only public
+surface is fine — but the **import discipline gate is the binding
+condition**. An AST or `_pytest.fixtures` introspection
+copy-paste fails Q-Sem-1 and fails Spike B even if it hits the
+LOC bar.
+
+#### 2.3.1 AST / `_pytest` internals gate
+
+The Q-Sem checklist above operationalises the "no AST or
+`_pytest` internals copying" rule: Q-Sem-1 catches `_pytest.*`
+imports and `_fixturedef` access; Q-Sem-2 catches
+`__pytest_wrapped__` introspection. A 60-LOC shim that
+re-implements `pytest._pytest.fixtures.FixtureManager.getfixtureclosure`
+inside the sidecar is a Spike B *failure*, not a success — the
+protocol has no value if it doesn't keep package-specific
+knowledge inside the package.
+
+### 2.4 Decision matrix
+
+The five-cell partition replaces the committed four-cell matrix.
+Cells are defined by Spike A2 outcome × libtmux must-pass set ×
+Spike B outcome × tooling-debt evidence (recorded co-equally,
+*not* used as a tie-breaker after the fact).
+
+| Spike A2 (doctree-walk) | libtmux must-pass set (cases 7-10) | Spike B (Q-Sem + adapter/LOC) | Tooling debt | Decision |
+|---|---|---|---|---|
+| ≥ 8/10 with cases 1, 5 in passing set | **all four** of 7, 8, 9, 10 pass | any | low: no separate sidecar | **S** |
+| ≥ 8/10 with cases 1, 5 passing | **all four** of 7, 8, 9, 10 pass | adapter passes (≤ 40 LOC) | medium: adapters per package, but no parallel introspection | **H** |
+| ≥ 8/10 on gp-sphinx subset, **< 4/4** on libtmux, **and** the failing cases are extension-owned metadata cases re-testable through a real Astro+sidecar HMR loop | partial | passes | high: re-score deferred | **Deferred-H** (provisional P scaffold; re-run §2.2 at Phase 4 against actual libtmux build, with a *dated* re-score in the verdict YAML) |
+| < 8/10, OR cases 1/5/7/8/9/10 fail in shapes that won't survive a Phase-4 re-test | any | passes | high: full sidecar + contributors | **P** |
+| < 8/10 (or libtmux must-pass fails) | any | fails | very high: sidecar reimplements, debt tickets per duplicated collector | **P-minimal** |
+
+**Why Deferred-H is genuinely distinct from H.** H requires the
+libtmux must-pass set to be satisfied *now* — both the common-API
+half (Sphinx export) and the extension-specific half (contributor
+adapters) have proven themselves before the verdict commits.
+Deferred-H exists for the asymmetric outcome where only the
+common-API half has proven itself: S works on gp-sphinx, fails on
+libtmux in shapes that look re-testable once the Astro+sidecar
+HMR loop exists. The right next move there is "ship P now,
+persist the spike fixtures, and re-run §2.2 against a real
+Astro+sidecar build at Phase 4 when one exists." Without the
+explicit, *dated* Phase-4 re-score gate (see §2.7's `re_score_date`
+YAML field), "Deferred-H" would collapse back into "we hope it's
+H." With the dated gate, it is a real architecture verdict that
+records both what we ship and *when* we re-decide.
+
+The verdict table records, for each surviving architecture:
+
+| Axis | Measurement |
+|---|---|
+| CI commands | number of new CI commands required before first useful preview |
+| Cache surfaces | number of new cache directories whose invalidation matters |
+| Language bridges | Python→JSON, JSON→Zod, Sphinx→JSON counted separately |
+| Contributor count | contributors required before gp-sphinx dogfood is useful |
+| Fallback behavior | per-symbol, per-root, or whole-index degradation |
+| Package/release burden | whether PyPI/npm release order affects local dogfood |
+
+This is *evidence in the verdict*, not a tie-breaker.
+
+**Default if Phase 0 is skipped: P** (unchanged from committed
+plan; every section after §2 describes P, with §6.5 documenting
+the S divergence). **Default if Phase 0 is inconclusive but meets
+the strict Deferred-H definition above: Deferred-H.** Default for
+all other inconclusive results: **P**. S-defer-as-default is
+rejected because S-defer trades clarity for hedge — Deferred-H is
+honest about what it is *and* commits a re-score date.
+
+A1's role is informational: A1 ≥ 7/10 *might* eliminate the need
+for any Sphinx extension at all, in which case the verdict prefers
+A1 over A2. A1 < 7/10 is the expected outcome and does not change
+the matrix.
+
+### 2.5 What it would take to actually ship S
+
+S survives only if Spike A2 produces a complete enough payload
+that contributor protocols become unnecessary. Concretely, S wins
+iff *all* of these hold:
+
+1. `addnodes.desc.children[0]` (the signature) reliably contains
+   parsed parameter nodes with annotation children for plain
+   functions, methods, and properties. Verify against cases 1, 7.
+2. `enum.Enum` rendering produces traversable member nodes with
+   member docstrings, not a flattened table. Verify against case 8.
+3. `@dataclasses.dataclass()` rendering exposes field defaults,
+   types, and dataclass options as parsed nodes. Verify against
+   case 9.
+4. `sphinx-autodoc-pytest-fixtures` and `sphinx-autodoc-fastmcp`
+   already write per-symbol metadata into doctree node attributes
+   (e.g., a `gp_sphinx_metadata` dict on `desc`) **or** into env-
+   stores (`FixtureMeta` already does this), *and* the sidecar
+   can read those without `import pytest` / `import fastmcp`.
+
+Item 4 is load-bearing. If those packages don't already attach
+machine-readable metadata to their `desc` nodes or env-stores,
+then under S we either (a) add a "metadata-only contributor" shim
+to each — which is the contributor protocol with extra steps —
+or (b) do post-hoc HTML/text scraping of their rendered output,
+which is the exact thing we're trying to avoid. Spike A2 must
+verify item 4 before declaring S viable. (`FixtureMeta` already
+satisfies item 4 for pytest fixtures, verified at
+`_models.py:35-90` — this is the load-bearing counter-example to
+"S is structurally impossible".)
+
+### 2.6 Why the spike is non-negotiable
 
 Skipping Phase 0 commits the project to building and maintaining a
 parallel Python introspection process the rest of its life on the
 hypothesis that Sphinx export is insufficient. That hypothesis is
 plausible but not free to assume — the Python domain has typed
-`ObjectEntry` records and the inventory format is stable, so a
-disciplined Sphinx-export path *might* cover the dogfood. One
-engineer-day of evidence is the right cost to commit to the
-sidecar.
+`ObjectEntry` records (4 fields) and the inventory format is
+stable, so a disciplined Sphinx-export-plus-env-store path *might*
+cover the dogfood. One engineer-day of evidence is the right cost
+to commit to the sidecar.
 
-### 2.5 Phase 0 exit criteria
+Running Phase 0 against gp-sphinx *only* commits the project to
+that hypothesis on a corpus designed by the same author. The
+libtmux co-equal frame is the difference between "we tested on the
+easy case" and "we tested on the hard case." If S works on
+libtmux, it works everywhere we care about. If S fails on libtmux
+while working on gp-sphinx, that is Deferred-H, and we know it
+upfront instead of discovering it at Phase 4 when the cost of
+switching architectures is 100× higher.
 
-- `notes/plans/astro-phase-0-verdict.md` lands with
-  `architecture: {S | P | P-minimal | H}` in YAML front-matter
-- Representative payload checked in at `astro/fixtures/spike/`
-- Phase-1 issue opened with the chosen architecture in title
-- Acceptance test: produce the `merge_sphinx_config` symbol card
-  in <1 s wall-clock from a clean cache
+The countervailing risk is also real: `ObjectEntry` carries no
+signature or docstring. If signature data only survives the export
+as HTML in the `.fjson` `body`, S degrades into a maintained HTML-
+parsing path — which is what the "no HTML scraping" bar in §2.2.5
+exists to detect.
+
+### 2.7 Phase 0 exit criteria
+
+Phase 0 is complete only when *all* of these exist:
+
+- `notes/plans/astro-phase-0-verdict.md` lands with YAML
+  front-matter:
+
+  ```yaml
+  architecture: S | H | P | P-minimal | Deferred-H
+  reproducibility_gate: clean | workaround | blocked
+  reproducibility_workaround: <description or "none">
+  spike_a1: pass | fail
+  spike_a2: pass | fail
+  libtmux_must_pass_set: pass | fail
+  case_1_5_tiebreaker: pass | fail
+  spike_b: pass | fail | not_needed
+  html_body_scraping: forbidden
+  re_score_phase: none | 4
+  re_score_date: <ISO date or "none">
+  ```
+
+  The `re_score_date` field is non-optional whenever
+  `architecture: Deferred-H`. An empty or missing date for
+  Deferred-H invalidates the verdict — that's the line that
+  prevents Deferred-H from being a hedge.
+- `astro/fixtures/spike/` populated with, for each of the 10
+  cases:
+  - The relevant `.fjson` file (or excerpt) from each corpus.
+  - The corresponding entry from the dumped `py_objects` /
+    `std_objects` JSON.
+  - The corresponding `objects.inv` row.
+  - The corresponding A2 doctree-walk output entry.
+  - A one-paragraph "what was missing" note keyed to the §2.2.5
+    rubric, including any `FixtureMeta`-style env-store row used
+    in lieu of doctree data.
+- `astro/fixtures/spike/_dump.py` and the A2 doctree-walk
+  extension source, both committed alongside the verdict so the
+  spike is reproducible.
+- Spike B harness committed under
+  `astro/fixtures/spike/contributors/`, with: the standalone
+  script, its emitted JSON for one fixture, the four Q-Sem
+  checklist responses (each citing the `rg` invocation that
+  confirmed the result), and the LOC count recorded as evidence.
+- For S, H, or Deferred-H verdicts: an acceptance test that
+  produces **both** the `merge_sphinx_config` symbol card *and*
+  the `libtmux.Server` symbol card in < 1 s wall-clock from a
+  clean cache (running both because gp-sphinx-only would let the
+  sampling bias back in).
+- For P-minimal: one issue opened for each duplicated collector,
+  with a Phase-4 re-score date.
+- Phase-1 issue opened with the chosen architecture in the title.
+
+The fixture requirement is *not* bookkeeping. These files are
+promoted to seed data for `@gp-sphinx-astro/schema`, renderer
+snapshots, and the first Astro route before the sidecar or Sphinx
+integration is stable (see §13 Q12 for how this connects to the
+two-tier snapshot blessing).
+
+### 2.8 Scope of this section
+
+This section commits to the reproducibility gate, the A1/A2 split,
+the 8/10 threshold with libtmux must-pass + case-1/case-5
+tiebreaker, the Q-Sem-1/2/3a/3b/4 checklist, the five-cell
+decision matrix, and the dated re-score gate that distinguishes
+Deferred-H from H-but-unsure. It defers the following to other
+sections or to Phase-0 outcome:
+
+- The `_extract()` body of the A2 doctree-walk extension: deferred
+  to the spike runner. Pre-writing it would prejudge the answer;
+  the doctree-shape surprises the runner encounters are the
+  evidence the verdict needs.
+- §6 architecture sections and §11 snapshot infrastructure: not
+  redesigned here. The §2.1 reproducibility gate and the §2.7
+  spike-fixtures-as-snapshot-seeds note are the only cross-section
+  changes implied; both are forward references, not new design.
+- Public package naming: the three names
+  (`gp-sphinx-astro-builder`, `gp-sphinx-tsx-builder`,
+  `gp-sphinx-astro-theme`) are fixed and not revisited.
+- libtmux source-tree mutation: forbidden. All libtmux cases are
+  read-only; the spike vendors a minimal `conf.py` mirror rather
+  than editing libtmux's docs config.
+- Synthetic-fixture injection into gp-sphinx itself: rejected on
+  CLAUDE.md "project-read-only" grounds, and moot anyway because
+  libtmux has zero `NamedTuple` classes and zero `async def`
+  functions.
 
 ---
 
@@ -1977,155 +2543,351 @@ gp-sphinx-specific symbol kinds.
 
 ---
 
-## 13. Open-question dispositions and the one user decision
+## 13. Open-question dispositions and the (one) user decision
 
-Of twenty questions tracked across passes, nineteen are closed
-with defensible defaults below. **Q9 (MyST vs MDX)** is the single
-genuine user choice — the recommendation is MyST, with the case
-for both surfaced.
+Of twenty-three questions tracked across passes, the framing
+"**19 closed**" oversold settled engineering. Revised count:
 
-### The one open user decision
+- **16 closed** with defensible defaults that survived stress-
+  testing.
+- **3 closed-with-reasoning-now-on-record** (Q21, Q22, Q23) —
+  previously implicit choices inherited from tony.sh (test runner,
+  package manager, schema validator), each now documented with a
+  *load-bearing rationale* (the binding constraint that makes the
+  choice non-substitutable) plus a *rejection rationale* (why the
+  obvious alternatives don't fit). Both halves are required: the
+  rejection rationale alone is "why not X"; the load-bearing
+  rationale is "why Y is binding, not preference." Without both,
+  these decisions get re-litigated.
+- **1 user decision** (Q9), but the binary is **dissolved** —
+  both formats first-class day-1 via Astro's
+  `extendMarkdownConfig: true` default; the residual user
+  decision is a much narrower "single-format enforcement vs
+  both-first-class," default both.
 
-> **Q9 — Default prose format for hand-authored Astro pages.**
+### The (one, narrowed) open user decision
+
+> **Q9-residual — Single-format enforcement vs both-formats-first-class.**
 >
-> The plan defaults to **MyST**. You can flip to MDX before
-> scaffolding starts (Phase 1) without rework cost. Flipping after
-> hand-authored pages exist costs one migration per page.
+> **Default: both first-class.** Ship `**/*.{md,mdx}` glob,
+> `mdx()` integration registered in `astro.config.mjs`,
+> `extendMarkdownConfig: true` (Astro's default) so remark plugins
+> flow through to MDX. Authors pick `.md` for prose, `.mdx` for
+> component-heavy pages.
+>
+> **Override: single-format.** Drop `@astrojs/mdx`, narrow the
+> glob to `**/*.md`. Reversible until any `.mdx` file exists.
+>
+> Case for both: lower friction, no per-page format-flip ceremony,
+> matches tony.sh precedent (which already ships both first-class).
+>
+> Case for single: contributor-onboarding simplicity ("we only
+> write Markdown here" norm), and a smaller dependency graph for
+> `apps/gp-sphinx-docs`.
 
-**Why MyST is the default.** The gp-sphinx workspace already
-standardizes MyST. `myst_parser` is in `DEFAULT_EXTENSIONS` at
+#### Why Q9's binary dissolves
+
+Verified at
+`~/study/typescript/astro/packages/integrations/mdx/src/index.ts:114`:
+
+```ts
+extendMarkdownConfig: true,
+```
+
+This is the default value of the option in `defaultMdxOptions`
+(consumed by `applyDefaultOptions` at config-done time, line 141).
+The semantic: remark plugins declared in `astro.config.mjs` under
+`markdown.remarkPlugins` apply to **both** `.md` and `.mdx` files
+(verified by reading the resolution at lines 86-117 — the config
+is read from `config.markdown` when `extend` is on). Every
+MyST-flavored Markdown plugin that `apps/gp-sphinx-docs` registers
+for `.md` will also process `.mdx` content with no extra
+configuration.
+
+The original "MyST or MDX" binary was therefore solving a problem
+we can avoid having. tony.sh already ships both formats
+first-class
+(`~/work/tony.sh/packages/astro/src/content.config.ts:7,15,26` use
+`pattern: '**/*.{md,mdx}'`; `package.json:25` includes
+`@astrojs/mdx ^5.0.4`; `astro.config.ts:64` includes `mdx()` in
+`integrations`). The decision is not "MyST or MDX" but "do you
+*allow* MDX day-1" — and the case for allowing is overwhelming
+(one extra integration line, one `pnpm add`, no migration ever in
+either direction).
+
+#### Why MyST remains the default markdown flavour for `.md`
+
+The gp-sphinx workspace standardises MyST. `myst_parser` is in
+`DEFAULT_EXTENSIONS` at
 `/home/d/work/python/gp-sphinx/packages/gp-sphinx/src/gp_sphinx/defaults.py:91`,
 and `DEFAULT_MYST_EXTENSIONS` declares the active MyST extensions
-at line 138. The dogfood site documents `gp-sphinx` itself,
-which means the first page a reader hits explains MyST conventions
-used by the 14 sphinx-* packages. Authoring that explainer in MDX
-while the packages it documents use MyST is awkward at best. The
-sidecar's `rst-to-md` command (§8.6) emits MyST-flavored Markdown,
-not MDX — same emitter feeds both routes (autodoc prose and any
-imported RST docs). MDX-when-needed is the per-file escape hatch:
-a page that wants a full interactive demo embedded in prose can
-name itself `.mdx` and import components directly. Astro's
-per-file extension dispatch makes this clean — no global toggle.
+(`colon_fence`, `substitution`, `replacements`, `strikethrough`,
+`linkify`) at `:138-149`. The dogfood site documents `gp-sphinx`
+itself, which means the first page a reader hits explains MyST
+conventions used by the 14 sphinx-* packages. Authoring that
+explainer in MDX while the packages it documents use MyST is
+awkward. The sidecar's `rst-to-md` command (§8.6) emits MyST-
+flavoured Markdown, not MDX — same emitter feeds both routes.
 
-**Why you might choose MDX instead.** MDX is the native Astro
-story; tony.sh already does this
-(`~/work/tony.sh/packages/astro/src/content.config.ts:6-33` uses
-`**/*.{md,mdx}` glob; `~/work/tony.sh/packages/astro/package.json:25`
-includes `@astrojs/mdx ^5.0.4`). Live API cards, badges,
-cross-linked symbol previews are component problems, and forcing
-every page through remark-myst plugins to enable that one
-capability inverts the value proposition. Cost: format split
-across the project (Sphinx side stays MyST, Astro side becomes
-MDX); a one-time migration cost for any prose ported over.
+"Flip-to-MDX as default" is rejected: the argument ("Astro will
+choke on MyST directives without remark-myst") applies equally
+whether MyST is or isn't the default — it is not an argument for
+making MDX *primary*.
 
-**Why MyST is the lower-regret default.** Promoting one prose page
-from `.md` to `.mdx` is a five-minute change; demoting an MDX-only
-project back to MyST is a real refactor. If MyST plugin coverage
-in the JS ecosystem turns out to be too thin for some directive
-class, that page promotes to `.mdx` and renders the directive as a
-component import. Reversible per file. Note this is a deliberate
-divergence from `tony.sh`.
+#### Honest reversibility note (replaces "5-min flip recipe")
 
-To flip to MDX:
+The original closure said "promoting one prose page from `.md` to
+`.mdx` is a five-minute change." That is true *only* for pages
+that contain **no MyST directive syntax**. A `.md` page using
+`:::{tip}` colon-fence, `{ref}` cross-reference roles,
+`{substitution-ref}`, or other MyST-only directive syntax cannot
+be served as `.mdx` without rewriting each directive call as a JSX
+component import — the MDX compiler does not understand MyST
+directive syntax.
 
-- Replace the `markdown.remarkPlugins` block in §9.2 with an
-  `@astrojs/mdx` integration import (`import mdx from
-  '@astrojs/mdx'` in `astro.config.mjs`, add `mdx()` to
-  `integrations`)
-- Use `**/*.{md,mdx}` (or `**/*.mdx`) for any content collection
-  glob
-- The plan changes nowhere else
+The actual cost of promote-to-MDX is therefore:
 
-### Closed decisions
+- **5 minutes** for a CommonMark-only `.md` page (rare in this
+  codebase by design — MyST extensions are enabled in defaults).
+- **15 minutes to several hours per page** for a `.md` page that
+  uses MyST directives — proportional to how many directive
+  invocations need to become `<Component>` imports.
 
-#### Q1 — Architecture (RESOLVED by Phase 0)
+Demote MDX→MyST is still strictly worse than that (a real
+refactor, not a per-file action), so MyST remains the lower-regret
+default markdown flavour — but the asymmetry is *smaller* than
+the original closure implied. **Audit any page that uses
+MyST-only directives, roles, substitutions, or Sphinx
+cross-reference syntax before renaming it to `.mdx`.**
 
-S vs P vs P-minimal vs H decided by §2 thresholds. **Default if
-forced or skipped: P.** All three brainstorm originals converged.
+#### How to ship both first-class day-1 (corrected, complete recipe)
 
-#### Q2 — Workspace layout (RESOLVED: nested)
+Six ordered steps, all verified against
+`~/study/typescript/astro/packages/integrations/mdx/` at Astro
+6.1.
 
-Nested `astro/` (Option N). Promote to B in Phase 7+ if the JS
-stack proves permanent. Demoting from B back to N is much harder
-than promoting from N to B.
+1. **Add the integration as a dependency.** `pnpm add @astrojs/mdx`
+   in `apps/gp-sphinx-docs`. Pin to `^5.0.4` to match tony.sh
+   (`~/work/tony.sh/packages/astro/package.json:25`).
+2. **Register the integration in `astro.config.mjs`.** Add
+   `import mdx from '@astrojs/mdx'` and append `mdx()` to the
+   `integrations` array. The integration's `astro:config:setup`
+   hook then calls `addPageExtension('.mdx')` and
+   `addContentEntryType({ extensions: ['.mdx'], ... })` —
+   verified at
+   `~/study/typescript/astro/packages/integrations/mdx/src/index.ts`
+   (`addPageExtension('.mdx')` at line 59;
+   `addContentEntryType({ extensions: ['.mdx'], ... })` at lines
+   60-78). **Without this step, `.mdx` files in content
+   collections emit "No entry type found for …" warnings** (the
+   glob loader looks up the entry type at
+   `~/study/typescript/astro/packages/astro/src/content/loaders/glob.ts:280`:
+   `return entryTypes.get(\`.${ext}\`);`) **and are dropped
+   silently from the store**.
+3. **Update each content-collection glob.** Anywhere
+   `pattern: '**/*.md'` appears in content config, change to
+   `pattern: '**/*.{md,mdx}'`. The tony.sh pattern at
+   `content.config.ts:7,15,26` is the working reference.
+4. **`extendMarkdownConfig` defaults to `true` — leave it.** The
+   MDX integration sets `extendMarkdownConfig: true` in
+   `defaultMdxOptions`
+   (`~/study/typescript/astro/packages/integrations/mdx/src/index.ts:113-117`),
+   so `markdown.remarkPlugins` defined at the top of
+   `astro.config.mjs` (§9.2) flow through to MDX rendering as
+   well. If §9.2's plugin block is MyST-specific
+   (`remark-myst-roles`, `remark-myst-directives`), they apply
+   to both `.md` and `.mdx` automatically — so MyST-flavored
+   authoring remains the default for any file. **No "replace the
+   `markdown.remarkPlugins` block" step is needed**; the
+   original recipe wording was misleading.
+5. **Mind the type augmentation (no manual change required).**
+   `@astrojs/mdx` ships `template/content-module-types.d.ts`
+   (verified at
+   `~/study/typescript/astro/packages/integrations/mdx/template/content-module-types.d.ts:1-10`)
+   that augments `astro:content`'s `Render` interface with an
+   `'.mdx'` entry. Registered automatically by the integration;
+   no manual `tsconfig.json` change is needed. `astro check`
+   will still fail at type-resolution time if the integration
+   isn't in the integrations array. `extends:
+   "astro/tsconfigs/strictest"` (Q17) doesn't need to change.
+6. **No Vite plugin to add manually.** The integration registers
+   `vitePluginMdx()` and `vitePluginMdxPostprocess()` itself
+   (`~/study/typescript/astro/packages/integrations/mdx/src/index.ts:80-84`,
+   the `updateConfig({ vite: { plugins: [...] } })` call). The
+   site-level `vite.plugins` block in §9.2 stays untouched.
 
-#### Q3 — Sidecar packaging (RESOLVED: workspace-private now, PyPI in Phase 5 with both gates)
+Aggregate cost: ≈ 10 minutes once (steps 1-3 are mechanical;
+step 4 is verification; steps 5-6 are no-ops). Nothing in the
+plan changes outside `apps/gp-sphinx-docs/`.
 
-Two gates: ≥3 contributors shipped against the protocol *and* one
-non-Astro consumer plausible.
+### Closures, revised where reasoning didn't survive stress
+
+#### Q1 — Architecture (RESOLVED by Phase 0; default P; default-if-strict-Deferred-H Deferred-H)
+
+S vs H vs P vs P-minimal vs Deferred-H decided by §2.4
+thresholds. Default if Phase 0 skipped: P. Default if Phase 0
+inconclusive but meets the strict Deferred-H definition (§2.0,
+§2.4, §2.7 dated re-score gate): Deferred-H. Default for all
+other inconclusive results: P. This makes "we have evidence S
+works on gp-sphinx but unproven on libtmux" a real verdict, not a
+punt.
+
+#### Q2 — Workspace layout (RESOLVED: nested; promotion to root is not free)
+
+Nested `astro/` (Option N) remains the default. Promote to a
+broader root layout only after the Astro stack is kept past Phase
+6 and at least one public package has been published.
+
+The closure is **N→B promotion is real engineering, not a trivial
+follow-up.** Budget the promotion as a half-day mechanical change
+with a full CI re-run, including:
+
+- `git mv astro/* .` rewrites every relative path inside
+  `astro/packages/*/package.json` (`"main"`, `"types"`,
+  workspace refs).
+- `pnpm-workspace.yaml` rewrites: `packages: ['packages/*',
+  'apps/*']` becomes ambiguous because `packages/*` already
+  exists for Python — has to become e.g. `['ts-packages/*',
+  'apps/*']` with corresponding directory renames, or keep
+  nesting in name only.
+- Every `tsconfig.json` `extends` and `paths` entry rewrites.
+- Every Vitest `vitest.workspace.ts` glob rewrites.
+- `apps/gp-sphinx-docs` `astro.config.mjs` `outDir` and `srcDir`
+  rewrites.
+- `.github/workflows/*` `working-directory: astro/...`
+  references rewrite.
+
+Default stays N because the *first-day* cost of N is lower for
+Python-only contributors (zero `node_modules` until they touch
+Astro). But "promote in Phase 7+" is real engineering.
+
+#### Q3 — Sidecar packaging (RESOLVED: workspace-private; PyPI in Phase 5 with operationalised gates)
+
+Sidecar stays workspace-private through Phase 4. PyPI promotion
+in Phase 5+ is gated:
+
+1. **Three contributors shipped, with the protocol stable across
+   them.** "Shipped" = a git tag in the contributor's package
+   repository that depends on `gp-sphinx-sidecar` from a non-
+   `file:` spec. Counted across `sphinx-autodoc-typehints-gp`,
+   `sphinx-autodoc-argparse`, `sphinx-autodoc-pytest-fixtures`,
+   `sphinx-autodoc-docutils`, `sphinx-autodoc-sphinx`,
+   `sphinx-autodoc-fastmcp` — six candidates, three of which
+   must ship.
+2. **At least one external user has filed an issue or PR**
+   against `gp-sphinx-sidecar` requesting either (a) a protocol
+   change or (b) a documented behaviour. "External" = author is
+   not a gp-sphinx maintainer. "User" = has demonstrated a use
+   case that isn't producing docs for the gp-sphinx workspace
+   itself.
+
+If after 12 months neither gate has fired, Phase 5+ closes as
+"stay workspace-private indefinitely" — and `gp-sphinx-tsx-builder`
+(the public TS builder) talks to a private Python helper, which is
+a fine architecture but should be documented as such, not as
+"PyPI release pending."
+
+"PyPI day-1 as `0.0.0a0`" is rejected here as speculative for v1:
+publishing to PyPI before any contributor exists creates
+support-and-release-order pressure before the protocol has earned
+it.
 
 #### Q4 — Number of internal TS packages (RESOLVED: 2)
 
-`@gp-sphinx-astro/schema`, `@gp-sphinx-astro/intersphinx`. Each
-has independent reuse story.
+Unchanged. `@gp-sphinx-astro/schema`,
+`@gp-sphinx-astro/intersphinx`. Each has independent reuse story.
 
 #### Q5 — Schema versioning shape (RESOLVED: envelope with two-version contract)
 
-`{ schemaVersion: 1, protocolVersion: 1, features: string[], ... }`.
-The two-version split is non-negotiable per §5.2.
+Unchanged. `{ schemaVersion: 1, protocolVersion: 1, features:
+string[], ... }`. The two-version split is non-negotiable per
+§5.2.
 
 #### Q6 — Furo bridge (RESOLVED: defer to Phase 7+)
 
-Cool idea (per-page migration) but breaks the 3-package constraint.
+Unchanged. Per-page migration is appealing but breaks the
+3-public-package constraint.
 
 #### Q7 — Static fast path (RESOLVED: sidecar `--mode static`)
 
-Stdlib `ast`. Add Node tree-sitter only if HMR latency proves
-intolerable.
+Unchanged. Stdlib `ast`. Add Node tree-sitter only if HMR latency
+proves intolerable.
 
 #### Q8 — Python floor (RESOLVED: 3.10+, optimal on 3.14+)
 
-Match gp-sphinx's `requires-python = ">=3.10,<4.0"` (verified at
-`/home/d/work/python/gp-sphinx/packages/gp-sphinx/pyproject.toml:5`).
+Match gp-sphinx's `requires-python = ">=3.10,<4.0"` at
+`/home/d/work/python/gp-sphinx/packages/gp-sphinx/pyproject.toml:5`.
 3.14+ produces the best `annotationlib.Format` results and is the
-version used in CI (`/home/d/work/python/gp-sphinx/.github/workflows/docs.yml:39`).
+version used in CI
+(`/home/d/work/python/gp-sphinx/.github/workflows/docs.yml:35-39`,
+which sets `python-version: "3.14"`; the workflow's
+`id-token: write` permission at `:10` enables the OIDC role
+assumption at `:78`).
 
-#### Q9 — Documentation source format (USER DECISION; default MyST)
+#### Q9 — Documentation source format (USER DECISION; binary dissolved)
 
-See callout above.
+See callout above. The "5-minute flip" framing is replaced with
+the honest per-page cost; the user decision narrows to
+"single-format enforcement vs both-first-class," default both.
+MyST stays as the default markdown flavour for `.md`.
 
 #### Q10 — Versioned docs (RESOLVED: unversioned for v1)
 
-**Recommendation:** v1 unversioned. Match existing infrastructure
-parity — `aws s3 sync ... --delete` at
-`/home/d/work/python/gp-sphinx/.github/workflows/docs.yml:85`
+Match existing infrastructure parity — `aws s3 sync ... --delete
+--follow-symlinks` at
+`/home/d/work/python/gp-sphinx/.github/workflows/docs.yml:84-85`
 already deletes objects on every deploy, which means the current
 docs site is already unversioned-on-disk. Adding versions to the
 Astro site while the Sphinx site stays unversioned would be a
-confusing mixed signal. The flat URL space documented at
-`/home/d/work/python/gp-sphinx/docs/configuration.md:60-75` and
-`/home/d/work/python/gp-sphinx/docs/packages/sphinx-gp-sitemap.md:33-48`
-is the existing canonical convention.
+confusing mixed signal. The flat URL convention is documented at
+`/home/d/work/python/gp-sphinx/docs/configuration.md` (the
+"From `docs_url`" table starting at the section heading,
+including `sitemap_url_scheme = "{link}"` and the explanation of
+why the flat scheme overrides upstream's `"{lang}{version}{link}"`)
+and re-explained at
+`/home/d/work/python/gp-sphinx/docs/packages/sphinx-gp-sitemap.md`
+(the auto-derivation table listing `site_url` and
+`sitemap_url_scheme`, plus the "flat scheme overrides upstream
+default" paragraph).
 
 `ApiIndex.project.version` exists from day one. Routes do not
 include `/v/<version>/` until promotion. **Promotion trigger:**
 add versioned routes only when there are at least two actively
-hosted versions or a release policy requiring old docs.
-
-If versioning becomes a Phase 7+ requirement, Astro's content
+hosted versions or a release policy requiring old docs. If
+versioning becomes a Phase 7+ requirement, Astro's content
 collections offer the natural slot (`version` in the route
 parameter, parallel to a locale prefix).
 
 #### Q11 — Deployment target (RESOLVED: mirror existing AWS infra)
 
-**Recommendation:** mirror the existing AWS S3 + CloudFront +
-Cloudflare DNS infrastructure rather than introducing a new host
-(Cloudflare Pages, Netlify, GitHub Pages). For previews, use a
-parallel S3 bucket gated by branch.
+**Recommendation unchanged:** mirror the existing AWS S3 +
+CloudFront + Cloudflare DNS infrastructure rather than
+introducing a new host. For previews, use a parallel S3 bucket
+gated by branch.
 
-Evidence: the repo's `docs.yml` workflow already uses an OIDC
-role (line 78,
-`role-to-assume: ${{ secrets.GP_SPHINX_DOCS_ROLE_ARN }}`), an S3
-bucket sync at lines 81-85 (with `--delete --follow-symlinks` on
-line 85), a CloudFront distribution (lines 87-92, with
-`--distribution-id "${{ secrets.GP_SPHINX_DOCS_DISTRIBUTION }}"`
-at line 91), and Cloudflare cache purge via
-`jakejarvis/cloudflare-purge-action@v0.3.0` (lines 94-99).
-Verified at
-`/home/d/work/python/gp-sphinx/.github/workflows/docs.yml:74-99`,
-with `id-token: write` at line 10.
+The closure stands on two independent legs:
 
-Concrete plan:
+1. **Infrastructure already exists, paid for, and wired into CI.**
+   `/home/d/work/python/gp-sphinx/.github/workflows/docs.yml`:
+   `id-token: write` at `:10`, OIDC role
+   (`role-to-assume: ${{ secrets.GP_SPHINX_DOCS_ROLE_ARN }}`)
+   at `:78`, S3 sync at `:81-85`
+   (`aws s3 sync ... --delete --follow-symlinks`), CloudFront
+   invalidation at `:87-92`
+   (`--distribution-id "${{ secrets.GP_SPHINX_DOCS_DISTRIBUTION }}"`
+   at `:91`), Cloudflare cache purge via
+   `jakejarvis/cloudflare-purge-action@v0.3.0` at `:94-99`
+   (`CLOUDFLARE_TOKEN` and `CLOUDFLARE_ZONE` at `:98-99`).
+2. **The closest analog (tony.sh) deploys Astro the same way.**
+   `~/work/tony.sh/.github/workflows/deploy.yml`: OIDC role at
+   `:73`, S3 sync at `:84-88`
+   (`aws s3 sync packages/astro/dist/ ... --follow-symlinks
+   --delete`), CloudFront invalidation at `:89-94`, Cloudflare
+   purge at `:95-100`. The only existing Astro project in the
+   author's ecosystem already uses S3 + CloudFront + Cloudflare
+   for an Astro build, *not* Cloudflare Pages.
+
+Concrete plan unchanged:
 
 | Stage | Host | Trigger |
 |---|---|---|
@@ -2133,72 +2895,74 @@ Concrete plan:
 | Phase 7 (cutover) | If the Astro site replaces the Sphinx site: write to existing `secrets.GP_SPHINX_DOCS_BUCKET` instead | After cutover decision |
 | Phase 7 (parallel) | If both stay: new bucket `gp-sphinx-astro` + new CloudFront distribution at `astro.gp-sphinx.git-pull.com` | After cutover decision |
 
-This avoids:
+Cloudflare Pages would be lower friction *if starting from
+scratch and previews-first*; we are not. The Pages-for-previews
+case is genuinely attractive — automatic per-PR preview URLs
+without custom S3 plumbing — but it would mean maintaining two
+deploy targets in parallel during the cutover window, which is
+the exact operational cost we're trying to avoid. A future
+"previews on Cloudflare Pages, production on existing AWS" split
+is permitted in Phase 7+ if PR-preview friction proves to be the
+bottleneck; deferring that decision costs nothing.
 
-- Maintaining two deploy targets (existing AWS + a new Cloudflare
-  Pages account)
-- A second cloud provider's IAM permissions to wire up
-- Divergent CDN caching semantics between the two doc sites
-
-Two independent originals (`claude-r2`, `gpt-r2`) reached the
-same "use existing AWS infra" conclusion against the alternative
-of Cloudflare Pages previews. Cloudflare Pages would be lower
-friction *if starting from scratch*; we are not — the AWS
-infrastructure already exists, is paid for, and is wired into CI.
-
-#### Q12 — Snapshot update workflow (RESOLVED: two-tier blessing)
-
-**Recommendation:** two snapshot tiers, not one.
+#### Q12 — Snapshot update workflow (RESOLVED: two-tier blessing; spike fixtures seed wire-contract tier)
 
 | Tier | Files | Update workflow |
 |---|---|---|
-| **Wire contract (gated)** | `@gp-sphinx-astro/schema` snapshots; `gp-sphinx-tsx-builder`'s integration `ApiIndex` snapshot against `astro/fixtures/gp-sphinx-snapshot` | `pnpm snapshots:bless`. PR description must include a `## Schema` section explaining the change. PRs that change the full `ApiIndex` snapshot by more than 50 lines additionally require a `astro/fixtures/gp-sphinx-snapshot/CHANGELOG.md` entry. Schema-drift CI job (§11.6) gates breaking changes. |
+| **Wire contract (gated)** | `@gp-sphinx-astro/schema` snapshots; `gp-sphinx-tsx-builder`'s integration `ApiIndex` snapshot against `astro/fixtures/spike/` (now permanent — see §2.7) | `pnpm snapshots:bless`. PR description must include a `## Schema` section explaining the change. PRs that change the full `ApiIndex` snapshot by more than 50 lines additionally require an `astro/fixtures/spike/CHANGELOG.md` entry. Schema-drift CI job (§11.6) gates breaking changes. |
 | **Renderer surface (loose)** | Component HTML snapshots in `astro-theme`; intersphinx parsed-entry snapshots | Standard `vitest -u` per package. PR review catches unintentional changes. |
 
-The reasoning: the wire contract is what third parties depend on.
-A renamed field at that boundary is a breaking change for every
-downstream `gp-sphinx-tsx-builder` consumer. A renamed CSS class
-in a component snapshot is a normal CSS evolution. Treating both
-surfaces equivalently is too coarse; a separate
-`pnpm snapshots:update` for everything is too heavy. The 30-second
-two-script split is the right compromise, with the >50-line rule
-as the concrete trigger for additional review friction.
+Reasoning unchanged. Note that there is no canonical Python
+`--snapshot-update` analog in `vitest`'s shape (Python `syrupy`
+uses `--snapshot-update`; `vitest` uses `-u`). The two-tier
+blessing makes the JS-side distinction explicit instead of
+relying on a single global toggle.
 
-Note: there is no canonical Python `--snapshot-update` analog in
-`vitest`'s shape (Python `syrupy` uses `--snapshot-update`;
-`vitest` uses `-u`). The two-tier blessing makes the JS-side
-distinction explicit instead of relying on a single global
-toggle.
+**Connection to §2.7:** the spike fixtures are the ground truth
+for the wire-contract tier from day 1. There is no "rebuild
+fixtures from a real build" intermediate step.
 
 #### Q13 — Build-failure threshold (RESOLVED: fail with `allowEmptyApiIndex`/`allowStaleApiIndex` opt-ins)
 
 Whole-index failure crashes `astro build` unless
 `allowEmptyApiIndex: true`. Per-symbol/per-module failures
 continue to degrade (§6.4). `allowStaleApiIndex: true` opts in
-to serving the cached `last-good.json` index in dev with a banner.
+to serving the cached `last-good.json` index in dev with a
+banner.
 
 #### Q14 — Default annotation format (RESOLVED: STRING)
 
-`STRING` for v1 because it never raises. `FORWARDREF` opt-in until
-Phase 5 measures the resolver against gp-sphinx's real intersphinx
-targets.
+`STRING` for v1 because it never raises. `FORWARDREF` opt-in
+until Phase 5 measures the resolver against gp-sphinx's real
+intersphinx targets.
 
-#### Q15 — Phase-0 thresholds (RESOLVED: 5/6 + dual semantic+LOC for B)
+#### Q15 — Phase-0 thresholds (REVISED: per §2.2.7 + §2.3 + §2.4)
 
-Spike A: ≥5/6 cases yield structured data without HTML scraping.
-Spike B: ≤80 LOC standalone script *and* no duplicated
-introspection logic. Both bars must be met for Architecture P to
-be considered viable; failing the LOC bar via copy-paste of
-package internals into the sidecar fails Spike B even if it
-hits 80.
+- **Reproducibility gate** (§2.1): JSON build runs cleanly, with
+  any workaround documented in the verdict.
+- **Spike A1**: ≥ 7/10 cases yield structured data without
+  `.fjson["body"]` HTML parsing. (Recorded as counter-evidence.)
+- **Spike A2**: ≥ 8/10 cases extract from doctree/env-store,
+  with cases 1, 5 *and* the libtmux must-pass set (7, 8, 9, 10)
+  in the passing set, AND item 4 of §2.5 satisfied.
+- **Spike B**: all four Q-Sem checks pass (Q-Sem-3 split into
+  3a body grep + 3b argparse inspection with entry-point
+  loading), AND either ≤ 40-LOC adapter over existing
+  env-store *or* ≤ 80-LOC hand-written contributor. LOC
+  recorded as evidence; import discipline is the binding gate.
+- **Tooling debt** recorded co-equally in the verdict (per §2.4
+  axes).
 
 #### Q16 — Zod recursive typing (RESOLVED: `z.$ZodType<T>`)
 
-Astro 6.1 ships Zod 4 (`zod ^4.3.6` at
+Astro 6.1 ships Zod 4 (`"zod": "^4.3.6"` at
 `~/study/typescript/astro/packages/astro/package.json:176`);
 `z.$ZodType<T>` is the correct recursive pattern. The Astro
 Content Loader uses `schema?: z.$ZodType` at
-`~/study/typescript/astro/packages/astro/src/content/loaders/types.ts:65`.
+`~/study/typescript/astro/packages/astro/src/content/loaders/types.ts:65`,
+with the parallel `createSchema` returning the same type at
+`types.ts:70`. The internal import is `import type * as z from
+'zod/v4/core'` (line 2 of the same file).
 
 #### Q17 — tsconfig source (RESOLVED: extends `astro/tsconfigs/strictest`)
 
@@ -2207,8 +2971,8 @@ Matches tony.sh and tracks the upstream Astro preset.
 #### Q18 — pnpm workspace shape (RESOLVED: globs)
 
 `packages: ['packages/*', 'apps/*']`. Note divergence from
-tony.sh (which has only `packages: - packages/*`); we add
-`apps/*` for our `apps/gp-sphinx-docs` site.
+tony.sh's `packages: - packages/*` only — we add `apps/*` for
+our `apps/gp-sphinx-docs` site.
 
 #### Q19 — Annotation enum exposure (RESOLVED: 3 of 4 members)
 
@@ -2222,8 +2986,160 @@ Wire `schemaVersion` (JSON envelope) is independent of
 Conflating them forces spurious major bumps when only one axis
 changes. See §5.2.
 
----
+### Closed-with-reasoning-now-on-record (previously implicit)
 
+These are decisions the plan inherited from tony.sh / the broader
+Astro ecosystem without surfacing the binding rationale. They are
+not new opens — they are existing closures documented so future
+reviewers do not re-litigate them. Each carries both a
+*load-bearing rationale* (what makes the choice non-substitutable)
+and a *rejection rationale* (why obvious alternatives don't fit).
+Both halves are required: the load-bearing rationale defeats
+"why not switch to ArkType?" cycles; the rejection rationale
+defeats "you only chose this because tony.sh did" cycles.
+
+#### Q21 — JS test runner (CLOSED: Vitest ^4.x)
+
+Vitest. Inherited from tony.sh
+(`~/work/tony.sh/packages/astro/package.json` includes
+`"vitest": "^4.1.5"`, plus `@vitest/coverage-v8` and
+`@vitest/ui` at the same version) and from the broader Astro
+ecosystem (Astro's own integration tests use Vitest, e.g.
+`~/study/typescript/astro/packages/integrations/mdx/test/*.test.ts`).
+
+**Load-bearing rationale (binding constraint, not preference).**
+The wire-contract snapshot tier (Q12) is the binding test
+surface — the schema package's stability is enforced by snapshot
+diffs, not by unit assertions. Vitest's `toMatchSnapshot` and
+`toMatchFileSnapshot` behavior is what the wire-contract tier
+expects, and Vitest's workspace-projects support matches the
+multi-package shape of `astro/packages/*` directly. A different
+runner means rebuilding the snapshot story for the binding test
+surface.
+
+**Rejection rationale for alternatives:**
+
+- `node:test` (stdlib, zero deps) — attractive but the
+  snapshot-test story is not as polished as Vitest's
+  `toMatchSnapshot` + `toMatchFileSnapshot` integration; building
+  a comparable harness for the wire-contract tier is real
+  engineering, not a 1-day task.
+- `bun:test` — adds a Bun runtime requirement that none of the
+  gp-sphinx contributor base would otherwise have; the snapshot
+  story is also younger.
+- `uvu` — last released 2022; unmaintained signals.
+- Vitest's Vite-adjacent mock and workspace-projects support
+  matches the multi-package shape of `astro/packages/*`
+  directly.
+
+#### Q22 — JS package manager (CLOSED: pnpm)
+
+pnpm. Inherited from tony.sh
+(`~/work/tony.sh/package.json:32` pins
+`"packageManager": "pnpm@10.33.2"` — the field Corepack actually
+obeys; `~/work/tony.sh/pnpm-workspace.yaml` declares
+`packages: - packages/*` for the workspace layout; CI at
+`~/work/tony.sh/.github/workflows/deploy.yml:31` uses
+`pnpm/action-setup@v4`).
+
+**Load-bearing rationale (binding constraint, not preference).**
+The intersphinx package depends on workspace-internal package-by-
+package debugging during Phase 1 (§6.2). pnpm's symlink-based
+`node_modules` layout makes "open the actual file resolved by an
+import" work without `node_modules/.bin` indirection — material
+for the per-package debug story even when the dependency graph is
+small. The `packageManager` field at tony.sh `package.json:32` is
+also what CI obeys via the Corepack contract; npm's hoisted
+layout would not give the same per-package symlink targeting.
+
+**Rejection rationale for alternatives:**
+
+- npm — workspaces work, but disk-footprint and install-time
+  differences from pnpm are material in CI; the symlink-debug
+  benefit above does not exist with npm's hoisted layout.
+- yarn — additional learning curve for contributors who already
+  need to learn Astro+Vite.
+- bun — same Bun-runtime concern as Q21.
+
+The dogfood story does not strictly require pnpm; npm workspaces
+would also work. pnpm is chosen for symlink-layout debugging plus
+ecosystem-fit with tony.sh.
+
+#### Q23 — Schema validator (CLOSED: Zod 4)
+
+Zod 4. Already bundled by Astro 6.1
+(`~/study/typescript/astro/packages/astro/package.json:176`); the
+schema package can re-export `z.$ZodType<T>` directly.
+
+**Load-bearing rationale (binding constraint, not preference).**
+Astro's content collections accept a `schema?: z.$ZodType`
+directly
+(`~/study/typescript/astro/packages/astro/src/content/loaders/types.ts:65`),
+and Astro's own `astro/zod` export re-exports `zod/v4` at
+`~/study/typescript/astro/packages/astro/src/zod.ts:1-3`:
+
+```ts
+import * as mod from 'zod/v4';
+
+export * from 'zod/v4';
+export { mod as z };
+```
+
+This is Astro's *exported* Zod boundary, not just an internal
+dependency — content collections type-check against this exact
+export. A different validator would force an adapter at every
+collection boundary (each `defineCollection({ schema: ... })`
+call in `apps/gp-sphinx-docs/src/content/`). This is the binding
+constraint, not author preference.
+
+**Rejection rationale for alternatives:**
+
+- ArkType — smaller bundle, faster parse, but adds a second
+  schema vocabulary alongside Astro's content-collection Zod
+  (which would require an adapter at every collection boundary).
+- TypeBox — JSON-schema-first; great if we were planning to
+  publish a JSON Schema for the wire contract, which we are not
+  — the schema lives in TS source.
+- valibot — modular, but the modularity benefit is irrelevant
+  for a sidecar-emitted JSON validation use case, and the
+  collection-boundary adapter cost still applies.
+
+This decision was effectively forced by Q16 (Zod 4 is what Astro
+ships) and by Astro's `astro/zod` re-export contract; Q23 makes
+that explicit so a future "should we switch to ArkType?" question
+has the rejection rationale on file.
+
+### Closures unchanged from the previous draft
+
+The following closures survived stress-testing as written and are
+listed here to mark "unchanged": Q4 (2 internal TS packages),
+Q5 (envelope schema), Q6 (Furo bridge deferred), Q7 (static fast
+path), Q8 (Python floor), Q10 (unversioned v1), Q12 (two-tier
+snapshot blessing), Q13 (`allowEmptyApiIndex`), Q14 (STRING
+default), Q16 (Zod `z.$ZodType<T>`), Q17 (`astro/tsconfigs/strictest`),
+Q18 (pnpm workspace globs), Q19 (3-of-4 enum members), Q20
+(two-version contract).
+
+### Summary of what moved relative to the committed plan
+
+| ID | Committed plan | This pass | Reason |
+|---|---|---|---|
+| §2 framing | "S vs P spike" with 4-cell matrix | Reproducibility gate → A1+A2 split → 5-cell matrix with Deferred-H made distinct from H by an explicit *dated* Phase-4 re-score gate written into the verdict YAML | Verified blocker (`-b json` KeyErrors against `sphinx_gp_opengraph`); A1 vs A2 separates the question that matters; Deferred-H now distinguishable on the libtmux must-pass axis with a dated re-score that prevents collapse into "H but unsure" |
+| §2 case set | 6 gp-sphinx cases, 5/6 bar | 6 gp-sphinx + 4 libtmux cases (7-10), 8/10 bar with libtmux must-pass + case-1/5 tiebreaker | gp-sphinx-only is producer-side bias (verified: same author as the sphinx-* packages it documents); libtmux is the original target consumer |
+| §2 reproducibility blocker | implicit | Producer/consumer mismatch table: `sphinx_gp_opengraph.__init__.py:144` reads `context["pagename"]`; `sphinxcontrib/serializinghtml/__init__.py:90` writes only `current_page_name`; standard HTML builder writes both at `sphinx/builders/html/__init__.py:1083` (which is why it's gone undetected). Workspace audit (`rg -n 'context\["pagename"\]' packages/`) returns exactly one hit — blocker is precisely scoped to one extension. `sphinx_gp_sitemap` is unaffected (uses `app.env.found_docs`). | Producer/consumer mismatch verified across the workspace's 14 packages |
+| §2 ObjectEntry citation | implicit | Explicit 4-field NamedTuple at `sphinx/domains/python/__init__.py:60-65` | Load-bearing for "no HTML scraping" gate |
+| §2 `_InventoryItem` citation | wrong line numbers (previous citation `:87-92, :210-218` confused a usage site and the parent `_Inventory` class) | Corrected: declaration at `sphinx/util/inventory.py:245`, slot list at `:246`, fields populated by keyword in `__init__` at `:253-264` | Verified live |
+| §2 FixtureMeta field count | "17 stable-primitive fields" | **16 fields**, named explicitly: `docname`, `canonical_name`, `public_name`, `source_name`, `scope`, `autouse`, `kind`, `return_display`, `deps`, `param_reprs`, `has_teardown`, `is_async`, `summary`, `deprecated`, `replacement`, `teardown_summary` | Direct count, `_models.py:35-90` |
+| §2 `Server.__init__` citation | `:144-153` | Corrected: signature at `:134-144`, accepting 7 named kwargs (`socket_name`, `socket_path`, `config_file`, `colors`, `on_init`, `socket_name_factory`, `tmux_bin`) plus `**kwargs: t.Any`; `Server` class declaration at `:49-53` | Verified live; previous range pointed into the body |
+| §2 Spike B gate | LOC ≤ 80 + "no leakage" | Q-Sem 4-question import-discipline checklist (each `rg`-able), plus adapter-LOC frame; Q-Sem-3 sharpened to two mechanical sub-checks (3a body grep, 3b argparse inspection + entry-point loading) so it does not depend on a hypothetical contributor existing | The original Q-Sem-3 leaked judgment because it referenced `BadgeNodeContributor` which is not yet implemented |
+| Q1 default-if-inconclusive | P (always) | P by default; Deferred-H *only* when the strict definition holds (gp-sphinx subset passes, libtmux failures are extension-owned-metadata cases re-testable through Phase-4 HMR loop, dated `re_score_date` in YAML) | Deferred-H must be a real verdict, not a hedge |
+| Q3 gates | "≥3 contributors, plausible non-Astro consumer" | Operationalised: 3 of 6 named packages must ship; 1 external user issue/PR | Counts the right thing |
+| Q9 framing | Single binary user choice (MyST vs MDX) defaulted to MyST + 5-min flip recipe | Binary dissolved via `extendMarkdownConfig: true` (Astro default at `mdx/src/index.ts:114`); residual user decision is single-format-enforcement vs both-first-class, default both; MyST stays as default markdown flavour for `.md`; honest 5-min/15-min-hours-per-page reversibility note replaces "5-min flip recipe" | Verified Astro default; honest cost of MyST→MDX promote |
+| Q9 flip recipe | 3 steps | 6 steps including `addContentEntryType`, `extendMarkdownConfig` default, type augmentation, no-Vite-plugin | Verification against Astro 6.1 |
+| Q11 reasoning | Leaned on "two originals reached same conclusion" | Sentence excised; closure stands on infra-already-exists + tony.sh-uses-the-same-pattern (verified at `~/work/tony.sh/.github/workflows/deploy.yml:69-100`) | Appeal to consensus is not evidence |
+| Q15 thresholds | 5/6 + LOC ≤ 80 + no-duplication | Reproducibility gate + A1 7/10 + A2 8/10 with libtmux must-pass + Q-Sem checklist (3a/3b split) + adapter-LOC | Roll-up of §2 changes |
+| Q21 / Q22 / Q23 | not on record | Closed-with-reasoning, each with a *load-bearing* rationale (binding constraint) AND a *rejection* rationale (why-not-X). Q21 binds to Q12 wire-contract snapshot tier (Vitest's `toMatchSnapshot`+`toMatchFileSnapshot`); Q22 binds to per-package symlink-debug for Phase-1 work plus tony.sh `package.json:32` `"packageManager": "pnpm@10.33.2"` (Corepack contract); Q23 binds to Astro's `astro/zod` re-export at `astro/src/zod.ts:1-3` and content-collection Zod boundary at `loaders/types.ts:65` | Avoids "tony.sh-cargo-cult" failure mode; both halves required so future reviewers don't re-litigate |
+| §13 framing header | "19 closed, 1 open" | "16 closed, 3 closed-with-reasoning-now-on-record, 1 narrowed user decision" | Honest count |
 ## 14. Explicit rejections
 
 Recorded so future contributors don't re-litigate without new
