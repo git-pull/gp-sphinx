@@ -539,12 +539,82 @@ def _inject_copybutton_bridge(
     context["metatags"] = context.get("metatags", "") + snippet
 
 
+def _inject_fowt_prevention(
+    app: Sphinx,
+    pagename: str,
+    templatename: str,
+    context: dict[str, t.Any],
+    doctree: object,
+) -> None:
+    """Prevent flash of wrong theme (FOWT) on initial page load.
+
+    Furo's no-flicker mechanism is an inline script *inside* ``<body>``
+    that sets ``body.dataset.theme`` from ``localStorage``. Two races
+    leak through: (1) when the body-script fires after first paint on
+    slower networks/CPUs, body content is briefly painted with the
+    light defaults; (2) ``<meta name="color-scheme" content="light
+    dark">`` defers the html canvas color to OS preference, so the
+    canvas can paint in the wrong scheme even when localStorage holds
+    a different value.
+
+    This hook addresses both by injecting a ``<style>`` + ``<script>``
+    pair into Furo's ``metatags`` slot (rendered in ``<head>`` before
+    stylesheets and the ``<body>`` open). The script synchronously
+    resolves the user's effective theme, sets
+    ``document.documentElement.style.colorScheme`` (canvas paints in
+    the right scheme), and adds the ``gp-sphinx-theme-pending`` class
+    on ``<html>`` (CSS gate). The style hides body content while that
+    class is present and ``body[data-theme]`` is unset — Furo's
+    body-script clears the gate the moment it runs, revealing body
+    content already styled with the correct theme.
+
+    A ``DOMContentLoaded`` failsafe sets ``body.dataset.theme`` from
+    the head-resolved value if Furo's body-script never ran, so a
+    future Furo refactor can't leave body permanently hidden.
+
+    No-JS users skip the gate entirely (the class is set by JS), so
+    Furo's existing ``prefers-color-scheme`` fallback at
+    ``_head_css_variables.html`` continues to work.
+
+    Parameters
+    ----------
+    app : Sphinx
+        The Sphinx application object.
+    pagename : str
+        Name of the page being rendered.
+    templatename : str
+        Name of the template being used.
+    context : dict[str, Any]
+        Rendering context passed to the template.
+    doctree : object
+        Doctree for the page (unused).
+    """
+    snippet = (
+        "<style>"
+        "html.gp-sphinx-theme-pending body:not([data-theme])"
+        "{visibility:hidden}"
+        "</style>"
+        "<script>(function(){"
+        'var t=localStorage.getItem("theme")||"auto";'
+        'var r=t==="auto"'
+        '?(window.matchMedia("(prefers-color-scheme: dark)").matches'
+        '?"dark":"light"):t;'
+        "document.documentElement.style.colorScheme=r;"
+        'document.documentElement.classList.add("gp-sphinx-theme-pending");'
+        'document.addEventListener("DOMContentLoaded",function(){'
+        "if(document.body&&!document.body.dataset.theme)"
+        "document.body.dataset.theme=t;});"
+        "})();</script>"
+    )
+    context["metatags"] = context.get("metatags", "") + snippet
+
+
 def setup(app: Sphinx) -> None:
     """Configure Sphinx app hooks for gp-sphinx workarounds.
 
     Registers the bundled ``spa-nav.js`` script, wires the copy-button
-    configuration bridge, and connects the ``remove_tabs_js`` post-build
-    hook.
+    configuration bridge, the FOWT-prevention head snippet, and
+    connects the ``remove_tabs_js`` post-build hook.
 
     Parameters
     ----------
@@ -553,6 +623,7 @@ def setup(app: Sphinx) -> None:
     """
     app.add_js_file("js/spa-nav.js", loading_method="defer")
     app.connect("html-page-context", _inject_copybutton_bridge)
+    app.connect("html-page-context", _inject_fowt_prevention)
     app.connect("build-finished", remove_tabs_js)
     app.add_lexer("myst", MystLexer)
     app.add_lexer("myst-md", MystLexer)
