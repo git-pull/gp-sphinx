@@ -555,22 +555,29 @@ def _inject_fowt_prevention(
     light defaults; (2) ``<meta name="color-scheme" content="light
     dark">`` defers the html canvas color to OS preference, so the
     canvas can paint in the wrong scheme even when localStorage holds
-    a different value.
+    a different value. Behind Cloudflare Rocket Loader the gap widens
+    further — Rocket Loader rewrites every inline ``<script>`` to a
+    private MIME type and runs it asynchronously after page load,
+    which means Furo's body-script is no longer synchronous at all.
 
-    This hook addresses both by injecting a ``<style>`` + ``<script>``
-    pair into Furo's ``metatags`` slot (rendered in ``<head>`` before
-    stylesheets and the ``<body>`` open). The script synchronously
-    resolves the user's effective theme, sets
+    This hook addresses all three by injecting a ``<style>`` +
+    ``<script>`` pair into Furo's ``metatags`` slot (rendered in
+    ``<head>`` before stylesheets and the ``<body>`` open). The
+    ``<script>`` carries ``data-cfasync="false"`` to opt out of Rocket
+    Loader, so it runs synchronously as written. It resolves the
+    user's effective theme, sets
     ``document.documentElement.style.colorScheme`` (canvas paints in
     the right scheme), and adds the ``gp-sphinx-theme-pending`` class
     on ``<html>`` (CSS gate). The style hides body content while that
-    class is present and ``body[data-theme]`` is unset — Furo's
-    body-script clears the gate the moment it runs, revealing body
-    content already styled with the correct theme.
+    class is present and ``body[data-theme]`` is unset — body becomes
+    visible the moment ``data-theme`` is set, with the correct theme
+    already applied.
 
-    A ``DOMContentLoaded`` failsafe sets ``body.dataset.theme`` from
-    the head-resolved value if Furo's body-script never ran, so a
-    future Furo refactor can't leave body permanently hidden.
+    Two backups set ``body.dataset.theme`` so we don't rely on Furo's
+    Rocket-Loader-deferred body-script: a ``requestAnimationFrame``
+    callback fires before the next paint, and a ``DOMContentLoaded``
+    listener fires after parse — whichever runs first when
+    ``document.body`` exists wins.
 
     No-JS users skip the gate entirely (the class is set by JS), so
     Furo's existing ``prefers-color-scheme`` fallback at
@@ -594,16 +601,17 @@ def _inject_fowt_prevention(
         "html.gp-sphinx-theme-pending body:not([data-theme])"
         "{visibility:hidden}"
         "</style>"
-        "<script>(function(){"
+        '<script data-cfasync="false">(function(){'
         'var t=localStorage.getItem("theme")||"auto";'
         'var r=t==="auto"'
         '?(window.matchMedia("(prefers-color-scheme: dark)").matches'
         '?"dark":"light"):t;'
         "document.documentElement.style.colorScheme=r;"
         'document.documentElement.classList.add("gp-sphinx-theme-pending");'
-        'document.addEventListener("DOMContentLoaded",function(){'
-        "if(document.body&&!document.body.dataset.theme)"
-        "document.body.dataset.theme=t;});"
+        "function s(){if(document.body&&!document.body.dataset.theme)"
+        "document.body.dataset.theme=t;}"
+        "requestAnimationFrame(s);"
+        'document.addEventListener("DOMContentLoaded",s);'
         "})();</script>"
     )
     context["metatags"] = context.get("metatags", "") + snippet
