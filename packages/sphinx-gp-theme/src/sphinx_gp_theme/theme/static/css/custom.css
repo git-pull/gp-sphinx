@@ -365,3 +365,13 @@ a.reference:has(.sd-badge[role="note"][aria-label^="Safety tier:"]):hover code {
 ::view-transition-new(root) {
   animation-duration: 150ms;
 }
+
+/* ── Theme-toggle should snap, not animate ────────────────
+ * Furo's furo.css declares `transition: background .1s
+ * ease-out` on `.sig:not(.sig-inline)` for hover smoothing;
+ * that same transition runs on every theme swap and produces
+ * a visible mid-blend. Override at gp-sphinx scope.
+ * ────────────────────────────────────────────────────────── */
+.sig:not(.sig-inline) {
+  transition: none;
+}

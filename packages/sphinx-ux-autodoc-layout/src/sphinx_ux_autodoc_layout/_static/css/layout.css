@@ -229,7 +229,6 @@ dl.gp-sphinx-api-container:not(.py) > dt.gp-sphinx-api-header {
   text-indent: 0;
   margin: 0;
   min-height: 2rem;
-  transition: background 100ms ease-out;
 }
 
 dl.gp-sphinx-api-container:not(.py) > dt.gp-sphinx-api-header:hover {
@@ -253,7 +252,6 @@ dl.gp-sphinx-api-container:not(.py) > dd.gp-sphinx-api-content {
   background: var(--color-background-secondary);
   border-bottom: 1px solid var(--color-background-border);
   padding: 0.5rem 0.75rem 0.5rem 1rem;
-  transition: background 100ms ease-out;
 }
 
 .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header:hover {
