@@ -581,9 +581,18 @@ def _inject_fowt_prevention(
     listener fires after parse — whichever runs first when
     ``document.body`` exists wins.
 
+    The script also removes the ``no-js`` class from ``<html>``
+    synchronously. Furo's ``furo.js`` removes it on DCL, but with
+    Rocket Loader deferring even external scripts, ``furo.js`` runs
+    well after page load — the ``.no-js .theme-toggle-container
+    {display: none}`` rule keeps the theme toggle invisible until
+    then, then the toggle suddenly appears. Removing ``no-js`` here
+    makes the toggle visible from the first paint.
+
     No-JS users skip the gate entirely (the class is set by JS), so
     Furo's existing ``prefers-color-scheme`` fallback at
-    ``_head_css_variables.html`` continues to work.
+    ``_head_css_variables.html`` continues to work. They also keep
+    the ``no-js`` class, which correctly hides the toggle button.
 
     Parameters
     ----------
@@ -610,6 +619,7 @@ def _inject_fowt_prevention(
         '?"dark":"light"):t;'
         "document.documentElement.style.colorScheme=r;"
         'document.documentElement.classList.add("gp-sphinx-theme-pending");'
+        'document.documentElement.classList.remove("no-js");'
         "function s(){if(document.body&&!document.body.dataset.theme)"
         "document.body.dataset.theme=t;}"
         "requestAnimationFrame(s);"
