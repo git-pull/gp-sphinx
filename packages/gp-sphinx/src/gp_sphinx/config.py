@@ -534,7 +534,9 @@ def _inject_copybutton_bridge(
         return
     selector = getattr(app.config, "copybutton_selector", "div.highlight pre")
     snippet = (
-        f"<script>window.GP_SPHINX_COPYBUTTON_SELECTOR={json.dumps(selector)};</script>"
+        '<script data-cfasync="false">'
+        f"window.GP_SPHINX_COPYBUTTON_SELECTOR={json.dumps(selector)};"
+        "</script>"
     )
     context["metatags"] = context.get("metatags", "") + snippet
 
