@@ -18,6 +18,8 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+## gp-sphinx 0.0.1a11 (2026-04-26)
+
 ### Bug fixes
 
 #### `gp-sphinx`: No more theme flicker on initial load or toggle

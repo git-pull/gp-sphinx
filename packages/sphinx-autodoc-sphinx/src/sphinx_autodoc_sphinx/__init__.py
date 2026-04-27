@@ -65,7 +65,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.add_css_file("css/sphinx_autodoc_sphinx.css")
 
     return {
-        "version": "0.0.1a10",
+        "version": "0.0.1a11",
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }
