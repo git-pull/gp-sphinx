@@ -233,6 +233,19 @@ img[src*="codecov.io"] {
   animation-duration: 150ms;
 }
 
+/* ── Theme-toggle should snap, not animate ────────────────
+ * Furo's furo.css declares `transition: background .1s
+ * ease-out` on `.sig:not(.sig-inline)` for hover smoothing;
+ * that same transition runs on every theme swap and produces
+ * a visible mid-blend. Override at gp-sphinx scope.
+ * (Also lives in sphinx-gp-theme/.../custom.css for downstream
+ * consumers — duplicated here because docs/_static/css/custom.css
+ * shadows the theme file at the same path.)
+ * ────────────────────────────────────────────────────────── */
+.sig:not(.sig-inline) {
+  transition: none;
+}
+
 .package-demo-grid {
   display: grid;
   gap: 1rem;

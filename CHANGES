@@ -18,6 +18,14 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Bug fixes
+
+#### `gp-sphinx`: No more theme flicker on initial load or toggle
+
+The light/dark theme applies cleanly on every page: no flash of the
+wrong scheme on initial load, no toggle-icon "pop-in" mid-load, and
+no animated mid-blend when toggling at runtime. (#23)
+
 ## gp-sphinx 0.0.1a10 (2026-04-25)
 
 ### Breaking changes

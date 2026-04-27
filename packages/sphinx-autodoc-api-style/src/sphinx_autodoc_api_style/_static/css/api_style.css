@@ -31,7 +31,6 @@ dl.py:not(.fixture) > dt {
   padding-top: 0.5rem !important;
   padding-bottom: 0.5rem !important;
   min-height: 2rem;
-  transition: background 100ms ease-out;
 }
 
 dl.py:not(.fixture) > dt:hover {
@@ -54,7 +53,6 @@ dl.py:not(.fixture) dd dl.py:not(.fixture) > dt {
   background: transparent;
   border-bottom-color: var(--color-background-border);
   padding-left: 0.75rem;
-  transition: background 100ms ease-out;
 }
 
 dl.py:not(.fixture) dd dl.py:not(.fixture) > dt:hover {
