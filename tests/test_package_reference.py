@@ -35,6 +35,7 @@ def test_workspace_packages_lists_publishable_packages() -> None:
         "sphinx-fonts",
         "sphinx-gp-theme",
         "sphinx-vite-builder",
+        "gp-sphinx-astro-builder",
     }
 
 

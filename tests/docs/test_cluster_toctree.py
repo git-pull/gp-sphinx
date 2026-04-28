@@ -106,7 +106,14 @@ def test_cluster_toctree_skips_emerging_packages() -> None:
     if not emerging_names:
         pytest.skip("no Emerging packages in workspace; nothing to assert")
 
-    for cluster in ("theme-coordinator", "tokens", "autodoc", "ux", "build-seo"):
+    for cluster in (
+        "theme-coordinator",
+        "tokens",
+        "autodoc",
+        "ux",
+        "build-seo",
+        "astro",
+    ):
         rendered = package_reference._cluster_toctree_markdown(
             cluster,
             caption=None,
@@ -130,7 +137,14 @@ def test_cluster_toctree_leaves_are_alphabetical() -> None:
 
 def test_cluster_toctree_every_shipped_package_classified() -> None:
     """Every Shipped package falls into one of the recognized clusters."""
-    expected_clusters = {"theme-coordinator", "tokens", "autodoc", "ux", "build-seo"}
+    expected_clusters = {
+        "theme-coordinator",
+        "tokens",
+        "autodoc",
+        "ux",
+        "build-seo",
+        "astro",
+    }
     seen: set[str] = set()
     for cluster in expected_clusters:
         rendered = package_reference._cluster_toctree_markdown(

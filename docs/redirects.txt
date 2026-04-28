@@ -17,6 +17,7 @@ extensions/gp-sphinx-vite packages/sphinx-vite-builder
 extensions/sphinx-vite-builder packages/sphinx-vite-builder
 packages/gp-sphinx-vite packages/sphinx-vite-builder
 extensions/sphinx-autodoc-typehints-gp packages/sphinx-autodoc-typehints-gp
+extensions/gp-sphinx-astro-builder packages/gp-sphinx-astro-builder
 extensions/sphinx-argparse-neo packages/sphinx-autodoc-argparse
 extensions/sphinx-gptheme packages/sphinx-gp-theme
 extensions/sphinx-typehints-gp packages/sphinx-autodoc-typehints-gp

@@ -117,3 +117,7 @@ history
 ```{cluster-toctree} build-seo
 :caption: Build & SEO
 ```
+
+```{cluster-toctree} astro
+:caption: Astro
+```

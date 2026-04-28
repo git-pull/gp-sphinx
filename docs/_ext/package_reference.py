@@ -204,6 +204,8 @@ _CLUSTER_FOR_NAME: dict[str, str] = {
     "sphinx-vite-builder": "build-seo",
     "sphinx-gp-opengraph": "build-seo",
     "sphinx-gp-sitemap": "build-seo",
+    "gp-sphinx-astro-builder": "astro",
+    "@gp-sphinx/astro": "astro",
 }
 
 

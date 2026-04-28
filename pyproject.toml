@@ -33,6 +33,7 @@ sphinx-gp-sitemap = { workspace = true }
 gp-furo-theme = { workspace = true }
 gp-sphinx = { workspace = true }
 sphinx-vite-builder = { workspace = true }
+gp-sphinx-astro-builder = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -49,6 +50,7 @@ dev = [
   "sphinx-gp-sitemap",
   "gp-furo-theme",
   "sphinx-vite-builder",
+  "gp-sphinx-astro-builder",
   # Docs
   "sphinx-autobuild",
   # Testing
@@ -170,6 +172,7 @@ known-first-party = [
   "sphinx_ux_autodoc_layout",
   "sphinx_gp_opengraph",
   "sphinx_gp_sitemap",
+  "gp_sphinx_astro_builder",
 ]
 combine-as-imports = true
 required-imports = [
@@ -220,6 +223,7 @@ testpaths = [
   "packages/sphinx-gp-opengraph/src",
   "packages/sphinx-gp-sitemap/src",
   "packages/sphinx-vite-builder/src",
+  "packages/gp-sphinx-astro-builder/src",
 ]
 filterwarnings = [
   "ignore:distutils Version classes are deprecated. Use packaging.version instead.",
