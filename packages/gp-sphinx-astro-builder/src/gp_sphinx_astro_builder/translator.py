@@ -29,6 +29,8 @@ _FrameKind = t.Literal[
     "title",
     "paragraph",
     "emphasis",
+    "strong",
+    "literal",
 ]
 
 
@@ -172,6 +174,42 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
 
     def depart_emphasis(self, node: nodes.Element) -> None:
         """Close the emphasis run and attach it to the parent inline collector."""
+        frame = self._stack.pop()
+        self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def visit_strong(self, node: nodes.Element) -> None:
+        """Open a strong-emphasis frame."""
+        self._stack.append(
+            {
+                "kind": "strong",
+                "data": {"type": "strong", "children": []},
+            },
+        )
+
+    def depart_strong(self, node: nodes.Element) -> None:
+        """Close the strong run and attach it to the parent inline collector."""
+        frame = self._stack.pop()
+        self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def visit_literal(self, node: nodes.Element) -> None:
+        """Capture a literal run's text value and skip child traversal.
+
+        Raises
+        ------
+        docutils.nodes.SkipChildren
+            Always: literal text is captured via :meth:`docutils.nodes.Element.astext`
+            on visit, so traversing the inner ``Text`` child would double-count.
+        """
+        self._stack.append(
+            {
+                "kind": "literal",
+                "data": {"type": "literal", "value": node.astext()},
+            },
+        )
+        raise nodes.SkipChildren
+
+    def depart_literal(self, node: nodes.Element) -> None:
+        """Close the literal run and attach it to the parent inline collector."""
         frame = self._stack.pop()
         self._stack[-1]["data"]["children"].append(frame["data"])
 
