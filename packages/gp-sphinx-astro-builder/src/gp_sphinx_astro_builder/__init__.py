@@ -20,9 +20,11 @@ from gp_sphinx_astro_builder.models import (
     SectionNode,
     TextNode,
 )
+from gp_sphinx_astro_builder.translator import DocTreeJSONTranslator
 
 __all__ = [
     "BlockNode",
+    "DocTreeJSONTranslator",
     "Document",
     "EmphasisNode",
     "InlineNode",
