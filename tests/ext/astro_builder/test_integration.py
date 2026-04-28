@@ -8,6 +8,7 @@ through the Pydantic ``Document`` model. These tests are marked
 
 from __future__ import annotations
 
+import json
 import pathlib
 import textwrap
 import typing as t
@@ -85,6 +86,33 @@ def test_astro_builder_emits_pydantic_valid_document(
     assert isinstance(paragraph.children[1], EmphasisNode)
     assert paragraph.children[1].children == [TextNode(type="text", value="world")]
     assert paragraph.children[2] == TextNode(type="text", value=".")
+
+
+@pytest.mark.integration
+def test_astro_builder_emits_doctree_schema_in_finish(
+    tmp_path: pathlib.Path,
+) -> None:
+    """``finish()`` writes ``schemas/doctree.schema.json`` into the outdir."""
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("conf.py", _CONF_PY),
+            ScenarioFile("index.rst", _INDEX_RST),
+        ),
+    )
+    result = build_isolated_sphinx_result(cache_root, tmp_path, scenario)
+
+    schema_path = result.outdir / "schemas" / "doctree.schema.json"
+    assert schema_path.exists(), (
+        f"expected {schema_path} to be emitted; "
+        f"outdir contents: {list(result.outdir.rglob('*'))}"
+    )
+
+    schema = json.loads(schema_path.read_text("utf-8"))
+    assert isinstance(schema, dict)
+    assert "TextNode" in schema.get("$defs", {})
+    assert "AdmonitionNode" in schema.get("$defs", {})
 
 
 @pytest.mark.integration

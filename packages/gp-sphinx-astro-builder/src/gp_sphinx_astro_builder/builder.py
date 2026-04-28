@@ -10,12 +10,14 @@ picks up every emitted file as one collection entry.
 
 from __future__ import annotations
 
+import json
 import typing as t
 
 from sphinx.builders import Builder
 from sphinx.util import logging
 from sphinx.util.osutil import _last_modified_time
 
+from gp_sphinx_astro_builder.schemas import export_doctree_schema
 from gp_sphinx_astro_builder.translator import DocTreeJSONTranslator
 
 if t.TYPE_CHECKING:
@@ -91,7 +93,18 @@ class AstroBuilder(Builder):
         )
 
     def finish(self) -> None:
-        """No cross-document artifacts emitted in the spike."""
+        """Emit cross-document artifacts.
+
+        Writes the canonical JSON Schema for the doctree wire format to
+        ``<outdir>/schemas/doctree.schema.json``. The TypeScript side
+        validates Zod schemas against this file.
+        """
+        schema_path = self.outdir / "schemas" / "doctree.schema.json"
+        schema_path.parent.mkdir(parents=True, exist_ok=True)
+        schema_path.write_text(
+            json.dumps(export_doctree_schema(), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
 
     def _target_path(self, docname: str):  # type: ignore[no-untyped-def]
         """Return the absolute path for the JSON file emitted for ``docname``."""
