@@ -32,6 +32,7 @@ _FrameKind = t.Literal[
     "strong",
     "literal",
     "reference",
+    "blockQuote",
 ]
 
 
@@ -305,6 +306,20 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         if self._stack:
             self._stack[-1]["data"]["children"].append({"type": "transition"})
         raise nodes.SkipNode
+
+    def visit_block_quote(self, node: nodes.Element) -> None:
+        """Open a block_quote frame."""
+        self._stack.append(
+            {
+                "kind": "blockQuote",
+                "data": {"type": "blockQuote", "children": []},
+            },
+        )
+
+    def depart_block_quote(self, node: nodes.Element) -> None:
+        """Close the block_quote and attach it to the parent block collector."""
+        frame = self._stack.pop()
+        self._stack[-1]["data"]["children"].append(frame["data"])
 
     def visit_Text(self, node: nodes.Text) -> None:
         """Append a text leaf to the current frame's children."""
