@@ -37,6 +37,10 @@ _FrameKind = t.Literal[
     "enumeratedList",
     "listItem",
     "admonition",
+    "definitionList",
+    "definitionListItem",
+    "term",
+    "definition",
 ]
 
 
@@ -457,6 +461,58 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
     def depart_error(self, node: nodes.Element) -> None:
         """Close the error admonition frame."""
         self._close_admonition()
+
+    def visit_definition_list(self, node: nodes.Element) -> None:
+        """Open a definition_list frame."""
+        self._stack.append(
+            {
+                "kind": "definitionList",
+                "data": {"type": "definitionList", "children": []},
+            },
+        )
+
+    def depart_definition_list(self, node: nodes.Element) -> None:
+        """Close the definition_list and attach to the parent block collector."""
+        frame = self._stack.pop()
+        self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def visit_definition_list_item(self, node: nodes.Element) -> None:
+        """Open a definition_list_item frame with empty term + definition slots."""
+        self._stack.append(
+            {
+                "kind": "definitionListItem",
+                "data": {
+                    "type": "definitionListItem",
+                    "term": [],
+                    "definition": [],
+                },
+            },
+        )
+
+    def depart_definition_list_item(self, node: nodes.Element) -> None:
+        """Close the definition_list_item, attaching to the definition_list."""
+        frame = self._stack.pop()
+        self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def visit_term(self, node: nodes.Element) -> None:
+        """Open a term frame; its children become the parent item's term slot."""
+        self._stack.append({"kind": "term", "data": {"children": []}})
+
+    def depart_term(self, node: nodes.Element) -> None:
+        """Attach collected inline children to the parent item's ``term`` slot."""
+        frame = self._stack.pop()
+        if self._stack:
+            self._stack[-1]["data"]["term"] = frame["data"]["children"]
+
+    def visit_definition(self, node: nodes.Element) -> None:
+        """Open a definition frame; children become the parent item's definition."""
+        self._stack.append({"kind": "definition", "data": {"children": []}})
+
+    def depart_definition(self, node: nodes.Element) -> None:
+        """Attach collected block children to the parent item's ``definition`` slot."""
+        frame = self._stack.pop()
+        if self._stack:
+            self._stack[-1]["data"]["definition"] = frame["data"]["children"]
 
     def visit_Text(self, node: nodes.Text) -> None:
         """Append a text leaf to the current frame's children."""

@@ -266,6 +266,56 @@ component instead of nine.
 """
 
 
+class DefinitionListItemNode(BaseModel):
+    """One entry in a definition list, pairing a term with a definition.
+
+    The ``term`` slot accepts inline content (emphasis, strong, literal,
+    references…); the ``definition`` slot accepts block content (paragraphs,
+    lists, code blocks…). docutils also supports optional ``classifier``
+    nodes between term and definition; we omit them here and revisit when a
+    real document needs them.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import DefinitionListItemNode
+    >>> node = DefinitionListItemNode.model_validate(
+    ...     {
+    ...         "type": "definitionListItem",
+    ...         "term": [{"type": "text", "value": "foo"}],
+    ...         "definition": [
+    ...             {
+    ...                 "type": "paragraph",
+    ...                 "children": [{"type": "text", "value": "x"}],
+    ...             },
+    ...         ],
+    ...     },
+    ... )
+    >>> node.term[0].value
+    'foo'
+    """
+
+    type: t.Literal["definitionListItem"]
+    term: list[InlineNode]
+    definition: list[BlockNode]
+
+
+class DefinitionListNode(BaseModel):
+    """A definition list whose children are typed as definition_list_item.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import DefinitionListNode
+    >>> node = DefinitionListNode.model_validate(
+    ...     {"type": "definitionList", "children": []},
+    ... )
+    >>> node.children
+    []
+    """
+
+    type: t.Literal["definitionList"]
+    children: list[DefinitionListItemNode]
+
+
 class AdmonitionNode(BaseModel):
     """A block-level admonition (note, warning, tip, …).
 
@@ -376,7 +426,8 @@ BlockNode = t.Annotated[
     | BlockQuoteNode
     | BulletListNode
     | EnumeratedListNode
-    | AdmonitionNode,
+    | AdmonitionNode
+    | DefinitionListNode,
     Field(discriminator="type"),
 ]
 """Discriminated union of nodes that may appear in a block (body) context."""
@@ -390,3 +441,4 @@ SectionNode.model_rebuild()
 BlockQuoteNode.model_rebuild()
 ListItemNode.model_rebuild()
 AdmonitionNode.model_rebuild()
+DefinitionListItemNode.model_rebuild()
