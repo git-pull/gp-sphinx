@@ -31,6 +31,7 @@ _FrameKind = t.Literal[
     "emphasis",
     "strong",
     "literal",
+    "reference",
 ]
 
 
@@ -212,6 +213,51 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         """Close the literal run and attach it to the parent inline collector."""
         frame = self._stack.pop()
         self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def visit_reference(self, node: nodes.Element) -> None:
+        """Open a reference frame, normalising refuri / refid into one href."""
+        refuri = node.get("refuri")
+        refid = node.get("refid")
+        if refuri:
+            href = refuri
+        elif refid:
+            href = f"#{refid}"
+        else:
+            href = ""
+        self._stack.append(
+            {
+                "kind": "reference",
+                "data": {
+                    "type": "reference",
+                    "href": href,
+                    "children": [],
+                },
+            },
+        )
+
+    def depart_reference(self, node: nodes.Element) -> None:
+        """Close the reference and attach it to the parent inline collector."""
+        frame = self._stack.pop()
+        self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def visit_image(self, node: nodes.Element) -> None:
+        """Append an image leaf node to the current inline collector.
+
+        Raises
+        ------
+        docutils.nodes.SkipNode
+            Always: ``image`` is a leaf in docutils — there are no children
+            to traverse and no closing handler is needed.
+        """
+        if self._stack:
+            self._stack[-1]["data"]["children"].append(
+                {
+                    "type": "image",
+                    "uri": node.get("uri", ""),
+                    "alt": node.get("alt"),
+                },
+            )
+        raise nodes.SkipNode
 
     def visit_Text(self, node: nodes.Text) -> None:
         """Append a text leaf to the current frame's children."""

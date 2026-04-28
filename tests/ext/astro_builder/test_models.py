@@ -8,8 +8,10 @@ from pydantic import ValidationError
 from gp_sphinx_astro_builder.models import (
     Document,
     EmphasisNode,
+    ImageNode,
     LiteralNode,
     ParagraphNode,
+    ReferenceNode,
     SectionNode,
     StrongNode,
     TextNode,
@@ -113,6 +115,55 @@ def test_literal_validates_canonical_shape() -> None:
     """``LiteralNode.model_validate`` parses the canonical dict."""
     node = LiteralNode.model_validate({"type": "literal", "value": "foo"})
     assert node.value == "foo"
+
+
+def test_reference_round_trips_with_href_and_children() -> None:
+    """``ReferenceNode`` carries an href plus inline children."""
+    node = ReferenceNode.model_validate(
+        {
+            "type": "reference",
+            "href": "https://example.com",
+            "children": [{"type": "text", "value": "Example"}],
+        },
+    )
+    assert node.href == "https://example.com"
+    assert node.children == [TextNode(type="text", value="Example")]
+
+
+def test_reference_round_trips_with_internal_anchor() -> None:
+    """``ReferenceNode`` accepts internal anchor hrefs (``#section-id``)."""
+    node = ReferenceNode.model_validate(
+        {
+            "type": "reference",
+            "href": "#intro",
+            "children": [{"type": "text", "value": "Intro"}],
+        },
+    )
+    assert node.href == "#intro"
+
+
+def test_image_round_trips_with_uri_only() -> None:
+    """``ImageNode`` accepts a uri without alt."""
+    node = ImageNode(type="image", uri="/img/logo.svg", alt=None)
+    assert node.model_dump() == {
+        "type": "image",
+        "uri": "/img/logo.svg",
+        "alt": None,
+    }
+
+
+def test_image_round_trips_with_uri_and_alt() -> None:
+    """``ImageNode`` carries both uri and alt text."""
+    node = ImageNode.model_validate(
+        {"type": "image", "uri": "/img/logo.svg", "alt": "Logo"},
+    )
+    assert node.alt == "Logo"
+
+
+def test_image_alt_defaults_to_none() -> None:
+    """``ImageNode.alt`` defaults to ``None`` when omitted from the input."""
+    node = ImageNode.model_validate({"type": "image", "uri": "/x.png"})
+    assert node.alt is None
 
 
 def test_paragraph_round_trips_with_inline_union_children() -> None:
