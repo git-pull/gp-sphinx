@@ -18,6 +18,8 @@ import typing as t
 
 from gp_sphinx_astro_builder.builder import AstroBuilder
 from gp_sphinx_astro_builder.models import (
+    AdmonitionNode,
+    AdmonitionVariant,
     BlockNode,
     BlockQuoteNode,
     BulletListNode,
@@ -43,6 +45,8 @@ if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
 __all__ = [
+    "AdmonitionNode",
+    "AdmonitionVariant",
     "AstroBuilder",
     "BlockNode",
     "BlockQuoteNode",

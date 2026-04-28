@@ -246,6 +246,53 @@ class EnumeratedListNode(BaseModel):
     children: list[ListItemNode]
 
 
+AdmonitionVariant = t.Literal[
+    "note",
+    "warning",
+    "attention",
+    "caution",
+    "important",
+    "tip",
+    "hint",
+    "danger",
+    "error",
+]
+"""Allowed values for :attr:`AdmonitionNode.variant`.
+
+The nine variants correspond one-to-one with docutils' typed admonition node
+classes (``nodes.note``, ``nodes.warning``, etc.); the translator collapses
+them into a single Pydantic model so the Astro renderer dispatches on one
+component instead of nine.
+"""
+
+
+class AdmonitionNode(BaseModel):
+    """A block-level admonition (note, warning, tip, …).
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import AdmonitionNode
+    >>> node = AdmonitionNode.model_validate(
+    ...     {
+    ...         "type": "admonition",
+    ...         "variant": "note",
+    ...         "children": [
+    ...             {
+    ...                 "type": "paragraph",
+    ...                 "children": [{"type": "text", "value": "x"}],
+    ...             },
+    ...         ],
+    ...     },
+    ... )
+    >>> node.variant
+    'note'
+    """
+
+    type: t.Literal["admonition"]
+    variant: AdmonitionVariant
+    children: list[BlockNode]
+
+
 class ParagraphNode(BaseModel):
     """A block-level paragraph wrapping inline children.
 
@@ -328,7 +375,8 @@ BlockNode = t.Annotated[
     | TransitionNode
     | BlockQuoteNode
     | BulletListNode
-    | EnumeratedListNode,
+    | EnumeratedListNode
+    | AdmonitionNode,
     Field(discriminator="type"),
 ]
 """Discriminated union of nodes that may appear in a block (body) context."""
@@ -341,3 +389,4 @@ ParagraphNode.model_rebuild()
 SectionNode.model_rebuild()
 BlockQuoteNode.model_rebuild()
 ListItemNode.model_rebuild()
+AdmonitionNode.model_rebuild()

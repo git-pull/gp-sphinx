@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import typing as t
+
 import pytest
 from pydantic import ValidationError
 
 from gp_sphinx_astro_builder.models import (
+    AdmonitionNode,
     BlockQuoteNode,
     BulletListNode,
     CommentNode,
@@ -306,6 +309,77 @@ def test_block_quote_rejects_inline_child() -> None:
             {
                 "type": "blockQuote",
                 "children": [{"type": "text", "value": "not a block"}],
+            },
+        )
+
+
+class AdmonitionVariantFixture(t.NamedTuple):
+    """Each admonition variant string accepted by ``AdmonitionNode``."""
+
+    test_id: str
+    variant: str
+
+
+_ADMONITION_VARIANT_FIXTURES: list[AdmonitionVariantFixture] = [
+    AdmonitionVariantFixture(test_id=v, variant=v)
+    for v in (
+        "note",
+        "warning",
+        "attention",
+        "caution",
+        "important",
+        "tip",
+        "hint",
+        "danger",
+        "error",
+    )
+]
+
+
+@pytest.mark.parametrize(
+    list(AdmonitionVariantFixture._fields),
+    _ADMONITION_VARIANT_FIXTURES,
+    ids=[f.test_id for f in _ADMONITION_VARIANT_FIXTURES],
+)
+def test_admonition_round_trips_for_each_variant(test_id: str, variant: str) -> None:
+    """``AdmonitionNode`` accepts every supported variant string."""
+    del test_id
+    node = AdmonitionNode.model_validate(
+        {
+            "type": "admonition",
+            "variant": variant,
+            "children": [
+                {
+                    "type": "paragraph",
+                    "children": [{"type": "text", "value": "x"}],
+                },
+            ],
+        },
+    )
+    assert node.variant == variant
+    assert isinstance(node.children[0], ParagraphNode)
+
+
+def test_admonition_rejects_unknown_variant() -> None:
+    """``AdmonitionNode`` rejects a variant string that isn't in the literal."""
+    with pytest.raises(ValidationError):
+        AdmonitionNode.model_validate(
+            {
+                "type": "admonition",
+                "variant": "celebration",
+                "children": [],
+            },
+        )
+
+
+def test_admonition_rejects_inline_child() -> None:
+    """``AdmonitionNode`` rejects an inline node where a block is expected."""
+    with pytest.raises(ValidationError):
+        AdmonitionNode.model_validate(
+            {
+                "type": "admonition",
+                "variant": "note",
+                "children": [{"type": "text", "value": "wrong"}],
             },
         )
 

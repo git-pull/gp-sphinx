@@ -6,12 +6,16 @@ through the translator, and assert the result. No Sphinx app is constructed.
 
 from __future__ import annotations
 
+import typing as t
+
 import docutils.frontend
 import docutils.parsers.rst
 import docutils.utils
+import pytest
 from docutils import nodes
 
 from gp_sphinx_astro_builder.models import (
+    AdmonitionNode,
     BlockQuoteNode,
     BulletListNode,
     CommentNode,
@@ -431,6 +435,60 @@ def test_translator_handles_nested_bullet_lists() -> None:
     assert isinstance(outer_item, ListItemNode)
     inner_list = outer_item.children[0]
     assert isinstance(inner_list, BulletListNode)
+
+
+class AdmonitionTranslatorFixture(t.NamedTuple):
+    """Pairs a docutils admonition node class with its expected variant string."""
+
+    test_id: str
+    node_class: type[nodes.Element]
+    variant: str
+
+
+_ADMONITION_TRANSLATOR_FIXTURES: list[AdmonitionTranslatorFixture] = [
+    AdmonitionTranslatorFixture("note", nodes.note, "note"),
+    AdmonitionTranslatorFixture("warning", nodes.warning, "warning"),
+    AdmonitionTranslatorFixture("attention", nodes.attention, "attention"),
+    AdmonitionTranslatorFixture("caution", nodes.caution, "caution"),
+    AdmonitionTranslatorFixture("important", nodes.important, "important"),
+    AdmonitionTranslatorFixture("tip", nodes.tip, "tip"),
+    AdmonitionTranslatorFixture("hint", nodes.hint, "hint"),
+    AdmonitionTranslatorFixture("danger", nodes.danger, "danger"),
+    AdmonitionTranslatorFixture("error", nodes.error, "error"),
+]
+
+
+@pytest.mark.parametrize(
+    list(AdmonitionTranslatorFixture._fields),
+    _ADMONITION_TRANSLATOR_FIXTURES,
+    ids=[f.test_id for f in _ADMONITION_TRANSLATOR_FIXTURES],
+)
+def test_translator_handles_each_admonition_variant(
+    test_id: str,
+    node_class: type[nodes.Element],
+    variant: str,
+) -> None:
+    """Every typed admonition node maps to the matching AdmonitionNode variant."""
+    del test_id
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    admonition = node_class()
+    para = nodes.paragraph()
+    para += nodes.Text("body")
+    admonition += para
+    section += title
+    section += admonition
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    block_child = translator.result().tree.children[0]
+    assert isinstance(block_child, AdmonitionNode)
+    assert block_child.variant == variant
+    assert isinstance(block_child.children[0], ParagraphNode)
+    assert block_child.children[0].children == [TextNode(type="text", value="body")]
 
 
 def test_translator_handles_nested_sections() -> None:
