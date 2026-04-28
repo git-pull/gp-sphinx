@@ -186,6 +186,66 @@ class BlockQuoteNode(BaseModel):
     children: list[BlockNode]
 
 
+class ListItemNode(BaseModel):
+    """One item in a bullet or enumerated list.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import ListItemNode
+    >>> node = ListItemNode.model_validate(
+    ...     {
+    ...         "type": "listItem",
+    ...         "children": [
+    ...             {
+    ...                 "type": "paragraph",
+    ...                 "children": [{"type": "text", "value": "a"}],
+    ...             },
+    ...         ],
+    ...     },
+    ... )
+    >>> node.children[0].children[0].value
+    'a'
+    """
+
+    type: t.Literal["listItem"]
+    children: list[BlockNode]
+
+
+class BulletListNode(BaseModel):
+    """A bullet (unordered) list whose children are list items.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import BulletListNode
+    >>> node = BulletListNode.model_validate(
+    ...     {"type": "bulletList", "children": []},
+    ... )
+    >>> node.children
+    []
+    """
+
+    type: t.Literal["bulletList"]
+    children: list[ListItemNode]
+
+
+class EnumeratedListNode(BaseModel):
+    """An enumerated (ordered) list with optional explicit ``start`` index.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import EnumeratedListNode
+    >>> node = EnumeratedListNode.model_validate(
+    ...     {"type": "enumeratedList", "children": []},
+    ... )
+    >>> node.start is None
+    True
+    """
+
+    type: t.Literal["enumeratedList"]
+    start: int | None = None
+    children: list[ListItemNode]
+
+
 class ParagraphNode(BaseModel):
     """A block-level paragraph wrapping inline children.
 
@@ -266,7 +326,9 @@ BlockNode = t.Annotated[
     | LiteralBlockNode
     | CommentNode
     | TransitionNode
-    | BlockQuoteNode,
+    | BlockQuoteNode
+    | BulletListNode
+    | EnumeratedListNode,
     Field(discriminator="type"),
 ]
 """Discriminated union of nodes that may appear in a block (body) context."""
@@ -278,3 +340,4 @@ ReferenceNode.model_rebuild()
 ParagraphNode.model_rebuild()
 SectionNode.model_rebuild()
 BlockQuoteNode.model_rebuild()
+ListItemNode.model_rebuild()

@@ -7,10 +7,13 @@ from pydantic import ValidationError
 
 from gp_sphinx_astro_builder.models import (
     BlockQuoteNode,
+    BulletListNode,
     CommentNode,
     Document,
     EmphasisNode,
+    EnumeratedListNode,
     ImageNode,
+    ListItemNode,
     LiteralBlockNode,
     LiteralNode,
     ParagraphNode,
@@ -219,6 +222,81 @@ def test_block_quote_round_trips_with_paragraph_child() -> None:
         },
     )
     assert isinstance(node.children[0], ParagraphNode)
+
+
+def _make_para_payload(text: str) -> dict[str, object]:
+    """Return a paragraph dict containing a single text child."""
+    return {"type": "paragraph", "children": [{"type": "text", "value": text}]}
+
+
+def test_list_item_round_trips_with_paragraph_child() -> None:
+    """``ListItemNode`` carries block children."""
+    node = ListItemNode.model_validate(
+        {"type": "listItem", "children": [_make_para_payload("a")]},
+    )
+    assert isinstance(node.children[0], ParagraphNode)
+
+
+def test_list_item_rejects_inline_child() -> None:
+    """``ListItemNode`` rejects an inline node where a block is expected."""
+    with pytest.raises(ValidationError):
+        ListItemNode.model_validate(
+            {"type": "listItem", "children": [{"type": "text", "value": "x"}]},
+        )
+
+
+def test_bullet_list_round_trips_with_list_items() -> None:
+    """``BulletListNode`` accepts only list_item children."""
+    node = BulletListNode.model_validate(
+        {
+            "type": "bulletList",
+            "children": [
+                {"type": "listItem", "children": [_make_para_payload("a")]},
+                {"type": "listItem", "children": [_make_para_payload("b")]},
+            ],
+        },
+    )
+    assert len(node.children) == 2
+    assert isinstance(node.children[0], ListItemNode)
+
+
+def test_bullet_list_rejects_non_list_item_child() -> None:
+    """``BulletListNode`` rejects a non-list_item child."""
+    with pytest.raises(ValidationError):
+        BulletListNode.model_validate(
+            {
+                "type": "bulletList",
+                "children": [_make_para_payload("oops")],
+            },
+        )
+
+
+def test_enumerated_list_round_trips_with_start() -> None:
+    """``EnumeratedListNode`` carries an optional start integer."""
+    node = EnumeratedListNode.model_validate(
+        {
+            "type": "enumeratedList",
+            "start": 3,
+            "children": [
+                {"type": "listItem", "children": [_make_para_payload("c")]},
+            ],
+        },
+    )
+    assert node.start == 3
+    assert isinstance(node.children[0], ListItemNode)
+
+
+def test_enumerated_list_start_defaults_to_none() -> None:
+    """``EnumeratedListNode.start`` defaults to ``None`` when omitted."""
+    node = EnumeratedListNode.model_validate(
+        {
+            "type": "enumeratedList",
+            "children": [
+                {"type": "listItem", "children": [_make_para_payload("a")]},
+            ],
+        },
+    )
+    assert node.start is None
 
 
 def test_block_quote_rejects_inline_child() -> None:
