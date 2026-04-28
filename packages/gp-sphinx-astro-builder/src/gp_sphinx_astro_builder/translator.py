@@ -259,6 +259,53 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
             )
         raise nodes.SkipNode
 
+    def visit_literal_block(self, node: nodes.Element) -> None:
+        """Append a fenced code block to the parent block collector.
+
+        Raises
+        ------
+        docutils.nodes.SkipNode
+            Always: literal_block carries its content as a single Text child;
+            we capture it via :meth:`docutils.nodes.Element.astext` on visit
+            and skip both child traversal and the depart handler.
+        """
+        if self._stack:
+            self._stack[-1]["data"]["children"].append(
+                {
+                    "type": "literalBlock",
+                    "language": node.get("language"),
+                    "code": node.astext(),
+                },
+            )
+        raise nodes.SkipNode
+
+    def visit_comment(self, node: nodes.Element) -> None:
+        """Append a comment block, preserving its raw text.
+
+        Raises
+        ------
+        docutils.nodes.SkipNode
+            Always: comment is a fixed-text element captured via
+            :meth:`docutils.nodes.Element.astext` on visit.
+        """
+        if self._stack:
+            self._stack[-1]["data"]["children"].append(
+                {"type": "comment", "value": node.astext()},
+            )
+        raise nodes.SkipNode
+
+    def visit_transition(self, node: nodes.Element) -> None:
+        """Append a payload-less transition marker to the parent block collector.
+
+        Raises
+        ------
+        docutils.nodes.SkipNode
+            Always: transition is an empty element; no children to walk.
+        """
+        if self._stack:
+            self._stack[-1]["data"]["children"].append({"type": "transition"})
+        raise nodes.SkipNode
+
     def visit_Text(self, node: nodes.Text) -> None:
         """Append a text leaf to the current frame's children."""
         text_value = node.astext()

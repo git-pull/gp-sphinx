@@ -6,15 +6,18 @@ import pytest
 from pydantic import ValidationError
 
 from gp_sphinx_astro_builder.models import (
+    CommentNode,
     Document,
     EmphasisNode,
     ImageNode,
+    LiteralBlockNode,
     LiteralNode,
     ParagraphNode,
     ReferenceNode,
     SectionNode,
     StrongNode,
     TextNode,
+    TransitionNode,
 )
 
 
@@ -164,6 +167,60 @@ def test_image_alt_defaults_to_none() -> None:
     """``ImageNode.alt`` defaults to ``None`` when omitted from the input."""
     node = ImageNode.model_validate({"type": "image", "uri": "/x.png"})
     assert node.alt is None
+
+
+def test_literal_block_round_trips_with_language() -> None:
+    """``LiteralBlockNode`` carries language tag and raw code."""
+    node = LiteralBlockNode(
+        type="literalBlock",
+        language="python",
+        code="print('hi')",
+    )
+    assert node.model_dump() == {
+        "type": "literalBlock",
+        "language": "python",
+        "code": "print('hi')",
+    }
+
+
+def test_literal_block_language_defaults_to_none() -> None:
+    """``LiteralBlockNode.language`` defaults to ``None`` when omitted."""
+    node = LiteralBlockNode.model_validate(
+        {"type": "literalBlock", "code": "raw text"},
+    )
+    assert node.language is None
+    assert node.code == "raw text"
+
+
+def test_comment_round_trips_with_value() -> None:
+    """``CommentNode`` carries the raw comment text."""
+    node = CommentNode(type="comment", value="hidden note")
+    assert node.model_dump() == {"type": "comment", "value": "hidden note"}
+
+
+def test_transition_has_no_payload() -> None:
+    """``TransitionNode`` is a payload-less marker."""
+    node = TransitionNode(type="transition")
+    assert node.model_dump() == {"type": "transition"}
+
+
+def test_section_accepts_block_level_block_nodes() -> None:
+    """``SectionNode`` accepts literalBlock, comment, and transition children."""
+    node = SectionNode.model_validate(
+        {
+            "type": "section",
+            "id": "x",
+            "title": [{"type": "text", "value": "X"}],
+            "children": [
+                {"type": "literalBlock", "language": "python", "code": "x = 1"},
+                {"type": "comment", "value": "TODO"},
+                {"type": "transition"},
+            ],
+        },
+    )
+    assert isinstance(node.children[0], LiteralBlockNode)
+    assert isinstance(node.children[1], CommentNode)
+    assert isinstance(node.children[2], TransitionNode)
 
 
 def test_paragraph_round_trips_with_inline_union_children() -> None:
