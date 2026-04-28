@@ -11,9 +11,23 @@ from __future__ import annotations
 
 import logging
 
-from gp_sphinx_astro_builder.models import TextNode
+from gp_sphinx_astro_builder.models import (
+    BlockNode,
+    Document,
+    EmphasisNode,
+    InlineNode,
+    ParagraphNode,
+    SectionNode,
+    TextNode,
+)
 
 __all__ = [
+    "BlockNode",
+    "Document",
+    "EmphasisNode",
+    "InlineNode",
+    "ParagraphNode",
+    "SectionNode",
     "TextNode",
 ]
 
