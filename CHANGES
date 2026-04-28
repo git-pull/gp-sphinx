@@ -18,6 +18,13 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Bug fixes
+
+#### `sphinx-gp-theme`: Sidebar logo no longer disappears on iOS Safari during navigation
+
+Fixed a glitch where the logo would blank out when navigating between
+pages on iOS Safari.
+
 ## gp-sphinx 0.0.1a11 (2026-04-26)
 
 ### Bug fixes
