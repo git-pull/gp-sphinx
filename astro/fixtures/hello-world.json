@@ -1,0 +1,38 @@
+{
+  "id": "index",
+  "title": "Hello world",
+  "tree": {
+    "type": "section",
+    "id": "hello-world",
+    "title": [
+      {
+        "type": "text",
+        "value": "Hello world"
+      }
+    ],
+    "children": [
+      {
+        "type": "paragraph",
+        "children": [
+          {
+            "type": "text",
+            "value": "Hello "
+          },
+          {
+            "type": "emphasis",
+            "children": [
+              {
+                "type": "text",
+                "value": "world"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "value": "."
+          }
+        ]
+      }
+    ]
+  }
+}
