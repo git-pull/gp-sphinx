@@ -36,6 +36,7 @@ _FrameKind = t.Literal[
     "bulletList",
     "enumeratedList",
     "listItem",
+    "admonition",
 ]
 
 
@@ -366,6 +367,96 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         """Close the list_item and attach it to the parent list collector."""
         frame = self._stack.pop()
         self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def _open_admonition(self, variant: str) -> None:
+        """Push an admonition frame with the given variant tag."""
+        self._stack.append(
+            {
+                "kind": "admonition",
+                "data": {
+                    "type": "admonition",
+                    "variant": variant,
+                    "children": [],
+                },
+            },
+        )
+
+    def _close_admonition(self) -> None:
+        """Pop the current admonition frame and attach to the parent."""
+        frame = self._stack.pop()
+        self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def visit_note(self, node: nodes.Element) -> None:
+        """Open a note admonition frame."""
+        self._open_admonition("note")
+
+    def depart_note(self, node: nodes.Element) -> None:
+        """Close the note admonition frame."""
+        self._close_admonition()
+
+    def visit_warning(self, node: nodes.Element) -> None:
+        """Open a warning admonition frame."""
+        self._open_admonition("warning")
+
+    def depart_warning(self, node: nodes.Element) -> None:
+        """Close the warning admonition frame."""
+        self._close_admonition()
+
+    def visit_attention(self, node: nodes.Element) -> None:
+        """Open an attention admonition frame."""
+        self._open_admonition("attention")
+
+    def depart_attention(self, node: nodes.Element) -> None:
+        """Close the attention admonition frame."""
+        self._close_admonition()
+
+    def visit_caution(self, node: nodes.Element) -> None:
+        """Open a caution admonition frame."""
+        self._open_admonition("caution")
+
+    def depart_caution(self, node: nodes.Element) -> None:
+        """Close the caution admonition frame."""
+        self._close_admonition()
+
+    def visit_important(self, node: nodes.Element) -> None:
+        """Open an important admonition frame."""
+        self._open_admonition("important")
+
+    def depart_important(self, node: nodes.Element) -> None:
+        """Close the important admonition frame."""
+        self._close_admonition()
+
+    def visit_tip(self, node: nodes.Element) -> None:
+        """Open a tip admonition frame."""
+        self._open_admonition("tip")
+
+    def depart_tip(self, node: nodes.Element) -> None:
+        """Close the tip admonition frame."""
+        self._close_admonition()
+
+    def visit_hint(self, node: nodes.Element) -> None:
+        """Open a hint admonition frame."""
+        self._open_admonition("hint")
+
+    def depart_hint(self, node: nodes.Element) -> None:
+        """Close the hint admonition frame."""
+        self._close_admonition()
+
+    def visit_danger(self, node: nodes.Element) -> None:
+        """Open a danger admonition frame."""
+        self._open_admonition("danger")
+
+    def depart_danger(self, node: nodes.Element) -> None:
+        """Close the danger admonition frame."""
+        self._close_admonition()
+
+    def visit_error(self, node: nodes.Element) -> None:
+        """Open an error admonition frame."""
+        self._open_admonition("error")
+
+    def depart_error(self, node: nodes.Element) -> None:
+        """Close the error admonition frame."""
+        self._close_admonition()
 
     def visit_Text(self, node: nodes.Text) -> None:
         """Append a text leaf to the current frame's children."""
