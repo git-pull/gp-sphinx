@@ -131,6 +131,7 @@ packages/sphinx-autodoc-typehints-gp
 :hidden:
 
 packages/gp-sphinx
+packages/gp-sphinx-astro-builder
 packages/sphinx-gp-theme
 packages/gp-furo-theme
 ```

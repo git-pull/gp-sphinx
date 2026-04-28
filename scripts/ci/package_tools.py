@@ -715,6 +715,24 @@ def smoke_sphinx_gp_sitemap(dist_dir: pathlib.Path, version: str) -> None:
         )
 
 
+def smoke_gp_sphinx_astro_builder(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the gp-sphinx-astro-builder extension installs and imports cleanly."""
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(
+            python_path,
+            *_workspace_wheel_requirements(dist_dir),
+        )
+        _run_python(
+            python_path,
+            (
+                "import gp_sphinx_astro_builder; "
+                "from gp_sphinx_astro_builder.models import TextNode; "
+                "assert TextNode(type='text', value='x').value == 'x'"
+            ),
+        )
+
+
 def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
     """Verify the autodoc-fastmcp extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
@@ -858,6 +876,7 @@ _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-autodoc-typehints-gp": smoke_sphinx_autodoc_typehints_gp,
     "gp-furo-theme": smoke_gp_furo_theme,
     "sphinx-vite-builder": smoke_sphinx_vite_builder,
+    "gp-sphinx-astro-builder": smoke_gp_sphinx_astro_builder,
 }
 
 
