@@ -219,9 +219,13 @@
         throw new Error("no article");
 
       var applySwap = function () {
-        swap(doc);
-
+        // pushState before swap so relative href/src in the swapped DOM
+        // resolve against the new baseURI. WebKit (iOS Safari) resolves
+        // <img src> eagerly at setAttribute time, so reordering matters
+        // there even though Chromium/Gecko queue the resolution.
         if (!isPop) history.pushState({ spa: true }, "", url);
+
+        swap(doc);
 
         var hash = new URL(url, location.href).hash;
         if (hash) {
