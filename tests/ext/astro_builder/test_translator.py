@@ -13,10 +13,13 @@ from docutils import nodes
 
 from gp_sphinx_astro_builder.models import (
     BlockQuoteNode,
+    BulletListNode,
     CommentNode,
     Document,
     EmphasisNode,
+    EnumeratedListNode,
     ImageNode,
+    ListItemNode,
     LiteralBlockNode,
     LiteralNode,
     ParagraphNode,
@@ -328,6 +331,106 @@ def test_translator_handles_block_quote_with_paragraph() -> None:
     assert block_child.children[0].children == [
         TextNode(type="text", value="Quoted text."),
     ]
+
+
+def _list_item_with(text: str) -> nodes.list_item:
+    """Return a list_item containing a paragraph with ``text``."""
+    item = nodes.list_item()
+    para = nodes.paragraph()
+    para += nodes.Text(text)
+    item += para
+    return item
+
+
+def test_translator_handles_bullet_list() -> None:
+    """A bullet_list with two items becomes BulletListNode + ListItemNode children."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    bl = nodes.bullet_list()
+    bl += _list_item_with("apple")
+    bl += _list_item_with("banana")
+    section += title
+    section += bl
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    list_child = translator.result().tree.children[0]
+    assert isinstance(list_child, BulletListNode)
+    assert len(list_child.children) == 2
+    first_item = list_child.children[0]
+    assert isinstance(first_item, ListItemNode)
+    inner_paragraph = first_item.children[0]
+    assert isinstance(inner_paragraph, ParagraphNode)
+    assert inner_paragraph.children == [TextNode(type="text", value="apple")]
+
+
+def test_translator_handles_enumerated_list_with_start() -> None:
+    """An enumerated_list with start=3 becomes EnumeratedListNode with start=3."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    el = nodes.enumerated_list()
+    el["start"] = 3
+    el += _list_item_with("c")
+    section += title
+    section += el
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    list_child = translator.result().tree.children[0]
+    assert isinstance(list_child, EnumeratedListNode)
+    assert list_child.start == 3
+    assert len(list_child.children) == 1
+
+
+def test_translator_enumerated_list_without_start_is_none() -> None:
+    """An enumerated_list without start attribute produces start=None."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    el = nodes.enumerated_list()
+    el += _list_item_with("a")
+    section += title
+    section += el
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    list_child = translator.result().tree.children[0]
+    assert isinstance(list_child, EnumeratedListNode)
+    assert list_child.start is None
+
+
+def test_translator_handles_nested_bullet_lists() -> None:
+    """A bullet_list nested inside a list_item becomes nested BulletListNodes."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    outer = nodes.bullet_list()
+    item = nodes.list_item()
+    inner = nodes.bullet_list()
+    inner += _list_item_with("inner")
+    item += inner
+    outer += item
+    section += title
+    section += outer
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    outer_list = translator.result().tree.children[0]
+    assert isinstance(outer_list, BulletListNode)
+    outer_item = outer_list.children[0]
+    assert isinstance(outer_item, ListItemNode)
+    inner_list = outer_item.children[0]
+    assert isinstance(inner_list, BulletListNode)
 
 
 def test_translator_handles_nested_sections() -> None:

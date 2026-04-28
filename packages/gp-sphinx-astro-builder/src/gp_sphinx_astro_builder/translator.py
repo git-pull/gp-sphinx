@@ -33,6 +33,9 @@ _FrameKind = t.Literal[
     "literal",
     "reference",
     "blockQuote",
+    "bulletList",
+    "enumeratedList",
+    "listItem",
 ]
 
 
@@ -318,6 +321,49 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
 
     def depart_block_quote(self, node: nodes.Element) -> None:
         """Close the block_quote and attach it to the parent block collector."""
+        frame = self._stack.pop()
+        self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def visit_bullet_list(self, node: nodes.Element) -> None:
+        """Open a bullet_list frame."""
+        self._stack.append(
+            {
+                "kind": "bulletList",
+                "data": {"type": "bulletList", "children": []},
+            },
+        )
+
+    def depart_bullet_list(self, node: nodes.Element) -> None:
+        """Close the bullet_list and attach it to the parent block collector."""
+        frame = self._stack.pop()
+        self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def visit_enumerated_list(self, node: nodes.Element) -> None:
+        """Open an enumerated_list frame, capturing the optional ``start`` index."""
+        start_value = node.get("start")
+        data: dict[str, t.Any] = {
+            "type": "enumeratedList",
+            "start": start_value if isinstance(start_value, int) else None,
+            "children": [],
+        }
+        self._stack.append({"kind": "enumeratedList", "data": data})
+
+    def depart_enumerated_list(self, node: nodes.Element) -> None:
+        """Close the enumerated_list and attach to the parent block collector."""
+        frame = self._stack.pop()
+        self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def visit_list_item(self, node: nodes.Element) -> None:
+        """Open a list_item frame."""
+        self._stack.append(
+            {
+                "kind": "listItem",
+                "data": {"type": "listItem", "children": []},
+            },
+        )
+
+    def depart_list_item(self, node: nodes.Element) -> None:
+        """Close the list_item and attach it to the parent list collector."""
         frame = self._stack.pop()
         self._stack[-1]["data"]["children"].append(frame["data"])
 
