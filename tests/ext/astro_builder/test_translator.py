@@ -14,8 +14,10 @@ from docutils import nodes
 from gp_sphinx_astro_builder.models import (
     Document,
     EmphasisNode,
+    LiteralNode,
     ParagraphNode,
     SectionNode,
+    StrongNode,
     TextNode,
 )
 from gp_sphinx_astro_builder.translator import DocTreeJSONTranslator
@@ -83,6 +85,53 @@ def test_translator_handles_emphasis_inside_paragraph() -> None:
     emphasis_child = paragraph_child.children[1]
     assert isinstance(emphasis_child, EmphasisNode)
     assert emphasis_child.children == [TextNode(type="text", value="world")]
+
+
+def test_translator_handles_strong_inside_paragraph() -> None:
+    """A strong run inside a paragraph becomes a StrongNode child."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    para = nodes.paragraph()
+    strong = nodes.strong()
+    strong += nodes.Text("loud")
+    para += strong
+    section += title
+    section += para
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    paragraph_child = translator.result().tree.children[0]
+    assert isinstance(paragraph_child, ParagraphNode)
+    assert isinstance(paragraph_child.children[0], StrongNode)
+    assert paragraph_child.children[0].children == [
+        TextNode(type="text", value="loud"),
+    ]
+
+
+def test_translator_handles_literal_value() -> None:
+    """A literal node captures text as a value field, not children."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    para = nodes.paragraph()
+    literal = nodes.literal()
+    literal += nodes.Text("x = 1")
+    para += literal
+    section += title
+    section += para
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    paragraph_child = translator.result().tree.children[0]
+    assert isinstance(paragraph_child, ParagraphNode)
+    literal_child = paragraph_child.children[0]
+    assert isinstance(literal_child, LiteralNode)
+    assert literal_child.value == "x = 1"
 
 
 def test_translator_handles_nested_sections() -> None:

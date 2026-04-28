@@ -8,8 +8,10 @@ from pydantic import ValidationError
 from gp_sphinx_astro_builder.models import (
     Document,
     EmphasisNode,
+    LiteralNode,
     ParagraphNode,
     SectionNode,
+    StrongNode,
     TextNode,
 )
 
@@ -70,8 +72,51 @@ def test_emphasis_supports_nested_emphasis() -> None:
     assert isinstance(node.children[0], EmphasisNode)
 
 
+def test_strong_round_trips_with_text_children() -> None:
+    """``StrongNode`` accepts inline children and preserves nesting."""
+    node = StrongNode.model_validate(
+        {
+            "type": "strong",
+            "children": [{"type": "text", "value": "bold"}],
+        },
+    )
+    assert isinstance(node.children[0], TextNode)
+    assert node.model_dump() == {
+        "type": "strong",
+        "children": [{"type": "text", "value": "bold"}],
+    }
+
+
+def test_strong_supports_emphasis_through_inline_union() -> None:
+    """``StrongNode`` accepts an emphasis child via the inline discriminator."""
+    node = StrongNode.model_validate(
+        {
+            "type": "strong",
+            "children": [
+                {
+                    "type": "emphasis",
+                    "children": [{"type": "text", "value": "loud"}],
+                },
+            ],
+        },
+    )
+    assert isinstance(node.children[0], EmphasisNode)
+
+
+def test_literal_round_trips_with_value() -> None:
+    """``LiteralNode`` carries an inline literal text value."""
+    node = LiteralNode(type="literal", value="x = 1")
+    assert node.model_dump() == {"type": "literal", "value": "x = 1"}
+
+
+def test_literal_validates_canonical_shape() -> None:
+    """``LiteralNode.model_validate`` parses the canonical dict."""
+    node = LiteralNode.model_validate({"type": "literal", "value": "foo"})
+    assert node.value == "foo"
+
+
 def test_paragraph_round_trips_with_inline_union_children() -> None:
-    """``ParagraphNode`` accepts both text and emphasis through the inline union."""
+    """``ParagraphNode`` accepts text, emphasis, strong, and literal children."""
     node = ParagraphNode.model_validate(
         {
             "type": "paragraph",
@@ -81,14 +126,22 @@ def test_paragraph_round_trips_with_inline_union_children() -> None:
                     "type": "emphasis",
                     "children": [{"type": "text", "value": "world"}],
                 },
+                {"type": "text", "value": " — "},
+                {
+                    "type": "strong",
+                    "children": [{"type": "text", "value": "important"}],
+                },
+                {"type": "text", "value": " "},
+                {"type": "literal", "value": "code"},
                 {"type": "text", "value": "."},
             ],
         },
     )
-    assert len(node.children) == 3
+    assert len(node.children) == 7
     assert isinstance(node.children[0], TextNode)
     assert isinstance(node.children[1], EmphasisNode)
-    assert isinstance(node.children[2], TextNode)
+    assert isinstance(node.children[3], StrongNode)
+    assert isinstance(node.children[5], LiteralNode)
 
 
 def test_paragraph_rejects_block_node_in_inline_position() -> None:

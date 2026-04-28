@@ -45,6 +45,37 @@ class EmphasisNode(BaseModel):
     children: list[InlineNode]
 
 
+class StrongNode(BaseModel):
+    """An inline strong-emphasis node wrapping inline children.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import StrongNode
+    >>> node = StrongNode.model_validate(
+    ...     {"type": "strong", "children": [{"type": "text", "value": "x"}]},
+    ... )
+    >>> node.children[0].value
+    'x'
+    """
+
+    type: t.Literal["strong"]
+    children: list[InlineNode]
+
+
+class LiteralNode(BaseModel):
+    """An inline literal-text run, e.g. an inline code span.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import LiteralNode
+    >>> LiteralNode(type="literal", value="x = 1").value
+    'x = 1'
+    """
+
+    type: t.Literal["literal"]
+    value: str
+
+
 class ParagraphNode(BaseModel):
     """A block-level paragraph wrapping inline children.
 
@@ -114,7 +145,7 @@ class Document(BaseModel):
 
 
 InlineNode = t.Annotated[
-    TextNode | EmphasisNode,
+    TextNode | EmphasisNode | StrongNode | LiteralNode,
     Field(discriminator="type"),
 ]
 """Discriminated union of nodes that may appear in an inline (phrase) context."""
@@ -127,5 +158,6 @@ BlockNode = t.Annotated[
 
 
 EmphasisNode.model_rebuild()
+StrongNode.model_rebuild()
 ParagraphNode.model_rebuild()
 SectionNode.model_rebuild()

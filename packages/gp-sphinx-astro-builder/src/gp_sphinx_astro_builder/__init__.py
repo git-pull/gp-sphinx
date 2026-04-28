@@ -22,8 +22,10 @@ from gp_sphinx_astro_builder.models import (
     Document,
     EmphasisNode,
     InlineNode,
+    LiteralNode,
     ParagraphNode,
     SectionNode,
+    StrongNode,
     TextNode,
 )
 from gp_sphinx_astro_builder.translator import DocTreeJSONTranslator
@@ -38,8 +40,10 @@ __all__ = [
     "Document",
     "EmphasisNode",
     "InlineNode",
+    "LiteralNode",
     "ParagraphNode",
     "SectionNode",
+    "StrongNode",
     "TextNode",
     "setup",
 ]
