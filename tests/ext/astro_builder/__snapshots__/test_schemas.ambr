@@ -1,0 +1,1163 @@
+# serializer version: 1
+# name: test_export_doctree_schema_matches_snapshot
+  dict({
+    '$defs': dict({
+      'AdmonitionNode': dict({
+        'description': '''
+          A block-level admonition (note, warning, tip, …).
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import AdmonitionNode
+          >>> node = AdmonitionNode.model_validate(
+          ...     {
+          ...         "type": "admonition",
+          ...         "variant": "note",
+          ...         "children": [
+          ...             {
+          ...                 "type": "paragraph",
+          ...                 "children": [{"type": "text", "value": "x"}],
+          ...             },
+          ...         ],
+          ...     },
+          ... )
+          >>> node.variant
+          'note'
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'admonition': '#/$defs/AdmonitionNode',
+                  'blockQuote': '#/$defs/BlockQuoteNode',
+                  'bulletList': '#/$defs/BulletListNode',
+                  'comment': '#/$defs/CommentNode',
+                  'definitionList': '#/$defs/DefinitionListNode',
+                  'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'literalBlock': '#/$defs/LiteralBlockNode',
+                  'paragraph': '#/$defs/ParagraphNode',
+                  'section': '#/$defs/SectionNode',
+                  'transition': '#/$defs/TransitionNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/ParagraphNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SectionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralBlockNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CommentNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BlockQuoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BulletListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EnumeratedListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/DefinitionListNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'admonition',
+            'title': 'Type',
+            'type': 'string',
+          }),
+          'variant': dict({
+            'enum': list([
+              'note',
+              'warning',
+              'attention',
+              'caution',
+              'important',
+              'tip',
+              'hint',
+              'danger',
+              'error',
+            ]),
+            'title': 'Variant',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'variant',
+          'children',
+        ]),
+        'title': 'AdmonitionNode',
+        'type': 'object',
+      }),
+      'BlockQuoteNode': dict({
+        'description': '''
+          A block-level quote wrapping block-level children.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import BlockQuoteNode
+          >>> node = BlockQuoteNode.model_validate(
+          ...     {
+          ...         "type": "blockQuote",
+          ...         "children": [
+          ...             {
+          ...                 "type": "paragraph",
+          ...                 "children": [{"type": "text", "value": "q"}],
+          ...             },
+          ...         ],
+          ...     },
+          ... )
+          >>> node.children[0].children[0].value
+          'q'
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'admonition': '#/$defs/AdmonitionNode',
+                  'blockQuote': '#/$defs/BlockQuoteNode',
+                  'bulletList': '#/$defs/BulletListNode',
+                  'comment': '#/$defs/CommentNode',
+                  'definitionList': '#/$defs/DefinitionListNode',
+                  'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'literalBlock': '#/$defs/LiteralBlockNode',
+                  'paragraph': '#/$defs/ParagraphNode',
+                  'section': '#/$defs/SectionNode',
+                  'transition': '#/$defs/TransitionNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/ParagraphNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SectionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralBlockNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CommentNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BlockQuoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BulletListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EnumeratedListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/DefinitionListNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'blockQuote',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'children',
+        ]),
+        'title': 'BlockQuoteNode',
+        'type': 'object',
+      }),
+      'BulletListNode': dict({
+        'description': '''
+          A bullet (unordered) list whose children are list items.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import BulletListNode
+          >>> node = BulletListNode.model_validate(
+          ...     {"type": "bulletList", "children": []},
+          ... )
+          >>> node.children
+          []
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              '$ref': '#/$defs/ListItemNode',
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'bulletList',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'children',
+        ]),
+        'title': 'BulletListNode',
+        'type': 'object',
+      }),
+      'CommentNode': dict({
+        'description': '''
+          A docutils comment block, preserved as raw text.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import CommentNode
+          >>> CommentNode(type="comment", value="TODO").value
+          'TODO'
+        ''',
+        'properties': dict({
+          'type': dict({
+            'const': 'comment',
+            'title': 'Type',
+            'type': 'string',
+          }),
+          'value': dict({
+            'title': 'Value',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'value',
+        ]),
+        'title': 'CommentNode',
+        'type': 'object',
+      }),
+      'DefinitionListItemNode': dict({
+        'description': '''
+          One entry in a definition list, pairing a term with a definition.
+          
+          The ``term`` slot accepts inline content (emphasis, strong, literal,
+          references…); the ``definition`` slot accepts block content (paragraphs,
+          lists, code blocks…). docutils also supports optional ``classifier``
+          nodes between term and definition; we omit them here and revisit when a
+          real document needs them.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import DefinitionListItemNode
+          >>> node = DefinitionListItemNode.model_validate(
+          ...     {
+          ...         "type": "definitionListItem",
+          ...         "term": [{"type": "text", "value": "foo"}],
+          ...         "definition": [
+          ...             {
+          ...                 "type": "paragraph",
+          ...                 "children": [{"type": "text", "value": "x"}],
+          ...             },
+          ...         ],
+          ...     },
+          ... )
+          >>> node.term[0].value
+          'foo'
+        ''',
+        'properties': dict({
+          'definition': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'admonition': '#/$defs/AdmonitionNode',
+                  'blockQuote': '#/$defs/BlockQuoteNode',
+                  'bulletList': '#/$defs/BulletListNode',
+                  'comment': '#/$defs/CommentNode',
+                  'definitionList': '#/$defs/DefinitionListNode',
+                  'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'literalBlock': '#/$defs/LiteralBlockNode',
+                  'paragraph': '#/$defs/ParagraphNode',
+                  'section': '#/$defs/SectionNode',
+                  'transition': '#/$defs/TransitionNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/ParagraphNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SectionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralBlockNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CommentNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BlockQuoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BulletListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EnumeratedListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/DefinitionListNode',
+                }),
+              ]),
+            }),
+            'title': 'Definition',
+            'type': 'array',
+          }),
+          'term': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'emphasis': '#/$defs/EmphasisNode',
+                  'image': '#/$defs/ImageNode',
+                  'literal': '#/$defs/LiteralNode',
+                  'reference': '#/$defs/ReferenceNode',
+                  'strong': '#/$defs/StrongNode',
+                  'text': '#/$defs/TextNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/TextNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EmphasisNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/StrongNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ImageNode',
+                }),
+              ]),
+            }),
+            'title': 'Term',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'definitionListItem',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'term',
+          'definition',
+        ]),
+        'title': 'DefinitionListItemNode',
+        'type': 'object',
+      }),
+      'DefinitionListNode': dict({
+        'description': '''
+          A definition list whose children are typed as definition_list_item.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import DefinitionListNode
+          >>> node = DefinitionListNode.model_validate(
+          ...     {"type": "definitionList", "children": []},
+          ... )
+          >>> node.children
+          []
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              '$ref': '#/$defs/DefinitionListItemNode',
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'definitionList',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'children',
+        ]),
+        'title': 'DefinitionListNode',
+        'type': 'object',
+      }),
+      'EmphasisNode': dict({
+        'description': '''
+          An inline emphasis node wrapping inline children.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import EmphasisNode
+          >>> node = EmphasisNode.model_validate(
+          ...     {"type": "emphasis", "children": [{"type": "text", "value": "x"}]},
+          ... )
+          >>> node.children[0].value
+          'x'
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'emphasis': '#/$defs/EmphasisNode',
+                  'image': '#/$defs/ImageNode',
+                  'literal': '#/$defs/LiteralNode',
+                  'reference': '#/$defs/ReferenceNode',
+                  'strong': '#/$defs/StrongNode',
+                  'text': '#/$defs/TextNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/TextNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EmphasisNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/StrongNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ImageNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'emphasis',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'children',
+        ]),
+        'title': 'EmphasisNode',
+        'type': 'object',
+      }),
+      'EnumeratedListNode': dict({
+        'description': '''
+          An enumerated (ordered) list with optional explicit ``start`` index.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import EnumeratedListNode
+          >>> node = EnumeratedListNode.model_validate(
+          ...     {"type": "enumeratedList", "children": []},
+          ... )
+          >>> node.start is None
+          True
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              '$ref': '#/$defs/ListItemNode',
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'start': dict({
+            'anyOf': list([
+              dict({
+                'type': 'integer',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Start',
+          }),
+          'type': dict({
+            'const': 'enumeratedList',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'children',
+        ]),
+        'title': 'EnumeratedListNode',
+        'type': 'object',
+      }),
+      'ImageNode': dict({
+        'description': '''
+          An inline image leaf with a uri and optional alt text.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import ImageNode
+          >>> ImageNode(type="image", uri="/img/x.svg", alt="X").alt
+          'X'
+        ''',
+        'properties': dict({
+          'alt': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Alt',
+          }),
+          'type': dict({
+            'const': 'image',
+            'title': 'Type',
+            'type': 'string',
+          }),
+          'uri': dict({
+            'title': 'Uri',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'uri',
+        ]),
+        'title': 'ImageNode',
+        'type': 'object',
+      }),
+      'ListItemNode': dict({
+        'description': '''
+          One item in a bullet or enumerated list.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import ListItemNode
+          >>> node = ListItemNode.model_validate(
+          ...     {
+          ...         "type": "listItem",
+          ...         "children": [
+          ...             {
+          ...                 "type": "paragraph",
+          ...                 "children": [{"type": "text", "value": "a"}],
+          ...             },
+          ...         ],
+          ...     },
+          ... )
+          >>> node.children[0].children[0].value
+          'a'
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'admonition': '#/$defs/AdmonitionNode',
+                  'blockQuote': '#/$defs/BlockQuoteNode',
+                  'bulletList': '#/$defs/BulletListNode',
+                  'comment': '#/$defs/CommentNode',
+                  'definitionList': '#/$defs/DefinitionListNode',
+                  'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'literalBlock': '#/$defs/LiteralBlockNode',
+                  'paragraph': '#/$defs/ParagraphNode',
+                  'section': '#/$defs/SectionNode',
+                  'transition': '#/$defs/TransitionNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/ParagraphNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SectionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralBlockNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CommentNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BlockQuoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BulletListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EnumeratedListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/DefinitionListNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'listItem',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'children',
+        ]),
+        'title': 'ListItemNode',
+        'type': 'object',
+      }),
+      'LiteralBlockNode': dict({
+        'description': '''
+          A block-level fenced code block.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import LiteralBlockNode
+          >>> node = LiteralBlockNode(type="literalBlock", language="py", code="x")
+          >>> node.language
+          'py'
+        ''',
+        'properties': dict({
+          'code': dict({
+            'title': 'Code',
+            'type': 'string',
+          }),
+          'language': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Language',
+          }),
+          'type': dict({
+            'const': 'literalBlock',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'code',
+        ]),
+        'title': 'LiteralBlockNode',
+        'type': 'object',
+      }),
+      'LiteralNode': dict({
+        'description': '''
+          An inline literal-text run, e.g. an inline code span.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import LiteralNode
+          >>> LiteralNode(type="literal", value="x = 1").value
+          'x = 1'
+        ''',
+        'properties': dict({
+          'type': dict({
+            'const': 'literal',
+            'title': 'Type',
+            'type': 'string',
+          }),
+          'value': dict({
+            'title': 'Value',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'value',
+        ]),
+        'title': 'LiteralNode',
+        'type': 'object',
+      }),
+      'ParagraphNode': dict({
+        'description': '''
+          A block-level paragraph wrapping inline children.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import ParagraphNode
+          >>> node = ParagraphNode.model_validate(
+          ...     {"type": "paragraph", "children": [{"type": "text", "value": "hi"}]},
+          ... )
+          >>> node.children[0].value
+          'hi'
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'emphasis': '#/$defs/EmphasisNode',
+                  'image': '#/$defs/ImageNode',
+                  'literal': '#/$defs/LiteralNode',
+                  'reference': '#/$defs/ReferenceNode',
+                  'strong': '#/$defs/StrongNode',
+                  'text': '#/$defs/TextNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/TextNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EmphasisNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/StrongNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ImageNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'paragraph',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'children',
+        ]),
+        'title': 'ParagraphNode',
+        'type': 'object',
+      }),
+      'ReferenceNode': dict({
+        'description': '''
+          An inline cross-reference or external link.
+          
+          The ``href`` field holds either an absolute URL (when the source had
+          ``refuri``) or an in-page anchor like ``"#section-id"`` (when the source
+          had ``refid``). The translator normalises both into the same field so the
+          Astro renderer needs a single href branch.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import ReferenceNode
+          >>> node = ReferenceNode.model_validate(
+          ...     {
+          ...         "type": "reference",
+          ...         "href": "https://example.com",
+          ...         "children": [{"type": "text", "value": "Example"}],
+          ...     },
+          ... )
+          >>> node.href
+          'https://example.com'
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'emphasis': '#/$defs/EmphasisNode',
+                  'image': '#/$defs/ImageNode',
+                  'literal': '#/$defs/LiteralNode',
+                  'reference': '#/$defs/ReferenceNode',
+                  'strong': '#/$defs/StrongNode',
+                  'text': '#/$defs/TextNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/TextNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EmphasisNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/StrongNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ImageNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'href': dict({
+            'title': 'Href',
+            'type': 'string',
+          }),
+          'type': dict({
+            'const': 'reference',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'href',
+          'children',
+        ]),
+        'title': 'ReferenceNode',
+        'type': 'object',
+      }),
+      'SectionNode': dict({
+        'description': '''
+          A document section with id, inline title, and block children.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import SectionNode
+          >>> node = SectionNode.model_validate(
+          ...     {
+          ...         "type": "section",
+          ...         "id": "intro",
+          ...         "title": [{"type": "text", "value": "Intro"}],
+          ...         "children": [],
+          ...     },
+          ... )
+          >>> node.id
+          'intro'
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'admonition': '#/$defs/AdmonitionNode',
+                  'blockQuote': '#/$defs/BlockQuoteNode',
+                  'bulletList': '#/$defs/BulletListNode',
+                  'comment': '#/$defs/CommentNode',
+                  'definitionList': '#/$defs/DefinitionListNode',
+                  'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'literalBlock': '#/$defs/LiteralBlockNode',
+                  'paragraph': '#/$defs/ParagraphNode',
+                  'section': '#/$defs/SectionNode',
+                  'transition': '#/$defs/TransitionNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/ParagraphNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SectionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralBlockNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CommentNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BlockQuoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BulletListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EnumeratedListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/DefinitionListNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'id': dict({
+            'title': 'Id',
+            'type': 'string',
+          }),
+          'title': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'emphasis': '#/$defs/EmphasisNode',
+                  'image': '#/$defs/ImageNode',
+                  'literal': '#/$defs/LiteralNode',
+                  'reference': '#/$defs/ReferenceNode',
+                  'strong': '#/$defs/StrongNode',
+                  'text': '#/$defs/TextNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/TextNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EmphasisNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/StrongNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ImageNode',
+                }),
+              ]),
+            }),
+            'title': 'Title',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'section',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'id',
+          'title',
+          'children',
+        ]),
+        'title': 'SectionNode',
+        'type': 'object',
+      }),
+      'StrongNode': dict({
+        'description': '''
+          An inline strong-emphasis node wrapping inline children.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import StrongNode
+          >>> node = StrongNode.model_validate(
+          ...     {"type": "strong", "children": [{"type": "text", "value": "x"}]},
+          ... )
+          >>> node.children[0].value
+          'x'
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'emphasis': '#/$defs/EmphasisNode',
+                  'image': '#/$defs/ImageNode',
+                  'literal': '#/$defs/LiteralNode',
+                  'reference': '#/$defs/ReferenceNode',
+                  'strong': '#/$defs/StrongNode',
+                  'text': '#/$defs/TextNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/TextNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EmphasisNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/StrongNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ImageNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'strong',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'children',
+        ]),
+        'title': 'StrongNode',
+        'type': 'object',
+      }),
+      'TextNode': dict({
+        'description': '''
+          A leaf node containing literal text.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import TextNode
+          >>> node = TextNode(type="text", value="hello")
+          >>> node.model_dump()
+          {'type': 'text', 'value': 'hello'}
+        ''',
+        'properties': dict({
+          'type': dict({
+            'const': 'text',
+            'title': 'Type',
+            'type': 'string',
+          }),
+          'value': dict({
+            'title': 'Value',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'value',
+        ]),
+        'title': 'TextNode',
+        'type': 'object',
+      }),
+      'TransitionNode': dict({
+        'description': '''
+          A transition (horizontal rule) marker with no payload.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import TransitionNode
+          >>> TransitionNode(type="transition").type
+          'transition'
+        ''',
+        'properties': dict({
+          'type': dict({
+            'const': 'transition',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+        ]),
+        'title': 'TransitionNode',
+        'type': 'object',
+      }),
+    }),
+    'description': '''
+      The top-level wrapper for one source document.
+      
+      Examples
+      --------
+      >>> from gp_sphinx_astro_builder.models import Document
+      >>> doc = Document.model_validate(
+      ...     {
+      ...         "id": "index",
+      ...         "title": "Hi",
+      ...         "tree": {
+      ...             "type": "section",
+      ...             "id": "hi",
+      ...             "title": [{"type": "text", "value": "Hi"}],
+      ...             "children": [],
+      ...         },
+      ...     },
+      ... )
+      >>> doc.id
+      'index'
+    ''',
+    'properties': dict({
+      'id': dict({
+        'title': 'Id',
+        'type': 'string',
+      }),
+      'title': dict({
+        'title': 'Title',
+        'type': 'string',
+      }),
+      'tree': dict({
+        '$ref': '#/$defs/SectionNode',
+      }),
+    }),
+    'required': list([
+      'id',
+      'title',
+      'tree',
+    ]),
+    'title': 'Document',
+    'type': 'object',
+  })
+# ---
