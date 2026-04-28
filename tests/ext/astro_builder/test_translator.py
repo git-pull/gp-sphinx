@@ -12,15 +12,18 @@ import docutils.utils
 from docutils import nodes
 
 from gp_sphinx_astro_builder.models import (
+    CommentNode,
     Document,
     EmphasisNode,
     ImageNode,
+    LiteralBlockNode,
     LiteralNode,
     ParagraphNode,
     ReferenceNode,
     SectionNode,
     StrongNode,
     TextNode,
+    TransitionNode,
 )
 from gp_sphinx_astro_builder.translator import DocTreeJSONTranslator
 
@@ -226,6 +229,80 @@ def test_translator_handles_image_without_alt() -> None:
     img_child = paragraph_child.children[0]
     assert isinstance(img_child, ImageNode)
     assert img_child.alt is None
+
+
+def test_translator_handles_literal_block_with_language() -> None:
+    """A literal_block becomes a LiteralBlockNode with language and code."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    code_text = "print('hi')"
+    block = nodes.literal_block(code_text, code_text)
+    block["language"] = "python"
+    section += title
+    section += block
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    block_child = translator.result().tree.children[0]
+    assert isinstance(block_child, LiteralBlockNode)
+    assert block_child.language == "python"
+    assert block_child.code == code_text
+
+
+def test_translator_literal_block_without_language_is_none() -> None:
+    """A literal_block without language attribute produces language=None."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    block = nodes.literal_block("raw", "raw")
+    section += title
+    section += block
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    block_child = translator.result().tree.children[0]
+    assert isinstance(block_child, LiteralBlockNode)
+    assert block_child.language is None
+    assert block_child.code == "raw"
+
+
+def test_translator_handles_comment_node() -> None:
+    """A comment node becomes a CommentNode preserving the raw text."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    comment = nodes.comment("TODO write more", "TODO write more")
+    section += title
+    section += comment
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    comment_child = translator.result().tree.children[0]
+    assert isinstance(comment_child, CommentNode)
+    assert comment_child.value == "TODO write more"
+
+
+def test_translator_handles_transition_node() -> None:
+    """A transition node becomes a payload-less TransitionNode."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    section += title
+    section += nodes.transition()
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    transition_child = translator.result().tree.children[0]
+    assert isinstance(transition_child, TransitionNode)
 
 
 def test_translator_handles_nested_sections() -> None:

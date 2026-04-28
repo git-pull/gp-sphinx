@@ -118,6 +118,49 @@ class ImageNode(BaseModel):
     alt: str | None = None
 
 
+class LiteralBlockNode(BaseModel):
+    """A block-level fenced code block.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import LiteralBlockNode
+    >>> node = LiteralBlockNode(type="literalBlock", language="py", code="x")
+    >>> node.language
+    'py'
+    """
+
+    type: t.Literal["literalBlock"]
+    language: str | None = None
+    code: str
+
+
+class CommentNode(BaseModel):
+    """A docutils comment block, preserved as raw text.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import CommentNode
+    >>> CommentNode(type="comment", value="TODO").value
+    'TODO'
+    """
+
+    type: t.Literal["comment"]
+    value: str
+
+
+class TransitionNode(BaseModel):
+    """A transition (horizontal rule) marker with no payload.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import TransitionNode
+    >>> TransitionNode(type="transition").type
+    'transition'
+    """
+
+    type: t.Literal["transition"]
+
+
 class ParagraphNode(BaseModel):
     """A block-level paragraph wrapping inline children.
 
@@ -193,7 +236,7 @@ InlineNode = t.Annotated[
 """Discriminated union of nodes that may appear in an inline (phrase) context."""
 
 BlockNode = t.Annotated[
-    ParagraphNode | SectionNode,
+    ParagraphNode | SectionNode | LiteralBlockNode | CommentNode | TransitionNode,
     Field(discriminator="type"),
 ]
 """Discriminated union of nodes that may appear in a block (body) context."""
