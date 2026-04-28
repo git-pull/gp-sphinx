@@ -1,0 +1,22 @@
+{
+  "name": "gp-sphinx-astro-workspace",
+  "version": "0.0.1a12",
+  "description": "Workspace root for the gp-sphinx Astro static-site renderer.",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "pnpm -r run test",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "type-check": "pnpm -r run type-check"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.0",
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@gp-sphinx-astro/theme",
+  "version": "0.0.1a12",
+  "description": "Astro theme components and Zod schemas for the gp-sphinx static site.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  }
+}
