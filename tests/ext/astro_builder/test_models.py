@@ -12,6 +12,8 @@ from gp_sphinx_astro_builder.models import (
     BlockQuoteNode,
     BulletListNode,
     CommentNode,
+    DefinitionListItemNode,
+    DefinitionListNode,
     Document,
     EmphasisNode,
     EnumeratedListNode,
@@ -380,6 +382,71 @@ def test_admonition_rejects_inline_child() -> None:
                 "type": "admonition",
                 "variant": "note",
                 "children": [{"type": "text", "value": "wrong"}],
+            },
+        )
+
+
+def test_definition_list_item_round_trips_with_term_and_definition() -> None:
+    """``DefinitionListItemNode`` carries inline term and block definition slots."""
+    node = DefinitionListItemNode.model_validate(
+        {
+            "type": "definitionListItem",
+            "term": [{"type": "text", "value": "foo"}],
+            "definition": [_make_para_payload("describes foo")],
+        },
+    )
+    assert node.term == [TextNode(type="text", value="foo")]
+    assert isinstance(node.definition[0], ParagraphNode)
+
+
+def test_definition_list_item_rejects_block_in_term_slot() -> None:
+    """``DefinitionListItemNode.term`` rejects a block-level node."""
+    with pytest.raises(ValidationError):
+        DefinitionListItemNode.model_validate(
+            {
+                "type": "definitionListItem",
+                "term": [_make_para_payload("oops")],
+                "definition": [],
+            },
+        )
+
+
+def test_definition_list_item_rejects_inline_in_definition_slot() -> None:
+    """``DefinitionListItemNode.definition`` rejects an inline node."""
+    with pytest.raises(ValidationError):
+        DefinitionListItemNode.model_validate(
+            {
+                "type": "definitionListItem",
+                "term": [{"type": "text", "value": "foo"}],
+                "definition": [{"type": "text", "value": "wrong"}],
+            },
+        )
+
+
+def test_definition_list_round_trips_with_one_item() -> None:
+    """``DefinitionListNode`` accepts a definition_list_item child."""
+    node = DefinitionListNode.model_validate(
+        {
+            "type": "definitionList",
+            "children": [
+                {
+                    "type": "definitionListItem",
+                    "term": [{"type": "text", "value": "x"}],
+                    "definition": [_make_para_payload("y")],
+                },
+            ],
+        },
+    )
+    assert isinstance(node.children[0], DefinitionListItemNode)
+
+
+def test_definition_list_rejects_non_item_child() -> None:
+    """``DefinitionListNode`` rejects a non-definition_list_item child."""
+    with pytest.raises(ValidationError):
+        DefinitionListNode.model_validate(
+            {
+                "type": "definitionList",
+                "children": [_make_para_payload("oops")],
             },
         )
 

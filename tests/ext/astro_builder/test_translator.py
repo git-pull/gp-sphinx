@@ -19,6 +19,8 @@ from gp_sphinx_astro_builder.models import (
     BlockQuoteNode,
     BulletListNode,
     CommentNode,
+    DefinitionListItemNode,
+    DefinitionListNode,
     Document,
     EmphasisNode,
     EnumeratedListNode,
@@ -489,6 +491,80 @@ def test_translator_handles_each_admonition_variant(
     assert block_child.variant == variant
     assert isinstance(block_child.children[0], ParagraphNode)
     assert block_child.children[0].children == [TextNode(type="text", value="body")]
+
+
+def test_translator_handles_definition_list() -> None:
+    """A definition_list with one item produces nested DefinitionList shape."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+
+    dl = nodes.definition_list()
+    dli = nodes.definition_list_item()
+    term = nodes.term()
+    term += nodes.Text("foo")
+    defn = nodes.definition()
+    defn_para = nodes.paragraph()
+    defn_para += nodes.Text("describes foo")
+    defn += defn_para
+    dli += term
+    dli += defn
+    dl += dli
+
+    section += title
+    section += dl
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    list_child = translator.result().tree.children[0]
+    assert isinstance(list_child, DefinitionListNode)
+    assert len(list_child.children) == 1
+    item = list_child.children[0]
+    assert isinstance(item, DefinitionListItemNode)
+    assert item.term == [TextNode(type="text", value="foo")]
+    assert len(item.definition) == 1
+    defn_paragraph = item.definition[0]
+    assert isinstance(defn_paragraph, ParagraphNode)
+    assert defn_paragraph.children == [
+        TextNode(type="text", value="describes foo"),
+    ]
+
+
+def test_translator_handles_definition_list_with_emphasis_in_term() -> None:
+    """The term slot accepts inline children like emphasis runs."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+
+    dl = nodes.definition_list()
+    dli = nodes.definition_list_item()
+    term = nodes.term()
+    em = nodes.emphasis()
+    em += nodes.Text("emphasized")
+    term += em
+    defn = nodes.definition()
+    defn_para = nodes.paragraph()
+    defn_para += nodes.Text("body")
+    defn += defn_para
+    dli += term
+    dli += defn
+    dl += dli
+
+    section += title
+    section += dl
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    list_child = translator.result().tree.children[0]
+    assert isinstance(list_child, DefinitionListNode)
+    item = list_child.children[0]
+    term_first = item.term[0]
+    assert isinstance(term_first, EmphasisNode)
+    assert term_first.children == [TextNode(type="text", value="emphasized")]
 
 
 def test_translator_handles_nested_sections() -> None:
