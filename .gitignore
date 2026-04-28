@@ -226,6 +226,13 @@ docs/_static/css/fonts.css
 # Repo-local pytest mirror (do not track — validator-only)
 out/
 
+# Node / pnpm (astro/ workspace)
+node_modules/
+**/node_modules/
+*.tsbuildinfo
+.pnpm-store/
+astro/**/dist/
+
 # Misc
 .vim/
 *.lprof
