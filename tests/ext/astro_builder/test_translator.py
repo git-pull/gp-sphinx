@@ -14,8 +14,10 @@ from docutils import nodes
 from gp_sphinx_astro_builder.models import (
     Document,
     EmphasisNode,
+    ImageNode,
     LiteralNode,
     ParagraphNode,
+    ReferenceNode,
     SectionNode,
     StrongNode,
     TextNode,
@@ -132,6 +134,98 @@ def test_translator_handles_literal_value() -> None:
     literal_child = paragraph_child.children[0]
     assert isinstance(literal_child, LiteralNode)
     assert literal_child.value == "x = 1"
+
+
+def test_translator_handles_external_reference() -> None:
+    """A reference with refuri becomes a ReferenceNode with that href."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    para = nodes.paragraph()
+    ref = nodes.reference(refuri="https://example.com")
+    ref += nodes.Text("Example")
+    para += ref
+    section += title
+    section += para
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    paragraph_child = translator.result().tree.children[0]
+    assert isinstance(paragraph_child, ParagraphNode)
+    ref_child = paragraph_child.children[0]
+    assert isinstance(ref_child, ReferenceNode)
+    assert ref_child.href == "https://example.com"
+    assert ref_child.children == [TextNode(type="text", value="Example")]
+
+
+def test_translator_handles_internal_reference_via_refid() -> None:
+    """A reference with refid becomes a ReferenceNode with a #anchor href."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    para = nodes.paragraph()
+    ref = nodes.reference(refid="intro")
+    ref += nodes.Text("see")
+    para += ref
+    section += title
+    section += para
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    paragraph_child = translator.result().tree.children[0]
+    assert isinstance(paragraph_child, ParagraphNode)
+    ref_child = paragraph_child.children[0]
+    assert isinstance(ref_child, ReferenceNode)
+    assert ref_child.href == "#intro"
+
+
+def test_translator_handles_image_with_uri_and_alt() -> None:
+    """An image node becomes an ImageNode with uri and optional alt."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    para = nodes.paragraph()
+    img = nodes.image(uri="/img/x.svg", alt="X")
+    para += img
+    section += title
+    section += para
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    paragraph_child = translator.result().tree.children[0]
+    assert isinstance(paragraph_child, ParagraphNode)
+    img_child = paragraph_child.children[0]
+    assert isinstance(img_child, ImageNode)
+    assert img_child.uri == "/img/x.svg"
+    assert img_child.alt == "X"
+
+
+def test_translator_handles_image_without_alt() -> None:
+    """An image node without alt produces ImageNode with alt=None."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    para = nodes.paragraph()
+    img = nodes.image(uri="/img/x.svg")
+    para += img
+    section += title
+    section += para
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    paragraph_child = translator.result().tree.children[0]
+    assert isinstance(paragraph_child, ParagraphNode)
+    img_child = paragraph_child.children[0]
+    assert isinstance(img_child, ImageNode)
+    assert img_child.alt is None
 
 
 def test_translator_handles_nested_sections() -> None:

@@ -76,6 +76,48 @@ class LiteralNode(BaseModel):
     value: str
 
 
+class ReferenceNode(BaseModel):
+    """An inline cross-reference or external link.
+
+    The ``href`` field holds either an absolute URL (when the source had
+    ``refuri``) or an in-page anchor like ``"#section-id"`` (when the source
+    had ``refid``). The translator normalises both into the same field so the
+    Astro renderer needs a single href branch.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import ReferenceNode
+    >>> node = ReferenceNode.model_validate(
+    ...     {
+    ...         "type": "reference",
+    ...         "href": "https://example.com",
+    ...         "children": [{"type": "text", "value": "Example"}],
+    ...     },
+    ... )
+    >>> node.href
+    'https://example.com'
+    """
+
+    type: t.Literal["reference"]
+    href: str
+    children: list[InlineNode]
+
+
+class ImageNode(BaseModel):
+    """An inline image leaf with a uri and optional alt text.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import ImageNode
+    >>> ImageNode(type="image", uri="/img/x.svg", alt="X").alt
+    'X'
+    """
+
+    type: t.Literal["image"]
+    uri: str
+    alt: str | None = None
+
+
 class ParagraphNode(BaseModel):
     """A block-level paragraph wrapping inline children.
 
@@ -145,7 +187,7 @@ class Document(BaseModel):
 
 
 InlineNode = t.Annotated[
-    TextNode | EmphasisNode | StrongNode | LiteralNode,
+    TextNode | EmphasisNode | StrongNode | LiteralNode | ReferenceNode | ImageNode,
     Field(discriminator="type"),
 ]
 """Discriminated union of nodes that may appear in an inline (phrase) context."""
@@ -159,5 +201,6 @@ BlockNode = t.Annotated[
 
 EmphasisNode.model_rebuild()
 StrongNode.model_rebuild()
+ReferenceNode.model_rebuild()
 ParagraphNode.model_rebuild()
 SectionNode.model_rebuild()
