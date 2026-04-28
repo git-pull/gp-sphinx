@@ -19,6 +19,7 @@ import typing as t
 from gp_sphinx_astro_builder.builder import AstroBuilder
 from gp_sphinx_astro_builder.models import (
     BlockNode,
+    BlockQuoteNode,
     CommentNode,
     Document,
     EmphasisNode,
@@ -41,6 +42,7 @@ if t.TYPE_CHECKING:
 __all__ = [
     "AstroBuilder",
     "BlockNode",
+    "BlockQuoteNode",
     "CommentNode",
     "DocTreeJSONTranslator",
     "Document",

@@ -161,6 +161,31 @@ class TransitionNode(BaseModel):
     type: t.Literal["transition"]
 
 
+class BlockQuoteNode(BaseModel):
+    """A block-level quote wrapping block-level children.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import BlockQuoteNode
+    >>> node = BlockQuoteNode.model_validate(
+    ...     {
+    ...         "type": "blockQuote",
+    ...         "children": [
+    ...             {
+    ...                 "type": "paragraph",
+    ...                 "children": [{"type": "text", "value": "q"}],
+    ...             },
+    ...         ],
+    ...     },
+    ... )
+    >>> node.children[0].children[0].value
+    'q'
+    """
+
+    type: t.Literal["blockQuote"]
+    children: list[BlockNode]
+
+
 class ParagraphNode(BaseModel):
     """A block-level paragraph wrapping inline children.
 
@@ -236,7 +261,12 @@ InlineNode = t.Annotated[
 """Discriminated union of nodes that may appear in an inline (phrase) context."""
 
 BlockNode = t.Annotated[
-    ParagraphNode | SectionNode | LiteralBlockNode | CommentNode | TransitionNode,
+    ParagraphNode
+    | SectionNode
+    | LiteralBlockNode
+    | CommentNode
+    | TransitionNode
+    | BlockQuoteNode,
     Field(discriminator="type"),
 ]
 """Discriminated union of nodes that may appear in a block (body) context."""
@@ -247,3 +277,4 @@ StrongNode.model_rebuild()
 ReferenceNode.model_rebuild()
 ParagraphNode.model_rebuild()
 SectionNode.model_rebuild()
+BlockQuoteNode.model_rebuild()

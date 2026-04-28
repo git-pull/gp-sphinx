@@ -6,6 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from gp_sphinx_astro_builder.models import (
+    BlockQuoteNode,
     CommentNode,
     Document,
     EmphasisNode,
@@ -202,6 +203,33 @@ def test_transition_has_no_payload() -> None:
     """``TransitionNode`` is a payload-less marker."""
     node = TransitionNode(type="transition")
     assert node.model_dump() == {"type": "transition"}
+
+
+def test_block_quote_round_trips_with_paragraph_child() -> None:
+    """``BlockQuoteNode`` carries block-level children."""
+    node = BlockQuoteNode.model_validate(
+        {
+            "type": "blockQuote",
+            "children": [
+                {
+                    "type": "paragraph",
+                    "children": [{"type": "text", "value": "quoted"}],
+                },
+            ],
+        },
+    )
+    assert isinstance(node.children[0], ParagraphNode)
+
+
+def test_block_quote_rejects_inline_child() -> None:
+    """``BlockQuoteNode`` rejects an inline node where a block is expected."""
+    with pytest.raises(ValidationError):
+        BlockQuoteNode.model_validate(
+            {
+                "type": "blockQuote",
+                "children": [{"type": "text", "value": "not a block"}],
+            },
+        )
 
 
 def test_section_accepts_block_level_block_nodes() -> None:

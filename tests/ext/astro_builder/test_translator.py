@@ -12,6 +12,7 @@ import docutils.utils
 from docutils import nodes
 
 from gp_sphinx_astro_builder.models import (
+    BlockQuoteNode,
     CommentNode,
     Document,
     EmphasisNode,
@@ -303,6 +304,30 @@ def test_translator_handles_transition_node() -> None:
     doc.walkabout(translator)
     transition_child = translator.result().tree.children[0]
     assert isinstance(transition_child, TransitionNode)
+
+
+def test_translator_handles_block_quote_with_paragraph() -> None:
+    """A block_quote becomes a BlockQuoteNode wrapping its block children."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    block_quote = nodes.block_quote()
+    quoted_para = nodes.paragraph()
+    quoted_para += nodes.Text("Quoted text.")
+    block_quote += quoted_para
+    section += title
+    section += block_quote
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    block_child = translator.result().tree.children[0]
+    assert isinstance(block_child, BlockQuoteNode)
+    assert isinstance(block_child.children[0], ParagraphNode)
+    assert block_child.children[0].children == [
+        TextNode(type="text", value="Quoted text."),
+    ]
 
 
 def test_translator_handles_nested_sections() -> None:
