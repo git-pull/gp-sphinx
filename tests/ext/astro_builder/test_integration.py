@@ -1,0 +1,107 @@
+"""Integration tests for :class:`gp_sphinx_astro_builder.builder.AstroBuilder`.
+
+A real Sphinx app is constructed against a tiny synthetic project, the
+``astro`` builder runs end-to-end, and the emitted JSON file is validated
+through the Pydantic ``Document`` model. These tests are marked
+``integration`` so the unit-test layer stays microsecond-fast.
+"""
+
+from __future__ import annotations
+
+import pathlib
+import textwrap
+import typing as t
+
+import pytest
+
+from gp_sphinx_astro_builder.models import (
+    Document,
+    EmphasisNode,
+    ParagraphNode,
+    TextNode,
+)
+from tests._sphinx_scenarios import (
+    ScenarioFile,
+    SphinxScenario,
+    build_isolated_sphinx_result,
+    derive_sphinx_scenario_cache_root,
+)
+
+if t.TYPE_CHECKING:
+    from syrupy.assertion import SnapshotAssertion
+
+
+_CONF_PY = textwrap.dedent(
+    """\
+    project = "Demo"
+    extensions = ["gp_sphinx_astro_builder"]
+    master_doc = "index"
+    exclude_patterns = ["_build"]
+    """,
+)
+
+_INDEX_RST = textwrap.dedent(
+    """\
+    Hello world
+    ===========
+
+    Hello *world*.
+    """,
+)
+
+
+@pytest.mark.integration
+def test_astro_builder_emits_pydantic_valid_document(
+    tmp_path: pathlib.Path,
+) -> None:
+    """An end-to-end build emits a JSON file that validates as a ``Document``."""
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("conf.py", _CONF_PY),
+            ScenarioFile("index.rst", _INDEX_RST),
+        ),
+    )
+    result = build_isolated_sphinx_result(cache_root, tmp_path, scenario)
+
+    output_path = result.outdir / "src" / "content" / "docs" / "index.json"
+    assert output_path.exists(), (
+        f"expected {output_path} to be emitted, "
+        f"outdir contents: {list(result.outdir.rglob('*'))}"
+    )
+
+    document = Document.model_validate_json(output_path.read_text("utf-8"))
+    assert document.id == "index"
+    assert document.title == "Hello world"
+    assert document.tree.id == "hello-world"
+    assert document.tree.title == [TextNode(type="text", value="Hello world")]
+    assert len(document.tree.children) == 1
+    paragraph = document.tree.children[0]
+    assert isinstance(paragraph, ParagraphNode)
+    # "Hello *world*." → text("Hello "), emphasis(text("world")), text(".")
+    assert len(paragraph.children) == 3
+    assert paragraph.children[0] == TextNode(type="text", value="Hello ")
+    assert isinstance(paragraph.children[1], EmphasisNode)
+    assert paragraph.children[1].children == [TextNode(type="text", value="world")]
+    assert paragraph.children[2] == TextNode(type="text", value=".")
+
+
+@pytest.mark.integration
+def test_astro_builder_emission_matches_snapshot(
+    tmp_path: pathlib.Path,
+    snapshot: SnapshotAssertion,
+) -> None:
+    """Emitted JSON is byte-stable against a syrupy snapshot."""
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("conf.py", _CONF_PY),
+            ScenarioFile("index.rst", _INDEX_RST),
+        ),
+    )
+    result = build_isolated_sphinx_result(cache_root, tmp_path, scenario)
+
+    output_path = result.outdir / "src" / "content" / "docs" / "index.json"
+    assert output_path.read_text("utf-8") == snapshot
