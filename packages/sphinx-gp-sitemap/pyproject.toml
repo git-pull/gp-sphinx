@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-gp-sitemap"
-version = "0.0.1a11"
+version = "0.0.1a12"
 description = "Sitemap generator for Sphinx — Sphinx 8.1+ idioms, parallel-build safe"
 requires-python = ">=3.10,<4.0"
 authors = [
