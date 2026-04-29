@@ -324,4 +324,313 @@
     letter-spacing: 0.04em;
     color: var(--color-muted);
   }
+
+  /* ─── apiLayout / autodoc layout components ───────────────────
+   * The ``sphinx-ux-autodoc-layout`` extension emits seven generic
+   * layout primitives (region, fold, sig_fold, component,
+   * inline_component, slot, permalink) which the renderer maps to
+   * a single ``gp-sphinx-api gp-sphinx-api--<component>`` shape.
+   * Some pages also carry extension-specific class names like
+   * ``gp-sphinx-api-region--narrative`` / ``--fields`` that
+   * structure the page into "narrative", "summary", "options"
+   * regions. We give each a sensible visual default. */
+
+  .gp-sphinx-api {
+    margin: 1.25rem 0;
+  }
+
+  .gp-sphinx-api--component {
+    display: block;
+  }
+
+  .gp-sphinx-api--inline_component {
+    display: inline;
+  }
+
+  /* Fold / sig_fold render as ``<details>``; give them a subtle
+   * disclosure affordance without overpowering the contents. */
+  details.gp-sphinx-api {
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-bg);
+    padding: 0.5rem 0.85rem;
+  }
+
+  details.gp-sphinx-api[open] {
+    background: color-mix(in oklab, var(--color-code-bg) 50%, var(--color-bg));
+  }
+
+  details.gp-sphinx-api > summary {
+    cursor: pointer;
+    color: var(--color-muted);
+    font-size: 0.85rem;
+    list-style: none;
+  }
+
+  details.gp-sphinx-api > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  details.gp-sphinx-api > summary::before {
+    content: '▸';
+    display: inline-block;
+    width: 1em;
+    color: var(--color-muted);
+    transition: transform 0.15s;
+  }
+
+  details.gp-sphinx-api[open] > summary::before {
+    transform: rotate(90deg);
+  }
+
+  /* Permalink anchors (``§``, ``#``) — the renderer emits an
+   * ``<a class="gp-sphinx-api gp-sphinx-api--permalink">`` whose
+   * children are typically a single small icon. */
+  a.gp-sphinx-api--permalink {
+    display: inline-block;
+    margin-left: 0.4rem;
+    color: var(--color-muted);
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  *:hover > a.gp-sphinx-api--permalink {
+    opacity: 1;
+  }
+
+  a.gp-sphinx-api--permalink:hover {
+    color: var(--color-accent);
+  }
+
+  /* Extension-supplied region modifiers carry a dim heading + a
+   * bordered card around their content so the page reads as a
+   * stack of named sections rather than a wall of text. */
+  .gp-sphinx-api-region {
+    margin: 1.25rem 0;
+  }
+
+  .gp-sphinx-api-region--narrative {
+    /* The "primary" region — keep it flowing with the page text. */
+  }
+
+  .gp-sphinx-api-region--summary {
+    border-left: 3px solid var(--color-accent);
+    padding-left: 1rem;
+  }
+
+  .gp-sphinx-api-region--fields,
+  .gp-sphinx-api-region--options,
+  .gp-sphinx-api-region--facts {
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: color-mix(in oklab, var(--color-code-bg) 35%, var(--color-bg));
+    padding: 0.85rem 1rem;
+  }
+
+  .gp-sphinx-api-signature {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-code-bg);
+    border-radius: 6px;
+    padding: 0.6rem 0.85rem;
+    overflow-x: auto;
+    margin: 0.5rem 0 0.85rem;
+  }
+
+  .gp-sphinx-api-badge-container {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+  }
+
+  .gp-sphinx-api-layout {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .gp-sphinx-api-layout {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+  }
+
+  /* ─── cliCommand / argparse blocks ────────────────────────────
+   * Six components (program, usage, group, argument, subcommands,
+   * subcommand) emitted by ``sphinx-autodoc-argparse``. The
+   * renderer wraps each in a ``gp-sphinx-cli gp-sphinx-cli--<kind>``
+   * shape; we add structural CSS that keeps the program block as
+   * the outermost card and steps each nested component down a
+   * visual layer. */
+
+  .gp-sphinx-cli--program {
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    background: var(--color-bg);
+  }
+
+  .gp-sphinx-cli__usage {
+    display: block;
+    background: var(--color-code-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 0.6rem 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+  }
+
+  .gp-sphinx-cli--group {
+    margin: 1rem 0 0;
+  }
+
+  .gp-sphinx-cli__group-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 1rem 0 0.5rem;
+    color: var(--color-fg);
+  }
+
+  .gp-sphinx-cli__group-description {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .gp-sphinx-cli__arg {
+    display: grid;
+    grid-template-columns: minmax(8rem, max-content) 1fr;
+    column-gap: 1.25rem;
+    row-gap: 0.25rem;
+    border-top: 1px solid var(--color-border);
+    padding: 0.5rem 0;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .gp-sphinx-cli__arg dt {
+    font-family: var(--font-mono);
+    color: var(--color-fg);
+  }
+
+  .gp-sphinx-cli__arg dd {
+    margin: 0;
+    color: var(--color-muted);
+  }
+
+  .gp-sphinx-cli__metavar {
+    color: var(--color-accent);
+    font-style: normal;
+  }
+
+  .gp-sphinx-cli__choices,
+  .gp-sphinx-cli__default {
+    display: inline-block;
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--color-muted);
+  }
+
+  .gp-sphinx-cli__subcommands-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.5rem;
+  }
+
+  .gp-sphinx-cli--subcommand {
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 0.5rem 0.85rem;
+    margin: 0.5rem 0;
+    background: var(--color-bg);
+  }
+
+  .gp-sphinx-cli--subcommand > summary {
+    cursor: pointer;
+    font-family: var(--font-mono);
+    color: var(--color-fg);
+    list-style: none;
+  }
+
+  .gp-sphinx-cli--subcommand > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .gp-sphinx-cli__subcommand-help {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+    margin: 0.5rem 0 0;
+  }
+
+  /* ─── badge inline component ─────────────────────────────────
+   * sphinx-ux-badges emits inline ``<span class="gp-sphinx-badge
+   * gp-sphinx-badge--style-<style> [gp-sphinx-badge--size-<size>]">``
+   * with a ``__label`` child. We size and colour them as compact
+   * pills, with size and style modifiers tweaking the chrome. */
+
+  .gp-sphinx-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.05rem 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.4;
+    background: var(--color-code-bg);
+    color: var(--color-fg);
+    vertical-align: middle;
+  }
+
+  .gp-sphinx-badge__label {
+    line-height: 1;
+  }
+
+  .gp-sphinx-badge--style-filled {
+    background: var(--color-accent);
+    color: var(--color-accent-fg);
+    border-color: var(--color-accent);
+  }
+
+  .gp-sphinx-badge--style-outline {
+    background: transparent;
+  }
+
+  .gp-sphinx-badge--style-icon-only {
+    padding: 0.05rem 0.35rem;
+  }
+
+  .gp-sphinx-badge--size-xxs {
+    font-size: 0.65rem;
+    padding: 0 0.3rem;
+  }
+
+  .gp-sphinx-badge--size-xs {
+    font-size: 0.7rem;
+  }
+
+  .gp-sphinx-badge--size-sm {
+    font-size: 0.75rem;
+  }
+
+  .gp-sphinx-badge--size-md {
+    font-size: 0.85rem;
+  }
+
+  .gp-sphinx-badge--size-lg {
+    font-size: 0.95rem;
+    padding: 0.15rem 0.65rem;
+  }
+
+  .gp-sphinx-badge--size-xl {
+    font-size: 1rem;
+    padding: 0.2rem 0.75rem;
+  }
 }
