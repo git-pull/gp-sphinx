@@ -26,7 +26,7 @@ const fixturesDir = join(_here, '..', '..', '..', '..', 'fixtures')
 
 const pydanticSchemaJson = JSON.parse(
   readFileSync(join(fixturesDir, 'doctree.schema.json'), 'utf-8'),
-) as Record<string, unknown>
+) as { $defs?: Record<string, unknown> } & Record<string, unknown>
 
 const helloWorldFixture = JSON.parse(
   readFileSync(join(fixturesDir, 'hello-world.json'), 'utf-8'),
@@ -125,7 +125,7 @@ describe('Pydantic ↔ Zod parity — definition coverage', () => {
   ] as const
 
   test.each(expectedDefs)('Pydantic fixture defines %s', (defName) => {
-    const defs = (pydanticSchemaJson['$defs'] ?? {}) as Record<string, unknown>
+    const defs = pydanticSchemaJson.$defs ?? {}
     expect(defs).toHaveProperty(defName)
   })
 })

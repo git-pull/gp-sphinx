@@ -19,7 +19,7 @@ const fixturesDir = join(_here, '..', '..', '..', '..', 'fixtures')
 
 const pydanticSymbolSchemaJson = JSON.parse(
   readFileSync(join(fixturesDir, 'symbol.schema.json'), 'utf-8'),
-) as Record<string, unknown>
+) as { $defs?: Record<string, unknown> } & Record<string, unknown>
 
 const helloSymbolFixture = JSON.parse(
   readFileSync(join(fixturesDir, 'hello-symbol.json'), 'utf-8'),
@@ -71,8 +71,10 @@ describe('Pydantic ↔ Zod symbol parity — behavioural', () => {
   })
 
   test('a malformed Symbol (missing required field) fails both schemas', () => {
-    const malformed = { ...(helloSymbolFixture as Record<string, unknown>) }
-    delete malformed['id']
+    const malformed: { id?: unknown } & Record<string, unknown> = {
+      ...(helloSymbolFixture as Record<string, unknown>),
+    }
+    delete malformed.id
     expect(() => symbolSchema.parse(malformed)).toThrow()
 
     const reconstructed = z.fromJSONSchema(
@@ -86,7 +88,7 @@ describe('Pydantic ↔ Zod symbol parity — definition coverage', () => {
   const expectedDefs = ['Parameter', 'SymbolSource'] as const
 
   test.each(expectedDefs)('Pydantic fixture defines symbol-specific %s', (defName) => {
-    const defs = (pydanticSymbolSchemaJson['$defs'] ?? {}) as Record<string, unknown>
+    const defs = pydanticSymbolSchemaJson.$defs ?? {}
     expect(defs).toHaveProperty(defName)
   })
 })
