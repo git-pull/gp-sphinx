@@ -61,6 +61,12 @@
   --color-admonition-error: oklch(60% 0.22 25);
   --color-admonition-important: oklch(62% 0.16 195);
   --color-admonition-seealso: oklch(60% 0.16 270);
+  /* Sphinx version directives. ``versionadded`` reuses the green
+   * "tip" hue, ``versionchanged`` lands on amber to flag mutation,
+   * and ``deprecated`` shares the red "danger" hue. */
+  --color-admonition-versionadded: oklch(60% 0.18 145);
+  --color-admonition-versionchanged: oklch(68% 0.18 80);
+  --color-admonition-deprecated: oklch(60% 0.22 25);
 
   /* Link palette */
   --color-link: oklch(55% 0.18 240);
@@ -81,6 +87,9 @@
   --color-admonition-error: oklch(72% 0.22 25);
   --color-admonition-important: oklch(75% 0.16 195);
   --color-admonition-seealso: oklch(72% 0.16 270);
+  --color-admonition-versionadded: oklch(72% 0.18 145);
+  --color-admonition-versionchanged: oklch(78% 0.18 80);
+  --color-admonition-deprecated: oklch(72% 0.22 25);
 
   --color-link: oklch(75% 0.15 240);
   --color-link-underline: oklch(45% 0.06 240);
@@ -412,6 +421,21 @@
   .gp-sphinx-astro-doc .admonition--important {
     border-left-color: var(--color-admonition-important);
     background: color-mix(in oklab, var(--color-admonition-important) 8%, var(--color-bg));
+  }
+
+  .gp-sphinx-astro-doc .admonition--versionadded {
+    border-left-color: var(--color-admonition-versionadded);
+    background: color-mix(in oklab, var(--color-admonition-versionadded) 7%, var(--color-bg));
+  }
+
+  .gp-sphinx-astro-doc .admonition--versionchanged {
+    border-left-color: var(--color-admonition-versionchanged);
+    background: color-mix(in oklab, var(--color-admonition-versionchanged) 8%, var(--color-bg));
+  }
+
+  .gp-sphinx-astro-doc .admonition--deprecated {
+    border-left-color: var(--color-admonition-deprecated);
+    background: color-mix(in oklab, var(--color-admonition-deprecated) 8%, var(--color-bg));
   }
 
   .gp-sphinx-astro-doc .symbol-ref {

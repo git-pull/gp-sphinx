@@ -647,6 +647,24 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         """Close the error admonition frame."""
         self._close_admonition()
 
+    def visit_versionmodified(self, node: nodes.Element) -> None:
+        """Open an admonition frame for a Sphinx ``versionmodified`` node.
+
+        Sphinx emits ``addnodes.versionmodified`` for the
+        ``versionadded`` / ``versionchanged`` / ``deprecated`` directives,
+        carrying the directive name in ``node["type"]``. We reuse the
+        admonition node so the Astro renderer can theme the three
+        directives consistently with the rest of the admonition family.
+        """
+        directive_type = node.get("type", "versionadded")
+        if directive_type not in {"versionadded", "versionchanged", "deprecated"}:
+            directive_type = "versionadded"
+        self._open_admonition(directive_type)
+
+    def depart_versionmodified(self, node: nodes.Element) -> None:
+        """Close the version-modified admonition frame."""
+        self._close_admonition()
+
     def visit_definition_list(self, node: nodes.Element) -> None:
         """Open a definition_list frame."""
         self._stack.append(
