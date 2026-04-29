@@ -595,6 +595,137 @@ def _walk_cli_command(node: dict[str, t.Any]) -> t.Iterator[dict[str, t.Any]]:
             yield from _walk_cli_command(child)
 
 
+_NUMPY_DOCSTRING_MODULE_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+
+    def shape(width: int, height: int) -> int:
+        """Compute a rectangle area.
+
+        Parameters
+        ----------
+        width : int
+            The horizontal extent.
+        height : int
+            The vertical extent.
+
+        Returns
+        -------
+        int
+            The product of width and height.
+
+        Examples
+        --------
+        >>> shape(3, 4)
+        12
+        """
+        return width * height
+    ''',
+)
+
+_NUMPY_DOCSTRING_CONF_PY = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    import sys
+
+    sys.path.insert(0, r"__SCENARIO_SRCDIR__")
+
+    project = "Demo"
+    extensions = [
+        "sphinx.ext.autodoc",
+        "sphinx_autodoc_typehints_gp",
+        "gp_sphinx_astro_builder",
+    ]
+    master_doc = "index"
+    exclude_patterns = ["_build"]
+    """,
+)
+
+_NUMPY_DOCSTRING_INDEX_RST = textwrap.dedent(
+    """\
+    Demo
+    ====
+
+    .. autofunction:: numpy_demo.shape
+    """,
+)
+
+
+@pytest.mark.integration
+def test_astro_builder_emits_field_list_as_definition_list(
+    tmp_path: pathlib.Path,
+) -> None:
+    """A NumPy-style docstring with Parameters/Returns rubrics validates.
+
+    Sphinx's ``sphinx_autodoc_typehints_gp`` extension parses NumPy
+    docstring sections into ``field_list / field / field_name /
+    field_body`` chains. Without explicit handling, the bare ``Text``
+    children of ``field_name`` ("Parameters", "Returns", …) leak into
+    the surrounding block context as inline ``text`` nodes and fail
+    Pydantic validation against the ``BlockNode`` discriminator.
+    """
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("numpy_demo.py", _NUMPY_DOCSTRING_MODULE_SOURCE),
+            ScenarioFile(
+                "conf.py",
+                _NUMPY_DOCSTRING_CONF_PY.replace(
+                    "__SCENARIO_SRCDIR__",
+                    SCENARIO_SRCDIR_TOKEN,
+                ),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("index.rst", _NUMPY_DOCSTRING_INDEX_RST),
+        ),
+    )
+    result = build_isolated_sphinx_result(
+        cache_root,
+        tmp_path,
+        scenario,
+        purge_modules=("numpy_demo",),
+    )
+
+    symbols_path = result.outdir / "src" / "content" / "api" / "symbols.json"
+    assert symbols_path.exists(), (
+        f"expected {symbols_path} to be emitted; "
+        f"outdir contents: {list(result.outdir.rglob('*'))}"
+    )
+    symbols = json.loads(symbols_path.read_text("utf-8"))
+    [symbol] = symbols
+
+    body = symbol["docstring_body"]
+    types = [block["type"] for block in body]
+    # Expected shape: summary paragraph; then the field_list capturing
+    # Parameters / Returns / Return type; then the Examples rubric (now
+    # wrapped as a paragraph) and the doctest block beneath it.
+    assert types == ["paragraph", "definitionList", "paragraph", "literalBlock"], (
+        f"expected summary, definitionList, examples rubric, and a doctest "
+        f"literalBlock; got block types: {types}"
+    )
+
+    items = body[1]["children"]
+    terms = [
+        "".join(t.get("value", "") for t in item["term"] if t.get("type") == "text")
+        for item in items
+    ]
+    assert "Parameters" in terms
+    assert "Returns" in terms
+
+    # The Examples rubric must keep its label as inline text inside the
+    # paragraph, so renderers can identify it. The doctest_block follows.
+    rubric = body[2]
+    rubric_text = "".join(
+        c.get("value", "") for c in rubric["children"] if c.get("type") == "text"
+    )
+    assert "Examples" in rubric_text
+    assert body[3]["language"] == "python"
+    assert "shape(3, 4)" in body[3]["code"]
+
+
 _MULTI_PAGE_CONF_PY = textwrap.dedent(
     """\
     project = "Multi"
