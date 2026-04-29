@@ -13,6 +13,7 @@ from gp_sphinx_astro_builder.models import (
     BadgeNode,
     BlockQuoteNode,
     BulletListNode,
+    CliCommandNode,
     CommentNode,
     DefinitionListItemNode,
     DefinitionListNode,
@@ -759,6 +760,94 @@ def test_api_layout_rejects_unknown_component() -> None:
         ApiLayoutNode.model_validate(
             {"type": "apiLayout", "component": "spaceship"},
         )
+
+
+def test_cli_command_program_round_trips() -> None:
+    """``CliCommandNode`` accepts the program component with ``prog``."""
+    node = CliCommandNode.model_validate(
+        {
+            "type": "cliCommand",
+            "component": "program",
+            "prog": "myapp",
+            "children": [],
+        },
+    )
+    assert node.component == "program"
+    assert node.prog == "myapp"
+
+
+def test_cli_command_usage_round_trips() -> None:
+    """``CliCommandNode`` accepts the usage component with ``usage`` text."""
+    node = CliCommandNode.model_validate(
+        {
+            "type": "cliCommand",
+            "component": "usage",
+            "usage": "myapp [-h] [--verbose] cmd",
+        },
+    )
+    assert node.usage == "myapp [-h] [--verbose] cmd"
+
+
+def test_cli_command_argument_round_trips_with_full_payload() -> None:
+    """``CliCommandNode`` accepts the argument component with names + help."""
+    node = CliCommandNode.model_validate(
+        {
+            "type": "cliCommand",
+            "component": "argument",
+            "names": ["-v", "--verbose"],
+            "help": "Increase output verbosity",
+            "default": "False",
+            "choices": [],
+            "required": False,
+            "metavar": "LEVEL",
+        },
+    )
+    assert node.names == ["-v", "--verbose"]
+    assert node.metavar == "LEVEL"
+    assert node.required is False
+
+
+def test_cli_command_subcommand_carries_name_aliases_help() -> None:
+    """``CliCommandNode`` accepts the subcommand component with name + aliases."""
+    node = CliCommandNode.model_validate(
+        {
+            "type": "cliCommand",
+            "component": "subcommand",
+            "name": "build",
+            "aliases": ["b"],
+            "help": "Build the project",
+        },
+    )
+    assert node.name == "build"
+    assert node.aliases == ["b"]
+
+
+def test_cli_command_rejects_unknown_component() -> None:
+    """``CliCommandNode.component`` rejects values outside the literal set."""
+    with pytest.raises(ValidationError):
+        CliCommandNode.model_validate(
+            {"type": "cliCommand", "component": "spaceship"},
+        )
+
+
+def test_section_accepts_cli_command_through_block_union() -> None:
+    """A ``CliCommandNode`` validates as a child of ``SectionNode``."""
+    section = SectionNode.model_validate(
+        {
+            "type": "section",
+            "id": "x",
+            "title": [{"type": "text", "value": "X"}],
+            "children": [
+                {
+                    "type": "cliCommand",
+                    "component": "program",
+                    "prog": "myapp",
+                    "children": [],
+                },
+            ],
+        },
+    )
+    assert isinstance(section.children[0], CliCommandNode)
 
 
 def test_section_accepts_api_layout_through_block_union() -> None:

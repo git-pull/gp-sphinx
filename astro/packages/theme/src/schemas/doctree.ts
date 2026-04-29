@@ -68,6 +68,14 @@ export type ApiLayoutComponent =
   | 'slot'
   | 'permalink'
 
+export type CliCommandComponent =
+  | 'program'
+  | 'usage'
+  | 'group'
+  | 'argument'
+  | 'subcommands'
+  | 'subcommand'
+
 export type BlockNode =
   | { type: 'paragraph'; children: InlineNode[] }
   | { type: 'section'; id: string; title: InlineNode[]; children: BlockNode[] }
@@ -91,6 +99,24 @@ export type BlockNode =
       title: string | null
       slot: string | null
       open: boolean
+      classes: string[]
+      children: BlockNode[]
+    }
+  | {
+      type: 'cliCommand'
+      component: CliCommandComponent
+      prog: string | null
+      usage: string | null
+      title: string | null
+      description: string | null
+      names: string[]
+      help: string | null
+      default: string | null
+      choices: string[]
+      required: boolean
+      metavar: string | null
+      name: string | null
+      aliases: string[]
       classes: string[]
       children: BlockNode[]
     }
@@ -275,6 +301,36 @@ export const apiLayoutNodeSchema = z.object({
   },
 })
 
+export const cliCommandComponentSchema = z.enum([
+  'program',
+  'usage',
+  'group',
+  'argument',
+  'subcommands',
+  'subcommand',
+])
+
+export const cliCommandNodeSchema = z.object({
+  type: z.literal('cliCommand'),
+  component: cliCommandComponentSchema,
+  prog: z.string().nullable().default(null),
+  usage: z.string().nullable().default(null),
+  title: z.string().nullable().default(null),
+  description: z.string().nullable().default(null),
+  names: z.array(z.string()).default([]),
+  help: z.string().nullable().default(null),
+  default: z.string().nullable().default(null),
+  choices: z.array(z.string()).default([]),
+  required: z.boolean().default(false),
+  metavar: z.string().nullable().default(null),
+  name: z.string().nullable().default(null),
+  aliases: z.array(z.string()).default([]),
+  classes: z.array(z.string()).default([]),
+  get children() {
+    return z.array(blockNodeSchema).default([])
+  },
+})
+
 export const sectionNodeSchema = z.object({
   type: z.literal('section'),
   id: z.string(),
@@ -297,6 +353,7 @@ export const blockNodeSchema: z.ZodType<BlockNode> = z.discriminatedUnion('type'
   definitionListNodeSchema,
   symbolRefNodeSchema,
   apiLayoutNodeSchema,
+  cliCommandNodeSchema,
 ])
 
 // ─── Top-level document

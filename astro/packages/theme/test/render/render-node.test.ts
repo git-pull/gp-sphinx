@@ -355,6 +355,154 @@ describe('renderBlockNode — apiLayout', () => {
   })
 })
 
+describe('renderBlockNode — cliCommand', () => {
+  test('program emits a <section> with prog data attribute', () => {
+    const html = renderBlockNode({
+      type: 'cliCommand',
+      component: 'program',
+      prog: 'myapp',
+      usage: null,
+      title: null,
+      description: null,
+      names: [],
+      help: null,
+      default: null,
+      choices: [],
+      required: false,
+      metavar: null,
+      name: null,
+      aliases: [],
+      classes: [],
+      children: [],
+    })
+    expect(html).toContain('<section ')
+    expect(html).toContain('class="gp-sphinx-cli gp-sphinx-cli--program"')
+    expect(html).toContain('data-prog="myapp"')
+  })
+
+  test('usage renders a <pre> with the usage text escaped', () => {
+    const html = renderBlockNode({
+      type: 'cliCommand',
+      component: 'usage',
+      prog: null,
+      usage: 'myapp [-h] <cmd>',
+      title: null,
+      description: null,
+      names: [],
+      help: null,
+      default: null,
+      choices: [],
+      required: false,
+      metavar: null,
+      name: null,
+      aliases: [],
+      classes: [],
+      children: [],
+    })
+    expect(html).toContain('<pre class="gp-sphinx-cli__usage">')
+    expect(html).toContain('myapp [-h] &lt;cmd&gt;')
+  })
+
+  test('argument renders a <dl> with names term and help description', () => {
+    const html = renderBlockNode({
+      type: 'cliCommand',
+      component: 'argument',
+      prog: null,
+      usage: null,
+      title: null,
+      description: null,
+      names: ['-v', '--verbose'],
+      help: 'Increase output verbosity',
+      default: 'False',
+      choices: [],
+      required: false,
+      metavar: 'LEVEL',
+      name: null,
+      aliases: [],
+      classes: [],
+      children: [],
+    })
+    expect(html).toContain('<dl class="gp-sphinx-cli__arg">')
+    expect(html).toContain('-v')
+    expect(html).toContain('--verbose')
+    expect(html).toContain('LEVEL')
+    expect(html).toContain('Increase output verbosity')
+  })
+
+  test('subcommand renders a <details> with name + aliases', () => {
+    const html = renderBlockNode({
+      type: 'cliCommand',
+      component: 'subcommand',
+      prog: null,
+      usage: null,
+      title: null,
+      description: null,
+      names: [],
+      help: 'Build the project',
+      default: null,
+      choices: [],
+      required: false,
+      metavar: null,
+      name: 'build',
+      aliases: ['b'],
+      classes: [],
+      children: [],
+    })
+    expect(html).toContain('<details ')
+    expect(html).toContain('class="gp-sphinx-cli gp-sphinx-cli--subcommand"')
+    expect(html).toContain('build')
+    expect(html).toContain('Build the project')
+  })
+
+  test('subcommands wraps children inside a <section>', () => {
+    const html = renderBlockNode({
+      type: 'cliCommand',
+      component: 'subcommands',
+      prog: null,
+      usage: null,
+      title: 'Commands',
+      description: null,
+      names: [],
+      help: null,
+      default: null,
+      choices: [],
+      required: false,
+      metavar: null,
+      name: null,
+      aliases: [],
+      classes: [],
+      children: [],
+    })
+    expect(html).toContain('<section ')
+    expect(html).toContain('class="gp-sphinx-cli gp-sphinx-cli--subcommands"')
+    expect(html).toContain('Commands')
+  })
+
+  test('group renders a <section> with title', () => {
+    const html = renderBlockNode({
+      type: 'cliCommand',
+      component: 'group',
+      prog: null,
+      usage: null,
+      title: 'Output Options',
+      description: 'General options',
+      names: [],
+      help: null,
+      default: null,
+      choices: [],
+      required: false,
+      metavar: null,
+      name: null,
+      aliases: [],
+      classes: [],
+      children: [],
+    })
+    expect(html).toContain('<section ')
+    expect(html).toContain('class="gp-sphinx-cli gp-sphinx-cli--group"')
+    expect(html).toContain('Output Options')
+  })
+})
+
 describe('renderBlockNode — symbolRef', () => {
   test('symbolRef emits a typed link with data-symbol-id', () => {
     const html = renderBlockNode({

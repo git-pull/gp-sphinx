@@ -115,6 +115,8 @@ export function renderBlockNode(node: BlockNode): string {
       return renderSection(node, 1)
     case 'apiLayout':
       return renderApiLayoutNode(node)
+    case 'cliCommand':
+      return renderCliCommandNode(node)
   }
 }
 
@@ -154,6 +156,71 @@ function renderApiLayoutNode(node: Extract<BlockNode, { type: 'apiLayout' }>): s
     case 'component': {
       const tag = node.tag ?? 'div'
       return `<${tag} ${classAttr}>${childrenHtml}</${tag}>`
+    }
+  }
+}
+
+function renderCliCommandNode(node: Extract<BlockNode, { type: 'cliCommand' }>): string {
+  const baseClasses = ['gp-sphinx-cli', `gp-sphinx-cli--${node.component}`]
+  for (const c of node.classes) {
+    baseClasses.push(c)
+  }
+  const classAttr = `class="${baseClasses.join(' ')}"`
+  const childrenHtml = node.children.map(renderBlockNode).join('')
+
+  switch (node.component) {
+    case 'program': {
+      const progAttr = node.prog === null ? '' : ` data-prog="${escapeHtml(node.prog)}"`
+      return `<section ${classAttr}${progAttr}>${childrenHtml}</section>`
+    }
+    case 'usage':
+      return `<pre class="gp-sphinx-cli__usage">${escapeHtml(node.usage ?? '')}</pre>`
+    case 'group': {
+      const titleHtml =
+        node.title === null
+          ? ''
+          : `<h3 class="gp-sphinx-cli__group-title">${escapeHtml(node.title)}</h3>`
+      const descHtml =
+        node.description === null
+          ? ''
+          : `<p class="gp-sphinx-cli__group-description">${escapeHtml(node.description)}</p>`
+      return `<section ${classAttr}>${titleHtml}${descHtml}${childrenHtml}</section>`
+    }
+    case 'argument': {
+      const namesHtml = node.names.map((n) => `<code>${escapeHtml(n)}</code>`).join(' ')
+      const metavarHtml =
+        node.metavar === null
+          ? ''
+          : ` <var class="gp-sphinx-cli__metavar">${escapeHtml(node.metavar)}</var>`
+      const helpHtml = node.help === null ? '' : escapeHtml(node.help)
+      const defaultHtml =
+        node.default === null
+          ? ''
+          : ` <span class="gp-sphinx-cli__default">(default: <code>${escapeHtml(node.default)}</code>)</span>`
+      const choicesHtml =
+        node.choices.length === 0
+          ? ''
+          : ` <span class="gp-sphinx-cli__choices">{${node.choices.map(escapeHtml).join(', ')}}</span>`
+      return `<dl class="gp-sphinx-cli__arg"><dt>${namesHtml}${metavarHtml}</dt><dd>${helpHtml}${defaultHtml}${choicesHtml}</dd></dl>`
+    }
+    case 'subcommands': {
+      const titleHtml =
+        node.title === null
+          ? ''
+          : `<h2 class="gp-sphinx-cli__subcommands-title">${escapeHtml(node.title)}</h2>`
+      return `<section ${classAttr}>${titleHtml}${childrenHtml}</section>`
+    }
+    case 'subcommand': {
+      const aliasesHtml =
+        node.aliases.length === 0
+          ? ''
+          : ` <span class="gp-sphinx-cli__aliases">(${node.aliases.map(escapeHtml).join(', ')})</span>`
+      const summaryHtml = `<summary><code>${escapeHtml(node.name ?? '')}</code>${aliasesHtml}</summary>`
+      const helpHtml =
+        node.help === null
+          ? ''
+          : `<p class="gp-sphinx-cli__subcommand-help">${escapeHtml(node.help)}</p>`
+      return `<details ${classAttr}>${summaryHtml}${helpHtml}${childrenHtml}</details>`
     }
   }
 }

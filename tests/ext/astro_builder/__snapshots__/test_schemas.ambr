@@ -33,6 +33,7 @@
                   'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
@@ -80,6 +81,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
                 }),
               ]),
             }),
@@ -147,6 +151,7 @@
                   'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
@@ -194,6 +199,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
                 }),
               ]),
             }),
@@ -443,6 +451,7 @@
                   'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
@@ -490,6 +499,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
                 }),
               ]),
             }),
@@ -541,6 +553,259 @@
           'children',
         ]),
         'title': 'BulletListNode',
+        'type': 'object',
+      }),
+      'CliCommandNode': dict({
+        'description': '''
+          A CLI documentation primitive emitted by :mod:`sphinx_autodoc_argparse`.
+          
+          The six custom node types from that extension share a structural shape:
+          a wrapper carrying optional argparse-derived attributes (program name,
+          usage line, argument names, default values, choices, subcommand
+          aliases…) plus block children. Modelling them as a single discriminated
+          container lets the Astro renderer dispatch on ``component`` without
+          needing six near-identical Pydantic classes.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import CliCommandNode
+          >>> arg = CliCommandNode(
+          ...     type="cliCommand",
+          ...     component="argument",
+          ...     names=["-v", "--verbose"],
+          ...     help="Increase output verbosity",
+          ... )
+          >>> arg.names
+          ['-v', '--verbose']
+        ''',
+        'properties': dict({
+          'aliases': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'type': 'string',
+            }),
+            'title': 'Aliases',
+            'type': 'array',
+          }),
+          'children': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
+                  'blockQuote': '#/$defs/BlockQuoteNode',
+                  'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
+                  'comment': '#/$defs/CommentNode',
+                  'definitionList': '#/$defs/DefinitionListNode',
+                  'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'literalBlock': '#/$defs/LiteralBlockNode',
+                  'paragraph': '#/$defs/ParagraphNode',
+                  'section': '#/$defs/SectionNode',
+                  'symbolRef': '#/$defs/SymbolRefNode',
+                  'transition': '#/$defs/TransitionNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/ParagraphNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SectionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralBlockNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CommentNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BlockQuoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BulletListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EnumeratedListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/DefinitionListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'choices': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'type': 'string',
+            }),
+            'title': 'Choices',
+            'type': 'array',
+          }),
+          'classes': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'type': 'string',
+            }),
+            'title': 'Classes',
+            'type': 'array',
+          }),
+          'component': dict({
+            'enum': list([
+              'program',
+              'usage',
+              'group',
+              'argument',
+              'subcommands',
+              'subcommand',
+            ]),
+            'title': 'Component',
+            'type': 'string',
+          }),
+          'default': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Default',
+          }),
+          'description': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Description',
+          }),
+          'help': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Help',
+          }),
+          'metavar': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Metavar',
+          }),
+          'name': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Name',
+          }),
+          'names': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'type': 'string',
+            }),
+            'title': 'Names',
+            'type': 'array',
+          }),
+          'prog': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Prog',
+          }),
+          'required': dict({
+            'default': False,
+            'title': 'Required',
+            'type': 'boolean',
+          }),
+          'title': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Title',
+          }),
+          'type': dict({
+            'const': 'cliCommand',
+            'title': 'Type',
+            'type': 'string',
+          }),
+          'usage': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Usage',
+          }),
+        }),
+        'required': list([
+          'type',
+          'component',
+        ]),
+        'title': 'CliCommandNode',
         'type': 'object',
       }),
       'CommentNode': dict({
@@ -608,6 +873,7 @@
                   'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
@@ -655,6 +921,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
                 }),
               ]),
             }),
@@ -934,6 +1203,7 @@
                   'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
@@ -981,6 +1251,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
                 }),
               ]),
             }),
@@ -1246,6 +1519,7 @@
                   'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
@@ -1293,6 +1567,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
                 }),
               ]),
             }),
@@ -1594,6 +1871,7 @@
                   'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
@@ -1641,6 +1919,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
                 }),
               ]),
             }),
@@ -1708,6 +1989,7 @@
                   'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
@@ -1755,6 +2037,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
                 }),
               ]),
             }),
@@ -2004,6 +2289,7 @@
                   'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
@@ -2051,6 +2337,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
                 }),
               ]),
             }),
@@ -2102,6 +2391,259 @@
           'children',
         ]),
         'title': 'BulletListNode',
+        'type': 'object',
+      }),
+      'CliCommandNode': dict({
+        'description': '''
+          A CLI documentation primitive emitted by :mod:`sphinx_autodoc_argparse`.
+          
+          The six custom node types from that extension share a structural shape:
+          a wrapper carrying optional argparse-derived attributes (program name,
+          usage line, argument names, default values, choices, subcommand
+          aliases…) plus block children. Modelling them as a single discriminated
+          container lets the Astro renderer dispatch on ``component`` without
+          needing six near-identical Pydantic classes.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import CliCommandNode
+          >>> arg = CliCommandNode(
+          ...     type="cliCommand",
+          ...     component="argument",
+          ...     names=["-v", "--verbose"],
+          ...     help="Increase output verbosity",
+          ... )
+          >>> arg.names
+          ['-v', '--verbose']
+        ''',
+        'properties': dict({
+          'aliases': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'type': 'string',
+            }),
+            'title': 'Aliases',
+            'type': 'array',
+          }),
+          'children': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
+                  'blockQuote': '#/$defs/BlockQuoteNode',
+                  'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
+                  'comment': '#/$defs/CommentNode',
+                  'definitionList': '#/$defs/DefinitionListNode',
+                  'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'literalBlock': '#/$defs/LiteralBlockNode',
+                  'paragraph': '#/$defs/ParagraphNode',
+                  'section': '#/$defs/SectionNode',
+                  'symbolRef': '#/$defs/SymbolRefNode',
+                  'transition': '#/$defs/TransitionNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/ParagraphNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SectionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralBlockNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CommentNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BlockQuoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BulletListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EnumeratedListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/DefinitionListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'choices': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'type': 'string',
+            }),
+            'title': 'Choices',
+            'type': 'array',
+          }),
+          'classes': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'type': 'string',
+            }),
+            'title': 'Classes',
+            'type': 'array',
+          }),
+          'component': dict({
+            'enum': list([
+              'program',
+              'usage',
+              'group',
+              'argument',
+              'subcommands',
+              'subcommand',
+            ]),
+            'title': 'Component',
+            'type': 'string',
+          }),
+          'default': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Default',
+          }),
+          'description': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Description',
+          }),
+          'help': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Help',
+          }),
+          'metavar': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Metavar',
+          }),
+          'name': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Name',
+          }),
+          'names': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'type': 'string',
+            }),
+            'title': 'Names',
+            'type': 'array',
+          }),
+          'prog': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Prog',
+          }),
+          'required': dict({
+            'default': False,
+            'title': 'Required',
+            'type': 'boolean',
+          }),
+          'title': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Title',
+          }),
+          'type': dict({
+            'const': 'cliCommand',
+            'title': 'Type',
+            'type': 'string',
+          }),
+          'usage': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Usage',
+          }),
+        }),
+        'required': list([
+          'type',
+          'component',
+        ]),
+        'title': 'CliCommandNode',
         'type': 'object',
       }),
       'CommentNode': dict({
@@ -2169,6 +2711,7 @@
                   'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
@@ -2216,6 +2759,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
                 }),
               ]),
             }),
@@ -2495,6 +3041,7 @@
                   'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
@@ -2542,6 +3089,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
                 }),
               ]),
             }),
@@ -2865,6 +3415,7 @@
                   'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
@@ -2912,6 +3463,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
                 }),
               ]),
             }),
@@ -3205,6 +3759,7 @@
               'apiLayout': '#/$defs/ApiLayoutNode',
               'blockQuote': '#/$defs/BlockQuoteNode',
               'bulletList': '#/$defs/BulletListNode',
+              'cliCommand': '#/$defs/CliCommandNode',
               'comment': '#/$defs/CommentNode',
               'definitionList': '#/$defs/DefinitionListNode',
               'enumeratedList': '#/$defs/EnumeratedListNode',
@@ -3252,6 +3807,9 @@
             }),
             dict({
               '$ref': '#/$defs/ApiLayoutNode',
+            }),
+            dict({
+              '$ref': '#/$defs/CliCommandNode',
             }),
           ]),
         }),

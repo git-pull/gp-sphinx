@@ -410,6 +410,65 @@ class ApiLayoutNode(BaseModel):
     children: list[BlockNode] = []
 
 
+CliCommandComponent = t.Literal[
+    "program",
+    "usage",
+    "group",
+    "argument",
+    "subcommands",
+    "subcommand",
+]
+"""Allowed values for :attr:`CliCommandNode.component`.
+
+Mirrors the six custom node types ``sphinx-autodoc-argparse`` registers
+(``argparse_program``, ``argparse_usage``, ``argparse_group``,
+``argparse_argument``, ``argparse_subcommands``, ``argparse_subcommand``)
+so the TypeScript renderer dispatches on a single field rather than six
+separate component classes.
+"""
+
+
+class CliCommandNode(BaseModel):
+    """A CLI documentation primitive emitted by :mod:`sphinx_autodoc_argparse`.
+
+    The six custom node types from that extension share a structural shape:
+    a wrapper carrying optional argparse-derived attributes (program name,
+    usage line, argument names, default values, choices, subcommand
+    aliases…) plus block children. Modelling them as a single discriminated
+    container lets the Astro renderer dispatch on ``component`` without
+    needing six near-identical Pydantic classes.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import CliCommandNode
+    >>> arg = CliCommandNode(
+    ...     type="cliCommand",
+    ...     component="argument",
+    ...     names=["-v", "--verbose"],
+    ...     help="Increase output verbosity",
+    ... )
+    >>> arg.names
+    ['-v', '--verbose']
+    """
+
+    type: t.Literal["cliCommand"]
+    component: CliCommandComponent
+    prog: str | None = None
+    usage: str | None = None
+    title: str | None = None
+    description: str | None = None
+    names: list[str] = []
+    help: str | None = None
+    default: str | None = None
+    choices: list[str] = []
+    required: bool = False
+    metavar: str | None = None
+    name: str | None = None
+    aliases: list[str] = []
+    classes: list[str] = []
+    children: list[BlockNode] = []
+
+
 class SymbolRefNode(BaseModel):
     """A block-level placeholder pointing to an entry in ``symbols.json``.
 
@@ -552,7 +611,8 @@ BlockNode = t.Annotated[
     | AdmonitionNode
     | DefinitionListNode
     | SymbolRefNode
-    | ApiLayoutNode,
+    | ApiLayoutNode
+    | CliCommandNode,
     Field(discriminator="type"),
 ]
 """Discriminated union of nodes that may appear in a block (body) context."""
@@ -715,4 +775,5 @@ ListItemNode.model_rebuild()
 AdmonitionNode.model_rebuild()
 DefinitionListItemNode.model_rebuild()
 ApiLayoutNode.model_rebuild()
+CliCommandNode.model_rebuild()
 Symbol.model_rebuild()
