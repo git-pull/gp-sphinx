@@ -1,20 +1,85 @@
 ---
 /**
- * Sidebar — left rail with the docs nav tree. Cycle 33 placeholder;
- * the actual content-collection-driven tree builds in cycle 34.
+ * Sidebar — left-rail nav driven by the ``docs`` content collection.
+ *
+ * Slug grouping logic lives in ``../lib/nav-tree.ts`` (TDD'd via
+ * vitest). This component is the seam between Astro's
+ * ``CollectionEntry<'docs'>`` runtime type and the pure
+ * ``NavEntryInput`` shape: it narrows each entry to ``id`` + ``title``
+ * before passing the list through ``buildNavTree``.
+ *
+ * Active-route highlight uses ``Astro.url.pathname``; the site sets
+ * ``trailingSlash: 'always'`` in astro.config.ts, so leaf hrefs already
+ * end with ``/`` and a direct-equality match suffices.
  */
+import { getCollection } from 'astro:content'
+import { buildNavTree, type NavEntryInput } from '../lib/nav-tree.ts'
+
+const entries = await getCollection('docs')
+const navInputs: NavEntryInput[] = entries.map((entry) => ({
+  id: entry.id,
+  data: { title: entry.data.title },
+}))
+const tree = buildNavTree(navInputs)
+const currentPath = Astro.url.pathname
 ---
 
 <aside
   data-test-id="sidebar"
   class="hidden lg:block lg:w-64 lg:shrink-0 lg:pr-6"
 >
-  <nav class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pb-8">
-    <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--color-muted)]">
+  <nav class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pb-8 text-sm">
+    <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--color-muted)]">
       Documentation
     </p>
-    <p class="text-sm text-[color:var(--color-muted)]">
-      Sidebar content will populate in cycle 34.
-    </p>
+    <ul class="space-y-0.5">
+      {tree.map((node) => {
+        if (node.type === 'leaf') {
+          const isActive = node.href === currentPath
+          return (
+            <li>
+              <a
+                href={node.href}
+                aria-current={isActive ? 'page' : undefined}
+                class:list={[
+                  'block rounded px-2 py-1 text-[color:var(--color-fg)] hover:bg-[color:var(--color-code-bg)]',
+                  isActive &&
+                    'bg-[color:var(--color-code-bg)] font-semibold text-[color:var(--color-accent)]',
+                ]}
+              >
+                {node.title}
+              </a>
+            </li>
+          )
+        }
+        return (
+          <li class="mt-4">
+            <p class="mb-1 px-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--color-muted)]">
+              {node.name}
+            </p>
+            <ul class="space-y-0.5">
+              {node.children.map((leaf) => {
+                const isActive = leaf.href === currentPath
+                return (
+                  <li>
+                    <a
+                      href={leaf.href}
+                      aria-current={isActive ? 'page' : undefined}
+                      class:list={[
+                        'block rounded px-2 py-1 text-[color:var(--color-fg)] hover:bg-[color:var(--color-code-bg)]',
+                        isActive &&
+                          'bg-[color:var(--color-code-bg)] font-semibold text-[color:var(--color-accent)]',
+                      ]}
+                    >
+                      {leaf.title}
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
+          </li>
+        )
+      })}
+    </ul>
   </nav>
 </aside>
