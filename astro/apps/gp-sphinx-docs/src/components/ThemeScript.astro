@@ -1,0 +1,32 @@
+---
+/**
+ * ThemeScript — injects an inline blocking script in <head> so the
+ * theme attributes land on <html> before first paint.
+ *
+ * The script intentionally inlines the storage / matchMedia logic
+ * (rather than importing the theme-toggle module) so it runs
+ * synchronously without waiting for module resolution. The runtime
+ * cycle/persist behaviour stays in ``../lib/theme-toggle.ts`` and
+ * loads with the rest of the page.
+ */
+---
+
+<script is:inline>
+  ;(() => {
+    const KEY = 'gp-sphinx:color-scheme'
+    let scheme
+    try {
+      const raw = localStorage.getItem(KEY)
+      scheme = raw === 'light' || raw === 'dark' || raw === 'system' ? raw : 'system'
+    } catch {
+      scheme = 'system'
+    }
+    const prefersDark =
+      scheme === 'system'
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+        : scheme === 'dark'
+    const root = document.documentElement
+    root.setAttribute('data-theme-mode', prefersDark ? 'dark' : 'light')
+    root.setAttribute('data-color-scheme', scheme)
+  })()
+</script>

@@ -1,20 +1,87 @@
 ---
 /**
- * TopNav — sticky site header. Cycle 33 placeholder; full branding +
- * theme toggle land in cycle 35.
+ * TopNav — sticky site header.
+ *
+ * Layout (left → right): wordmark + version badge → grow spacer →
+ * GitHub repo link → theme toggle. Theme cycling logic lives in
+ * ``../lib/theme-toggle.ts`` (TDD'd via vitest); this template
+ * supplies the seam button and bootstraps the toggle on
+ * ``astro:page-load``.
  */
+
+const VERSION = '0.0.1a12'
+const GITHUB_URL = 'https://github.com/git-pull/gp-sphinx'
 ---
 
 <header
   data-test-id="top-nav"
   class="sticky top-0 z-40 border-b border-[color:var(--color-border)] bg-[color:var(--color-bg)]/90 backdrop-blur"
 >
-  <div class="mx-auto flex h-14 max-w-7xl items-center px-4">
+  <div class="mx-auto flex h-14 w-full max-w-7xl items-center gap-3 px-4">
     <a
       href="/"
-      class="text-base font-semibold tracking-tight text-[color:var(--color-fg)]"
+      class="flex items-center gap-2 text-base font-semibold tracking-tight text-[color:var(--color-fg)]"
     >
       gp-sphinx
+      <span
+        class="rounded-full border border-[color:var(--color-border)] px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wider text-[color:var(--color-muted)]"
+      >
+        v{VERSION}
+      </span>
     </a>
+    <div class="flex-1"></div>
+    <a
+      href={GITHUB_URL}
+      class="text-sm text-[color:var(--color-muted)] hover:text-[color:var(--color-fg)]"
+      aria-label="View source on GitHub"
+    >
+      GitHub
+    </a>
+    <button
+      type="button"
+      data-test-id="theme-toggle"
+      aria-label="Cycle colour scheme"
+      class="grid h-8 w-8 place-items-center rounded border border-[color:var(--color-border)] text-[color:var(--color-fg)] hover:bg-[color:var(--color-code-bg)]"
+    >
+      <span data-when-scheme="light" aria-hidden="true">☀</span>
+      <span data-when-scheme="dark" aria-hidden="true">☾</span>
+      <span data-when-scheme="system" aria-hidden="true">◐</span>
+    </button>
   </div>
 </header>
+
+<style>
+  /* Show only the icon matching the current scheme. The selector
+   * targets the active color-scheme via the button's own data
+   * attribute (mirrored by initThemeToggle on each cycle). */
+  [data-test-id='theme-toggle'] [data-when-scheme] {
+    display: none;
+  }
+  [data-test-id='theme-toggle'][data-color-scheme='light']
+    [data-when-scheme='light'],
+  [data-test-id='theme-toggle'][data-color-scheme='dark']
+    [data-when-scheme='dark'],
+  [data-test-id='theme-toggle'][data-color-scheme='system']
+    [data-when-scheme='system'] {
+    display: inline;
+  }
+</style>
+
+<script>
+  import { initThemeToggle, readSavedScheme } from '../lib/theme-toggle.ts'
+
+  function setup(): void {
+    const button = document.querySelector<HTMLButtonElement>(
+      '[data-test-id="theme-toggle"]',
+    )
+    if (button === null) {
+      return
+    }
+    initThemeToggle({ button, initial: readSavedScheme() })
+  }
+
+  // Run on first load and after every <ClientRouter> swap so the
+  // toggle stays wired up across SPA navigations.
+  setup()
+  document.addEventListener('astro:after-swap', setup)
+</script>
