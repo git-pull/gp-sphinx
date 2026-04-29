@@ -18,6 +18,7 @@ from sphinx.util import logging
 from sphinx.util.inventory import InventoryFile
 from sphinx.util.osutil import _last_modified_time
 
+from gp_sphinx_astro_builder.content_config import render_content_config
 from gp_sphinx_astro_builder.intersphinx import build_xref_index_entries
 from gp_sphinx_astro_builder.schemas import (
     export_doctree_schema,
@@ -141,6 +142,16 @@ class AstroBuilder(Builder):
                 indent=2,
             )
             + "\n",
+            encoding="utf-8",
+        )
+
+        # Astro content collection wiring: the TypeScript file that imports
+        # the parity-tested theme schemas and registers them with
+        # defineCollection() against the canonical artefact paths.
+        content_config_path = self.outdir / "src" / "content.config.ts"
+        content_config_path.parent.mkdir(parents=True, exist_ok=True)
+        content_config_path.write_text(
+            render_content_config(),
             encoding="utf-8",
         )
 

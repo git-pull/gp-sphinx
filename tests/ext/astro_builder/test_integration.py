@@ -333,6 +333,34 @@ def test_astro_builder_emits_objects_inv_round_trippable(
 
 
 @pytest.mark.integration
+def test_astro_builder_emits_content_config_ts(
+    tmp_path: pathlib.Path,
+) -> None:
+    """``finish()`` writes ``src/content.config.ts`` with the canonical wiring."""
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("conf.py", _CONF_PY),
+            ScenarioFile("index.rst", _INDEX_RST),
+        ),
+    )
+    result = build_isolated_sphinx_result(cache_root, tmp_path, scenario)
+
+    config_path = result.outdir / "src" / "content.config.ts"
+    assert config_path.exists(), (
+        f"expected {config_path} to be emitted; "
+        f"outdir contents: {list(result.outdir.rglob('*'))}"
+    )
+
+    source = config_path.read_text("utf-8")
+    assert "export const collections" in source
+    assert "docs: defineCollection" in source
+    assert "api: defineCollection" in source
+    assert "xrefs: defineCollection" in source
+
+
+@pytest.mark.integration
 def test_astro_builder_emission_matches_snapshot(
     tmp_path: pathlib.Path,
     snapshot: SnapshotAssertion,
