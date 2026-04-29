@@ -42,6 +42,14 @@ export type CodeHighlighter = (code: string, language: string | null) => string
 export interface CreateCodeHighlighterOptions {
   themes: { light: string; dark: string }
   langs: readonly string[]
+  /**
+   * Optional alias map. Keys are the language identifiers Sphinx
+   * may emit on a fenced code block (``myst``, ``restructuredtext``,
+   * ``plaintext``, …); values are either the canonical Shiki
+   * grammar name to substitute (``"markdown"``) or ``null`` to
+   * force the plain fallback path.
+   */
+  aliases?: Record<string, string | null>
 }
 
 export async function createCodeHighlighter(
@@ -53,13 +61,29 @@ export async function createCodeHighlighter(
     langs: requestedLangs,
   })
   const knownLangs = new Set<string>(highlighter.getLoadedLanguages())
+  const aliases = options.aliases ?? {}
   return (code, language) => {
-    if (language === null || language === '' || !knownLangs.has(language)) {
+    if (language === null || language === '') {
+      return fallback(code, language)
+    }
+    // Aliases first: the source code's literal language string maps
+    // to a canonical Shiki grammar (or null to force the fallback).
+    let resolved: string = language
+    if (Object.hasOwn(aliases, language)) {
+      const aliased = aliases[language]
+      if (aliased === null) {
+        return fallback(code, language)
+      }
+      if (aliased !== undefined) {
+        resolved = aliased
+      }
+    }
+    if (!knownLangs.has(resolved)) {
       return fallback(code, language)
     }
     try {
       return highlighter.codeToHtml(code, {
-        lang: language as BundledLanguage,
+        lang: resolved as BundledLanguage,
         themes: {
           light: options.themes.light,
           dark: options.themes.dark,
