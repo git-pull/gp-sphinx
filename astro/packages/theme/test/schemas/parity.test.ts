@@ -121,6 +121,7 @@ describe('Pydantic ↔ Zod parity — definition coverage', () => {
     'AdmonitionNode',
     'DefinitionListNode',
     'DefinitionListItemNode',
+    'SymbolRefNode',
   ] as const
 
   test.each(expectedDefs)('Pydantic fixture defines %s', (defName) => {
