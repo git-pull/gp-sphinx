@@ -4,6 +4,7 @@ import { ClientRouter } from 'astro:transitions'
 import Footer from '../components/Footer.astro'
 import Sidebar from '../components/Sidebar.astro'
 import TableOfContents from '../components/TableOfContents.astro'
+import ThemeScript from '../components/ThemeScript.astro'
 import TopNav from '../components/TopNav.astro'
 import '../styles/global.css'
 
@@ -22,6 +23,7 @@ const { title } = Astro.props
     <title>{title}</title>
     <Font cssVariable="--font-sans" preload />
     <Font cssVariable="--font-mono" />
+    <ThemeScript />
     <ClientRouter />
   </head>
   <body class="min-h-screen flex flex-col">
