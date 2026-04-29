@@ -9,7 +9,8 @@
     "./schemas/doctree": "./src/schemas/doctree.ts",
     "./schemas/symbol": "./src/schemas/symbol.ts",
     "./schemas/xref": "./src/schemas/xref.ts",
-    "./render/render-node": "./src/render/render-node.ts"
+    "./render/render-node": "./src/render/render-node.ts",
+    "./render/render-symbol": "./src/render/render-symbol.ts"
   },
   "scripts": {
     "test": "vitest run",

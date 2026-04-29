@@ -109,8 +109,14 @@ export function renderBlockNode(node: BlockNode): string {
       return `<aside class="admonition admonition--${escapeHtml(node.variant)}">${node.children.map(renderBlockNode).join('')}</aside>`
     case 'definitionList':
       return `<dl>${node.children.map(renderDefinitionListItem).join('')}</dl>`
-    case 'symbolRef':
-      return `<a class="symbol-ref" data-symbol-id="${escapeHtml(node.symbolId)}" href="#${escapeHtml(node.symbolId)}">${escapeHtml(node.symbolId)}</a>`
+    case 'symbolRef': {
+      const escapedId = escapeHtml(node.symbolId)
+      // Symbol pages live at ``/api/<id>/`` in the dogfood Astro app.
+      // The doctree's ``symbolRef`` is the navigation anchor between
+      // narrative pages and symbol pages; the renderer doesn't need
+      // the full Symbol payload here, only its id.
+      return `<a class="symbol-ref" data-symbol-id="${escapedId}" href="/api/${escapedId}/">${escapedId}</a>`
+    }
     case 'section':
       return renderSection(node, 1)
     case 'apiLayout':
