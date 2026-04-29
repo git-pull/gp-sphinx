@@ -56,7 +56,11 @@ function renderSection(node: SectionNode, depth: number, highlight: CodeHighligh
         : renderBlock(child, highlight),
     )
     .join('')
-  return `<section id="${escapeHtml(node.id)}"><${tag}>${titleHtml}</${tag}>${childrenHtml}</section>`
+  const headerlink =
+    node.id === ''
+      ? ''
+      : `<a class="headerlink" href="#${escapeHtml(node.id)}" aria-label="Permalink to this section">#</a>`
+  return `<section id="${escapeHtml(node.id)}"><${tag}>${titleHtml}${headerlink}</${tag}>${childrenHtml}</section>`
 }
 
 function renderBlock(node: BlockNode, highlight: CodeHighlight): string {

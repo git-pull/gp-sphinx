@@ -247,6 +247,27 @@
     font-style: italic;
   }
 
+  /* Headerlink anchors — opacity-0 by default, fade in on the
+   * heading's hover state. Click copies the deep link. ``aria-label``
+   * exposes the affordance to screen readers regardless of opacity. */
+  .gp-sphinx-astro-doc :where(h1, h2, h3, h4, h5, h6) .headerlink {
+    display: inline-block;
+    margin-left: 0.4rem;
+    color: var(--color-muted);
+    font-weight: 400;
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .gp-sphinx-astro-doc :where(h1, h2, h3, h4, h5, h6):hover .headerlink {
+    opacity: 1;
+  }
+
+  .gp-sphinx-astro-doc :where(h1, h2, h3, h4, h5, h6) .headerlink:hover {
+    color: var(--color-accent);
+  }
+
   /* Tables — bordered and lightly tinted header. The Astro renderer
    * passes through docutils' table HTML; this gives every page-side
    * table a consistent visual weight matching the rest of the

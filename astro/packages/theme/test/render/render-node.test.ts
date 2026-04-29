@@ -526,17 +526,24 @@ describe('renderBlockNode — symbolRef', () => {
 })
 
 describe('renderBlockNode — section', () => {
-  test('top-level section emits <h1> with id', () => {
+  test('top-level section emits <h1> with id and a headerlink anchor', () => {
     const html = renderBlockNode({
       type: 'section',
       id: 'intro',
       title: [{ type: 'text', value: 'Intro' }],
       children: [],
     })
-    expect(html).toBe('<section id="intro"><h1>Intro</h1></section>')
+    // The heading carries an in-page jump anchor so visitors can
+    // copy a link to a specific section. The ``headerlink`` class
+    // is the chrome's hover-reveal hook (see global.css).
+    expect(html).toContain('<section id="intro">')
+    expect(html).toContain('<h1>Intro')
+    expect(html).toContain(
+      '<a class="headerlink" href="#intro" aria-label="Permalink to this section">#</a>',
+    )
   })
 
-  test('nested section emits a deeper heading', () => {
+  test('nested section emits a deeper heading with its own headerlink', () => {
     const html = renderBlockNode({
       type: 'section',
       id: 'outer',
@@ -550,8 +557,31 @@ describe('renderBlockNode — section', () => {
         },
       ],
     })
-    expect(html).toContain('<h1>Outer</h1>')
-    expect(html).toContain('<h2>Inner</h2>')
+    expect(html).toContain('<h1>Outer')
+    expect(html).toContain('<h2>Inner')
+    expect(html).toContain('href="#outer"')
+    expect(html).toContain('href="#inner"')
+  })
+
+  test('omits the headerlink when the section has no id (cannot link to it)', () => {
+    const html = renderBlockNode({
+      type: 'section',
+      id: '',
+      title: [{ type: 'text', value: 'No id' }],
+      children: [],
+    })
+    expect(html).not.toContain('headerlink')
+    expect(html).toContain('<h1>No id</h1>')
+  })
+
+  test('escapes the section id when composing the headerlink href', () => {
+    const html = renderBlockNode({
+      type: 'section',
+      id: 'a"b',
+      title: [{ type: 'text', value: 'X' }],
+      children: [],
+    })
+    expect(html).toContain('href="#a&quot;b"')
   })
 })
 
@@ -580,7 +610,7 @@ describe('renderDocument', () => {
       },
     }
     expect(renderDocument(doc)).toMatchInlineSnapshot(
-      `"<section id="hello-world"><h1>Hello world</h1><p>Hello <em>world</em>.</p></section>"`,
+      `"<section id="hello-world"><h1>Hello world<a class="headerlink" href="#hello-world" aria-label="Permalink to this section">#</a></h1><p>Hello <em>world</em>.</p></section>"`,
     )
   })
 })

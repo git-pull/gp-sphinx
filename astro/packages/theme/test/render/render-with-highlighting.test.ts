@@ -59,7 +59,8 @@ describe('renderDocumentWithHighlighting', () => {
     const html = renderDocumentWithHighlighting(makeDoc(), () => '<pre/>')
     // Section heading + paragraph come from the base ``renderBlockNode``.
     expect(html).toContain('<section id="demo">')
-    expect(html).toContain('<h1>Demo</h1>')
+    expect(html).toContain('<h1>Demo<a class="headerlink"')
+    expect(html).toContain('href="#demo"')
     expect(html).toContain('<p>Hello world.</p>')
   })
 })
