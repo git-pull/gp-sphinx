@@ -3,6 +3,7 @@ import type { GetStaticPaths } from 'astro'
 import { getCollection } from 'astro:content'
 import { renderDocument } from '@gp-sphinx-astro/theme/render/render-node'
 import Doc from '../layouts/Doc.astro'
+import { editOnGithubUrl } from '../lib/edit-link.ts'
 
 export const getStaticPaths = (async () => {
   const docs = await getCollection('docs')
@@ -15,7 +16,15 @@ export const getStaticPaths = (async () => {
 
 const { entry } = Astro.props
 const html = renderDocument(entry.data)
+const editUrl = editOnGithubUrl({
+  repo: 'https://github.com/git-pull/gp-sphinx',
+  branch: 'main',
+  // ``entry.data.id`` is the raw Sphinx docname (``packages/index``);
+  // ``entry.id`` is Astro's normalised slug (``packages``). The edit
+  // link must point at the on-disk source, so we use the former.
+  docname: entry.data.id,
+})
 ---
-<Doc title={entry.data.title} tocTree={entry.data.tree}>
+<Doc title={entry.data.title} tocTree={entry.data.tree} editUrl={editUrl}>
   <Fragment set:html={html} />
 </Doc>
