@@ -1,20 +1,122 @@
 ---
 /**
- * Footer — site footer. Cycle 33 placeholder; full site metadata +
- * ecosystem links land in cycle 38.
+ * Footer — site footer with copyright, source link, ecosystem
+ * shortcuts, and a build-pipeline credit.
+ *
+ * Ecosystem links point at the python sister projects that share
+ * gp-sphinx as their docs platform; they live in ``ECOSYSTEM`` so
+ * future additions only touch the array.
  */
+import { formatCopyright } from '../lib/footer-meta.ts'
+
+const copyright = formatCopyright({
+  holder: 'Tony Narlock',
+  project: 'gp-sphinx',
+  sinceYear: 2024,
+  now: new Date(),
+})
+
+const GITHUB_URL = 'https://github.com/git-pull/gp-sphinx'
+
+interface EcosystemLink {
+  name: string
+  href: string
+  description: string
+}
+
+const ECOSYSTEM: readonly EcosystemLink[] = [
+  {
+    name: 'libtmux',
+    href: 'https://libtmux.git-pull.com',
+    description: 'Typed scripting library for tmux',
+  },
+  {
+    name: 'tmuxp',
+    href: 'https://tmuxp.git-pull.com',
+    description: 'YAML / JSON tmux session manager',
+  },
+  {
+    name: 'libvcs',
+    href: 'https://libvcs.git-pull.com',
+    description: 'Lite VCS abstraction (git / hg / svn)',
+  },
+  {
+    name: 'vcspull',
+    href: 'https://vcspull.git-pull.com',
+    description: 'Repository sync manager',
+  },
+  {
+    name: 'cihai',
+    href: 'https://cihai.git-pull.com',
+    description: 'CJK language data library',
+  },
+]
 ---
 
 <footer
   data-test-id="footer"
-  class="mt-16 border-t border-[color:var(--color-border)] py-8"
+  class="mt-16 border-t border-[color:var(--color-border)]"
 >
-  <div class="mx-auto max-w-7xl px-4 text-sm text-[color:var(--color-muted)]">
-    <p>
-      gp-sphinx — built with the AstroBuilder pipeline.
-      <a href="https://github.com/git-pull/gp-sphinx" class="hover:underline">
-        Source on GitHub
-      </a>
-    </p>
+  <div
+    class="mx-auto grid w-full max-w-7xl gap-10 px-4 py-10 md:grid-cols-[1.2fr_1fr_1fr]"
+  >
+    <div class="space-y-2">
+      <p class="text-base font-semibold tracking-tight text-[color:var(--color-fg)]">
+        gp-sphinx
+      </p>
+      <p class="text-sm text-[color:var(--color-muted)]">
+        A shared Sphinx documentation platform — consolidated config,
+        bundled extensions, and a typed Astro renderer.
+      </p>
+      <p class="pt-2 text-xs text-[color:var(--color-muted)]">
+        {copyright}
+      </p>
+    </div>
+    <div class="space-y-2">
+      <p class="text-xs font-semibold uppercase tracking-wider text-[color:var(--color-muted)]">
+        Project
+      </p>
+      <ul class="space-y-1 text-sm">
+        <li>
+          <a href={GITHUB_URL} class="hover:underline">Source on GitHub</a>
+        </li>
+        <li>
+          <a href={`${GITHUB_URL}/issues`} class="hover:underline">
+            Issue tracker
+          </a>
+        </li>
+        <li>
+          <a
+            href={`${GITHUB_URL}/blob/main/CHANGES`}
+            class="hover:underline"
+          >
+            Changelog
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="space-y-2">
+      <p class="text-xs font-semibold uppercase tracking-wider text-[color:var(--color-muted)]">
+        Ecosystem
+      </p>
+      <ul class="space-y-1 text-sm">
+        {ECOSYSTEM.map((link) => (
+          <li>
+            <a href={link.href} class="hover:underline">
+              {link.name}
+            </a>
+            <span class="text-xs text-[color:var(--color-muted)]">
+              {' — '}
+              {link.description}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+  <div
+    class="border-t border-[color:var(--color-border)] py-4 text-center text-xs text-[color:var(--color-muted)]"
+  >
+    Built with the AstroBuilder pipeline · Sphinx · Astro · Tailwind v4
   </div>
 </footer>
