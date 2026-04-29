@@ -21,6 +21,12 @@
  * time; Tailwind would otherwise scan it and miss the actual app
  * source. Pin the source root explicitly. */
 @source '../**/*.{astro,ts,tsx,html}';
+/* Sibling theme package emits ``gp-sphinx-symbol__*`` /
+ * ``gp-sphinx-api--*`` / ``gp-sphinx-cli--*`` / ``gp-sphinx-badge*``
+ * classes from its TypeScript renderers. Without this @source line
+ * Tailwind v4 tree-shakes the matching rules out of the bundle
+ * because no scanned source file references them. */
+@source '../../../../packages/theme/src/**/*.{ts,tsx,astro}';
 
 @custom-variant dark (&:where(:root[data-theme-mode='dark'], :root[data-theme-mode='dark'] *));
 
@@ -148,5 +154,174 @@
     display: inline-block;
     font-family: var(--font-mono);
     font-size: 0.95em;
+  }
+
+  /* ─── API / Symbol pages ──────────────────────────────────────
+   * Each autodoc'd Python object renders into a ``<article
+   * class="gp-sphinx-symbol gp-sphinx-symbol--<kind>">``. The
+   * structural hooks ``__header``, ``__signature``, ``__module``,
+   * ``__name``, ``__summary``, ``__params``, ``__returns``,
+   * ``__body``, ``__source`` carry no formatting on their own —
+   * the renderer is intentionally minimal. We add the visual
+   * treatment here so the API pages match the prose pages in
+   * polish: signature card, parameter table, return type pill,
+   * source-link footer. */
+  .gp-sphinx-symbol {
+    margin: 0 0 2.5rem;
+  }
+
+  .gp-sphinx-symbol__header {
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-code-bg);
+    padding: 0.85rem 1rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+  }
+
+  .gp-sphinx-symbol__signature {
+    background: transparent;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-fg);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .gp-sphinx-symbol__module {
+    color: var(--color-muted);
+    font-weight: 400;
+  }
+
+  .gp-sphinx-symbol__name {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .gp-sphinx-symbol__summary {
+    font-size: 1rem;
+    color: var(--color-fg);
+    margin: 0 0 1rem;
+  }
+
+  .gp-sphinx-symbol__params {
+    display: grid;
+    grid-template-columns: minmax(8rem, max-content) 1fr;
+    column-gap: 1.25rem;
+    row-gap: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: color-mix(in oklab, var(--color-code-bg) 50%, var(--color-bg));
+    padding: 0.85rem 1rem;
+    margin: 0 0 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  .gp-sphinx-symbol__params dt {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    color: var(--color-fg);
+    align-self: baseline;
+  }
+
+  .gp-sphinx-symbol__params dd {
+    margin: 0;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+
+  .gp-sphinx-symbol__param-default {
+    color: var(--color-muted);
+    margin-left: 0.5rem;
+  }
+
+  .gp-sphinx-symbol__returns {
+    display: inline-block;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 0.1rem 0.55rem;
+    margin: 0 0 1.25rem;
+    background: color-mix(in oklab, var(--color-accent) 10%, transparent);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+
+  .gp-sphinx-symbol__returns code {
+    background: transparent;
+    padding: 0;
+    color: var(--color-accent);
+  }
+
+  .gp-sphinx-symbol__returns::before {
+    content: 'returns ';
+    color: var(--color-muted);
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-right: 0.4rem;
+  }
+
+  .gp-sphinx-symbol__body {
+    margin: 1.5rem 0;
+  }
+
+  .gp-sphinx-symbol__body > :first-child {
+    margin-top: 0;
+  }
+
+  .gp-sphinx-symbol__source {
+    display: inline-block;
+    margin-top: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-muted);
+    text-decoration: none;
+    border-top: 1px solid var(--color-border);
+    padding-top: 0.75rem;
+  }
+
+  .gp-sphinx-symbol__source:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+
+  /* Kind-specific accents on the signature card border. */
+  .gp-sphinx-symbol--class .gp-sphinx-symbol__header {
+    border-left: 3px solid oklch(60% 0.18 280);
+  }
+
+  .gp-sphinx-symbol--function .gp-sphinx-symbol__header,
+  .gp-sphinx-symbol--method .gp-sphinx-symbol__header {
+    border-left: 3px solid var(--color-accent);
+  }
+
+  .gp-sphinx-symbol--attribute .gp-sphinx-symbol__header,
+  .gp-sphinx-symbol--property .gp-sphinx-symbol__header {
+    border-left: 3px solid oklch(70% 0.15 50);
+  }
+
+  .gp-sphinx-symbol--enum .gp-sphinx-symbol__header,
+  .gp-sphinx-symbol--dataclass .gp-sphinx-symbol__header {
+    border-left: 3px solid oklch(60% 0.15 160);
+  }
+
+  /* Symbol body's recursive blocks need spacing matching prose. */
+  .gp-sphinx-symbol__body p,
+  .gp-sphinx-symbol__body dl,
+  .gp-sphinx-symbol__body pre {
+    margin: 0.75rem 0;
+  }
+
+  .gp-sphinx-symbol__body h2,
+  .gp-sphinx-symbol__body h3 {
+    font-size: 1rem;
+    margin: 1.5rem 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
   }
 }
