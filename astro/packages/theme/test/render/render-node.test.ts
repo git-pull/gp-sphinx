@@ -255,6 +255,106 @@ describe('renderBlockNode — admonitions', () => {
   })
 })
 
+describe('renderBlockNode — apiLayout', () => {
+  test('region emits a <div> with kind class', () => {
+    const html = renderBlockNode({
+      type: 'apiLayout',
+      component: 'region',
+      name: null,
+      tag: null,
+      kind: 'narrative',
+      summary: null,
+      href: null,
+      title: null,
+      slot: null,
+      open: false,
+      classes: [],
+      children: [{ type: 'paragraph', children: [{ type: 'text', value: 'x' }] }],
+    })
+    expect(html).toContain(
+      'class="gp-sphinx-api gp-sphinx-api--region gp-sphinx-api--kind-narrative"',
+    )
+    expect(html).toContain('<p>x</p>')
+  })
+
+  test('fold renders <details> with summary and open flag', () => {
+    const html = renderBlockNode({
+      type: 'apiLayout',
+      component: 'fold',
+      name: null,
+      tag: null,
+      kind: 'parameters',
+      summary: 'Parameters (3)',
+      href: null,
+      title: null,
+      slot: null,
+      open: true,
+      classes: [],
+      children: [],
+    })
+    expect(html).toContain('<details ')
+    expect(html).toContain(' open>')
+    expect(html).toContain('<summary>Parameters (3)</summary>')
+  })
+
+  test('permalink renders <a> with href and title', () => {
+    const html = renderBlockNode({
+      type: 'apiLayout',
+      component: 'permalink',
+      name: null,
+      tag: null,
+      kind: null,
+      summary: null,
+      href: '#mod.func',
+      title: 'Link',
+      slot: null,
+      open: false,
+      classes: [],
+      children: [],
+    })
+    expect(html).toContain('<a ')
+    expect(html).toContain('href="#mod.func"')
+    expect(html).toContain('title="Link"')
+  })
+
+  test('slot renders empty <span> with data-slot', () => {
+    const html = renderBlockNode({
+      type: 'apiLayout',
+      component: 'slot',
+      name: null,
+      tag: null,
+      kind: null,
+      summary: null,
+      href: null,
+      title: null,
+      slot: 'badges',
+      open: false,
+      classes: [],
+      children: [],
+    })
+    expect(html).toContain('data-slot="badges"')
+  })
+
+  test('inline_component uses tag from payload (default span)', () => {
+    const html = renderBlockNode({
+      type: 'apiLayout',
+      component: 'inline_component',
+      name: 'gp-sphinx-api-source-link',
+      tag: 'span',
+      kind: null,
+      summary: null,
+      href: null,
+      title: null,
+      slot: null,
+      open: false,
+      classes: [],
+      children: [],
+    })
+    expect(html.startsWith('<span ')).toBe(true)
+    expect(html).toContain('gp-sphinx-api-source-link')
+  })
+})
+
 describe('renderBlockNode — symbolRef', () => {
   test('symbolRef emits a typed link with data-symbol-id', () => {
     const html = renderBlockNode({

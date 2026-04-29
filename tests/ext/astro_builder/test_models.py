@@ -9,6 +9,7 @@ from pydantic import ValidationError
 
 from gp_sphinx_astro_builder.models import (
     AdmonitionNode,
+    ApiLayoutNode,
     BadgeNode,
     BlockQuoteNode,
     BulletListNode,
@@ -700,6 +701,86 @@ def test_paragraph_accepts_badge_through_inline_union() -> None:
     )
     assert isinstance(para.children[1], BadgeNode)
     assert para.children[1].tooltip == "All good"
+
+
+def test_api_layout_region_round_trips() -> None:
+    """``ApiLayoutNode`` accepts the region component with a kind tag."""
+    node = ApiLayoutNode.model_validate(
+        {
+            "type": "apiLayout",
+            "component": "region",
+            "kind": "narrative",
+            "children": [
+                {
+                    "type": "paragraph",
+                    "children": [{"type": "text", "value": "x"}],
+                },
+            ],
+        },
+    )
+    assert node.component == "region"
+    assert node.kind == "narrative"
+    assert len(node.children) == 1
+
+
+def test_api_layout_fold_round_trips_with_summary() -> None:
+    """``ApiLayoutNode`` accepts the fold component with summary + open flag."""
+    node = ApiLayoutNode.model_validate(
+        {
+            "type": "apiLayout",
+            "component": "fold",
+            "kind": "parameters",
+            "summary": "Parameters (3)",
+            "open": True,
+            "children": [],
+        },
+    )
+    assert node.summary == "Parameters (3)"
+    assert node.open is True
+
+
+def test_api_layout_permalink_carries_href_and_title() -> None:
+    """``ApiLayoutNode`` accepts the permalink component with href + title."""
+    node = ApiLayoutNode.model_validate(
+        {
+            "type": "apiLayout",
+            "component": "permalink",
+            "href": "#mod.func",
+            "title": "Link to this definition",
+        },
+    )
+    assert node.href == "#mod.func"
+    assert node.title == "Link to this definition"
+
+
+def test_api_layout_rejects_unknown_component() -> None:
+    """``ApiLayoutNode.component`` rejects values outside the literal set."""
+    with pytest.raises(ValidationError):
+        ApiLayoutNode.model_validate(
+            {"type": "apiLayout", "component": "spaceship"},
+        )
+
+
+def test_section_accepts_api_layout_through_block_union() -> None:
+    """An ``ApiLayoutNode`` validates as a child of ``SectionNode``."""
+    section = SectionNode.model_validate(
+        {
+            "type": "section",
+            "id": "x",
+            "title": [{"type": "text", "value": "X"}],
+            "children": [
+                {
+                    "type": "apiLayout",
+                    "component": "component",
+                    "name": "gp-sphinx-api-layout",
+                    "tag": "div",
+                    "children": [],
+                },
+            ],
+        },
+    )
+    assert isinstance(section.children[0], ApiLayoutNode)
+    assert section.children[0].name == "gp-sphinx-api-layout"
 
 
 def test_xref_entry_round_trips_with_full_payload() -> None:

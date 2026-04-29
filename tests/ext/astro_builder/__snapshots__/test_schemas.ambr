@@ -30,6 +30,7 @@
               'discriminator': dict({
                 'mapping': dict({
                   'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
                   'comment': '#/$defs/CommentNode',
@@ -77,6 +78,9 @@
                 dict({
                   '$ref': '#/$defs/SymbolRefNode',
                 }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
+                }),
               ]),
             }),
             'title': 'Children',
@@ -109,6 +113,215 @@
           'children',
         ]),
         'title': 'AdmonitionNode',
+        'type': 'object',
+      }),
+      'ApiLayoutNode': dict({
+        'description': '''
+          A layout primitive emitted by :mod:`sphinx_ux_autodoc_layout`.
+          
+          The seven custom node types from that extension share a common shape:
+          a structural wrapper carrying optional name/tag/kind/summary/etc.
+          attributes plus block children. Modelling them as a single discriminated
+          container lets the Astro renderer dispatch on ``component`` without
+          needing seven near-identical Pydantic classes.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import ApiLayoutNode
+          >>> region = ApiLayoutNode(
+          ...     type="apiLayout",
+          ...     component="region",
+          ...     kind="narrative",
+          ... )
+          >>> region.component
+          'region'
+        ''',
+        'properties': dict({
+          'children': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
+                  'blockQuote': '#/$defs/BlockQuoteNode',
+                  'bulletList': '#/$defs/BulletListNode',
+                  'comment': '#/$defs/CommentNode',
+                  'definitionList': '#/$defs/DefinitionListNode',
+                  'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'literalBlock': '#/$defs/LiteralBlockNode',
+                  'paragraph': '#/$defs/ParagraphNode',
+                  'section': '#/$defs/SectionNode',
+                  'symbolRef': '#/$defs/SymbolRefNode',
+                  'transition': '#/$defs/TransitionNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/ParagraphNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SectionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralBlockNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CommentNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BlockQuoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BulletListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EnumeratedListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/DefinitionListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'classes': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'type': 'string',
+            }),
+            'title': 'Classes',
+            'type': 'array',
+          }),
+          'component': dict({
+            'enum': list([
+              'region',
+              'fold',
+              'sig_fold',
+              'component',
+              'inline_component',
+              'slot',
+              'permalink',
+            ]),
+            'title': 'Component',
+            'type': 'string',
+          }),
+          'href': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Href',
+          }),
+          'kind': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Kind',
+          }),
+          'name': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Name',
+          }),
+          'open': dict({
+            'default': False,
+            'title': 'Open',
+            'type': 'boolean',
+          }),
+          'slot': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Slot',
+          }),
+          'summary': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Summary',
+          }),
+          'tag': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Tag',
+          }),
+          'title': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Title',
+          }),
+          'type': dict({
+            'const': 'apiLayout',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'component',
+        ]),
+        'title': 'ApiLayoutNode',
         'type': 'object',
       }),
       'BadgeNode': dict({
@@ -227,6 +440,7 @@
               'discriminator': dict({
                 'mapping': dict({
                   'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
                   'comment': '#/$defs/CommentNode',
@@ -273,6 +487,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
                 }),
               ]),
             }),
@@ -388,6 +605,7 @@
               'discriminator': dict({
                 'mapping': dict({
                   'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
                   'comment': '#/$defs/CommentNode',
@@ -434,6 +652,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
                 }),
               ]),
             }),
@@ -710,6 +931,7 @@
               'discriminator': dict({
                 'mapping': dict({
                   'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
                   'comment': '#/$defs/CommentNode',
@@ -756,6 +978,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
                 }),
               ]),
             }),
@@ -1018,6 +1243,7 @@
               'discriminator': dict({
                 'mapping': dict({
                   'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
                   'comment': '#/$defs/CommentNode',
@@ -1064,6 +1290,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
                 }),
               ]),
             }),
@@ -1362,6 +1591,7 @@
               'discriminator': dict({
                 'mapping': dict({
                   'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
                   'comment': '#/$defs/CommentNode',
@@ -1409,6 +1639,9 @@
                 dict({
                   '$ref': '#/$defs/SymbolRefNode',
                 }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
+                }),
               ]),
             }),
             'title': 'Children',
@@ -1441,6 +1674,215 @@
           'children',
         ]),
         'title': 'AdmonitionNode',
+        'type': 'object',
+      }),
+      'ApiLayoutNode': dict({
+        'description': '''
+          A layout primitive emitted by :mod:`sphinx_ux_autodoc_layout`.
+          
+          The seven custom node types from that extension share a common shape:
+          a structural wrapper carrying optional name/tag/kind/summary/etc.
+          attributes plus block children. Modelling them as a single discriminated
+          container lets the Astro renderer dispatch on ``component`` without
+          needing seven near-identical Pydantic classes.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import ApiLayoutNode
+          >>> region = ApiLayoutNode(
+          ...     type="apiLayout",
+          ...     component="region",
+          ...     kind="narrative",
+          ... )
+          >>> region.component
+          'region'
+        ''',
+        'properties': dict({
+          'children': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
+                  'blockQuote': '#/$defs/BlockQuoteNode',
+                  'bulletList': '#/$defs/BulletListNode',
+                  'comment': '#/$defs/CommentNode',
+                  'definitionList': '#/$defs/DefinitionListNode',
+                  'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'literalBlock': '#/$defs/LiteralBlockNode',
+                  'paragraph': '#/$defs/ParagraphNode',
+                  'section': '#/$defs/SectionNode',
+                  'symbolRef': '#/$defs/SymbolRefNode',
+                  'transition': '#/$defs/TransitionNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/ParagraphNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SectionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralBlockNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CommentNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BlockQuoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BulletListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EnumeratedListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/DefinitionListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'classes': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'type': 'string',
+            }),
+            'title': 'Classes',
+            'type': 'array',
+          }),
+          'component': dict({
+            'enum': list([
+              'region',
+              'fold',
+              'sig_fold',
+              'component',
+              'inline_component',
+              'slot',
+              'permalink',
+            ]),
+            'title': 'Component',
+            'type': 'string',
+          }),
+          'href': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Href',
+          }),
+          'kind': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Kind',
+          }),
+          'name': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Name',
+          }),
+          'open': dict({
+            'default': False,
+            'title': 'Open',
+            'type': 'boolean',
+          }),
+          'slot': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Slot',
+          }),
+          'summary': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Summary',
+          }),
+          'tag': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Tag',
+          }),
+          'title': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Title',
+          }),
+          'type': dict({
+            'const': 'apiLayout',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'component',
+        ]),
+        'title': 'ApiLayoutNode',
         'type': 'object',
       }),
       'BadgeNode': dict({
@@ -1559,6 +2001,7 @@
               'discriminator': dict({
                 'mapping': dict({
                   'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
                   'comment': '#/$defs/CommentNode',
@@ -1605,6 +2048,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
                 }),
               ]),
             }),
@@ -1720,6 +2166,7 @@
               'discriminator': dict({
                 'mapping': dict({
                   'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
                   'comment': '#/$defs/CommentNode',
@@ -1766,6 +2213,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
                 }),
               ]),
             }),
@@ -2042,6 +2492,7 @@
               'discriminator': dict({
                 'mapping': dict({
                   'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
                   'comment': '#/$defs/CommentNode',
@@ -2088,6 +2539,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
                 }),
               ]),
             }),
@@ -2408,6 +2862,7 @@
               'discriminator': dict({
                 'mapping': dict({
                   'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
                   'blockQuote': '#/$defs/BlockQuoteNode',
                   'bulletList': '#/$defs/BulletListNode',
                   'comment': '#/$defs/CommentNode',
@@ -2454,6 +2909,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
                 }),
               ]),
             }),
@@ -2744,6 +3202,7 @@
           'discriminator': dict({
             'mapping': dict({
               'admonition': '#/$defs/AdmonitionNode',
+              'apiLayout': '#/$defs/ApiLayoutNode',
               'blockQuote': '#/$defs/BlockQuoteNode',
               'bulletList': '#/$defs/BulletListNode',
               'comment': '#/$defs/CommentNode',
@@ -2790,6 +3249,9 @@
             }),
             dict({
               '$ref': '#/$defs/SymbolRefNode',
+            }),
+            dict({
+              '$ref': '#/$defs/ApiLayoutNode',
             }),
           ]),
         }),

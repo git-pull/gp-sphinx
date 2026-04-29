@@ -113,6 +113,48 @@ export function renderBlockNode(node: BlockNode): string {
       return `<a class="symbol-ref" data-symbol-id="${escapeHtml(node.symbolId)}" href="#${escapeHtml(node.symbolId)}">${escapeHtml(node.symbolId)}</a>`
     case 'section':
       return renderSection(node, 1)
+    case 'apiLayout':
+      return renderApiLayoutNode(node)
+  }
+}
+
+function renderApiLayoutNode(node: Extract<BlockNode, { type: 'apiLayout' }>): string {
+  const baseClasses = ['gp-sphinx-api', `gp-sphinx-api--${node.component}`]
+  if (node.kind !== null) {
+    baseClasses.push(`gp-sphinx-api--kind-${node.kind}`)
+  }
+  if (node.name !== null && node.name !== '') {
+    baseClasses.push(node.name)
+  }
+  for (const c of node.classes) {
+    baseClasses.push(c)
+  }
+
+  const childrenHtml = node.children.map(renderBlockNode).join('')
+  const classAttr = `class="${baseClasses.join(' ')}"`
+
+  switch (node.component) {
+    case 'fold':
+    case 'sig_fold': {
+      const openAttr = node.open ? ' open' : ''
+      const summaryHtml = `<summary>${escapeHtml(node.summary ?? '')}</summary>`
+      return `<details ${classAttr}${openAttr}>${summaryHtml}${childrenHtml}</details>`
+    }
+    case 'permalink': {
+      const titleAttr = node.title === null ? '' : ` title="${escapeHtml(node.title)}"`
+      return `<a ${classAttr} href="${escapeHtml(node.href ?? '#')}"${titleAttr}>${childrenHtml}</a>`
+    }
+    case 'slot':
+      return `<span ${classAttr} data-slot="${escapeHtml(node.slot ?? '')}"></span>`
+    case 'inline_component': {
+      const tag = node.tag ?? 'span'
+      return `<${tag} ${classAttr}>${childrenHtml}</${tag}>`
+    }
+    case 'region':
+    case 'component': {
+      const tag = node.tag ?? 'div'
+      return `<${tag} ${classAttr}>${childrenHtml}</${tag}>`
+    }
   }
 }
 

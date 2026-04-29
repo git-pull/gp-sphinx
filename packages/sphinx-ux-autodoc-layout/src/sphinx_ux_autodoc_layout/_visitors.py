@@ -171,3 +171,163 @@ def passthrough_depart(self: t.Any, node: nodes.Element) -> None:
     --------
     >>> passthrough_depart(None, None)
     """
+
+
+# ─── JSON visitors for the gp-sphinx-astro-builder pipeline ────────────────
+#
+# Each api_* node serialises to a single ``apiLayout`` Pydantic shape on
+# the wire. The ``component`` discriminator preserves the docutils class
+# so the Astro renderer dispatches on it. Visitors push a frame on the
+# translator's internal ``_stack``; matching depart handlers pop the frame
+# and call ``append_node`` to attach the typed dict to the parent's
+# children list. ``self`` is a ``DocTreeJSONTranslator`` after Sphinx's
+# ``MethodType`` binding — we don't import that class here to keep this
+# extension free of circular dependencies on ``gp-sphinx-astro-builder``.
+
+
+def _open_api_layout_frame(self: t.Any, component: str, **attrs: t.Any) -> None:
+    """Push an ``apiLayout`` frame onto the translator's stack."""
+    payload: dict[str, t.Any] = {
+        "type": "apiLayout",
+        "component": component,
+        "name": attrs.get("name"),
+        "tag": attrs.get("tag"),
+        "kind": attrs.get("kind"),
+        "summary": attrs.get("summary"),
+        "href": attrs.get("href"),
+        "title": attrs.get("title"),
+        "slot": attrs.get("slot"),
+        "open": bool(attrs.get("open", False)),
+        "classes": list(attrs.get("classes", [])),
+        "children": [],
+    }
+    self._stack.append({"kind": "apiLayout", "data": payload})
+
+
+def _close_api_layout_frame(self: t.Any) -> None:
+    """Pop the current ``apiLayout`` frame and attach to the parent."""
+    frame = self._stack.pop()
+    self.append_node(frame["data"])
+
+
+def visit_api_region_json(self: t.Any, node: nodes.Element) -> None:
+    """Open an apiLayout frame for an ``api_region``."""
+    _open_api_layout_frame(self, "region", kind=node.get("kind", "narrative"))
+
+
+def depart_api_region_json(self: t.Any, node: nodes.Element) -> None:
+    """Close the region frame."""
+    _close_api_layout_frame(self)
+
+
+def visit_api_fold_json(self: t.Any, node: nodes.Element) -> None:
+    """Open an apiLayout frame for an ``api_fold``."""
+    _open_api_layout_frame(
+        self,
+        "fold",
+        kind=node.get("kind", ""),
+        summary=node.get("summary", ""),
+        open=node.get("open", False),
+    )
+
+
+def depart_api_fold_json(self: t.Any, node: nodes.Element) -> None:
+    """Close the fold frame."""
+    _close_api_layout_frame(self)
+
+
+def visit_api_sig_fold_json(self: t.Any, node: nodes.Element) -> None:
+    """Open an apiLayout frame for an ``api_sig_fold``."""
+    _open_api_layout_frame(
+        self,
+        "sig_fold",
+        kind=node.get("kind", ""),
+        summary=node.get("first_param", ""),
+    )
+
+
+def depart_api_sig_fold_json(self: t.Any, node: nodes.Element) -> None:
+    """Close the sig_fold frame."""
+    _close_api_layout_frame(self)
+
+
+def visit_api_component_json(self: t.Any, node: nodes.Element) -> None:
+    """Open an apiLayout frame for an ``api_component``."""
+    _open_api_layout_frame(
+        self,
+        "component",
+        name=node.get("name", ""),
+        tag=node.get("tag", "div"),
+        classes=node.get("classes", []),
+    )
+
+
+def depart_api_component_json(self: t.Any, node: nodes.Element) -> None:
+    """Close the component frame."""
+    _close_api_layout_frame(self)
+
+
+def visit_api_inline_component_json(self: t.Any, node: nodes.Element) -> None:
+    """Open an apiLayout frame for an ``api_inline_component``."""
+    _open_api_layout_frame(
+        self,
+        "inline_component",
+        name=node.get("name", ""),
+        tag=node.get("tag", "span"),
+        classes=node.get("classes", []),
+    )
+
+
+def depart_api_inline_component_json(self: t.Any, node: nodes.Element) -> None:
+    """Close the inline_component frame."""
+    _close_api_layout_frame(self)
+
+
+def visit_api_slot_json(self: t.Any, node: nodes.Element) -> None:
+    """Append a slot marker; no children, no depart."""
+    self.append_node(
+        {
+            "type": "apiLayout",
+            "component": "slot",
+            "name": None,
+            "tag": None,
+            "kind": None,
+            "summary": None,
+            "href": None,
+            "title": None,
+            "slot": node.get("slot", ""),
+            "open": False,
+            "classes": [],
+            "children": [],
+        },
+    )
+    raise nodes.SkipNode
+
+
+def depart_api_slot_json(self: t.Any, node: nodes.Element) -> None:
+    """No-op companion for :func:`visit_api_slot_json`."""
+
+
+def visit_api_permalink_json(self: t.Any, node: nodes.Element) -> None:
+    """Append a permalink anchor; no children, no depart."""
+    self.append_node(
+        {
+            "type": "apiLayout",
+            "component": "permalink",
+            "name": None,
+            "tag": None,
+            "kind": None,
+            "summary": None,
+            "href": node.get("href", "#"),
+            "title": node.get("title", ""),
+            "slot": None,
+            "open": False,
+            "classes": [],
+            "children": [],
+        },
+    )
+    raise nodes.SkipNode
+
+
+def depart_api_permalink_json(self: t.Any, node: nodes.Element) -> None:
+    """No-op companion for :func:`visit_api_permalink_json`."""

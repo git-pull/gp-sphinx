@@ -356,6 +356,60 @@ class DefinitionListNode(BaseModel):
     children: list[DefinitionListItemNode]
 
 
+ApiLayoutComponent = t.Literal[
+    "region",
+    "fold",
+    "sig_fold",
+    "component",
+    "inline_component",
+    "slot",
+    "permalink",
+]
+"""Allowed values for :attr:`ApiLayoutNode.component`.
+
+Mirrors the seven custom node types ``sphinx-ux-autodoc-layout`` registers
+(``api_region``, ``api_fold``, ``api_sig_fold``, ``api_component``,
+``api_inline_component``, ``api_slot``, ``api_permalink``) so the
+TypeScript renderer dispatches on a single field rather than seven
+separate component classes.
+"""
+
+
+class ApiLayoutNode(BaseModel):
+    """A layout primitive emitted by :mod:`sphinx_ux_autodoc_layout`.
+
+    The seven custom node types from that extension share a common shape:
+    a structural wrapper carrying optional name/tag/kind/summary/etc.
+    attributes plus block children. Modelling them as a single discriminated
+    container lets the Astro renderer dispatch on ``component`` without
+    needing seven near-identical Pydantic classes.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import ApiLayoutNode
+    >>> region = ApiLayoutNode(
+    ...     type="apiLayout",
+    ...     component="region",
+    ...     kind="narrative",
+    ... )
+    >>> region.component
+    'region'
+    """
+
+    type: t.Literal["apiLayout"]
+    component: ApiLayoutComponent
+    name: str | None = None
+    tag: str | None = None
+    kind: str | None = None
+    summary: str | None = None
+    href: str | None = None
+    title: str | None = None
+    slot: str | None = None
+    open: bool = False
+    classes: list[str] = []
+    children: list[BlockNode] = []
+
+
 class SymbolRefNode(BaseModel):
     """A block-level placeholder pointing to an entry in ``symbols.json``.
 
@@ -497,7 +551,8 @@ BlockNode = t.Annotated[
     | EnumeratedListNode
     | AdmonitionNode
     | DefinitionListNode
-    | SymbolRefNode,
+    | SymbolRefNode
+    | ApiLayoutNode,
     Field(discriminator="type"),
 ]
 """Discriminated union of nodes that may appear in a block (body) context."""
@@ -659,4 +714,5 @@ BlockQuoteNode.model_rebuild()
 ListItemNode.model_rebuild()
 AdmonitionNode.model_rebuild()
 DefinitionListItemNode.model_rebuild()
+ApiLayoutNode.model_rebuild()
 Symbol.model_rebuild()

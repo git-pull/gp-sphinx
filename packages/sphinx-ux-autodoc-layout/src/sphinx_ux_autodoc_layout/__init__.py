@@ -43,18 +43,32 @@ from sphinx_ux_autodoc_layout._slots import inject_signature_slots, is_viewcode_
 from sphinx_ux_autodoc_layout._transforms import on_doctree_resolved
 from sphinx_ux_autodoc_layout._visitors import (
     depart_api_component,
+    depart_api_component_json,
     depart_api_fold,
+    depart_api_fold_json,
+    depart_api_inline_component_json,
     depart_api_permalink,
+    depart_api_permalink_json,
     depart_api_region,
+    depart_api_region_json,
     depart_api_sig_fold,
+    depart_api_sig_fold_json,
+    depart_api_slot_json,
     depart_desc_signature_html,
     passthrough_depart,
     passthrough_visit,
     visit_api_component,
+    visit_api_component_json,
     visit_api_fold,
+    visit_api_fold_json,
+    visit_api_inline_component_json,
     visit_api_permalink,
+    visit_api_permalink_json,
     visit_api_region,
+    visit_api_region_json,
     visit_api_sig_fold,
+    visit_api_sig_fold_json,
+    visit_api_slot_json,
     visit_desc_signature_html,
 )
 
@@ -161,6 +175,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_node(
         api_region,
         html=(visit_api_region, depart_api_region),
+        json=(visit_api_region_json, depart_api_region_json),
         latex=_pt,
         text=_pt,
         man=_pt,
@@ -169,6 +184,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_node(
         api_fold,
         html=(visit_api_fold, depart_api_fold),
+        json=(visit_api_fold_json, depart_api_fold_json),
         latex=_pt,
         text=_pt,
         man=_pt,
@@ -177,6 +193,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_node(
         api_sig_fold,
         html=(visit_api_sig_fold, depart_api_sig_fold),
+        json=(visit_api_sig_fold_json, depart_api_sig_fold_json),
         latex=_pt,
         text=_pt,
         man=_pt,
@@ -185,6 +202,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_node(
         api_component,
         html=(visit_api_component, depart_api_component),
+        json=(visit_api_component_json, depart_api_component_json),
         latex=_pt,
         text=_pt,
         man=_pt,
@@ -193,6 +211,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_node(
         api_inline_component,
         html=(visit_api_component, depart_api_component),
+        json=(visit_api_inline_component_json, depart_api_inline_component_json),
         latex=_pt,
         text=_pt,
         man=_pt,
@@ -201,6 +220,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_node(
         api_slot,
         html=_pt,
+        json=(visit_api_slot_json, depart_api_slot_json),
         latex=_pt,
         text=_pt,
         man=_pt,
@@ -209,6 +229,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_node(
         api_permalink,
         html=(visit_api_permalink, depart_api_permalink),
+        json=(visit_api_permalink_json, depart_api_permalink_json),
         latex=_pt,
         text=_pt,
         man=_pt,
