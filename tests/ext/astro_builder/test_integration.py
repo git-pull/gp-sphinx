@@ -22,6 +22,7 @@ from gp_sphinx_astro_builder.models import (
     TextNode,
 )
 from tests._sphinx_scenarios import (
+    SCENARIO_SRCDIR_TOKEN,
     ScenarioFile,
     SphinxScenario,
     build_isolated_sphinx_result,
@@ -113,6 +114,132 @@ def test_astro_builder_emits_doctree_schema_in_finish(
     assert isinstance(schema, dict)
     assert "TextNode" in schema.get("$defs", {})
     assert "AdmonitionNode" in schema.get("$defs", {})
+
+
+_AUTODOC_MODULE_SOURCE = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+
+    def merge_demo(project: str, version: str = "0.0.0") -> dict[str, str]:
+        \"\"\"Merge a tiny pseudo-config payload.
+
+        Returns
+        -------
+        dict[str, str]
+            The merged payload, unchanged.
+        \"\"\"
+        return {"project": project, "version": version}
+    """,
+)
+
+_AUTODOC_CONF_PY = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    import sys
+
+    sys.path.insert(0, r"__SCENARIO_SRCDIR__")
+
+    project = "Demo"
+    extensions = ["sphinx.ext.autodoc", "gp_sphinx_astro_builder"]
+    master_doc = "index"
+    exclude_patterns = ["_build"]
+    """,
+)
+
+_AUTODOC_INDEX_RST = textwrap.dedent(
+    """\
+    Demo API
+    ========
+
+    .. autofunction:: demo_api.merge_demo
+    """,
+)
+
+
+@pytest.mark.integration
+def test_astro_builder_emits_symbols_json_for_autofunction(
+    tmp_path: pathlib.Path,
+) -> None:
+    """An autodoc'd function lands as one entry in ``src/content/api/symbols.json``."""
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("demo_api.py", _AUTODOC_MODULE_SOURCE),
+            ScenarioFile(
+                "conf.py",
+                _AUTODOC_CONF_PY.replace(
+                    "__SCENARIO_SRCDIR__",
+                    SCENARIO_SRCDIR_TOKEN,
+                ),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("index.rst", _AUTODOC_INDEX_RST),
+        ),
+    )
+    result = build_isolated_sphinx_result(
+        cache_root,
+        tmp_path,
+        scenario,
+        purge_modules=("demo_api",),
+    )
+
+    symbols_path = result.outdir / "src" / "content" / "api" / "symbols.json"
+    assert symbols_path.exists(), (
+        f"expected {symbols_path} to be emitted; "
+        f"outdir contents: {list(result.outdir.rglob('*'))}"
+    )
+
+    symbols = json.loads(symbols_path.read_text("utf-8"))
+    assert isinstance(symbols, list)
+    assert len(symbols) == 1
+    [symbol] = symbols
+    assert symbol["id"] == "demo_api.merge_demo"
+    assert symbol["kind"] == "function"
+    assert symbol["module"] == "demo_api"
+    assert "merge_demo" in symbol["name"]
+    assert symbol["docstring_summary"].startswith("Merge a tiny pseudo-config payload")
+
+
+@pytest.mark.integration
+def test_astro_builder_replaces_desc_with_symbol_ref_node(
+    tmp_path: pathlib.Path,
+) -> None:
+    """The doctree JSON contains a ``symbolRef`` placeholder, not raw ``desc``."""
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("demo_api.py", _AUTODOC_MODULE_SOURCE),
+            ScenarioFile(
+                "conf.py",
+                _AUTODOC_CONF_PY.replace(
+                    "__SCENARIO_SRCDIR__",
+                    SCENARIO_SRCDIR_TOKEN,
+                ),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("index.rst", _AUTODOC_INDEX_RST),
+        ),
+    )
+    result = build_isolated_sphinx_result(
+        cache_root,
+        tmp_path,
+        scenario,
+        purge_modules=("demo_api",),
+    )
+
+    output_path = result.outdir / "src" / "content" / "docs" / "index.json"
+    document = json.loads(output_path.read_text("utf-8"))
+    children = document["tree"]["children"]
+    symbol_refs = [c for c in children if c.get("type") == "symbolRef"]
+    assert len(symbol_refs) == 1
+    assert symbol_refs[0] == {
+        "type": "symbolRef",
+        "symbolId": "demo_api.merge_demo",
+    }
 
 
 @pytest.mark.integration
