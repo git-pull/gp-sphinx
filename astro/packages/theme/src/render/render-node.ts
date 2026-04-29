@@ -81,7 +81,14 @@ function renderSection(node: Extract<BlockNode, { type: 'section' }>, depth: num
       child.type === 'section' ? renderSection(child, depth + 1) : renderBlockNode(child),
     )
     .join('')
-  return `<section id="${escapeHtml(node.id)}"><${tag}>${titleHtml}</${tag}>${childrenHtml}</section>`
+  // ``headerlink`` mirrors Sphinx/Furo: a small ``#`` icon that
+  // appears on heading hover so readers can copy a deep link.
+  // Skip it when the section carries no id (no anchor to link to).
+  const headerlink =
+    node.id === ''
+      ? ''
+      : `<a class="headerlink" href="#${escapeHtml(node.id)}" aria-label="Permalink to this section">#</a>`
+  return `<section id="${escapeHtml(node.id)}"><${tag}>${titleHtml}${headerlink}</${tag}>${childrenHtml}</section>`
 }
 
 export function renderBlockNode(node: BlockNode): string {
