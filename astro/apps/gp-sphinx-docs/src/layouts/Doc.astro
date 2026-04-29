@@ -1,4 +1,10 @@
 ---
+import { Font } from 'astro:assets'
+import { ClientRouter } from 'astro:transitions'
+import Footer from '../components/Footer.astro'
+import Sidebar from '../components/Sidebar.astro'
+import TableOfContents from '../components/TableOfContents.astro'
+import TopNav from '../components/TopNav.astro'
 import '../styles/global.css'
 
 interface Props {
@@ -14,10 +20,19 @@ const { title } = Astro.props
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <Font cssVariable="--font-sans" preload />
+    <Font cssVariable="--font-mono" />
+    <ClientRouter />
   </head>
-  <body>
-    <main class="gp-sphinx-astro-doc">
-      <slot />
-    </main>
+  <body class="min-h-screen flex flex-col">
+    <TopNav />
+    <div class="mx-auto flex w-full max-w-7xl flex-1 px-4 py-8">
+      <Sidebar />
+      <main class="gp-sphinx-astro-doc min-w-0 flex-1">
+        <slot />
+      </main>
+      <TableOfContents />
+    </div>
+    <Footer />
   </body>
 </html>

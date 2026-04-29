@@ -1,73 +1,137 @@
-/* Minimal styles for the dogfood site. Real theming arrives in a later step
-   when Tailwind v4 + OKLCH tokens land alongside an Admonition design. */
+/**
+ * Tailwind v4 + design tokens for the gp-sphinx-docs dogfood site.
+ *
+ * The @theme block declares OKLCH tokens that match a clean,
+ * documentation-friendly palette. Light mode is the default; dark mode
+ * activates via :root[data-theme-mode="dark"], set by a vanilla JS
+ * theme toggle that persists to localStorage. We deliberately bypass
+ * @media (prefers-color-scheme) at this layer so the site honours an
+ * explicit user choice over the OS preference (still falling back to
+ * the OS when the user picks "system").
+ *
+ * Font CSS variables (--font-sans, --font-mono) come from Astro's
+ * Fonts API — see astro.config.ts.
+ */
 
-:root {
-  --gp-sphinx-astro-fg: #1a1a1a;
-  --gp-sphinx-astro-bg: #ffffff;
-  --gp-sphinx-astro-link: #1f5fb0;
-  --gp-sphinx-astro-code-bg: #f4f4f6;
-  --gp-sphinx-astro-admonition-bg: #f7f9fc;
-  --gp-sphinx-astro-admonition-border: #4a90e2;
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/typography';
+
+/* The Sphinx pipeline writes a sibling content.config.ts at build
+ * time; Tailwind would otherwise scan it and miss the actual app
+ * source. Pin the source root explicitly. */
+@source '../**/*.{astro,ts,tsx,html}';
+
+@custom-variant dark (&:where(:root[data-theme-mode='dark'], :root[data-theme-mode='dark'] *));
+
+@theme {
+  --font-sans:
+    var(--gp-sphinx-font-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:
+    var(--gp-sphinx-font-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* Light-mode tokens (default). OKLCH for perceptual uniformity. */
+  --color-bg: oklch(99% 0.005 240);
+  --color-fg: oklch(20% 0.02 240);
+  --color-muted: oklch(50% 0.015 240);
+  --color-border: oklch(90% 0.01 240);
+  --color-accent: oklch(55% 0.18 240);
+  --color-accent-fg: oklch(99% 0.005 240);
+  --color-code-bg: oklch(96% 0.01 240);
+  --color-admonition-bg: oklch(96% 0.02 240);
+  --color-admonition-border: oklch(55% 0.18 240);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --gp-sphinx-astro-fg: #e6e6e6;
-    --gp-sphinx-astro-bg: #1a1a1a;
-    --gp-sphinx-astro-link: #6aa3e8;
-    --gp-sphinx-astro-code-bg: #2a2a2a;
-    --gp-sphinx-astro-admonition-bg: #232a36;
-    --gp-sphinx-astro-admonition-border: #4a90e2;
+/* Dark mode overrides — toggled via data-theme-mode attribute on <html>. */
+:root[data-theme-mode='dark'] {
+  --color-bg: oklch(18% 0.015 240);
+  --color-fg: oklch(95% 0.005 240);
+  --color-muted: oklch(70% 0.01 240);
+  --color-border: oklch(30% 0.015 240);
+  --color-accent: oklch(75% 0.15 240);
+  --color-accent-fg: oklch(18% 0.015 240);
+  --color-code-bg: oklch(25% 0.015 240);
+  --color-admonition-bg: oklch(25% 0.02 240);
+  --color-admonition-border: oklch(75% 0.15 240);
+}
+
+/* Astro Fonts API exposes the resolved font stacks at the variable
+ * names declared in astro.config.ts. We re-alias them with a
+ * gp-sphinx prefix so the @theme tokens above can layer fallbacks
+ * deterministically. */
+:root {
+  --gp-sphinx-font-sans: var(--font-sans, system-ui);
+  --gp-sphinx-font-mono: var(--font-mono, ui-monospace);
+}
+
+@layer base {
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code,
+  pre,
+  kbd,
+  samp {
+    font-family: var(--font-mono);
+  }
+
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--color-border);
+    margin: 2rem 0;
   }
 }
 
-body {
-  margin: 0;
-  background: var(--gp-sphinx-astro-bg);
-  color: var(--gp-sphinx-astro-fg);
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  line-height: 1.55;
-}
+/* Renderer-emitted hooks. Each gp-sphinx-* class is a stable contract
+ * the Pydantic→Zod renderers rely on, so styles target them
+ * structurally rather than via tag selectors. */
+@layer components {
+  .gp-sphinx-astro-doc :where(code) {
+    background: var(--color-code-bg);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
 
-.gp-sphinx-astro-doc {
-  max-width: 46em;
-  margin: 0 auto;
-  padding: 2rem 1rem;
-}
+  .gp-sphinx-astro-doc :where(pre) {
+    background: var(--color-code-bg);
+    padding: 1em;
+    border-radius: 6px;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
 
-.gp-sphinx-astro-doc a {
-  color: var(--gp-sphinx-astro-link);
-}
+  .gp-sphinx-astro-doc :where(pre code) {
+    background: transparent;
+    padding: 0;
+  }
 
-.gp-sphinx-astro-doc code {
-  background: var(--gp-sphinx-astro-code-bg);
-  padding: 0.1em 0.3em;
-  border-radius: 3px;
-  font-size: 0.9em;
-}
+  .gp-sphinx-astro-doc .admonition {
+    background: var(--color-admonition-bg);
+    border-left: 4px solid var(--color-admonition-border);
+    padding: 0.75em 1em;
+    margin: 1em 0;
+    border-radius: 0 4px 4px 0;
+  }
 
-.gp-sphinx-astro-doc pre {
-  background: var(--gp-sphinx-astro-code-bg);
-  padding: 1em;
-  border-radius: 4px;
-  overflow-x: auto;
-}
-
-.gp-sphinx-astro-doc pre code {
-  background: transparent;
-  padding: 0;
-}
-
-.gp-sphinx-astro-doc .admonition {
-  background: var(--gp-sphinx-astro-admonition-bg);
-  border-left: 4px solid var(--gp-sphinx-astro-admonition-border);
-  padding: 0.75em 1em;
-  margin: 1em 0;
-  border-radius: 0 4px 4px 0;
-}
-
-.gp-sphinx-astro-doc .symbol-ref {
-  display: inline-block;
-  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
-  font-size: 0.95em;
+  .gp-sphinx-astro-doc .symbol-ref {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.95em;
+  }
 }
