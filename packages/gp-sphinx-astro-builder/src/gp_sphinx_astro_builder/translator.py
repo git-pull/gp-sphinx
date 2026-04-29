@@ -18,10 +18,13 @@ import typing as t
 
 from docutils import nodes
 
-from gp_sphinx_astro_builder.models import Document
+from gp_sphinx_astro_builder.models import Document, Symbol
+from gp_sphinx_astro_builder.symbols import normalize_symbol_kind
 
 if t.TYPE_CHECKING:
     from sphinx.builders import Builder
+
+    from gp_sphinx_astro_builder.symbols import SymbolAccumulator
 
 
 _FrameKind = t.Literal[
@@ -41,6 +44,8 @@ _FrameKind = t.Literal[
     "definitionListItem",
     "term",
     "definition",
+    "desc",
+    "desc_content",
 ]
 
 
@@ -92,12 +97,16 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         builder: Builder | None = None,
         *,
         docname: str = "",
+        symbol_accumulator: SymbolAccumulator | None = None,
     ) -> None:
         super().__init__(document)
         self._builder = builder
         if not docname and builder is not None:
             docname = getattr(builder, "current_docname", "") or ""
+        if symbol_accumulator is None and builder is not None:
+            symbol_accumulator = getattr(builder, "_symbol_accumulator", None)
         self._docname = docname
+        self._symbol_accumulator = symbol_accumulator
         self._stack: list[_Frame] = []
         self._tree: dict[str, t.Any] | None = None
         self._doc_title: str = ""
@@ -525,3 +534,111 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
 
     def depart_Text(self, node: nodes.Text) -> None:
         """No-op: text leaves have no closing handler."""
+
+    # ─── autodoc desc handling ─────────────────────────────────────────────
+    #
+    # ``addnodes.desc`` is the autodoc container for one symbol. It contains
+    # one or more ``desc_signature`` (the rendered signature) followed by
+    # exactly one ``desc_content`` (the docstring body). The translator
+    # converts the whole subtree into a :class:`Symbol` record stored in the
+    # builder-level ``SymbolAccumulator`` and leaves a ``symbolRef``
+    # placeholder in the doctree at the ``desc``'s position.
+
+    def visit_desc(self, node: nodes.Element) -> None:
+        """Open a ``desc`` frame to accumulate one Symbol's payload.
+
+        Raises
+        ------
+        docutils.nodes.SkipNode
+            When there is no parent block frame to attach the placeholder to;
+            a stray ``desc`` outside any section is skipped silently.
+        """
+        if not self._stack:
+            raise nodes.SkipNode
+        objtype = node.get("objtype", "") or ""
+        kind = normalize_symbol_kind(objtype)
+        self._stack.append(
+            {
+                "kind": "desc",
+                "data": {
+                    "id": "",
+                    "kind": kind,
+                    "name": "",
+                    "qualname": "",
+                    "module": "",
+                    "signature": "",
+                    "parameters": [],
+                    "returns": None,
+                    "docstring_summary": "",
+                    "docstring_body": [],
+                    "source": None,
+                },
+            },
+        )
+
+    def depart_desc(self, node: nodes.Element) -> None:
+        """Close the ``desc``; record the Symbol and emit a placeholder.
+
+        On exit:
+
+        - If the accumulated record has an ``id``, validate it as a
+          :class:`Symbol` and append to the builder-scoped accumulator.
+        - Append a ``symbolRef`` placeholder node to the parent block frame
+          (typically a section's ``children``) so the doctree retains the
+          symbol's position without inlining its content.
+        """
+        frame = self._stack.pop()
+        symbol_data = frame["data"]
+        symbol_id = symbol_data["id"]
+        if symbol_id and self._symbol_accumulator is not None:
+            self._symbol_accumulator.append(Symbol.model_validate(symbol_data))
+        if symbol_id and self._stack:
+            self._stack[-1]["data"]["children"].append(
+                {"type": "symbolRef", "symbolId": symbol_id},
+            )
+
+    def visit_desc_signature(self, node: nodes.Element) -> None:
+        """Capture signature metadata into the surrounding ``desc`` frame.
+
+        Raises
+        ------
+        docutils.nodes.SkipNode
+            Always: the signature's children (desc_addname, desc_name,
+            desc_parameterlist, …) carry inline-text fragments that the
+            existing visitors would happily emit into the parent's children
+            list. Skipping the subtree avoids that leakage.
+        """
+        if self._stack and self._stack[-1]["kind"] == "desc":
+            sym = self._stack[-1]["data"]
+            ids = node.get("ids") or []
+            if ids:
+                sym["id"] = ids[0]
+            sym["module"] = node.get("module", "") or ""
+            fullname = node.get("fullname", "") or ""
+            sym["qualname"] = fullname
+            sym["name"] = fullname.rsplit(".", 1)[-1] if fullname else ""
+            sym["signature"] = node.astext()
+        raise nodes.SkipNode
+
+    def visit_desc_content(self, node: nodes.Element) -> None:
+        """Open a fake block-container frame for the docstring body."""
+        self._stack.append({"kind": "desc_content", "data": {"children": []}})
+
+    def depart_desc_content(self, node: nodes.Element) -> None:
+        """Move accumulated block children into the parent ``desc`` frame."""
+        frame = self._stack.pop()
+        body: list[dict[str, t.Any]] = frame["data"]["children"]
+        if not (self._stack and self._stack[-1]["kind"] == "desc"):
+            return
+        sym = self._stack[-1]["data"]
+        sym["docstring_body"] = body
+        if not body:
+            return
+        first_block = body[0]
+        if first_block.get("type") != "paragraph":
+            return
+        sym["docstring_summary"] = "".join(
+            child.get("value", "")
+            for child in first_block.get("children", [])
+            if child.get("type") == "text"
+        )

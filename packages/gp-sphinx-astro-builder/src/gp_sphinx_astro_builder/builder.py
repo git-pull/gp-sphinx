@@ -18,6 +18,7 @@ from sphinx.util import logging
 from sphinx.util.osutil import _last_modified_time
 
 from gp_sphinx_astro_builder.schemas import export_doctree_schema
+from gp_sphinx_astro_builder.symbols import SymbolAccumulator
 from gp_sphinx_astro_builder.translator import DocTreeJSONTranslator
 
 if t.TYPE_CHECKING:
@@ -51,7 +52,8 @@ class AstroBuilder(Builder):
     default_translator_class = DocTreeJSONTranslator
 
     def init(self) -> None:
-        """No initialization required for the spike."""
+        """Initialize the build-scoped symbol accumulator."""
+        self._symbol_accumulator = SymbolAccumulator()
 
     def get_target_uri(self, docname: str, typ: str | None = None) -> str:
         """Return the JSON path (relative URI) for ``docname``."""
@@ -81,7 +83,12 @@ class AstroBuilder(Builder):
     def write_doc(self, docname: str, doctree: nodes.document) -> None:
         """Walk ``doctree`` through the JSON translator and write the result."""
         self.current_docname = docname
-        translator = DocTreeJSONTranslator(doctree, self, docname=docname)
+        translator = DocTreeJSONTranslator(
+            doctree,
+            self,
+            docname=docname,
+            symbol_accumulator=self._symbol_accumulator,
+        )
         doctree.walkabout(translator)
         document = translator.result()
 
@@ -96,13 +103,22 @@ class AstroBuilder(Builder):
         """Emit cross-document artifacts.
 
         Writes the canonical JSON Schema for the doctree wire format to
-        ``<outdir>/schemas/doctree.schema.json``. The TypeScript side
-        validates Zod schemas against this file.
+        ``<outdir>/schemas/doctree.schema.json`` and the accumulated symbol
+        records to ``<outdir>/src/content/api/symbols.json``. The TypeScript
+        side validates Zod schemas against the schema file and consumes the
+        symbol entries through Astro's ``file()`` content loader.
         """
         schema_path = self.outdir / "schemas" / "doctree.schema.json"
         schema_path.parent.mkdir(parents=True, exist_ok=True)
         schema_path.write_text(
             json.dumps(export_doctree_schema(), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+        symbols_path = self.outdir / "src" / "content" / "api" / "symbols.json"
+        symbols_path.parent.mkdir(parents=True, exist_ok=True)
+        symbols_path.write_text(
+            self._symbol_accumulator.to_json(),
             encoding="utf-8",
         )
 
