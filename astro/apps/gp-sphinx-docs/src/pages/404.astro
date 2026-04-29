@@ -1,0 +1,28 @@
+---
+/**
+ * 404 — page-not-found fallback.
+ *
+ * Astro renders ``404.astro`` automatically when no route matches.
+ * We reuse ``Doc.astro`` so the chrome (TopNav with search box,
+ * Sidebar with the doc tree, Footer) stays available — the user can
+ * usually find what they wanted from those affordances rather than
+ * leaving the site.
+ */
+import Doc from '../layouts/Doc.astro'
+---
+
+<Doc title="Page not found">
+  <article class="gp-sphinx-astro-doc" data-test-id="not-found">
+    <h1>Page not found</h1>
+    <p>
+      We couldn't find that page. Try the search box in the header (or
+      press <kbd>/</kbd>), pick a doc from the sidebar, or head back to
+      <a href="/">the home page</a>.
+    </p>
+    <p>
+      If you reached this page by following a link from somewhere else,
+      please <a href="https://github.com/git-pull/gp-sphinx/issues/new">
+      open an issue</a> so we can fix the dangling reference.
+    </p>
+  </article>
+</Doc>
