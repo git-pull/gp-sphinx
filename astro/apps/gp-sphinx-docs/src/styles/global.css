@@ -575,7 +575,6 @@
 
   /* Symbol body's recursive blocks need spacing matching prose. */
   .gp-sphinx-symbol__body p,
-  .gp-sphinx-symbol__body dl,
   .gp-sphinx-symbol__body pre {
     margin: 0.75rem 0;
   }
@@ -587,6 +586,52 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-muted);
+  }
+
+  /* In-body field lists ("Parameters", "Returns", "Return type",
+   * "Examples", "Notes") — these came from Sphinx field_list nodes
+   * aliased onto definition_list in cycle 29. We give each section
+   * label a small uppercase heading + a tinted indented body so the
+   * structure reads as a parameter table rather than a tag/value
+   * list. */
+  .gp-sphinx-symbol__body dl,
+  .gp-sphinx-astro-doc :where(.gp-sphinx-astro-doc) dl.field-list,
+  .gp-sphinx-astro-doc article dl,
+  .gp-sphinx-astro-doc section dl {
+    display: block;
+    margin: 1.25rem 0;
+  }
+
+  .gp-sphinx-symbol__body dl > dt,
+  .gp-sphinx-astro-doc article dl > dt,
+  .gp-sphinx-astro-doc section dl > dt {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+    margin: 1rem 0 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .gp-sphinx-symbol__body dl > dd,
+  .gp-sphinx-astro-doc article dl > dd,
+  .gp-sphinx-astro-doc section dl > dd {
+    margin: 0 0 0.75rem 0;
+    padding-left: 1.25rem;
+    border-left: 2px solid var(--color-border);
+  }
+
+  .gp-sphinx-symbol__body dl > dd > p,
+  .gp-sphinx-astro-doc article dl > dd > p,
+  .gp-sphinx-astro-doc section dl > dd > p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+  }
+
+  .gp-sphinx-symbol__body dl > dd > p:first-child {
+    margin-top: 0;
   }
 
   /* ─── apiLayout / autodoc layout components ───────────────────
