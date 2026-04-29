@@ -71,8 +71,14 @@ function renderSource(source: SymbolSource | null): string {
   if (source === null) {
     return ''
   }
+  // Build a deep blob link (file + ``#L<line>``) so clicking lands
+  // the reader on the exact line they're reading about. The repo
+  // URL may have a trailing slash from how it's authored in the
+  // Sphinx config; strip it so we never produce ``...//blob/...``.
+  const repo = source.repo.replace(/\/+$/, '')
+  const href = `${repo}/blob/main/${source.path}#L${source.line}`
   return [
-    `<a class="gp-sphinx-symbol__source" href="${escapeHtml(source.repo)}">`,
+    `<a class="gp-sphinx-symbol__source" href="${escapeHtml(href)}">`,
     escapeHtml(source.path),
     `:${source.line}`,
     '</a>',
