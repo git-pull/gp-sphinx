@@ -11,8 +11,10 @@
     "./schemas/xref": "./src/schemas/xref.ts",
     "./render/build-toc": "./src/render/build-toc.ts",
     "./render/extract-description": "./src/render/extract-description.ts",
+    "./render/highlight-code": "./src/render/highlight-code.ts",
     "./render/render-node": "./src/render/render-node.ts",
-    "./render/render-symbol": "./src/render/render-symbol.ts"
+    "./render/render-symbol": "./src/render/render-symbol.ts",
+    "./render/render-with-highlighting": "./src/render/render-with-highlighting.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -20,6 +22,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "shiki": "^4.0.2",
     "zod": "^4.0.0"
   },
   "devDependencies": {
