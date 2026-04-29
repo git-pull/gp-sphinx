@@ -143,7 +143,7 @@ describe('renderSymbol — docstring body', () => {
 })
 
 describe('renderSymbol — source attribution', () => {
-  test('renders the source link when source is provided', () => {
+  test('renders a deep blob link to the source line on GitHub', () => {
     const html = renderSymbol(
       makeFunctionSymbol({
         source: {
@@ -154,9 +154,26 @@ describe('renderSymbol — source attribution', () => {
       }),
     )
     expect(html).toContain('class="gp-sphinx-symbol__source"')
-    expect(html).toContain('href="https://github.com/git-pull/gp-sphinx"')
+    // The link must land at the exact line on GitHub, not the repo
+    // home; otherwise the user has to manually navigate the path.
+    expect(html).toContain(
+      'href="https://github.com/git-pull/gp-sphinx/blob/main/packages/gp-sphinx/src/gp_sphinx/config.py#L42"',
+    )
     expect(html).toContain('packages/gp-sphinx/src/gp_sphinx/config.py')
     expect(html).toContain('42')
+  })
+
+  test('strips trailing slashes from the repo URL when composing the blob link', () => {
+    const html = renderSymbol(
+      makeFunctionSymbol({
+        source: {
+          repo: 'https://github.com/git-pull/gp-sphinx/',
+          path: 'pkg/file.py',
+          line: 7,
+        },
+      }),
+    )
+    expect(html).toContain('href="https://github.com/git-pull/gp-sphinx/blob/main/pkg/file.py#L7"')
   })
 
   test('omits the source attribution when source is null', () => {
