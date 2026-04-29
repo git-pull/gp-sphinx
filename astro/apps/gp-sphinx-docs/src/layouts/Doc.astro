@@ -49,5 +49,16 @@ const { title, tocTree } = Astro.props
       <TableOfContents tree={tocTree} />
     </div>
     <Footer />
+    <script>
+      import { enhanceCodeBlocks } from '../lib/code-copy.ts'
+      function setup(): void {
+        const main = document.querySelector('main.gp-sphinx-astro-doc')
+        if (main !== null) {
+          enhanceCodeBlocks(main)
+        }
+      }
+      setup()
+      document.addEventListener('astro:after-swap', setup)
+    </script>
   </body>
 </html>
