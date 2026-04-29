@@ -18,9 +18,16 @@ interface Props {
    * own structured article header).
    */
   tocTree?: Document['tree']
+  /**
+   * Optional GitHub edit URL rendered as an "Edit this page" link
+   * below the main content. Doc pages derive it from the entry's
+   * source docname; symbol pages omit it (their source lives in
+   * the autodoc'd Python module, not in docs/).
+   */
+  editUrl?: string
 }
 
-const { title, tocTree } = Astro.props
+const { title, tocTree, editUrl } = Astro.props
 ---
 <!doctype html>
 <html lang="en">
@@ -45,6 +52,17 @@ const { title, tocTree } = Astro.props
         data-pagefind-meta={`title:${title}`}
       >
         <slot />
+        {editUrl !== undefined && (
+          <p
+            data-test-id="edit-on-github"
+            data-pagefind-ignore
+            class="mt-12 border-t border-[color:var(--color-border)] pt-4 text-sm text-[color:var(--color-muted)]"
+          >
+            <a href={editUrl} class="hover:underline">
+              Edit this page on GitHub →
+            </a>
+          </p>
+        )}
       </main>
       <TableOfContents tree={tocTree} />
     </div>
