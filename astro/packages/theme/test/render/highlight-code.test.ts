@@ -61,3 +61,28 @@ describe('createCodeHighlighter', () => {
     }).not.toThrow()
   })
 })
+
+describe('createCodeHighlighter — aliases', () => {
+  test('routes "myst" through the markdown grammar via the alias map', async () => {
+    const aliasHighlighter = await createCodeHighlighter({
+      themes: { light: 'github-light', dark: 'github-dark' },
+      langs: ['markdown'],
+      aliases: { myst: 'markdown' },
+    })
+    const html = aliasHighlighter('# heading\n\n- list\n', 'myst')
+    // Shiki classes the output as the underlying grammar even when
+    // the original input language was an alias.
+    expect(html).toContain('class="shiki')
+  })
+
+  test('a null alias forces the plain fallback even when the grammar exists', async () => {
+    const aliasHighlighter = await createCodeHighlighter({
+      themes: { light: 'github-light', dark: 'github-dark' },
+      langs: ['markdown'],
+      aliases: { text: null },
+    })
+    const html = aliasHighlighter('plain text', 'text')
+    expect(html).toContain('<pre><code class="language-text">')
+    expect(html).not.toContain('class="shiki')
+  })
+})

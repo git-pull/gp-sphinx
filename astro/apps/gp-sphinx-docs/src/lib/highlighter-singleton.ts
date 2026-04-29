@@ -41,7 +41,24 @@ export function getCodeHighlighter(): Promise<CodeHighlighter> {
         'ini',
         'rst',
         'md',
+        'markdown',
+        'mdx',
+        'css',
+        'html',
+        'xml',
+        'diff',
       ],
+      // ``myst`` (MyST-Markdown), ``rest`` and ``restructuredtext``
+      // aren't first-class Shiki bundles but are aliases over the
+      // markdown / rst grammars; the helper rewrites them to a
+      // bundled grammar before lookup.
+      aliases: {
+        myst: 'markdown',
+        rest: 'rst',
+        restructuredtext: 'rst',
+        text: null,
+        plaintext: null,
+      },
     })
   }
   return cached
