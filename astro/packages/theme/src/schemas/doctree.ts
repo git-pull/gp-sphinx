@@ -59,6 +59,15 @@ export type DefinitionListItemNode = {
   definition: BlockNode[]
 }
 
+export type ApiLayoutComponent =
+  | 'region'
+  | 'fold'
+  | 'sig_fold'
+  | 'component'
+  | 'inline_component'
+  | 'slot'
+  | 'permalink'
+
 export type BlockNode =
   | { type: 'paragraph'; children: InlineNode[] }
   | { type: 'section'; id: string; title: InlineNode[]; children: BlockNode[] }
@@ -71,6 +80,20 @@ export type BlockNode =
   | { type: 'admonition'; variant: AdmonitionVariant; children: BlockNode[] }
   | { type: 'definitionList'; children: DefinitionListItemNode[] }
   | { type: 'symbolRef'; symbolId: string }
+  | {
+      type: 'apiLayout'
+      component: ApiLayoutComponent
+      name: string | null
+      tag: string | null
+      kind: string | null
+      summary: string | null
+      href: string | null
+      title: string | null
+      slot: string | null
+      open: boolean
+      classes: string[]
+      children: BlockNode[]
+    }
 
 export type Document = {
   id: string
@@ -225,6 +248,33 @@ export const symbolRefNodeSchema = z.object({
   symbolId: z.string(),
 })
 
+export const apiLayoutComponentSchema = z.enum([
+  'region',
+  'fold',
+  'sig_fold',
+  'component',
+  'inline_component',
+  'slot',
+  'permalink',
+])
+
+export const apiLayoutNodeSchema = z.object({
+  type: z.literal('apiLayout'),
+  component: apiLayoutComponentSchema,
+  name: z.string().nullable().default(null),
+  tag: z.string().nullable().default(null),
+  kind: z.string().nullable().default(null),
+  summary: z.string().nullable().default(null),
+  href: z.string().nullable().default(null),
+  title: z.string().nullable().default(null),
+  slot: z.string().nullable().default(null),
+  open: z.boolean().default(false),
+  classes: z.array(z.string()).default([]),
+  get children() {
+    return z.array(blockNodeSchema).default([])
+  },
+})
+
 export const sectionNodeSchema = z.object({
   type: z.literal('section'),
   id: z.string(),
@@ -246,6 +296,7 @@ export const blockNodeSchema: z.ZodType<BlockNode> = z.discriminatedUnion('type'
   admonitionNodeSchema,
   definitionListNodeSchema,
   symbolRefNodeSchema,
+  apiLayoutNodeSchema,
 ])
 
 // ─── Top-level document

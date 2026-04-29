@@ -21,6 +21,8 @@ from gp_sphinx_astro_builder.content_config import render_content_config
 from gp_sphinx_astro_builder.models import (
     AdmonitionNode,
     AdmonitionVariant,
+    ApiLayoutComponent,
+    ApiLayoutNode,
     BadgeNode,
     BadgeSize,
     BadgeStyle,
@@ -65,6 +67,8 @@ if t.TYPE_CHECKING:
 __all__ = [
     "AdmonitionNode",
     "AdmonitionVariant",
+    "ApiLayoutComponent",
+    "ApiLayoutNode",
     "AstroBuilder",
     "BadgeNode",
     "BadgeSize",

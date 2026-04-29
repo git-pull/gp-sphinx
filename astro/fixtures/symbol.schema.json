@@ -8,6 +8,7 @@
             "discriminator": {
               "mapping": {
                 "admonition": "#/$defs/AdmonitionNode",
+                "apiLayout": "#/$defs/ApiLayoutNode",
                 "blockQuote": "#/$defs/BlockQuoteNode",
                 "bulletList": "#/$defs/BulletListNode",
                 "comment": "#/$defs/CommentNode",
@@ -54,6 +55,9 @@
               },
               {
                 "$ref": "#/$defs/SymbolRefNode"
+              },
+              {
+                "$ref": "#/$defs/ApiLayoutNode"
               }
             ]
           },
@@ -87,6 +91,194 @@
         "children"
       ],
       "title": "AdmonitionNode",
+      "type": "object"
+    },
+    "ApiLayoutNode": {
+      "description": "A layout primitive emitted by :mod:`sphinx_ux_autodoc_layout`.\n\nThe seven custom node types from that extension share a common shape:\na structural wrapper carrying optional name/tag/kind/summary/etc.\nattributes plus block children. Modelling them as a single discriminated\ncontainer lets the Astro renderer dispatch on ``component`` without\nneeding seven near-identical Pydantic classes.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import ApiLayoutNode\n>>> region = ApiLayoutNode(\n...     type=\"apiLayout\",\n...     component=\"region\",\n...     kind=\"narrative\",\n... )\n>>> region.component\n'region'",
+      "properties": {
+        "children": {
+          "default": [],
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "admonition": "#/$defs/AdmonitionNode",
+                "apiLayout": "#/$defs/ApiLayoutNode",
+                "blockQuote": "#/$defs/BlockQuoteNode",
+                "bulletList": "#/$defs/BulletListNode",
+                "comment": "#/$defs/CommentNode",
+                "definitionList": "#/$defs/DefinitionListNode",
+                "enumeratedList": "#/$defs/EnumeratedListNode",
+                "literalBlock": "#/$defs/LiteralBlockNode",
+                "paragraph": "#/$defs/ParagraphNode",
+                "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
+                "transition": "#/$defs/TransitionNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ParagraphNode"
+              },
+              {
+                "$ref": "#/$defs/SectionNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralBlockNode"
+              },
+              {
+                "$ref": "#/$defs/CommentNode"
+              },
+              {
+                "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/BlockQuoteNode"
+              },
+              {
+                "$ref": "#/$defs/BulletListNode"
+              },
+              {
+                "$ref": "#/$defs/EnumeratedListNode"
+              },
+              {
+                "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
+              },
+              {
+                "$ref": "#/$defs/ApiLayoutNode"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "classes": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Classes",
+          "type": "array"
+        },
+        "component": {
+          "enum": [
+            "region",
+            "fold",
+            "sig_fold",
+            "component",
+            "inline_component",
+            "slot",
+            "permalink"
+          ],
+          "title": "Component",
+          "type": "string"
+        },
+        "href": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Href"
+        },
+        "kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Kind"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "open": {
+          "default": false,
+          "title": "Open",
+          "type": "boolean"
+        },
+        "slot": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Slot"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Summary"
+        },
+        "tag": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tag"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "type": {
+          "const": "apiLayout",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "component"
+      ],
+      "title": "ApiLayoutNode",
       "type": "object"
     },
     "BadgeNode": {
@@ -173,6 +365,7 @@
             "discriminator": {
               "mapping": {
                 "admonition": "#/$defs/AdmonitionNode",
+                "apiLayout": "#/$defs/ApiLayoutNode",
                 "blockQuote": "#/$defs/BlockQuoteNode",
                 "bulletList": "#/$defs/BulletListNode",
                 "comment": "#/$defs/CommentNode",
@@ -219,6 +412,9 @@
               },
               {
                 "$ref": "#/$defs/SymbolRefNode"
+              },
+              {
+                "$ref": "#/$defs/ApiLayoutNode"
               }
             ]
           },
@@ -289,6 +485,7 @@
             "discriminator": {
               "mapping": {
                 "admonition": "#/$defs/AdmonitionNode",
+                "apiLayout": "#/$defs/ApiLayoutNode",
                 "blockQuote": "#/$defs/BlockQuoteNode",
                 "bulletList": "#/$defs/BulletListNode",
                 "comment": "#/$defs/CommentNode",
@@ -335,6 +532,9 @@
               },
               {
                 "$ref": "#/$defs/SymbolRefNode"
+              },
+              {
+                "$ref": "#/$defs/ApiLayoutNode"
               }
             ]
           },
@@ -551,6 +751,7 @@
             "discriminator": {
               "mapping": {
                 "admonition": "#/$defs/AdmonitionNode",
+                "apiLayout": "#/$defs/ApiLayoutNode",
                 "blockQuote": "#/$defs/BlockQuoteNode",
                 "bulletList": "#/$defs/BulletListNode",
                 "comment": "#/$defs/CommentNode",
@@ -597,6 +798,9 @@
               },
               {
                 "$ref": "#/$defs/SymbolRefNode"
+              },
+              {
+                "$ref": "#/$defs/ApiLayoutNode"
               }
             ]
           },
@@ -844,6 +1048,7 @@
             "discriminator": {
               "mapping": {
                 "admonition": "#/$defs/AdmonitionNode",
+                "apiLayout": "#/$defs/ApiLayoutNode",
                 "blockQuote": "#/$defs/BlockQuoteNode",
                 "bulletList": "#/$defs/BulletListNode",
                 "comment": "#/$defs/CommentNode",
@@ -890,6 +1095,9 @@
               },
               {
                 "$ref": "#/$defs/SymbolRefNode"
+              },
+              {
+                "$ref": "#/$defs/ApiLayoutNode"
               }
             ]
           },
@@ -1100,6 +1308,7 @@
         "discriminator": {
           "mapping": {
             "admonition": "#/$defs/AdmonitionNode",
+            "apiLayout": "#/$defs/ApiLayoutNode",
             "blockQuote": "#/$defs/BlockQuoteNode",
             "bulletList": "#/$defs/BulletListNode",
             "comment": "#/$defs/CommentNode",
@@ -1146,6 +1355,9 @@
           },
           {
             "$ref": "#/$defs/SymbolRefNode"
+          },
+          {
+            "$ref": "#/$defs/ApiLayoutNode"
           }
         ]
       },
