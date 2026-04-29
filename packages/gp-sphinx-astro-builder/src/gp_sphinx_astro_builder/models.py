@@ -316,6 +316,29 @@ class DefinitionListNode(BaseModel):
     children: list[DefinitionListItemNode]
 
 
+class SymbolRefNode(BaseModel):
+    """A block-level placeholder pointing to an entry in ``symbols.json``.
+
+    The autodoc directive (``.. autofunction::`` etc.) emits a ``desc`` node
+    that the translator replaces with a :class:`SymbolRefNode`. The actual
+    symbol payload is accumulated separately and written to
+    ``src/content/api/symbols.json``; the renderer joins the two via the
+    ``symbolId`` foreign key.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import SymbolRefNode
+    >>> node = SymbolRefNode.model_validate(
+    ...     {"type": "symbolRef", "symbolId": "x.y.foo"},
+    ... )
+    >>> node.symbolId
+    'x.y.foo'
+    """
+
+    type: t.Literal["symbolRef"]
+    symbolId: str
+
+
 class AdmonitionNode(BaseModel):
     """A block-level admonition (note, warning, tip, …).
 
@@ -427,10 +450,122 @@ BlockNode = t.Annotated[
     | BulletListNode
     | EnumeratedListNode
     | AdmonitionNode
-    | DefinitionListNode,
+    | DefinitionListNode
+    | SymbolRefNode,
     Field(discriminator="type"),
 ]
 """Discriminated union of nodes that may appear in a block (body) context."""
+
+
+# ─── Symbol models (top-level entries in src/content/api/symbols.json)
+
+
+ParameterKind = t.Literal[
+    "positional",
+    "keyword",
+    "var_positional",
+    "var_keyword",
+]
+"""Allowed values for :attr:`Parameter.kind`.
+
+The four kinds correspond to docutils-side classifications of how the
+parameter is bound: positional-only, keyword-only (or positional-or-keyword
+in autodoc's loose sense), ``*args``, and ``**kwargs``.
+"""
+
+
+SymbolKind = t.Literal[
+    "function",
+    "class",
+    "method",
+    "attribute",
+    "property",
+    "enum",
+    "dataclass",
+    "module",
+]
+"""Allowed values for :attr:`Symbol.kind`.
+
+Mirrors the eight Python-domain object types that ``sphinx.ext.autodoc``
+emits as ``desc`` nodes. Custom symbol kinds (CLI commands, MCP tools,
+pytest fixtures) carry their own node types and are emitted by the
+respective ``sphinx-autodoc-*`` extensions in their own per-extension
+schemas.
+"""
+
+
+class Parameter(BaseModel):
+    """One parameter in a callable signature.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import Parameter
+    >>> p = Parameter(name="x", annotation="int", default="0", kind="positional")
+    >>> p.kind
+    'positional'
+    """
+
+    name: str
+    annotation: str | None
+    default: str | None
+    kind: ParameterKind
+
+
+class SymbolSource(BaseModel):
+    """Source-location pointer for a symbol.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import SymbolSource
+    >>> SymbolSource(repo="x", path="y.py", line=1).line
+    1
+    """
+
+    repo: str
+    path: str
+    line: int
+
+
+class Symbol(BaseModel):
+    """One API symbol — function, class, method, etc. — emitted by autodoc.
+
+    The ``id`` field is the fully-qualified import path
+    (e.g. ``"gp_sphinx.config.merge_sphinx_config"``) and is the join key
+    referenced by :class:`SymbolRefNode.symbolId`. The ``docstring_body``
+    field holds the parsed doctree of the docstring's body, so the same
+    ``<Node>`` renderer that handles top-level documents handles docstrings.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import Symbol
+    >>> s = Symbol(
+    ...     id="x.y.foo",
+    ...     kind="function",
+    ...     name="foo",
+    ...     qualname="foo",
+    ...     module="x.y",
+    ...     signature="()",
+    ...     parameters=[],
+    ...     returns=None,
+    ...     docstring_summary="Hi.",
+    ...     docstring_body=[],
+    ...     source=None,
+    ... )
+    >>> s.id
+    'x.y.foo'
+    """
+
+    id: str
+    kind: SymbolKind
+    name: str
+    qualname: str
+    module: str
+    signature: str
+    parameters: list[Parameter]
+    returns: str | None
+    docstring_summary: str
+    docstring_body: list[BlockNode]
+    source: SymbolSource | None
 
 
 EmphasisNode.model_rebuild()
@@ -442,3 +577,4 @@ BlockQuoteNode.model_rebuild()
 ListItemNode.model_rebuild()
 AdmonitionNode.model_rebuild()
 DefinitionListItemNode.model_rebuild()
+Symbol.model_rebuild()

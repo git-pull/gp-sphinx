@@ -22,9 +22,13 @@ from gp_sphinx_astro_builder.models import (
     LiteralBlockNode,
     LiteralNode,
     ParagraphNode,
+    Parameter,
     ReferenceNode,
     SectionNode,
     StrongNode,
+    Symbol,
+    SymbolRefNode,
+    SymbolSource,
     TextNode,
     TransitionNode,
 )
@@ -449,6 +453,212 @@ def test_definition_list_rejects_non_item_child() -> None:
                 "children": [_make_para_payload("oops")],
             },
         )
+
+
+class ParameterKindFixture(t.NamedTuple):
+    """Each accepted ``Parameter.kind`` literal value."""
+
+    test_id: str
+    kind: str
+
+
+_PARAMETER_KIND_FIXTURES: list[ParameterKindFixture] = [
+    ParameterKindFixture("positional", "positional"),
+    ParameterKindFixture("keyword", "keyword"),
+    ParameterKindFixture("var_positional", "var_positional"),
+    ParameterKindFixture("var_keyword", "var_keyword"),
+]
+
+
+@pytest.mark.parametrize(
+    list(ParameterKindFixture._fields),
+    _PARAMETER_KIND_FIXTURES,
+    ids=[f.test_id for f in _PARAMETER_KIND_FIXTURES],
+)
+def test_parameter_accepts_each_canonical_kind(test_id: str, kind: str) -> None:
+    """``Parameter`` accepts every supported ``kind`` literal."""
+    del test_id
+    p = Parameter.model_validate(
+        {"name": "x", "annotation": None, "default": None, "kind": kind},
+    )
+    assert p.kind == kind
+
+
+def test_parameter_rejects_unknown_kind() -> None:
+    """``Parameter.kind`` rejects values outside the literal set."""
+    with pytest.raises(ValidationError):
+        Parameter.model_validate(
+            {"name": "x", "annotation": None, "default": None, "kind": "weird"},
+        )
+
+
+def test_parameter_round_trips_with_all_optional_fields() -> None:
+    """``Parameter`` round-trips with non-null annotation and default."""
+    p = Parameter(name="count", annotation="int", default="0", kind="positional")
+    assert p.model_dump() == {
+        "name": "count",
+        "annotation": "int",
+        "default": "0",
+        "kind": "positional",
+    }
+
+
+def test_symbol_source_round_trips() -> None:
+    """``SymbolSource`` carries repo, path, and line number."""
+    src = SymbolSource(
+        repo="https://github.com/git-pull/gp-sphinx",
+        path="packages/gp-sphinx/src/gp_sphinx/config.py",
+        line=42,
+    )
+    assert src.line == 42
+    assert src.path.endswith("config.py")
+
+
+class SymbolKindFixture(t.NamedTuple):
+    """Each accepted ``Symbol.kind`` literal value."""
+
+    test_id: str
+    kind: str
+
+
+_SYMBOL_KIND_FIXTURES: list[SymbolKindFixture] = [
+    SymbolKindFixture(test_id=k, kind=k)
+    for k in (
+        "function",
+        "class",
+        "method",
+        "attribute",
+        "property",
+        "enum",
+        "dataclass",
+        "module",
+    )
+]
+
+
+@pytest.mark.parametrize(
+    list(SymbolKindFixture._fields),
+    _SYMBOL_KIND_FIXTURES,
+    ids=[f.test_id for f in _SYMBOL_KIND_FIXTURES],
+)
+def test_symbol_accepts_each_canonical_kind(test_id: str, kind: str) -> None:
+    """``Symbol`` accepts every supported ``kind`` literal."""
+    del test_id
+    s = Symbol.model_validate(
+        {
+            "id": "x.y.foo",
+            "kind": kind,
+            "name": "foo",
+            "qualname": "foo",
+            "module": "x.y",
+            "signature": "()",
+            "parameters": [],
+            "returns": None,
+            "docstring_summary": "Hello.",
+            "docstring_body": [],
+            "source": None,
+        },
+    )
+    assert s.kind == kind
+
+
+def test_symbol_rejects_unknown_kind() -> None:
+    """``Symbol.kind`` rejects values outside the literal set."""
+    with pytest.raises(ValidationError):
+        Symbol.model_validate(
+            {
+                "id": "x.y.foo",
+                "kind": "namespace",
+                "name": "foo",
+                "qualname": "foo",
+                "module": "x.y",
+                "signature": "()",
+                "parameters": [],
+                "returns": None,
+                "docstring_summary": "",
+                "docstring_body": [],
+                "source": None,
+            },
+        )
+
+
+def test_symbol_round_trips_with_full_payload() -> None:
+    """A complete ``Symbol`` round-trips through ``model_dump`` byte-stably."""
+    payload = {
+        "id": "gp_sphinx.config.merge_sphinx_config",
+        "kind": "function",
+        "name": "merge_sphinx_config",
+        "qualname": "merge_sphinx_config",
+        "module": "gp_sphinx.config",
+        "signature": "(*, project: str, version: str, **kwargs: t.Any) -> dict[str, t.Any]",
+        "parameters": [
+            {
+                "name": "project",
+                "annotation": "str",
+                "default": None,
+                "kind": "keyword",
+            },
+            {
+                "name": "version",
+                "annotation": "str",
+                "default": None,
+                "kind": "keyword",
+            },
+            {
+                "name": "kwargs",
+                "annotation": "t.Any",
+                "default": None,
+                "kind": "var_keyword",
+            },
+        ],
+        "returns": "dict[str, t.Any]",
+        "docstring_summary": "Merge per-project Sphinx config onto shared defaults.",
+        "docstring_body": [
+            {
+                "type": "paragraph",
+                "children": [
+                    {"type": "text", "value": "Detail goes here."},
+                ],
+            },
+        ],
+        "source": {
+            "repo": "https://github.com/git-pull/gp-sphinx",
+            "path": "packages/gp-sphinx/src/gp_sphinx/config.py",
+            "line": 17,
+        },
+    }
+    s = Symbol.model_validate(payload)
+    assert s.model_dump() == payload
+    assert isinstance(s.parameters[0], Parameter)
+    assert isinstance(s.docstring_body[0], ParagraphNode)
+    assert isinstance(s.source, SymbolSource)
+
+
+def test_symbol_ref_node_round_trips() -> None:
+    """``SymbolRefNode`` carries the symbolId foreign key into symbols.json."""
+    n = SymbolRefNode.model_validate(
+        {"type": "symbolRef", "symbolId": "gp_sphinx.config.merge_sphinx_config"},
+    )
+    assert n.symbolId == "gp_sphinx.config.merge_sphinx_config"
+    assert n.model_dump() == {
+        "type": "symbolRef",
+        "symbolId": "gp_sphinx.config.merge_sphinx_config",
+    }
+
+
+def test_section_accepts_symbol_ref_node_as_block_child() -> None:
+    """``SectionNode`` accepts a ``SymbolRefNode`` through the block union."""
+    s = SectionNode.model_validate(
+        {
+            "type": "section",
+            "id": "api",
+            "title": [{"type": "text", "value": "API"}],
+            "children": [
+                {"type": "symbolRef", "symbolId": "x.y.foo"},
+            ],
+        },
+    )
+    assert isinstance(s.children[0], SymbolRefNode)
 
 
 def test_section_accepts_block_level_block_nodes() -> None:

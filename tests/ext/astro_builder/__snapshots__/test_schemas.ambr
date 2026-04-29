@@ -38,6 +38,7 @@
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
+                  'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -72,6 +73,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SymbolRefNode',
                 }),
               ]),
             }),
@@ -142,6 +146,7 @@
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
+                  'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -176,6 +181,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SymbolRefNode',
                 }),
               ]),
             }),
@@ -299,6 +307,7 @@
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
+                  'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -333,6 +342,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SymbolRefNode',
                 }),
               ]),
             }),
@@ -609,6 +621,7 @@
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
+                  'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -643,6 +656,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SymbolRefNode',
                 }),
               ]),
             }),
@@ -905,6 +921,7 @@
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
+                  'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -939,6 +956,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SymbolRefNode',
                 }),
               ]),
             }),
@@ -1063,6 +1083,43 @@
           'children',
         ]),
         'title': 'StrongNode',
+        'type': 'object',
+      }),
+      'SymbolRefNode': dict({
+        'description': '''
+          A block-level placeholder pointing to an entry in ``symbols.json``.
+          
+          The autodoc directive (``.. autofunction::`` etc.) emits a ``desc`` node
+          that the translator replaces with a :class:`SymbolRefNode`. The actual
+          symbol payload is accumulated separately and written to
+          ``src/content/api/symbols.json``; the renderer joins the two via the
+          ``symbolId`` foreign key.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import SymbolRefNode
+          >>> node = SymbolRefNode.model_validate(
+          ...     {"type": "symbolRef", "symbolId": "x.y.foo"},
+          ... )
+          >>> node.symbolId
+          'x.y.foo'
+        ''',
+        'properties': dict({
+          'symbolId': dict({
+            'title': 'Symbolid',
+            'type': 'string',
+          }),
+          'type': dict({
+            'const': 'symbolRef',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'symbolId',
+        ]),
+        'title': 'SymbolRefNode',
         'type': 'object',
       }),
       'TextNode': dict({

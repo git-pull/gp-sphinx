@@ -16,6 +16,7 @@
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
                 "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
                 "transition": "#/$defs/TransitionNode"
               },
               "propertyName": "type"
@@ -50,6 +51,9 @@
               },
               {
                 "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
               }
             ]
           },
@@ -101,6 +105,7 @@
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
                 "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
                 "transition": "#/$defs/TransitionNode"
               },
               "propertyName": "type"
@@ -135,6 +140,9 @@
               },
               {
                 "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
               }
             ]
           },
@@ -213,6 +221,7 @@
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
                 "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
                 "transition": "#/$defs/TransitionNode"
               },
               "propertyName": "type"
@@ -247,6 +256,9 @@
               },
               {
                 "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
               }
             ]
           },
@@ -463,6 +475,7 @@
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
                 "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
                 "transition": "#/$defs/TransitionNode"
               },
               "propertyName": "type"
@@ -497,6 +510,9 @@
               },
               {
                 "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
               }
             ]
           },
@@ -695,6 +711,7 @@
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
                 "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
                 "transition": "#/$defs/TransitionNode"
               },
               "propertyName": "type"
@@ -729,6 +746,9 @@
               },
               {
                 "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
               }
             ]
           },
@@ -842,6 +862,26 @@
         "children"
       ],
       "title": "StrongNode",
+      "type": "object"
+    },
+    "SymbolRefNode": {
+      "description": "A block-level placeholder pointing to an entry in ``symbols.json``.\n\nThe autodoc directive (``.. autofunction::`` etc.) emits a ``desc`` node\nthat the translator replaces with a :class:`SymbolRefNode`. The actual\nsymbol payload is accumulated separately and written to\n``src/content/api/symbols.json``; the renderer joins the two via the\n``symbolId`` foreign key.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import SymbolRefNode\n>>> node = SymbolRefNode.model_validate(\n...     {\"type\": \"symbolRef\", \"symbolId\": \"x.y.foo\"},\n... )\n>>> node.symbolId\n'x.y.foo'",
+      "properties": {
+        "symbolId": {
+          "title": "Symbolid",
+          "type": "string"
+        },
+        "type": {
+          "const": "symbolRef",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "symbolId"
+      ],
+      "title": "SymbolRefNode",
       "type": "object"
     },
     "TextNode": {
