@@ -1,0 +1,159 @@
+---
+/**
+ * MobileSidebar — slide-in nav drawer for sub-``lg`` viewports.
+ *
+ * Reuses ``buildNavTree`` from the desktop ``Sidebar.astro`` so the
+ * two surfaces stay in sync. Visibility is driven by the
+ * ``data-state`` attribute toggled by ``../lib/mobile-drawer.ts``;
+ * a backdrop dims the page and traps clicks (clicking the backdrop
+ * closes via the same close handler the X button uses).
+ */
+import { getCollection } from 'astro:content'
+import { buildNavTree, type NavEntryInput } from '../lib/nav-tree.ts'
+
+const entries = await getCollection('docs')
+const navInputs: NavEntryInput[] = entries.map((entry) => ({
+  id: entry.id,
+  data: { title: entry.data.title },
+}))
+const tree = buildNavTree(navInputs)
+const currentPath = Astro.url.pathname
+---
+
+<div
+  id="mobile-drawer-panel"
+  data-test-id="mobile-drawer-panel"
+  data-state="closed"
+  hidden
+  class="fixed inset-0 z-50 lg:hidden"
+>
+  <button
+    type="button"
+    data-test-id="mobile-drawer-close"
+    aria-label="Close navigation"
+    class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+  ></button>
+  <div
+    class="relative ml-0 flex h-full w-72 max-w-[80%] flex-col gap-4 overflow-y-auto border-r border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-4 py-6 shadow-xl"
+  >
+    <div class="flex items-center justify-between">
+      <span class="text-sm font-semibold tracking-tight text-[color:var(--color-fg)]">
+        Documentation
+      </span>
+      <button
+        type="button"
+        data-test-id="mobile-drawer-close"
+        aria-label="Close navigation"
+        class="grid h-8 w-8 place-items-center rounded border border-[color:var(--color-border)] text-[color:var(--color-fg)] hover:bg-[color:var(--color-code-bg)]"
+      >
+        <span aria-hidden="true">✕</span>
+      </button>
+    </div>
+    <nav class="text-sm">
+      <ul class="space-y-0.5">
+        {tree.map((node) => {
+          if (node.type === 'leaf') {
+            const isActive = node.href === currentPath
+            return (
+              <li>
+                <a
+                  href={node.href}
+                  aria-current={isActive ? 'page' : undefined}
+                  class:list={[
+                    'block rounded px-2 py-1 text-[color:var(--color-fg)] hover:bg-[color:var(--color-code-bg)]',
+                    isActive &&
+                      'bg-[color:var(--color-code-bg)] font-semibold text-[color:var(--color-accent)]',
+                  ]}
+                >
+                  {node.title}
+                </a>
+              </li>
+            )
+          }
+          return (
+            <li class="mt-4">
+              <p class="mb-1 px-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--color-muted)]">
+                {node.name}
+              </p>
+              <ul class="space-y-0.5">
+                {node.children.map((leaf) => {
+                  const isActive = leaf.href === currentPath
+                  return (
+                    <li>
+                      <a
+                        href={leaf.href}
+                        aria-current={isActive ? 'page' : undefined}
+                        class:list={[
+                          'block rounded px-2 py-1 text-[color:var(--color-fg)] hover:bg-[color:var(--color-code-bg)]',
+                          isActive &&
+                            'bg-[color:var(--color-code-bg)] font-semibold text-[color:var(--color-accent)]',
+                        ]}
+                      >
+                        {leaf.title}
+                      </a>
+                    </li>
+                  )
+                })}
+              </ul>
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<style>
+  /* Slide-in animation. Tailwind v4 doesn't ship transitions on
+   * arbitrary attribute selectors, so we drive the transform via a
+   * tiny @keyframes block. */
+  [data-test-id='mobile-drawer-panel'] > div:last-of-type {
+    transform: translateX(-100%);
+    transition: transform 0.18s ease-out;
+  }
+  [data-test-id='mobile-drawer-panel'][data-state='open'] > div:last-of-type {
+    transform: translateX(0);
+  }
+</style>
+
+<script>
+  import { initMobileDrawer } from '../lib/mobile-drawer.ts'
+
+  function setup(): void {
+    const trigger = document.querySelector<HTMLElement>(
+      '[data-test-id="mobile-drawer-trigger"]',
+    )
+    const panel = document.querySelector<HTMLElement>(
+      '[data-test-id="mobile-drawer-panel"]',
+    )
+    if (trigger === null || panel === null) {
+      return
+    }
+    // Multiple close buttons (X icon + backdrop) live inside the
+    // panel; wire each one through the helper. The helper attaches a
+    // single document-level keydown listener so it doesn't need every
+    // close button.
+    const closeButtons = panel.querySelectorAll<HTMLElement>(
+      '[data-test-id="mobile-drawer-close"]',
+    )
+    initMobileDrawer({
+      trigger,
+      panel,
+      closeButton: closeButtons[0],
+    })
+    for (let i = 1; i < closeButtons.length; i += 1) {
+      const button = closeButtons[i]
+      if (button !== undefined) {
+        button.addEventListener('click', () => {
+          panel.setAttribute('data-state', 'closed')
+          panel.setAttribute('hidden', '')
+          trigger.setAttribute('aria-expanded', 'false')
+          document.documentElement.style.overflow = ''
+        })
+      }
+    }
+  }
+
+  setup()
+  document.addEventListener('astro:after-swap', setup)
+</script>

@@ -3,6 +3,7 @@ import { Font } from 'astro:assets'
 import { ClientRouter } from 'astro:transitions'
 import type { Document } from '@gp-sphinx-astro/theme/schemas/doctree'
 import Footer from '../components/Footer.astro'
+import MobileSidebar from '../components/MobileSidebar.astro'
 import Sidebar from '../components/Sidebar.astro'
 import TableOfContents from '../components/TableOfContents.astro'
 import ThemeScript from '../components/ThemeScript.astro'
@@ -35,6 +36,7 @@ const { title, tocTree } = Astro.props
   </head>
   <body class="min-h-screen flex flex-col">
     <TopNav />
+    <MobileSidebar />
     <div class="mx-auto flex w-full max-w-7xl flex-1 px-4 py-8">
       <Sidebar />
       <main class="gp-sphinx-astro-doc min-w-0 flex-1">
