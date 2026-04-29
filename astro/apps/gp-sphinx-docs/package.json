@@ -14,7 +14,10 @@
   },
   "dependencies": {
     "@gp-sphinx-astro/theme": "workspace:^",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.2.4",
     "astro": "^6.1.9",
+    "tailwindcss": "^4.2.4",
     "zod": "^4.0.0"
   },
   "devDependencies": {
