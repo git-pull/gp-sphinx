@@ -46,6 +46,47 @@
   --color-code-bg: oklch(96% 0.01 240);
   --color-admonition-bg: oklch(96% 0.02 240);
   --color-admonition-border: oklch(55% 0.18 240);
+
+  /* Per-kind admonition tokens. The hue palette mirrors Furo's
+   * convention (blue for note, orange for warning, red for danger,
+   * green for tip/hint, teal for important) so readers coming
+   * from a Furo-themed site recognise the colour grammar. */
+  --color-admonition-note: oklch(60% 0.16 245);
+  --color-admonition-tip: oklch(60% 0.18 145);
+  --color-admonition-hint: oklch(60% 0.18 145);
+  --color-admonition-warning: oklch(70% 0.18 60);
+  --color-admonition-caution: oklch(70% 0.18 60);
+  --color-admonition-attention: oklch(60% 0.22 25);
+  --color-admonition-danger: oklch(60% 0.22 25);
+  --color-admonition-error: oklch(60% 0.22 25);
+  --color-admonition-important: oklch(62% 0.16 195);
+  --color-admonition-seealso: oklch(60% 0.16 270);
+
+  /* Link palette */
+  --color-link: oklch(55% 0.18 240);
+  --color-link-underline: oklch(80% 0.06 240);
+  --color-link-visited: oklch(50% 0.16 290);
+  --color-link-visited-underline: oklch(80% 0.04 290);
+  --color-link-hover: oklch(45% 0.20 240);
+}
+
+:root[data-theme-mode='dark'] {
+  --color-admonition-note: oklch(70% 0.16 245);
+  --color-admonition-tip: oklch(72% 0.18 145);
+  --color-admonition-hint: oklch(72% 0.18 145);
+  --color-admonition-warning: oklch(78% 0.18 60);
+  --color-admonition-caution: oklch(78% 0.18 60);
+  --color-admonition-attention: oklch(72% 0.22 25);
+  --color-admonition-danger: oklch(72% 0.22 25);
+  --color-admonition-error: oklch(72% 0.22 25);
+  --color-admonition-important: oklch(75% 0.16 195);
+  --color-admonition-seealso: oklch(72% 0.16 270);
+
+  --color-link: oklch(75% 0.15 240);
+  --color-link-underline: oklch(45% 0.06 240);
+  --color-link-visited: oklch(70% 0.14 290);
+  --color-link-visited-underline: oklch(45% 0.04 290);
+  --color-link-hover: oklch(82% 0.18 240);
 }
 
 /* Dark mode overrides — toggled via data-theme-mode attribute on <html>. */
@@ -88,12 +129,21 @@
   }
 
   a {
-    color: var(--color-accent);
-    text-decoration: none;
+    color: var(--color-link);
+    text-decoration: underline;
+    text-decoration-color: var(--color-link-underline);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+
+  a:visited {
+    color: var(--color-link-visited);
+    text-decoration-color: var(--color-link-visited-underline);
   }
 
   a:hover {
-    text-decoration: underline;
+    color: var(--color-link-hover);
+    text-decoration-color: currentColor;
   }
 
   hr {
@@ -109,9 +159,161 @@
 @layer components {
   .gp-sphinx-astro-doc :where(code) {
     background: var(--color-code-bg);
+    border: 1px solid var(--color-border);
     padding: 0.1em 0.35em;
     border-radius: 3px;
     font-size: 0.9em;
+  }
+
+  /* The bordered inline code is noisy when it's nested inside an
+   * already-bordered element (Shiki block, signature card, params
+   * grid, links). Drop the border in those contexts so the text
+   * still reads as a code run without doubling up the chrome. */
+  .gp-sphinx-astro-doc :where(pre code),
+  .gp-sphinx-astro-doc :where(.shiki code),
+  .gp-sphinx-astro-doc :where(.gp-sphinx-symbol__signature),
+  .gp-sphinx-astro-doc :where(.gp-sphinx-symbol__returns code),
+  .gp-sphinx-astro-doc :where(a code) {
+    border: 0;
+    background: transparent;
+    padding: 0;
+  }
+
+  /* ─── Prose typography ───────────────────────────────────────
+   * Sensible defaults so the doc body reads as a proper article
+   * page without depending on the Tailwind typography plugin's
+   * heavyweight ``.prose`` class (which would conflict with our
+   * structural ``gp-sphinx-*`` hooks). */
+  .gp-sphinx-astro-doc h1 {
+    font-size: 2em;
+    font-weight: 700;
+    margin: 0 0 1.25rem;
+    line-height: 1.2;
+  }
+
+  .gp-sphinx-astro-doc h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin: 2.25rem 0 1rem;
+    line-height: 1.3;
+  }
+
+  .gp-sphinx-astro-doc h3 {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin: 1.75rem 0 0.75rem;
+    line-height: 1.35;
+  }
+
+  .gp-sphinx-astro-doc h4 {
+    font-size: 1.05em;
+    font-weight: 600;
+    margin: 1.5rem 0 0.5rem;
+  }
+
+  .gp-sphinx-astro-doc h5,
+  .gp-sphinx-astro-doc h6 {
+    font-size: 0.95em;
+    font-weight: 600;
+    margin: 1.25rem 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+  }
+
+  .gp-sphinx-astro-doc p {
+    margin: 0 0 1rem;
+  }
+
+  .gp-sphinx-astro-doc ul,
+  .gp-sphinx-astro-doc ol {
+    margin: 0 0 1rem 1.25rem;
+    padding-left: 0.75rem;
+  }
+
+  .gp-sphinx-astro-doc li {
+    margin: 0.25rem 0;
+  }
+
+  .gp-sphinx-astro-doc li > p {
+    margin: 0 0 0.5rem;
+  }
+
+  .gp-sphinx-astro-doc blockquote {
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    border-left: 3px solid var(--color-border);
+    color: var(--color-muted);
+    font-style: italic;
+  }
+
+  /* Tables — bordered and lightly tinted header. The Astro renderer
+   * passes through docutils' table HTML; this gives every page-side
+   * table a consistent visual weight matching the rest of the
+   * chrome. */
+  .gp-sphinx-astro-doc table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.25rem 0;
+    font-size: 0.9rem;
+    overflow-x: auto;
+  }
+
+  .gp-sphinx-astro-doc table th,
+  .gp-sphinx-astro-doc table td {
+    border: 1px solid var(--color-border);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .gp-sphinx-astro-doc table th {
+    background: color-mix(in oklab, var(--color-code-bg) 60%, var(--color-bg));
+    font-weight: 600;
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  .gp-sphinx-astro-doc table tbody tr:nth-child(even) td {
+    background: color-mix(in oklab, var(--color-code-bg) 30%, var(--color-bg));
+  }
+
+  /* Definition lists — used inside the doctree body for narrative
+   * field lists (Parameters / Returns / Examples). The autodoc
+   * symbol pages have their own ``__params`` styling above; this
+   * is the in-prose version. */
+  .gp-sphinx-astro-doc :where(.gp-sphinx-astro-doc, main) > dl,
+  .gp-sphinx-astro-doc article > dl,
+  .gp-sphinx-astro-doc section > dl {
+    margin: 1rem 0;
+    display: grid;
+    grid-template-columns: minmax(8rem, max-content) 1fr;
+    column-gap: 1.25rem;
+    row-gap: 0.5rem;
+  }
+
+  .gp-sphinx-astro-doc dl > dt {
+    font-weight: 600;
+    color: var(--color-fg);
+  }
+
+  .gp-sphinx-astro-doc dl > dd {
+    margin: 0;
+    color: var(--color-fg);
+  }
+
+  /* Keyboard shortcuts inline — the prose mentions the ``/`` and
+   * ``g g`` shortcuts; render <kbd> as a raised key. */
+  .gp-sphinx-astro-doc kbd {
+    display: inline-block;
+    padding: 0 0.4em;
+    border: 1px solid var(--color-border);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    background: var(--color-code-bg);
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    line-height: 1.4;
+    color: var(--color-fg);
   }
 
   .gp-sphinx-astro-doc :where(pre) {
@@ -142,12 +344,53 @@
     color: var(--shiki-dark) !important;
   }
 
+  /* Admonitions — per-variant left border with a tinted strip
+   * mirroring Furo's colour grammar so readers coming from Furo
+   * recognise the call-out semantics at a glance. */
   .gp-sphinx-astro-doc .admonition {
     background: var(--color-admonition-bg);
+    border: 1px solid var(--color-border);
     border-left: 4px solid var(--color-admonition-border);
     padding: 0.75em 1em;
     margin: 1em 0;
-    border-radius: 0 4px 4px 0;
+    border-radius: 4px;
+  }
+
+  .gp-sphinx-astro-doc .admonition > :first-child {
+    margin-top: 0;
+  }
+
+  .gp-sphinx-astro-doc .admonition > :last-child {
+    margin-bottom: 0;
+  }
+
+  .gp-sphinx-astro-doc .admonition--note {
+    border-left-color: var(--color-admonition-note);
+    background: color-mix(in oklab, var(--color-admonition-note) 8%, var(--color-bg));
+  }
+
+  .gp-sphinx-astro-doc .admonition--tip,
+  .gp-sphinx-astro-doc .admonition--hint {
+    border-left-color: var(--color-admonition-tip);
+    background: color-mix(in oklab, var(--color-admonition-tip) 8%, var(--color-bg));
+  }
+
+  .gp-sphinx-astro-doc .admonition--warning,
+  .gp-sphinx-astro-doc .admonition--caution {
+    border-left-color: var(--color-admonition-warning);
+    background: color-mix(in oklab, var(--color-admonition-warning) 8%, var(--color-bg));
+  }
+
+  .gp-sphinx-astro-doc .admonition--attention,
+  .gp-sphinx-astro-doc .admonition--danger,
+  .gp-sphinx-astro-doc .admonition--error {
+    border-left-color: var(--color-admonition-danger);
+    background: color-mix(in oklab, var(--color-admonition-danger) 8%, var(--color-bg));
+  }
+
+  .gp-sphinx-astro-doc .admonition--important {
+    border-left-color: var(--color-admonition-important);
+    background: color-mix(in oklab, var(--color-admonition-important) 8%, var(--color-bg));
   }
 
   .gp-sphinx-astro-doc .symbol-ref {
