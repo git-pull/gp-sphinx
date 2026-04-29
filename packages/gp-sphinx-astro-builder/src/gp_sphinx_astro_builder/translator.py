@@ -14,6 +14,10 @@ model.
 
 from __future__ import annotations
 
+import importlib
+import inspect
+import logging
+import pathlib
 import typing as t
 
 from docutils import nodes
@@ -21,6 +25,55 @@ from sphinx import addnodes
 
 from gp_sphinx_astro_builder.models import Document, Symbol
 from gp_sphinx_astro_builder.symbols import normalize_symbol_kind
+
+_log = logging.getLogger(__name__)
+
+
+def _resolve_symbol_source(
+    *,
+    module_name: str,
+    fullname: str,
+    repo_url: str,
+    source_root: pathlib.Path,
+) -> dict[str, t.Any] | None:
+    """Look up a Python object's source file + line via :mod:`inspect`.
+
+    Returns a ``SymbolSource``-shaped dict or ``None`` when any step
+    fails. We never raise — a missing import or an unfindable source
+    file shouldn't fail the doc build, just leave ``Symbol.source`` as
+    ``null`` like before.
+    """
+    if module_name == "" or repo_url == "":
+        return None
+    try:
+        module = importlib.import_module(module_name)
+    except Exception:
+        _log.debug("could not import %r for source lookup", module_name)
+        return None
+    obj: t.Any = module
+    if fullname != "":
+        try:
+            for part in fullname.split("."):
+                obj = getattr(obj, part)
+        except AttributeError:
+            return None
+    try:
+        sourcefile = inspect.getsourcefile(obj)
+        _, line = inspect.getsourcelines(obj)
+    except (OSError, TypeError):
+        return None
+    if sourcefile is None:
+        return None
+    try:
+        relpath = pathlib.Path(sourcefile).resolve().relative_to(source_root.resolve())
+    except ValueError:
+        return None
+    return {
+        "repo": repo_url,
+        "path": str(relpath),
+        "line": int(line),
+    }
+
 
 if t.TYPE_CHECKING:
     from sphinx.builders import Builder
@@ -808,6 +861,41 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
                 {"type": "symbolRef", "symbolId": symbol_id},
             )
 
+    def _resolve_source(
+        self,
+        module_name: str,
+        fullname: str,
+    ) -> dict[str, t.Any] | None:
+        """Look up a Python object's source file for ``Symbol.source``.
+
+        Reads the repo URL from ``conf.py``'s ``source_repository``
+        (gp-sphinx convention) and the source root from the optional
+        ``astro_source_root`` (defaults to ``app.srcdir.parent`` —
+        i.e. the docs dir's parent, which is the workspace root for
+        the canonical ``docs/`` layout). Returns ``None`` whenever any
+        prerequisite is missing so missing config gracefully degrades
+        to ``Symbol.source = null``.
+        """
+        if self._builder is None:
+            return None
+        config = getattr(self._builder.app, "config", None)
+        if config is None:
+            return None
+        repo_url = getattr(config, "source_repository", "") or ""
+        if repo_url == "":
+            return None
+        explicit_root = getattr(config, "astro_source_root", None)
+        if explicit_root is not None:
+            source_root = pathlib.Path(str(explicit_root))
+        else:
+            source_root = pathlib.Path(self._builder.app.srcdir).parent
+        return _resolve_symbol_source(
+            module_name=module_name,
+            fullname=fullname,
+            repo_url=str(repo_url),
+            source_root=source_root,
+        )
+
     def visit_desc_signature(self, node: nodes.Element) -> None:
         """Capture signature metadata into the surrounding ``desc`` frame.
 
@@ -828,6 +916,7 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
             fullname = node.get("fullname", "") or ""
             sym["qualname"] = fullname
             sym["name"] = fullname.rsplit(".", 1)[-1] if fullname else ""
+            sym["source"] = self._resolve_source(sym["module"], fullname)
             # Capture only the parameter list (already wrapped in
             # ``(...)`` by ``addnodes.desc_parameterlist.astext``) and the
             # optional return annotation (already prefixed with ``" -> "``

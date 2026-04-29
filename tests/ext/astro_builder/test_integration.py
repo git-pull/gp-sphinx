@@ -145,6 +145,8 @@ _AUTODOC_CONF_PY = textwrap.dedent(
     extensions = ["sphinx.ext.autodoc", "gp_sphinx_astro_builder"]
     master_doc = "index"
     exclude_patterns = ["_build"]
+    source_repository = "https://github.com/git-pull/demo"
+    astro_source_root = r"__SCENARIO_SRCDIR__"
     """,
 )
 
@@ -218,6 +220,16 @@ def test_astro_builder_emits_symbols_json_for_autofunction(
     assert sig.endswith("dict[str, str]"), (
         f"expected sig to end with the return annotation; got {sig!r}"
     )
+    # ``Symbol.source`` is populated via ``inspect.getsourcefile`` /
+    # ``getsourcelines`` whenever the docs project sets
+    # ``source_repository`` and the autodoc target is importable.
+    source = symbol["source"]
+    assert source is not None, "expected source to be populated"
+    assert source["repo"] == "https://github.com/git-pull/demo"
+    assert source["path"] == "demo_api.py"
+    # ``def merge_demo`` lands on the second line of the dedented module
+    # source (after ``from __future__ import annotations`` + blank).
+    assert source["line"] >= 1
 
 
 @pytest.mark.integration

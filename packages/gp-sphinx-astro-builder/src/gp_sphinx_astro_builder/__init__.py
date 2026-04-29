@@ -137,6 +137,18 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     True
     """
     app.add_builder(AstroBuilder)
+    # Source-attribution config values — used by the translator's
+    # ``_resolve_source`` to populate ``Symbol.source`` with deep
+    # blob links to GitHub. Both default to ``""``/``None`` so the
+    # builder gracefully degrades to ``Symbol.source = null`` when
+    # the host project doesn't opt in.
+    #
+    # ``source_repository`` is the gp-sphinx convention (already
+    # surfaced by ``merge_sphinx_config``); registering it here
+    # promotes the conf.py value from a raw module variable into
+    # ``app.config.source_repository`` for ``getattr`` access.
+    app.add_config_value("source_repository", "", "env", str)
+    app.add_config_value("astro_source_root", None, "env", (str, type(None)))
     return {
         "version": _EXTENSION_VERSION,
         "parallel_read_safe": True,

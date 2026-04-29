@@ -470,6 +470,14 @@ def merge_sphinx_config(
     if source_repository:
         repo = source_repository.rstrip("/")
         conf["issue_url_tpl"] = f"{repo}/issues/{{issue_id}}"
+        # Surface source_repository + source_branch as top-level conf
+        # entries (in addition to merged_theme_options where Furo
+        # consumes them). This lets the gp_sphinx_astro_builder
+        # extension's ``Symbol.source`` resolver and any future
+        # extension read the values via ``app.config.source_repository``
+        # without re-deriving them from theme options.
+        conf["source_repository"] = source_repository
+        conf["source_branch"] = source_branch
 
     # Auto-compute sphinx_gp_opengraph + sphinx_gp_sitemap config from docs_url
     if docs_url:
