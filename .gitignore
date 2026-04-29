@@ -20,6 +20,9 @@ downloads/
 eggs/
 .eggs/
 lib/
+# Astro apps and packages keep TS modules under src/lib and test/lib;
+# the broad ``lib/`` rule above is for Python build outputs only.
+!astro/**/lib/
 lib64/
 parts/
 sdist/
