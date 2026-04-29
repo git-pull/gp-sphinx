@@ -1,0 +1,21 @@
+---
+import type { GetStaticPaths } from 'astro'
+import { getCollection } from 'astro:content'
+import { renderDocument } from '@gp-sphinx-astro/theme/render/render-node'
+import Doc from '../layouts/Doc.astro'
+
+export const getStaticPaths = (async () => {
+  const docs = await getCollection('docs')
+  return docs.map((entry) => ({
+    // Astro's catch-all route uses an empty slug for the index page.
+    params: { slug: entry.id === 'index' ? undefined : entry.id },
+    props: { entry },
+  }))
+}) satisfies GetStaticPaths
+
+const { entry } = Astro.props
+const html = renderDocument(entry.data)
+---
+<Doc title={entry.data.title}>
+  <Fragment set:html={html} />
+</Doc>

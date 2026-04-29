@@ -1,0 +1,73 @@
+/* Minimal styles for the dogfood site. Real theming arrives in a later step
+   when Tailwind v4 + OKLCH tokens land alongside an Admonition design. */
+
+:root {
+  --gp-sphinx-astro-fg: #1a1a1a;
+  --gp-sphinx-astro-bg: #ffffff;
+  --gp-sphinx-astro-link: #1f5fb0;
+  --gp-sphinx-astro-code-bg: #f4f4f6;
+  --gp-sphinx-astro-admonition-bg: #f7f9fc;
+  --gp-sphinx-astro-admonition-border: #4a90e2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gp-sphinx-astro-fg: #e6e6e6;
+    --gp-sphinx-astro-bg: #1a1a1a;
+    --gp-sphinx-astro-link: #6aa3e8;
+    --gp-sphinx-astro-code-bg: #2a2a2a;
+    --gp-sphinx-astro-admonition-bg: #232a36;
+    --gp-sphinx-astro-admonition-border: #4a90e2;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--gp-sphinx-astro-bg);
+  color: var(--gp-sphinx-astro-fg);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.55;
+}
+
+.gp-sphinx-astro-doc {
+  max-width: 46em;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.gp-sphinx-astro-doc a {
+  color: var(--gp-sphinx-astro-link);
+}
+
+.gp-sphinx-astro-doc code {
+  background: var(--gp-sphinx-astro-code-bg);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.gp-sphinx-astro-doc pre {
+  background: var(--gp-sphinx-astro-code-bg);
+  padding: 1em;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.gp-sphinx-astro-doc pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.gp-sphinx-astro-doc .admonition {
+  background: var(--gp-sphinx-astro-admonition-bg);
+  border-left: 4px solid var(--gp-sphinx-astro-admonition-border);
+  padding: 0.75em 1em;
+  margin: 1em 0;
+  border-radius: 0 4px 4px 0;
+}
+
+.gp-sphinx-astro-doc .symbol-ref {
+  display: inline-block;
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  font-size: 0.95em;
+}
