@@ -24,6 +24,7 @@ const entries = tree === undefined ? [] : buildToc(tree)
   entries.length > 0 && (
     <aside
       data-test-id="table-of-contents"
+      data-pagefind-ignore
       class="hidden xl:block xl:w-56 xl:shrink-0 xl:pl-6"
     >
       <nav class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pb-8 text-sm">

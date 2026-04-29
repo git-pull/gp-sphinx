@@ -2,12 +2,14 @@
 /**
  * TopNav — sticky site header.
  *
- * Layout (left → right): wordmark + version badge → grow spacer →
- * GitHub repo link → theme toggle. Theme cycling logic lives in
- * ``../lib/theme-toggle.ts`` (TDD'd via vitest); this template
- * supplies the seam button and bootstraps the toggle on
- * ``astro:page-load``.
+ * Layout (left → right): hamburger (lg-) → wordmark + version badge
+ * → grow spacer → search box (md+) → GitHub repo link → theme
+ * toggle. Theme cycling logic lives in ``../lib/theme-toggle.ts``
+ * (TDD'd via vitest); this template supplies the seam button and
+ * bootstraps the toggle on ``astro:page-load``.
  */
+
+import SearchBox from './SearchBox.astro'
 
 const VERSION = '0.0.1a12'
 const GITHUB_URL = 'https://github.com/git-pull/gp-sphinx'
@@ -15,6 +17,7 @@ const GITHUB_URL = 'https://github.com/git-pull/gp-sphinx'
 
 <header
   data-test-id="top-nav"
+  data-pagefind-ignore
   class="sticky top-0 z-40 border-b border-[color:var(--color-border)] bg-[color:var(--color-bg)]/90 backdrop-blur"
 >
   <div class="mx-auto flex h-14 w-full max-w-7xl items-center gap-3 px-4">
@@ -40,6 +43,7 @@ const GITHUB_URL = 'https://github.com/git-pull/gp-sphinx'
       </span>
     </a>
     <div class="flex-1"></div>
+    <SearchBox />
     <a
       href={GITHUB_URL}
       class="text-sm text-[color:var(--color-muted)] hover:text-[color:var(--color-fg)]"
