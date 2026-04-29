@@ -87,14 +87,19 @@ class AstroBuilder(Builder):
         """No per-build preparation required for the spike."""
 
     def write_doc(self, docname: str, doctree: nodes.document) -> None:
-        """Walk ``doctree`` through the JSON translator and write the result."""
+        """Walk ``doctree`` through the JSON translator and write the result.
+
+        Uses :meth:`Builder.create_translator` so that visitor pairs
+        registered via ``app.add_node(N, json=(visit, depart))`` get
+        ``MethodType``-bound onto the translator instance. The translator
+        reads ``current_docname`` and ``_symbol_accumulator`` off the
+        builder, so no extra constructor arguments are needed.
+        """
         self.current_docname = docname
-        translator = DocTreeJSONTranslator(
-            doctree,
-            self,
-            docname=docname,
-            symbol_accumulator=self._symbol_accumulator,
-        )
+        translator = self.create_translator(doctree, self)
+        if not isinstance(translator, DocTreeJSONTranslator):
+            msg = f"expected DocTreeJSONTranslator, got {type(translator)!r}"
+            raise TypeError(msg)
         doctree.walkabout(translator)
         document = translator.result()
 

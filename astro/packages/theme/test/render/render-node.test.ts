@@ -326,6 +326,41 @@ describe('renderDocument', () => {
   })
 })
 
+describe('renderInlineNode — badge', () => {
+  test('badge with full payload emits a span with size + style classes', () => {
+    const html = renderInlineNode({
+      type: 'badge',
+      text: 'readonly',
+      tooltip: 'Read-only operation',
+      icon: '🔒',
+      size: 'sm',
+      style: 'filled',
+    })
+    expect(html).toContain(
+      'class="gp-sphinx-badge gp-sphinx-badge--style-filled gp-sphinx-badge--size-sm"',
+    )
+    expect(html).toContain('title="Read-only operation"')
+    expect(html).toContain('aria-label="Read-only operation"')
+    expect(html).toContain('data-icon="🔒"')
+    expect(html).toContain('<span class="gp-sphinx-badge__label">readonly</span>')
+  })
+
+  test('badge with default style omits the size class when size is null', () => {
+    const html = renderInlineNode({
+      type: 'badge',
+      text: 'ok',
+      tooltip: null,
+      icon: null,
+      size: null,
+      style: 'full',
+    })
+    expect(html).toContain('class="gp-sphinx-badge gp-sphinx-badge--style-full"')
+    expect(html).not.toContain('gp-sphinx-badge--size-')
+    expect(html).not.toContain('title=')
+    expect(html).not.toContain('data-icon=')
+  })
+})
+
 describe('renderInlineNode — type-coverage', () => {
   // Sanity check that every InlineNode variant is dispatched. If a new
   // variant is added to the schema without updating renderInlineNode,
@@ -341,6 +376,14 @@ describe('renderInlineNode — type-coverage', () => {
       type: 'reference',
       href: '/x',
       children: [{ type: 'text', value: 'x' }],
+    },
+    {
+      type: 'badge',
+      text: 'x',
+      tooltip: null,
+      icon: null,
+      size: null,
+      style: 'full',
     },
   ]
 

@@ -31,6 +31,10 @@ export type AdmonitionVariant =
   | 'danger'
   | 'error'
 
+export type BadgeSize = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+
+export type BadgeStyle = 'full' | 'icon-only' | 'inline-icon' | 'filled' | 'outline'
+
 export type InlineNode =
   | { type: 'text'; value: string }
   | { type: 'literal'; value: string }
@@ -38,6 +42,14 @@ export type InlineNode =
   | { type: 'emphasis'; children: InlineNode[] }
   | { type: 'strong'; children: InlineNode[] }
   | { type: 'reference'; href: string; children: InlineNode[] }
+  | {
+      type: 'badge'
+      text: string
+      tooltip: string | null
+      icon: string | null
+      size: BadgeSize | null
+      style: BadgeStyle
+    }
 
 export type ListItemNode = { type: 'listItem'; children: BlockNode[] }
 
@@ -84,6 +96,19 @@ export const imageNodeSchema = z.object({
   alt: z.string().nullable(),
 })
 
+export const badgeSizeSchema = z.enum(['xxs', 'xs', 'sm', 'md', 'lg', 'xl'])
+
+export const badgeStyleSchema = z.enum(['full', 'icon-only', 'inline-icon', 'filled', 'outline'])
+
+export const badgeNodeSchema = z.object({
+  type: z.literal('badge'),
+  text: z.string(),
+  tooltip: z.string().nullable().default(null),
+  icon: z.string().nullable().default(null),
+  size: badgeSizeSchema.nullable().default(null),
+  style: badgeStyleSchema.default('full'),
+})
+
 // ─── Inline shapes that recurse via z.lazy
 //
 // Members are NOT annotated with z.ZodType<...> so z.discriminatedUnion
@@ -116,6 +141,7 @@ export const inlineNodeSchema: z.ZodType<InlineNode> = z.discriminatedUnion('typ
   emphasisNodeSchema,
   strongNodeSchema,
   referenceNodeSchema,
+  badgeNodeSchema,
 ])
 
 // ─── Leaf block shapes (no recursion)
