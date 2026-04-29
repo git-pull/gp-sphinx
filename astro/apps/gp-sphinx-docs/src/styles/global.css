@@ -121,6 +121,21 @@
     padding: 0;
   }
 
+  /* Shiki dual-theme activation. The highlighter emits inline
+   * ``style="background-color:…; color:…; --shiki-dark-bg:…; --shiki-dark:…"``
+   * for every ``<pre class="shiki shiki-themes …">`` and inline span.
+   * Shiki's defaults render the light theme; we swap to the dark
+   * theme by overriding background + colour from the
+   * ``--shiki-dark-*`` custom properties when the site is in dark
+   * mode. ``!important`` is required because the original colour
+   * targets Shiki sets are inline styles and would otherwise win
+   * specificity. */
+  :root[data-theme-mode='dark'] .shiki,
+  :root[data-theme-mode='dark'] .shiki span {
+    background-color: var(--shiki-dark-bg) !important;
+    color: var(--shiki-dark) !important;
+  }
+
   .gp-sphinx-astro-doc .admonition {
     background: var(--color-admonition-bg);
     border-left: 4px solid var(--color-admonition-border);
