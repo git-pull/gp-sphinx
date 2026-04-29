@@ -332,6 +332,81 @@ def test_astro_builder_emits_objects_inv_round_trippable(
     ), f"expected demo_api.merge_demo in inventory; got types: {list(inventory.keys())}"
 
 
+_BADGE_CONF_PY = textwrap.dedent(
+    """\
+    project = "Demo"
+    extensions = ["sphinx_ux_badges", "gp_sphinx_astro_builder"]
+    master_doc = "index"
+    exclude_patterns = ["_build"]
+    """,
+)
+
+_BADGE_INDEX_RST = textwrap.dedent(
+    """\
+    Demo
+    ====
+
+    Status placeholder.
+    """,
+)
+
+
+@pytest.mark.integration
+def test_astro_builder_emits_badge_node_via_extension_json_visitor(
+    tmp_path: pathlib.Path,
+) -> None:
+    """``sphinx-ux-badges``' JSON visitor injects ``BadgeNode`` into the doctree.
+
+    The fixture builds a tiny Sphinx project that wires the
+    :mod:`sphinx_ux_badges` extension. Since badges are produced
+    programmatically (no public directive), we monkey-patch the doctree
+    after the build to inject one ``BadgeNode``, run the translator
+    explicitly, and assert the JSON output contains the expected
+    ``badge`` entry.
+    """
+    from docutils import nodes  # noqa: PLC0415
+
+    from sphinx_ux_badges import BadgeNode as DocutilsBadge  # noqa: PLC0415
+
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("conf.py", _BADGE_CONF_PY),
+            ScenarioFile("index.rst", _BADGE_INDEX_RST),
+        ),
+    )
+    result = build_isolated_sphinx_result(cache_root, tmp_path, scenario)
+
+    # Inject a BadgeNode into the built doctree, then re-run the translator.
+    doctree = result.app.env.get_doctree("index")
+    paragraphs = list(doctree.findall(nodes.paragraph))
+    assert paragraphs, "expected at least one paragraph in the built doctree"
+    paragraphs[0] += DocutilsBadge(
+        "ok",
+        badge_tooltip="All good",
+        badge_size="sm",
+    )
+    builder = result.app.builder
+    builder.write_doc("index", doctree)
+
+    output_path = result.outdir / "src" / "content" / "docs" / "index.json"
+    document = json.loads(output_path.read_text("utf-8"))
+    badges = [
+        child
+        for paragraph in document["tree"]["children"]
+        if paragraph.get("type") == "paragraph"
+        for child in paragraph.get("children", [])
+        if child.get("type") == "badge"
+    ]
+    assert len(badges) == 1
+    badge = badges[0]
+    assert badge["text"] == "ok"
+    assert badge["tooltip"] == "All good"
+    assert badge["size"] == "sm"
+    assert badge["style"] == "full"
+
+
 @pytest.mark.integration
 def test_astro_builder_emits_content_config_ts(
     tmp_path: pathlib.Path,

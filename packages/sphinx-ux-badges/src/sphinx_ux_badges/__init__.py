@@ -32,7 +32,12 @@ from sphinx_ux_badges._builders import (
 )
 from sphinx_ux_badges._css import SAB
 from sphinx_ux_badges._nodes import BadgeNode
-from sphinx_ux_badges._visitors import depart_badge_html, visit_badge_html
+from sphinx_ux_badges._visitors import (
+    depart_badge_html,
+    depart_badge_json,
+    visit_badge_html,
+    visit_badge_json,
+)
 
 __all__ = [
     "SAB",
@@ -70,7 +75,11 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     >>> callable(setup)
     True
     """
-    app.add_node(BadgeNode, html=(visit_badge_html, depart_badge_html))
+    app.add_node(
+        BadgeNode,
+        html=(visit_badge_html, depart_badge_html),
+        json=(visit_badge_json, depart_badge_json),
+    )
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
 

@@ -9,6 +9,7 @@ from pydantic import ValidationError
 
 from gp_sphinx_astro_builder.models import (
     AdmonitionNode,
+    BadgeNode,
     BlockQuoteNode,
     BulletListNode,
     CommentNode,
@@ -645,6 +646,60 @@ def test_symbol_ref_node_round_trips() -> None:
         "type": "symbolRef",
         "symbolId": "gp_sphinx.config.merge_sphinx_config",
     }
+
+
+def test_badge_node_round_trips_with_full_payload() -> None:
+    """``BadgeNode`` carries text, optional tooltip/icon/size, and style."""
+    payload = {
+        "type": "badge",
+        "text": "readonly",
+        "tooltip": "Read-only operation",
+        "icon": "🔒",
+        "size": "sm",
+        "style": "filled",
+    }
+    node = BadgeNode.model_validate(payload)
+    assert node.model_dump() == payload
+
+
+def test_badge_node_optional_fields_default() -> None:
+    """``BadgeNode`` defaults tooltip/icon/size to None and style to 'full'."""
+    node = BadgeNode.model_validate({"type": "badge", "text": "x"})
+    assert node.tooltip is None
+    assert node.icon is None
+    assert node.size is None
+    assert node.style == "full"
+
+
+def test_badge_node_rejects_unknown_size() -> None:
+    """``BadgeNode.size`` rejects values outside the literal set."""
+    with pytest.raises(ValidationError):
+        BadgeNode.model_validate(
+            {"type": "badge", "text": "x", "size": "huge"},
+        )
+
+
+def test_badge_node_rejects_unknown_style() -> None:
+    """``BadgeNode.style`` rejects values outside the literal set."""
+    with pytest.raises(ValidationError):
+        BadgeNode.model_validate(
+            {"type": "badge", "text": "x", "style": "rainbow"},
+        )
+
+
+def test_paragraph_accepts_badge_through_inline_union() -> None:
+    """A ``BadgeNode`` validates as a child of ``ParagraphNode``."""
+    para = ParagraphNode.model_validate(
+        {
+            "type": "paragraph",
+            "children": [
+                {"type": "text", "value": "Status: "},
+                {"type": "badge", "text": "ok", "tooltip": "All good"},
+            ],
+        },
+    )
+    assert isinstance(para.children[1], BadgeNode)
+    assert para.children[1].tooltip == "All good"
 
 
 def test_xref_entry_round_trips_with_full_payload() -> None:

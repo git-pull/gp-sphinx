@@ -89,6 +89,82 @@
       "title": "AdmonitionNode",
       "type": "object"
     },
+    "BadgeNode": {
+      "description": "An inline badge produced by :mod:`sphinx_ux_badges`.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import BadgeNode\n>>> badge = BadgeNode(\n...     type=\"badge\",\n...     text=\"readonly\",\n...     tooltip=\"Read-only operation\",\n... )\n>>> badge.style\n'full'",
+      "properties": {
+        "icon": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Icon"
+        },
+        "size": {
+          "anyOf": [
+            {
+              "enum": [
+                "xxs",
+                "xs",
+                "sm",
+                "md",
+                "lg",
+                "xl"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Size"
+        },
+        "style": {
+          "default": "full",
+          "enum": [
+            "full",
+            "icon-only",
+            "inline-icon",
+            "filled",
+            "outline"
+          ],
+          "title": "Style",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "tooltip": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tooltip"
+        },
+        "type": {
+          "const": "badge",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "text"
+      ],
+      "title": "BadgeNode",
+      "type": "object"
+    },
     "BlockQuoteNode": {
       "description": "A block-level quote wrapping block-level children.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import BlockQuoteNode\n>>> node = BlockQuoteNode.model_validate(\n...     {\n...         \"type\": \"blockQuote\",\n...         \"children\": [\n...             {\n...                 \"type\": \"paragraph\",\n...                 \"children\": [{\"type\": \"text\", \"value\": \"q\"}],\n...             },\n...         ],\n...     },\n... )\n>>> node.children[0].children[0].value\n'q'",
       "properties": {
@@ -269,6 +345,7 @@
           "items": {
             "discriminator": {
               "mapping": {
+                "badge": "#/$defs/BadgeNode",
                 "emphasis": "#/$defs/EmphasisNode",
                 "image": "#/$defs/ImageNode",
                 "literal": "#/$defs/LiteralNode",
@@ -296,6 +373,9 @@
               },
               {
                 "$ref": "#/$defs/ImageNode"
+              },
+              {
+                "$ref": "#/$defs/BadgeNode"
               }
             ]
           },
@@ -346,6 +426,7 @@
           "items": {
             "discriminator": {
               "mapping": {
+                "badge": "#/$defs/BadgeNode",
                 "emphasis": "#/$defs/EmphasisNode",
                 "image": "#/$defs/ImageNode",
                 "literal": "#/$defs/LiteralNode",
@@ -373,6 +454,9 @@
               },
               {
                 "$ref": "#/$defs/ImageNode"
+              },
+              {
+                "$ref": "#/$defs/BadgeNode"
               }
             ]
           },
@@ -591,6 +675,7 @@
           "items": {
             "discriminator": {
               "mapping": {
+                "badge": "#/$defs/BadgeNode",
                 "emphasis": "#/$defs/EmphasisNode",
                 "image": "#/$defs/ImageNode",
                 "literal": "#/$defs/LiteralNode",
@@ -618,6 +703,9 @@
               },
               {
                 "$ref": "#/$defs/ImageNode"
+              },
+              {
+                "$ref": "#/$defs/BadgeNode"
               }
             ]
           },
@@ -693,6 +781,7 @@
           "items": {
             "discriminator": {
               "mapping": {
+                "badge": "#/$defs/BadgeNode",
                 "emphasis": "#/$defs/EmphasisNode",
                 "image": "#/$defs/ImageNode",
                 "literal": "#/$defs/LiteralNode",
@@ -720,6 +809,9 @@
               },
               {
                 "$ref": "#/$defs/ImageNode"
+              },
+              {
+                "$ref": "#/$defs/BadgeNode"
               }
             ]
           },
@@ -812,6 +904,7 @@
           "items": {
             "discriminator": {
               "mapping": {
+                "badge": "#/$defs/BadgeNode",
                 "emphasis": "#/$defs/EmphasisNode",
                 "image": "#/$defs/ImageNode",
                 "literal": "#/$defs/LiteralNode",
@@ -839,6 +932,9 @@
               },
               {
                 "$ref": "#/$defs/ImageNode"
+              },
+              {
+                "$ref": "#/$defs/BadgeNode"
               }
             ]
           },
@@ -867,6 +963,7 @@
           "items": {
             "discriminator": {
               "mapping": {
+                "badge": "#/$defs/BadgeNode",
                 "emphasis": "#/$defs/EmphasisNode",
                 "image": "#/$defs/ImageNode",
                 "literal": "#/$defs/LiteralNode",
@@ -894,6 +991,9 @@
               },
               {
                 "$ref": "#/$defs/ImageNode"
+              },
+              {
+                "$ref": "#/$defs/BadgeNode"
               }
             ]
           },

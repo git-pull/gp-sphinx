@@ -103,6 +103,46 @@ class ReferenceNode(BaseModel):
     children: list[InlineNode]
 
 
+BadgeSize = t.Literal["xxs", "xs", "sm", "md", "lg", "xl"]
+"""Allowed values for :attr:`BadgeNode.size`.
+
+Mirrors the size tokens in
+:mod:`sphinx_ux_badges._nodes._BADGE_SIZES`. Each value maps to a CSS
+modifier class (``gp-sphinx-badge--size-<value>``) that the theme styles.
+"""
+
+BadgeStyle = t.Literal["full", "icon-only", "inline-icon", "filled", "outline"]
+"""Allowed values for :attr:`BadgeNode.style`.
+
+The default ``"full"`` keeps the badge's chrome visible; the four other
+variants correspond to the structural and fill variants the
+:mod:`sphinx_ux_badges` extension exposes.
+"""
+
+
+class BadgeNode(BaseModel):
+    """An inline badge produced by :mod:`sphinx_ux_badges`.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import BadgeNode
+    >>> badge = BadgeNode(
+    ...     type="badge",
+    ...     text="readonly",
+    ...     tooltip="Read-only operation",
+    ... )
+    >>> badge.style
+    'full'
+    """
+
+    type: t.Literal["badge"]
+    text: str
+    tooltip: str | None = None
+    icon: str | None = None
+    size: BadgeSize | None = None
+    style: BadgeStyle = "full"
+
+
 class ImageNode(BaseModel):
     """An inline image leaf with a uri and optional alt text.
 
@@ -435,7 +475,13 @@ class Document(BaseModel):
 
 
 InlineNode = t.Annotated[
-    TextNode | EmphasisNode | StrongNode | LiteralNode | ReferenceNode | ImageNode,
+    TextNode
+    | EmphasisNode
+    | StrongNode
+    | LiteralNode
+    | ReferenceNode
+    | ImageNode
+    | BadgeNode,
     Field(discriminator="type"),
 ]
 """Discriminated union of nodes that may appear in an inline (phrase) context."""

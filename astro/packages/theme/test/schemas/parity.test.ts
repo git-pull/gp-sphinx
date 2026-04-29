@@ -109,6 +109,7 @@ describe('Pydantic ↔ Zod parity — definition coverage', () => {
     'LiteralNode',
     'ReferenceNode',
     'ImageNode',
+    'BadgeNode',
     'ParagraphNode',
     'SectionNode',
     'LiteralBlockNode',

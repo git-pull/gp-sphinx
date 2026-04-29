@@ -523,25 +523,32 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         if self._stack:
             self._stack[-1]["data"]["definition"] = frame["data"]["children"]
 
-    def visit_Text(self, node: nodes.Text) -> None:
-        """Append a text leaf to the current frame's children, if it has any.
+    def append_node(self, data: dict[str, t.Any]) -> None:
+        """Append a typed-JSON node dict to the current frame's children list.
+
+        Public API for extensions that register JSON visitors via
+        ``app.add_node(NodeCls, json=(visit, depart))``. Visitors call
+        this to inject their serialised payload into the parent's
+        children list, then ``raise nodes.SkipNode`` to skip the node's
+        docutils subtree.
 
         Some frame shapes (the ``desc`` frame for autodoc symbols, the
-        ``definitionListItem`` frame with its term/definition slots) do not
-        have a flat ``children`` list. Text that lands inside one of those
-        frames belongs to a sub-section the translator hasn't pushed a
-        proper frame for yet (e.g., a stray ``classifier`` between
-        ``term`` and ``definition``), so we drop it silently rather than
-        crashing the build.
+        ``definitionListItem`` frame with its term/definition slots) do
+        not expose a flat ``children`` list. Nodes that land inside one
+        of those frames belong to a sub-section the translator hasn't
+        pushed a proper frame for yet, so we drop them silently rather
+        than crashing the build.
         """
-        text_value = node.astext()
         if not self._stack:
             return
-        data = self._stack[-1]["data"]
-        children = data.get("children")
+        children = self._stack[-1]["data"].get("children")
         if not isinstance(children, list):
             return
-        children.append({"type": "text", "value": text_value})
+        children.append(data)
+
+    def visit_Text(self, node: nodes.Text) -> None:
+        """Append a text leaf to the current frame's children, if it has any."""
+        self.append_node({"type": "text", "value": node.astext()})
 
     def depart_Text(self, node: nodes.Text) -> None:
         """No-op: text leaves have no closing handler."""

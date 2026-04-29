@@ -111,6 +111,95 @@
         'title': 'AdmonitionNode',
         'type': 'object',
       }),
+      'BadgeNode': dict({
+        'description': '''
+          An inline badge produced by :mod:`sphinx_ux_badges`.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import BadgeNode
+          >>> badge = BadgeNode(
+          ...     type="badge",
+          ...     text="readonly",
+          ...     tooltip="Read-only operation",
+          ... )
+          >>> badge.style
+          'full'
+        ''',
+        'properties': dict({
+          'icon': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Icon',
+          }),
+          'size': dict({
+            'anyOf': list([
+              dict({
+                'enum': list([
+                  'xxs',
+                  'xs',
+                  'sm',
+                  'md',
+                  'lg',
+                  'xl',
+                ]),
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Size',
+          }),
+          'style': dict({
+            'default': 'full',
+            'enum': list([
+              'full',
+              'icon-only',
+              'inline-icon',
+              'filled',
+              'outline',
+            ]),
+            'title': 'Style',
+            'type': 'string',
+          }),
+          'text': dict({
+            'title': 'Text',
+            'type': 'string',
+          }),
+          'tooltip': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Tooltip',
+          }),
+          'type': dict({
+            'const': 'badge',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'text',
+        ]),
+        'title': 'BadgeNode',
+        'type': 'object',
+      }),
       'BlockQuoteNode': dict({
         'description': '''
           A block-level quote wrapping block-level children.
@@ -355,6 +444,7 @@
             'items': dict({
               'discriminator': dict({
                 'mapping': dict({
+                  'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
@@ -382,6 +472,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BadgeNode',
                 }),
               ]),
             }),
@@ -454,6 +547,7 @@
             'items': dict({
               'discriminator': dict({
                 'mapping': dict({
+                  'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
@@ -481,6 +575,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BadgeNode',
                 }),
               ]),
             }),
@@ -765,6 +862,7 @@
             'items': dict({
               'discriminator': dict({
                 'mapping': dict({
+                  'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
@@ -792,6 +890,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BadgeNode',
                 }),
               ]),
             }),
@@ -838,6 +939,7 @@
             'items': dict({
               'discriminator': dict({
                 'mapping': dict({
+                  'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
@@ -865,6 +967,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BadgeNode',
                 }),
               ]),
             }),
@@ -973,6 +1078,7 @@
             'items': dict({
               'discriminator': dict({
                 'mapping': dict({
+                  'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
@@ -1000,6 +1106,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BadgeNode',
                 }),
               ]),
             }),
@@ -1039,6 +1148,7 @@
             'items': dict({
               'discriminator': dict({
                 'mapping': dict({
+                  'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
@@ -1066,6 +1176,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BadgeNode',
                 }),
               ]),
             }),
@@ -1330,6 +1443,95 @@
         'title': 'AdmonitionNode',
         'type': 'object',
       }),
+      'BadgeNode': dict({
+        'description': '''
+          An inline badge produced by :mod:`sphinx_ux_badges`.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import BadgeNode
+          >>> badge = BadgeNode(
+          ...     type="badge",
+          ...     text="readonly",
+          ...     tooltip="Read-only operation",
+          ... )
+          >>> badge.style
+          'full'
+        ''',
+        'properties': dict({
+          'icon': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Icon',
+          }),
+          'size': dict({
+            'anyOf': list([
+              dict({
+                'enum': list([
+                  'xxs',
+                  'xs',
+                  'sm',
+                  'md',
+                  'lg',
+                  'xl',
+                ]),
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Size',
+          }),
+          'style': dict({
+            'default': 'full',
+            'enum': list([
+              'full',
+              'icon-only',
+              'inline-icon',
+              'filled',
+              'outline',
+            ]),
+            'title': 'Style',
+            'type': 'string',
+          }),
+          'text': dict({
+            'title': 'Text',
+            'type': 'string',
+          }),
+          'tooltip': dict({
+            'anyOf': list([
+              dict({
+                'type': 'string',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Tooltip',
+          }),
+          'type': dict({
+            'const': 'badge',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'text',
+        ]),
+        'title': 'BadgeNode',
+        'type': 'object',
+      }),
       'BlockQuoteNode': dict({
         'description': '''
           A block-level quote wrapping block-level children.
@@ -1574,6 +1776,7 @@
             'items': dict({
               'discriminator': dict({
                 'mapping': dict({
+                  'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
@@ -1601,6 +1804,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BadgeNode',
                 }),
               ]),
             }),
@@ -1673,6 +1879,7 @@
             'items': dict({
               'discriminator': dict({
                 'mapping': dict({
+                  'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
@@ -1700,6 +1907,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BadgeNode',
                 }),
               ]),
             }),
@@ -1984,6 +2194,7 @@
             'items': dict({
               'discriminator': dict({
                 'mapping': dict({
+                  'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
@@ -2011,6 +2222,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BadgeNode',
                 }),
               ]),
             }),
@@ -2115,6 +2329,7 @@
             'items': dict({
               'discriminator': dict({
                 'mapping': dict({
+                  'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
@@ -2142,6 +2357,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BadgeNode',
                 }),
               ]),
             }),
@@ -2250,6 +2468,7 @@
             'items': dict({
               'discriminator': dict({
                 'mapping': dict({
+                  'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
@@ -2277,6 +2496,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BadgeNode',
                 }),
               ]),
             }),
@@ -2316,6 +2538,7 @@
             'items': dict({
               'discriminator': dict({
                 'mapping': dict({
+                  'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
@@ -2343,6 +2566,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BadgeNode',
                 }),
               ]),
             }),

@@ -53,3 +53,50 @@ def visit_badge_html(self: HTML5Translator, node: BadgeNode) -> None:
 def depart_badge_html(self: HTML5Translator, node: BadgeNode) -> None:
     """Close the inner label ``<span>`` then the outer badge ``<span>``."""
     self.body.append("</span></span>")
+
+
+def visit_badge_json(self: t.Any, node: BadgeNode) -> None:
+    """Emit a Pydantic-shaped ``BadgeNode`` dict into the parent's children list.
+
+    The visitor is registered with ``app.add_node(BadgeNode,
+    json=(visit_badge_json, depart_badge_json))`` so ``gp-sphinx-astro-
+    builder``'s :class:`DocTreeJSONTranslator` picks it up automatically
+    via Sphinx's ``MethodType`` binding inside
+    :meth:`SphinxComponentRegistry.create_translator`.
+
+    The translator's ``append_node`` public hook is the contract — it
+    handles "current frame has no ``children`` slot" gracefully so a
+    badge inside an unhandled frame is dropped cleanly rather than
+    crashing the build.
+
+    Raises
+    ------
+    docutils.nodes.SkipNode
+        Always: the badge text is captured via :meth:`docutils.nodes.
+        Element.astext` on visit, so traversing the inner ``Text``
+        child would double-count.
+    """
+    from docutils import nodes
+
+    style = node.get("badge_style", "full") or "full"
+    payload: dict[str, t.Any] = {
+        "type": "badge",
+        "text": node.astext(),
+        "tooltip": node.get("badge_tooltip") or None,
+        "icon": node.get("badge_icon") or None,
+        "size": node.get("badge_size") or None,
+        "style": style,
+    }
+    if hasattr(self, "append_node"):
+        self.append_node(payload)
+    raise nodes.SkipNode
+
+
+def depart_badge_json(self: t.Any, node: BadgeNode) -> None:
+    """No-op companion for :func:`visit_badge_json`.
+
+    ``visit_badge_json`` raises :class:`docutils.nodes.SkipNode`, which
+    causes docutils to skip the depart call — but we register the
+    function anyway so ``app.add_node(..., json=(visit, depart))``
+    accepts a non-``None`` depart pair.
+    """

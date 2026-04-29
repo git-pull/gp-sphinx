@@ -48,6 +48,18 @@ export function renderInlineNode(node: InlineNode): string {
       return node.alt === null
         ? `<img src="${escapeHtml(node.uri)}" />`
         : `<img src="${escapeHtml(node.uri)}" alt="${escapeHtml(node.alt)}" />`
+    case 'badge': {
+      const classes = ['gp-sphinx-badge', `gp-sphinx-badge--style-${node.style}`]
+      if (node.size !== null) {
+        classes.push(`gp-sphinx-badge--size-${node.size}`)
+      }
+      const tooltipAttr =
+        node.tooltip === null
+          ? ''
+          : ` title="${escapeHtml(node.tooltip)}" aria-label="${escapeHtml(node.tooltip)}"`
+      const iconAttr = node.icon === null ? '' : ` data-icon="${escapeHtml(node.icon)}"`
+      return `<span class="${classes.join(' ')}"${tooltipAttr}${iconAttr} role="note"><span class="gp-sphinx-badge__label">${escapeHtml(node.text)}</span></span>`
+    }
   }
 }
 
