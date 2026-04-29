@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import typing as t
 
-from gp_sphinx_astro_builder.models import Document
-from gp_sphinx_astro_builder.schemas import export_doctree_schema
+from gp_sphinx_astro_builder.models import Document, Symbol
+from gp_sphinx_astro_builder.schemas import (
+    export_doctree_schema,
+    export_symbol_schema,
+)
 
 if t.TYPE_CHECKING:
     from syrupy.assertion import SnapshotAssertion
@@ -82,3 +85,45 @@ def test_export_doctree_schema_matches_snapshot(
 ) -> None:
     """The full exported schema is byte-stable against a syrupy snapshot."""
     assert export_doctree_schema() == snapshot
+
+
+def test_export_symbol_schema_returns_dict() -> None:
+    """``export_symbol_schema`` returns a non-empty dict."""
+    schema = export_symbol_schema()
+    assert isinstance(schema, dict)
+    assert schema
+
+
+def test_export_symbol_schema_contains_symbol_specific_defs() -> None:
+    """Symbol-specific models appear under ``$defs`` in the exported schema."""
+    schema = export_symbol_schema()
+    defs = schema.get("$defs", {})
+    expected = {"Parameter", "SymbolSource"}
+    missing = expected - set(defs.keys())
+    assert not missing, f"missing $defs entries: {sorted(missing)}"
+
+
+def test_export_symbol_schema_round_trips_canonical_symbol() -> None:
+    """A canonical ``Symbol`` dict round-trips through the exported schema."""
+    payload: dict[str, t.Any] = {
+        "id": "x.y.foo",
+        "kind": "function",
+        "name": "foo",
+        "qualname": "foo",
+        "module": "x.y",
+        "signature": "() -> None",
+        "parameters": [],
+        "returns": None,
+        "docstring_summary": "Hi.",
+        "docstring_body": [],
+        "source": None,
+    }
+    symbol = Symbol.model_validate(payload)
+    assert symbol.model_dump() == payload
+
+
+def test_export_symbol_schema_matches_snapshot(
+    snapshot: SnapshotAssertion,
+) -> None:
+    """The full Symbol JSON Schema is byte-stable against a syrupy snapshot."""
+    assert export_symbol_schema() == snapshot

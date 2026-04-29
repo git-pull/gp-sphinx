@@ -17,7 +17,10 @@ from sphinx.builders import Builder
 from sphinx.util import logging
 from sphinx.util.osutil import _last_modified_time
 
-from gp_sphinx_astro_builder.schemas import export_doctree_schema
+from gp_sphinx_astro_builder.schemas import (
+    export_doctree_schema,
+    export_symbol_schema,
+)
 from gp_sphinx_astro_builder.symbols import SymbolAccumulator
 from gp_sphinx_astro_builder.translator import DocTreeJSONTranslator
 
@@ -108,10 +111,14 @@ class AstroBuilder(Builder):
         side validates Zod schemas against the schema file and consumes the
         symbol entries through Astro's ``file()`` content loader.
         """
-        schema_path = self.outdir / "schemas" / "doctree.schema.json"
-        schema_path.parent.mkdir(parents=True, exist_ok=True)
-        schema_path.write_text(
+        schemas_dir = self.outdir / "schemas"
+        schemas_dir.mkdir(parents=True, exist_ok=True)
+        (schemas_dir / "doctree.schema.json").write_text(
             json.dumps(export_doctree_schema(), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        (schemas_dir / "symbol.schema.json").write_text(
+            json.dumps(export_symbol_schema(), indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
 

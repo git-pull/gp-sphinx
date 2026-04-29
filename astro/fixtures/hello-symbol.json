@@ -1,0 +1,40 @@
+{
+  "id": "demo_api.merge_demo",
+  "kind": "function",
+  "name": "merge_demo",
+  "qualname": "merge_demo",
+  "module": "demo_api",
+  "signature": "(project: str, version: str = \"0.0.0\") -> dict[str, str]",
+  "parameters": [
+    {
+      "name": "project",
+      "annotation": "str",
+      "default": null,
+      "kind": "positional"
+    },
+    {
+      "name": "version",
+      "annotation": "str",
+      "default": "\"0.0.0\"",
+      "kind": "positional"
+    }
+  ],
+  "returns": "dict[str, str]",
+  "docstring_summary": "Merge a tiny pseudo-config payload.",
+  "docstring_body": [
+    {
+      "type": "paragraph",
+      "children": [
+        {
+          "type": "text",
+          "value": "Merge a tiny pseudo-config payload."
+        }
+      ]
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/git-pull/gp-sphinx",
+    "path": "demo_api.py",
+    "line": 4
+  }
+}
