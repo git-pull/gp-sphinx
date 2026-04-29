@@ -201,6 +201,23 @@ def test_astro_builder_emits_symbols_json_for_autofunction(
     assert symbol["module"] == "demo_api"
     assert "merge_demo" in symbol["name"]
     assert symbol["docstring_summary"].startswith("Merge a tiny pseudo-config payload")
+    # The signature field must hold ONLY the parameter list (and, when
+    # present, the return annotation prefixed with " -> ") — never the
+    # module/qualname (already in symbol['module']/['qualname']) and
+    # never the api-style extension's inline ``objtype`` badge text.
+    sig = symbol["signature"]
+    assert sig.startswith("("), f"expected sig to start with '(', got {sig!r}"
+    assert "merge_demo" not in sig, (
+        f"signature must not duplicate the qualname; got {sig!r}"
+    )
+    assert "function" not in sig, (
+        f"signature must not contain the objtype badge text; got {sig!r}"
+    )
+    # The autofixture function returns ``dict[str, str]`` so the
+    # signature should end with the return annotation.
+    assert sig.endswith("dict[str, str]"), (
+        f"expected sig to end with the return annotation; got {sig!r}"
+    )
 
 
 @pytest.mark.integration
