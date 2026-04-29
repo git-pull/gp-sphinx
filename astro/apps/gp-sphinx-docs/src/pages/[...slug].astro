@@ -2,9 +2,10 @@
 import type { GetStaticPaths } from 'astro'
 import { getCollection } from 'astro:content'
 import { extractDescription } from '@gp-sphinx-astro/theme/render/extract-description'
-import { renderDocument } from '@gp-sphinx-astro/theme/render/render-node'
+import { renderDocumentWithHighlighting } from '@gp-sphinx-astro/theme/render/render-with-highlighting'
 import Doc from '../layouts/Doc.astro'
 import { editOnGithubUrl } from '../lib/edit-link.ts'
+import { getCodeHighlighter } from '../lib/highlighter-singleton.ts'
 
 export const getStaticPaths = (async () => {
   const docs = await getCollection('docs')
@@ -16,7 +17,8 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths
 
 const { entry } = Astro.props
-const html = renderDocument(entry.data)
+const highlight = await getCodeHighlighter()
+const html = renderDocumentWithHighlighting(entry.data, highlight)
 const editUrl = editOnGithubUrl({
   repo: 'https://github.com/git-pull/gp-sphinx',
   branch: 'main',

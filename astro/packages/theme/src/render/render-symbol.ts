@@ -19,6 +19,7 @@
 // import so static analysers don't flag the shadow at every use site.
 import type { Symbol as ApiSymbol, Parameter, SymbolSource } from '../schemas/symbol.ts'
 import { renderBlockNode } from './render-node.ts'
+import { type CodeHighlight, renderBlocksWithHighlighting } from './render-with-highlighting.ts'
 
 const HTML_ESCAPES: Record<string, string> = {
   '&': '&amp;',
@@ -85,15 +86,21 @@ function renderSummary(summary: string): string {
   return `<p class="gp-sphinx-symbol__summary">${escapeHtml(summary)}</p>`
 }
 
-function renderBody(body: ApiSymbol['docstring_body']): string {
+function renderBody(
+  body: ApiSymbol['docstring_body'],
+  highlight: CodeHighlight | undefined,
+): string {
   if (body.length === 0) {
     return ''
   }
-  const blocks = body.map(renderBlockNode).join('')
+  const blocks =
+    highlight === undefined
+      ? body.map(renderBlockNode).join('')
+      : renderBlocksWithHighlighting(body, highlight)
   return `<div class="gp-sphinx-symbol__body">${blocks}</div>`
 }
 
-export function renderSymbol(symbol: ApiSymbol): string {
+export function renderSymbol(symbol: ApiSymbol, highlight?: CodeHighlight): string {
   const classAttr = `class="gp-sphinx-symbol gp-sphinx-symbol--${symbol.kind}"`
   const idAttr = `id="${escapeHtml(symbol.id)}"`
   const dataAttr = `data-symbol-id="${escapeHtml(symbol.id)}"`
@@ -101,7 +108,7 @@ export function renderSymbol(symbol: ApiSymbol): string {
   const summaryHtml = renderSummary(symbol.docstring_summary)
   const paramsHtml = renderParameters(symbol.parameters)
   const returnsHtml = renderReturns(symbol.returns)
-  const bodyHtml = renderBody(symbol.docstring_body)
+  const bodyHtml = renderBody(symbol.docstring_body, highlight)
   const sourceHtml = renderSource(symbol.source)
   return [
     `<article ${classAttr} ${idAttr} ${dataAttr}>`,
