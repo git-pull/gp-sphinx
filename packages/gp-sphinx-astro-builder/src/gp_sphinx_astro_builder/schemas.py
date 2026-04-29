@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import typing as t
 
-from gp_sphinx_astro_builder.models import Document, Symbol
+from pydantic import TypeAdapter
+
+from gp_sphinx_astro_builder.models import Document, Symbol, XrefEntry
 
 
 def export_doctree_schema() -> dict[str, t.Any]:
@@ -60,3 +62,32 @@ def export_symbol_schema() -> dict[str, t.Any]:
     True
     """
     return Symbol.model_json_schema()
+
+
+_XREF_INDEX_TYPE_ADAPTER: TypeAdapter[list[XrefEntry]] = TypeAdapter(list[XrefEntry])
+
+
+def export_xref_index_schema() -> dict[str, t.Any]:
+    """Return the JSON Schema for the ``xref-index.json`` array.
+
+    The xref index is shipped as a flat array of :class:`XrefEntry`
+    objects, so the top-level shape is ``{"type": "array", "items":
+    {"$ref": "#/$defs/XrefEntry"}}`` and the ``XrefEntry`` model lives
+    under ``$defs``. The Astro side validates the array directly through
+    a ``z.array(xrefEntrySchema)`` schema.
+
+    Returns
+    -------
+    dict[str, Any]
+        JSON Schema as a Python dict, ready for ``json.dumps``.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.schemas import export_xref_index_schema
+    >>> schema = export_xref_index_schema()
+    >>> schema["type"]
+    'array'
+    >>> "XrefEntry" in schema["$defs"]
+    True
+    """
+    return _XREF_INDEX_TYPE_ADAPTER.json_schema()

@@ -1,0 +1,59 @@
+{
+  "$defs": {
+    "XrefEntry": {
+      "description": "One entry in the cross-reference index.\n\nMirrors what Sphinx writes to ``objects.inv``: each entry pairs a\nfully-qualified target (``\"gp_sphinx.config.merge_sphinx_config\"``)\nwith the URL that resolves it on the rendered site, scoped by the\n``domain`` it lives in (``\"py\"``, ``\"std\"``, ``\"c\"``\u2026) and the\n``role`` that introduced it (``\"func\"``, ``\"class\"``, ``\"data\"``\u2026).\n\nThe ``id`` field is the canonical join key \u2014 typically\n``f\"{domain}:{role}:{target}\"`` \u2014 so a downstream Astro site can\nlook up an entry without parsing.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import XrefEntry\n>>> entry = XrefEntry(\n...     id=\"py:func:foo\",\n...     domain=\"py\",\n...     role=\"func\",\n...     target=\"foo\",\n...     href=\"/api/foo/\",\n... )\n>>> entry.priority\n0",
+      "properties": {
+        "display": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display"
+        },
+        "domain": {
+          "title": "Domain",
+          "type": "string"
+        },
+        "href": {
+          "title": "Href",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "priority": {
+          "default": 0,
+          "title": "Priority",
+          "type": "integer"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "domain",
+        "role",
+        "target",
+        "href"
+      ],
+      "title": "XrefEntry",
+      "type": "object"
+    }
+  },
+  "items": {
+    "$ref": "#/$defs/XrefEntry"
+  },
+  "type": "array"
+}

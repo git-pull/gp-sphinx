@@ -243,6 +243,96 @@ def test_astro_builder_replaces_desc_with_symbol_ref_node(
 
 
 @pytest.mark.integration
+def test_astro_builder_emits_xref_index_json_for_autodoc_symbol(
+    tmp_path: pathlib.Path,
+) -> None:
+    """An autodoc'd function lands in ``xref-index.json`` as one entry."""
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("demo_api.py", _AUTODOC_MODULE_SOURCE),
+            ScenarioFile(
+                "conf.py",
+                _AUTODOC_CONF_PY.replace(
+                    "__SCENARIO_SRCDIR__",
+                    SCENARIO_SRCDIR_TOKEN,
+                ),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("index.rst", _AUTODOC_INDEX_RST),
+        ),
+    )
+    result = build_isolated_sphinx_result(
+        cache_root,
+        tmp_path,
+        scenario,
+        purge_modules=("demo_api",),
+    )
+
+    xref_path = result.outdir / "xref-index.json"
+    assert xref_path.exists(), (
+        f"expected {xref_path} to be emitted; "
+        f"outdir contents: {list(result.outdir.rglob('*'))}"
+    )
+
+    entries = json.loads(xref_path.read_text("utf-8"))
+    assert isinstance(entries, list)
+    function_entries = [e for e in entries if e.get("target") == "demo_api.merge_demo"]
+    assert len(function_entries) == 1
+    [entry] = function_entries
+    assert entry["domain"] == "py"
+    assert entry["role"] in {"function", "func"}
+    assert entry["id"].endswith("demo_api.merge_demo")
+
+
+@pytest.mark.integration
+def test_astro_builder_emits_objects_inv_round_trippable(
+    tmp_path: pathlib.Path,
+) -> None:
+    """The emitted ``objects.inv`` parses through Sphinx's inventory loader."""
+    from sphinx.util.inventory import InventoryFile  # noqa: PLC0415
+
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("demo_api.py", _AUTODOC_MODULE_SOURCE),
+            ScenarioFile(
+                "conf.py",
+                _AUTODOC_CONF_PY.replace(
+                    "__SCENARIO_SRCDIR__",
+                    SCENARIO_SRCDIR_TOKEN,
+                ),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("index.rst", _AUTODOC_INDEX_RST),
+        ),
+    )
+    result = build_isolated_sphinx_result(
+        cache_root,
+        tmp_path,
+        scenario,
+        purge_modules=("demo_api",),
+    )
+
+    inv_path = result.outdir / "objects.inv"
+    assert inv_path.exists()
+
+    with inv_path.open("rb") as f:
+        inventory = InventoryFile.load(
+            f, "https://example.com", lambda base, slug: f"{base}/{slug}"
+        )
+
+    # Inventory is a dict[type -> dict[name -> InventoryItem]]; the python
+    # function we autodoc'd should show up under py:function (or py:func).
+    assert any(
+        "demo_api.merge_demo" in inventory.get(type_key, {})
+        for type_key in ("py:function", "py:func")
+    ), f"expected demo_api.merge_demo in inventory; got types: {list(inventory.keys())}"
+
+
+@pytest.mark.integration
 def test_astro_builder_emission_matches_snapshot(
     tmp_path: pathlib.Path,
     snapshot: SnapshotAssertion,
