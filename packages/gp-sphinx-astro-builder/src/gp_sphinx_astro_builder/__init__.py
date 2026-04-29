@@ -17,6 +17,7 @@ import logging
 import typing as t
 
 from gp_sphinx_astro_builder.builder import AstroBuilder
+from gp_sphinx_astro_builder.content_config import render_content_config
 from gp_sphinx_astro_builder.models import (
     AdmonitionNode,
     AdmonitionVariant,
@@ -93,6 +94,7 @@ __all__ = [
     "export_doctree_schema",
     "export_symbol_schema",
     "export_xref_index_schema",
+    "render_content_config",
     "setup",
 ]
 
