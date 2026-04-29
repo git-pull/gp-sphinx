@@ -524,16 +524,76 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
             self._stack[-1]["data"]["definition"] = frame["data"]["children"]
 
     def visit_Text(self, node: nodes.Text) -> None:
-        """Append a text leaf to the current frame's children."""
+        """Append a text leaf to the current frame's children, if it has any.
+
+        Some frame shapes (the ``desc`` frame for autodoc symbols, the
+        ``definitionListItem`` frame with its term/definition slots) do not
+        have a flat ``children`` list. Text that lands inside one of those
+        frames belongs to a sub-section the translator hasn't pushed a
+        proper frame for yet (e.g., a stray ``classifier`` between
+        ``term`` and ``definition``), so we drop it silently rather than
+        crashing the build.
+        """
         text_value = node.astext()
         if not self._stack:
             return
-        self._stack[-1]["data"]["children"].append(
-            {"type": "text", "value": text_value},
-        )
+        data = self._stack[-1]["data"]
+        children = data.get("children")
+        if not isinstance(children, list):
+            return
+        children.append({"type": "text", "value": text_value})
 
     def depart_Text(self, node: nodes.Text) -> None:
         """No-op: text leaves have no closing handler."""
+
+    def visit_doctest_block(self, node: nodes.Element) -> None:
+        """Treat a docutils ``doctest_block`` as a python literal block.
+
+        ``>>>``-style examples in NumPy / Google docstrings parse to a
+        :class:`docutils.nodes.doctest_block`, which we map onto our
+        ``literalBlock`` shape with ``language="python"`` so the renderer
+        applies the python syntax-highlighting class.
+
+        Raises
+        ------
+        docutils.nodes.SkipNode
+            Always: ``doctest_block`` is a fixed-text element captured via
+            :meth:`docutils.nodes.Element.astext` on visit.
+        """
+        if not self._stack:
+            raise nodes.SkipNode
+        data = self._stack[-1]["data"]
+        children = data.get("children")
+        if isinstance(children, list):
+            children.append(
+                {
+                    "type": "literalBlock",
+                    "language": "python",
+                    "code": node.astext(),
+                },
+            )
+        raise nodes.SkipNode
+
+    def visit_classifier(self, node: nodes.Element) -> None:
+        """Skip the ``classifier`` (type annotation) subtree.
+
+        docutils emits ``classifier`` for type annotations between
+        ``term`` and ``definition`` in a definition_list_item:
+
+            project : str
+                Sphinx project name.
+
+        For the spike we drop the classifier entirely; the type
+        information for autodoc parameters lives in
+        :attr:`Symbol.parameters` and the doctree-side classifier is
+        derivative.
+
+        Raises
+        ------
+        docutils.nodes.SkipNode
+            Always: skip both children and depart.
+        """
+        raise nodes.SkipNode
 
     # ─── autodoc desc handling ─────────────────────────────────────────────
     #

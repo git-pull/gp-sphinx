@@ -1,0 +1,24 @@
+{
+  "name": "@gp-sphinx-astro/gp-sphinx-docs",
+  "version": "0.0.1-alpha.12",
+  "description": "Dogfood Astro site for the gp-sphinx documentation platform.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prebuild": "uv run sphinx-build -b astro docs .",
+    "build": "astro build",
+    "dev": "astro dev",
+    "preview": "astro preview",
+    "test": "vitest run --passWithNoTests",
+    "type-check": "astro check"
+  },
+  "dependencies": {
+    "@gp-sphinx-astro/theme": "workspace:^",
+    "astro": "^6.1.9",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.8",
+    "vitest": "^3.0.0"
+  }
+}

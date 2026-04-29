@@ -1,11 +1,15 @@
 {
   "name": "@gp-sphinx-astro/theme",
-  "version": "0.0.1a12",
+  "version": "0.0.1-alpha.12",
   "description": "Astro theme components and Zod schemas for the gp-sphinx static site.",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./schemas/doctree": "./src/schemas/doctree.ts",
+    "./schemas/symbol": "./src/schemas/symbol.ts",
+    "./schemas/xref": "./src/schemas/xref.ts",
+    "./render/render-node": "./src/render/render-node.ts"
   },
   "scripts": {
     "test": "vitest run",
