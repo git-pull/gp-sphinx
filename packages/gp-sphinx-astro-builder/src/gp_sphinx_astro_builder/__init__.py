@@ -47,7 +47,10 @@ from gp_sphinx_astro_builder.models import (
     TextNode,
     TransitionNode,
 )
-from gp_sphinx_astro_builder.schemas import export_doctree_schema
+from gp_sphinx_astro_builder.schemas import (
+    export_doctree_schema,
+    export_symbol_schema,
+)
 from gp_sphinx_astro_builder.translator import DocTreeJSONTranslator
 
 if t.TYPE_CHECKING:
@@ -85,6 +88,7 @@ __all__ = [
     "TextNode",
     "TransitionNode",
     "export_doctree_schema",
+    "export_symbol_schema",
     "setup",
 ]
 

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import typing as t
 
-from gp_sphinx_astro_builder.models import Document
+from gp_sphinx_astro_builder.models import Document, Symbol
 
 
 def export_doctree_schema() -> dict[str, t.Any]:
@@ -34,3 +34,29 @@ def export_doctree_schema() -> dict[str, t.Any]:
     True
     """
     return Document.model_json_schema()
+
+
+def export_symbol_schema() -> dict[str, t.Any]:
+    """Return the full JSON Schema for :class:`Symbol`.
+
+    Symbol's ``docstring_body`` field carries a list of :class:`BlockNode`,
+    so Pydantic transitively pulls every doctree node model into ``$defs``
+    — meaning this schema covers both the API-symbol shape AND the doctree
+    shape used to render docstrings. The Astro side validates entries in
+    ``src/content/api/symbols.json`` against this schema.
+
+    Returns
+    -------
+    dict[str, Any]
+        JSON Schema as a Python dict, ready for ``json.dumps``.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.schemas import export_symbol_schema
+    >>> schema = export_symbol_schema()
+    >>> "Parameter" in schema["$defs"]
+    True
+    >>> "TextNode" in schema["$defs"]
+    True
+    """
+    return Symbol.model_json_schema()

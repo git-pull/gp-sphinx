@@ -1,0 +1,1137 @@
+{
+  "$defs": {
+    "AdmonitionNode": {
+      "description": "A block-level admonition (note, warning, tip, \u2026).\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import AdmonitionNode\n>>> node = AdmonitionNode.model_validate(\n...     {\n...         \"type\": \"admonition\",\n...         \"variant\": \"note\",\n...         \"children\": [\n...             {\n...                 \"type\": \"paragraph\",\n...                 \"children\": [{\"type\": \"text\", \"value\": \"x\"}],\n...             },\n...         ],\n...     },\n... )\n>>> node.variant\n'note'",
+      "properties": {
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "admonition": "#/$defs/AdmonitionNode",
+                "blockQuote": "#/$defs/BlockQuoteNode",
+                "bulletList": "#/$defs/BulletListNode",
+                "comment": "#/$defs/CommentNode",
+                "definitionList": "#/$defs/DefinitionListNode",
+                "enumeratedList": "#/$defs/EnumeratedListNode",
+                "literalBlock": "#/$defs/LiteralBlockNode",
+                "paragraph": "#/$defs/ParagraphNode",
+                "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
+                "transition": "#/$defs/TransitionNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ParagraphNode"
+              },
+              {
+                "$ref": "#/$defs/SectionNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralBlockNode"
+              },
+              {
+                "$ref": "#/$defs/CommentNode"
+              },
+              {
+                "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/BlockQuoteNode"
+              },
+              {
+                "$ref": "#/$defs/BulletListNode"
+              },
+              {
+                "$ref": "#/$defs/EnumeratedListNode"
+              },
+              {
+                "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "type": {
+          "const": "admonition",
+          "title": "Type",
+          "type": "string"
+        },
+        "variant": {
+          "enum": [
+            "note",
+            "warning",
+            "attention",
+            "caution",
+            "important",
+            "tip",
+            "hint",
+            "danger",
+            "error"
+          ],
+          "title": "Variant",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "variant",
+        "children"
+      ],
+      "title": "AdmonitionNode",
+      "type": "object"
+    },
+    "BlockQuoteNode": {
+      "description": "A block-level quote wrapping block-level children.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import BlockQuoteNode\n>>> node = BlockQuoteNode.model_validate(\n...     {\n...         \"type\": \"blockQuote\",\n...         \"children\": [\n...             {\n...                 \"type\": \"paragraph\",\n...                 \"children\": [{\"type\": \"text\", \"value\": \"q\"}],\n...             },\n...         ],\n...     },\n... )\n>>> node.children[0].children[0].value\n'q'",
+      "properties": {
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "admonition": "#/$defs/AdmonitionNode",
+                "blockQuote": "#/$defs/BlockQuoteNode",
+                "bulletList": "#/$defs/BulletListNode",
+                "comment": "#/$defs/CommentNode",
+                "definitionList": "#/$defs/DefinitionListNode",
+                "enumeratedList": "#/$defs/EnumeratedListNode",
+                "literalBlock": "#/$defs/LiteralBlockNode",
+                "paragraph": "#/$defs/ParagraphNode",
+                "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
+                "transition": "#/$defs/TransitionNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ParagraphNode"
+              },
+              {
+                "$ref": "#/$defs/SectionNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralBlockNode"
+              },
+              {
+                "$ref": "#/$defs/CommentNode"
+              },
+              {
+                "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/BlockQuoteNode"
+              },
+              {
+                "$ref": "#/$defs/BulletListNode"
+              },
+              {
+                "$ref": "#/$defs/EnumeratedListNode"
+              },
+              {
+                "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "type": {
+          "const": "blockQuote",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "children"
+      ],
+      "title": "BlockQuoteNode",
+      "type": "object"
+    },
+    "BulletListNode": {
+      "description": "A bullet (unordered) list whose children are list items.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import BulletListNode\n>>> node = BulletListNode.model_validate(\n...     {\"type\": \"bulletList\", \"children\": []},\n... )\n>>> node.children\n[]",
+      "properties": {
+        "children": {
+          "items": {
+            "$ref": "#/$defs/ListItemNode"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "type": {
+          "const": "bulletList",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "children"
+      ],
+      "title": "BulletListNode",
+      "type": "object"
+    },
+    "CommentNode": {
+      "description": "A docutils comment block, preserved as raw text.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import CommentNode\n>>> CommentNode(type=\"comment\", value=\"TODO\").value\n'TODO'",
+      "properties": {
+        "type": {
+          "const": "comment",
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ],
+      "title": "CommentNode",
+      "type": "object"
+    },
+    "DefinitionListItemNode": {
+      "description": "One entry in a definition list, pairing a term with a definition.\n\nThe ``term`` slot accepts inline content (emphasis, strong, literal,\nreferences\u2026); the ``definition`` slot accepts block content (paragraphs,\nlists, code blocks\u2026). docutils also supports optional ``classifier``\nnodes between term and definition; we omit them here and revisit when a\nreal document needs them.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import DefinitionListItemNode\n>>> node = DefinitionListItemNode.model_validate(\n...     {\n...         \"type\": \"definitionListItem\",\n...         \"term\": [{\"type\": \"text\", \"value\": \"foo\"}],\n...         \"definition\": [\n...             {\n...                 \"type\": \"paragraph\",\n...                 \"children\": [{\"type\": \"text\", \"value\": \"x\"}],\n...             },\n...         ],\n...     },\n... )\n>>> node.term[0].value\n'foo'",
+      "properties": {
+        "definition": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "admonition": "#/$defs/AdmonitionNode",
+                "blockQuote": "#/$defs/BlockQuoteNode",
+                "bulletList": "#/$defs/BulletListNode",
+                "comment": "#/$defs/CommentNode",
+                "definitionList": "#/$defs/DefinitionListNode",
+                "enumeratedList": "#/$defs/EnumeratedListNode",
+                "literalBlock": "#/$defs/LiteralBlockNode",
+                "paragraph": "#/$defs/ParagraphNode",
+                "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
+                "transition": "#/$defs/TransitionNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ParagraphNode"
+              },
+              {
+                "$ref": "#/$defs/SectionNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralBlockNode"
+              },
+              {
+                "$ref": "#/$defs/CommentNode"
+              },
+              {
+                "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/BlockQuoteNode"
+              },
+              {
+                "$ref": "#/$defs/BulletListNode"
+              },
+              {
+                "$ref": "#/$defs/EnumeratedListNode"
+              },
+              {
+                "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
+              }
+            ]
+          },
+          "title": "Definition",
+          "type": "array"
+        },
+        "term": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "emphasis": "#/$defs/EmphasisNode",
+                "image": "#/$defs/ImageNode",
+                "literal": "#/$defs/LiteralNode",
+                "reference": "#/$defs/ReferenceNode",
+                "strong": "#/$defs/StrongNode",
+                "text": "#/$defs/TextNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextNode"
+              },
+              {
+                "$ref": "#/$defs/EmphasisNode"
+              },
+              {
+                "$ref": "#/$defs/StrongNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralNode"
+              },
+              {
+                "$ref": "#/$defs/ReferenceNode"
+              },
+              {
+                "$ref": "#/$defs/ImageNode"
+              }
+            ]
+          },
+          "title": "Term",
+          "type": "array"
+        },
+        "type": {
+          "const": "definitionListItem",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "term",
+        "definition"
+      ],
+      "title": "DefinitionListItemNode",
+      "type": "object"
+    },
+    "DefinitionListNode": {
+      "description": "A definition list whose children are typed as definition_list_item.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import DefinitionListNode\n>>> node = DefinitionListNode.model_validate(\n...     {\"type\": \"definitionList\", \"children\": []},\n... )\n>>> node.children\n[]",
+      "properties": {
+        "children": {
+          "items": {
+            "$ref": "#/$defs/DefinitionListItemNode"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "type": {
+          "const": "definitionList",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "children"
+      ],
+      "title": "DefinitionListNode",
+      "type": "object"
+    },
+    "EmphasisNode": {
+      "description": "An inline emphasis node wrapping inline children.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import EmphasisNode\n>>> node = EmphasisNode.model_validate(\n...     {\"type\": \"emphasis\", \"children\": [{\"type\": \"text\", \"value\": \"x\"}]},\n... )\n>>> node.children[0].value\n'x'",
+      "properties": {
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "emphasis": "#/$defs/EmphasisNode",
+                "image": "#/$defs/ImageNode",
+                "literal": "#/$defs/LiteralNode",
+                "reference": "#/$defs/ReferenceNode",
+                "strong": "#/$defs/StrongNode",
+                "text": "#/$defs/TextNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextNode"
+              },
+              {
+                "$ref": "#/$defs/EmphasisNode"
+              },
+              {
+                "$ref": "#/$defs/StrongNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralNode"
+              },
+              {
+                "$ref": "#/$defs/ReferenceNode"
+              },
+              {
+                "$ref": "#/$defs/ImageNode"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "type": {
+          "const": "emphasis",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "children"
+      ],
+      "title": "EmphasisNode",
+      "type": "object"
+    },
+    "EnumeratedListNode": {
+      "description": "An enumerated (ordered) list with optional explicit ``start`` index.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import EnumeratedListNode\n>>> node = EnumeratedListNode.model_validate(\n...     {\"type\": \"enumeratedList\", \"children\": []},\n... )\n>>> node.start is None\nTrue",
+      "properties": {
+        "children": {
+          "items": {
+            "$ref": "#/$defs/ListItemNode"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start"
+        },
+        "type": {
+          "const": "enumeratedList",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "children"
+      ],
+      "title": "EnumeratedListNode",
+      "type": "object"
+    },
+    "ImageNode": {
+      "description": "An inline image leaf with a uri and optional alt text.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import ImageNode\n>>> ImageNode(type=\"image\", uri=\"/img/x.svg\", alt=\"X\").alt\n'X'",
+      "properties": {
+        "alt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Alt"
+        },
+        "type": {
+          "const": "image",
+          "title": "Type",
+          "type": "string"
+        },
+        "uri": {
+          "title": "Uri",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "uri"
+      ],
+      "title": "ImageNode",
+      "type": "object"
+    },
+    "ListItemNode": {
+      "description": "One item in a bullet or enumerated list.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import ListItemNode\n>>> node = ListItemNode.model_validate(\n...     {\n...         \"type\": \"listItem\",\n...         \"children\": [\n...             {\n...                 \"type\": \"paragraph\",\n...                 \"children\": [{\"type\": \"text\", \"value\": \"a\"}],\n...             },\n...         ],\n...     },\n... )\n>>> node.children[0].children[0].value\n'a'",
+      "properties": {
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "admonition": "#/$defs/AdmonitionNode",
+                "blockQuote": "#/$defs/BlockQuoteNode",
+                "bulletList": "#/$defs/BulletListNode",
+                "comment": "#/$defs/CommentNode",
+                "definitionList": "#/$defs/DefinitionListNode",
+                "enumeratedList": "#/$defs/EnumeratedListNode",
+                "literalBlock": "#/$defs/LiteralBlockNode",
+                "paragraph": "#/$defs/ParagraphNode",
+                "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
+                "transition": "#/$defs/TransitionNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ParagraphNode"
+              },
+              {
+                "$ref": "#/$defs/SectionNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralBlockNode"
+              },
+              {
+                "$ref": "#/$defs/CommentNode"
+              },
+              {
+                "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/BlockQuoteNode"
+              },
+              {
+                "$ref": "#/$defs/BulletListNode"
+              },
+              {
+                "$ref": "#/$defs/EnumeratedListNode"
+              },
+              {
+                "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "type": {
+          "const": "listItem",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "children"
+      ],
+      "title": "ListItemNode",
+      "type": "object"
+    },
+    "LiteralBlockNode": {
+      "description": "A block-level fenced code block.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import LiteralBlockNode\n>>> node = LiteralBlockNode(type=\"literalBlock\", language=\"py\", code=\"x\")\n>>> node.language\n'py'",
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        },
+        "type": {
+          "const": "literalBlock",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "code"
+      ],
+      "title": "LiteralBlockNode",
+      "type": "object"
+    },
+    "LiteralNode": {
+      "description": "An inline literal-text run, e.g. an inline code span.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import LiteralNode\n>>> LiteralNode(type=\"literal\", value=\"x = 1\").value\n'x = 1'",
+      "properties": {
+        "type": {
+          "const": "literal",
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ],
+      "title": "LiteralNode",
+      "type": "object"
+    },
+    "ParagraphNode": {
+      "description": "A block-level paragraph wrapping inline children.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import ParagraphNode\n>>> node = ParagraphNode.model_validate(\n...     {\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"hi\"}]},\n... )\n>>> node.children[0].value\n'hi'",
+      "properties": {
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "emphasis": "#/$defs/EmphasisNode",
+                "image": "#/$defs/ImageNode",
+                "literal": "#/$defs/LiteralNode",
+                "reference": "#/$defs/ReferenceNode",
+                "strong": "#/$defs/StrongNode",
+                "text": "#/$defs/TextNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextNode"
+              },
+              {
+                "$ref": "#/$defs/EmphasisNode"
+              },
+              {
+                "$ref": "#/$defs/StrongNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralNode"
+              },
+              {
+                "$ref": "#/$defs/ReferenceNode"
+              },
+              {
+                "$ref": "#/$defs/ImageNode"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "type": {
+          "const": "paragraph",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "children"
+      ],
+      "title": "ParagraphNode",
+      "type": "object"
+    },
+    "Parameter": {
+      "description": "One parameter in a callable signature.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import Parameter\n>>> p = Parameter(name=\"x\", annotation=\"int\", default=\"0\", kind=\"positional\")\n>>> p.kind\n'positional'",
+      "properties": {
+        "annotation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Annotation"
+        },
+        "default": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Default"
+        },
+        "kind": {
+          "enum": [
+            "positional",
+            "keyword",
+            "var_positional",
+            "var_keyword"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "annotation",
+        "default",
+        "kind"
+      ],
+      "title": "Parameter",
+      "type": "object"
+    },
+    "ReferenceNode": {
+      "description": "An inline cross-reference or external link.\n\nThe ``href`` field holds either an absolute URL (when the source had\n``refuri``) or an in-page anchor like ``\"#section-id\"`` (when the source\nhad ``refid``). The translator normalises both into the same field so the\nAstro renderer needs a single href branch.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import ReferenceNode\n>>> node = ReferenceNode.model_validate(\n...     {\n...         \"type\": \"reference\",\n...         \"href\": \"https://example.com\",\n...         \"children\": [{\"type\": \"text\", \"value\": \"Example\"}],\n...     },\n... )\n>>> node.href\n'https://example.com'",
+      "properties": {
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "emphasis": "#/$defs/EmphasisNode",
+                "image": "#/$defs/ImageNode",
+                "literal": "#/$defs/LiteralNode",
+                "reference": "#/$defs/ReferenceNode",
+                "strong": "#/$defs/StrongNode",
+                "text": "#/$defs/TextNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextNode"
+              },
+              {
+                "$ref": "#/$defs/EmphasisNode"
+              },
+              {
+                "$ref": "#/$defs/StrongNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralNode"
+              },
+              {
+                "$ref": "#/$defs/ReferenceNode"
+              },
+              {
+                "$ref": "#/$defs/ImageNode"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "href": {
+          "title": "Href",
+          "type": "string"
+        },
+        "type": {
+          "const": "reference",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "href",
+        "children"
+      ],
+      "title": "ReferenceNode",
+      "type": "object"
+    },
+    "SectionNode": {
+      "description": "A document section with id, inline title, and block children.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import SectionNode\n>>> node = SectionNode.model_validate(\n...     {\n...         \"type\": \"section\",\n...         \"id\": \"intro\",\n...         \"title\": [{\"type\": \"text\", \"value\": \"Intro\"}],\n...         \"children\": [],\n...     },\n... )\n>>> node.id\n'intro'",
+      "properties": {
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "admonition": "#/$defs/AdmonitionNode",
+                "blockQuote": "#/$defs/BlockQuoteNode",
+                "bulletList": "#/$defs/BulletListNode",
+                "comment": "#/$defs/CommentNode",
+                "definitionList": "#/$defs/DefinitionListNode",
+                "enumeratedList": "#/$defs/EnumeratedListNode",
+                "literalBlock": "#/$defs/LiteralBlockNode",
+                "paragraph": "#/$defs/ParagraphNode",
+                "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
+                "transition": "#/$defs/TransitionNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ParagraphNode"
+              },
+              {
+                "$ref": "#/$defs/SectionNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralBlockNode"
+              },
+              {
+                "$ref": "#/$defs/CommentNode"
+              },
+              {
+                "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/BlockQuoteNode"
+              },
+              {
+                "$ref": "#/$defs/BulletListNode"
+              },
+              {
+                "$ref": "#/$defs/EnumeratedListNode"
+              },
+              {
+                "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "emphasis": "#/$defs/EmphasisNode",
+                "image": "#/$defs/ImageNode",
+                "literal": "#/$defs/LiteralNode",
+                "reference": "#/$defs/ReferenceNode",
+                "strong": "#/$defs/StrongNode",
+                "text": "#/$defs/TextNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextNode"
+              },
+              {
+                "$ref": "#/$defs/EmphasisNode"
+              },
+              {
+                "$ref": "#/$defs/StrongNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralNode"
+              },
+              {
+                "$ref": "#/$defs/ReferenceNode"
+              },
+              {
+                "$ref": "#/$defs/ImageNode"
+              }
+            ]
+          },
+          "title": "Title",
+          "type": "array"
+        },
+        "type": {
+          "const": "section",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "title",
+        "children"
+      ],
+      "title": "SectionNode",
+      "type": "object"
+    },
+    "StrongNode": {
+      "description": "An inline strong-emphasis node wrapping inline children.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import StrongNode\n>>> node = StrongNode.model_validate(\n...     {\"type\": \"strong\", \"children\": [{\"type\": \"text\", \"value\": \"x\"}]},\n... )\n>>> node.children[0].value\n'x'",
+      "properties": {
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "emphasis": "#/$defs/EmphasisNode",
+                "image": "#/$defs/ImageNode",
+                "literal": "#/$defs/LiteralNode",
+                "reference": "#/$defs/ReferenceNode",
+                "strong": "#/$defs/StrongNode",
+                "text": "#/$defs/TextNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextNode"
+              },
+              {
+                "$ref": "#/$defs/EmphasisNode"
+              },
+              {
+                "$ref": "#/$defs/StrongNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralNode"
+              },
+              {
+                "$ref": "#/$defs/ReferenceNode"
+              },
+              {
+                "$ref": "#/$defs/ImageNode"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "type": {
+          "const": "strong",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "children"
+      ],
+      "title": "StrongNode",
+      "type": "object"
+    },
+    "SymbolRefNode": {
+      "description": "A block-level placeholder pointing to an entry in ``symbols.json``.\n\nThe autodoc directive (``.. autofunction::`` etc.) emits a ``desc`` node\nthat the translator replaces with a :class:`SymbolRefNode`. The actual\nsymbol payload is accumulated separately and written to\n``src/content/api/symbols.json``; the renderer joins the two via the\n``symbolId`` foreign key.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import SymbolRefNode\n>>> node = SymbolRefNode.model_validate(\n...     {\"type\": \"symbolRef\", \"symbolId\": \"x.y.foo\"},\n... )\n>>> node.symbolId\n'x.y.foo'",
+      "properties": {
+        "symbolId": {
+          "title": "Symbolid",
+          "type": "string"
+        },
+        "type": {
+          "const": "symbolRef",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "symbolId"
+      ],
+      "title": "SymbolRefNode",
+      "type": "object"
+    },
+    "SymbolSource": {
+      "description": "Source-location pointer for a symbol.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import SymbolSource\n>>> SymbolSource(repo=\"x\", path=\"y.py\", line=1).line\n1",
+      "properties": {
+        "line": {
+          "title": "Line",
+          "type": "integer"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "repo": {
+          "title": "Repo",
+          "type": "string"
+        }
+      },
+      "required": [
+        "repo",
+        "path",
+        "line"
+      ],
+      "title": "SymbolSource",
+      "type": "object"
+    },
+    "TextNode": {
+      "description": "A leaf node containing literal text.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import TextNode\n>>> node = TextNode(type=\"text\", value=\"hello\")\n>>> node.model_dump()\n{'type': 'text', 'value': 'hello'}",
+      "properties": {
+        "type": {
+          "const": "text",
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ],
+      "title": "TextNode",
+      "type": "object"
+    },
+    "TransitionNode": {
+      "description": "A transition (horizontal rule) marker with no payload.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import TransitionNode\n>>> TransitionNode(type=\"transition\").type\n'transition'",
+      "properties": {
+        "type": {
+          "const": "transition",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "TransitionNode",
+      "type": "object"
+    }
+  },
+  "description": "One API symbol \u2014 function, class, method, etc. \u2014 emitted by autodoc.\n\nThe ``id`` field is the fully-qualified import path\n(e.g. ``\"gp_sphinx.config.merge_sphinx_config\"``) and is the join key\nreferenced by :class:`SymbolRefNode.symbolId`. The ``docstring_body``\nfield holds the parsed doctree of the docstring's body, so the same\n``<Node>`` renderer that handles top-level documents handles docstrings.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import Symbol\n>>> s = Symbol(\n...     id=\"x.y.foo\",\n...     kind=\"function\",\n...     name=\"foo\",\n...     qualname=\"foo\",\n...     module=\"x.y\",\n...     signature=\"()\",\n...     parameters=[],\n...     returns=None,\n...     docstring_summary=\"Hi.\",\n...     docstring_body=[],\n...     source=None,\n... )\n>>> s.id\n'x.y.foo'",
+  "properties": {
+    "docstring_body": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "admonition": "#/$defs/AdmonitionNode",
+            "blockQuote": "#/$defs/BlockQuoteNode",
+            "bulletList": "#/$defs/BulletListNode",
+            "comment": "#/$defs/CommentNode",
+            "definitionList": "#/$defs/DefinitionListNode",
+            "enumeratedList": "#/$defs/EnumeratedListNode",
+            "literalBlock": "#/$defs/LiteralBlockNode",
+            "paragraph": "#/$defs/ParagraphNode",
+            "section": "#/$defs/SectionNode",
+            "symbolRef": "#/$defs/SymbolRefNode",
+            "transition": "#/$defs/TransitionNode"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/ParagraphNode"
+          },
+          {
+            "$ref": "#/$defs/SectionNode"
+          },
+          {
+            "$ref": "#/$defs/LiteralBlockNode"
+          },
+          {
+            "$ref": "#/$defs/CommentNode"
+          },
+          {
+            "$ref": "#/$defs/TransitionNode"
+          },
+          {
+            "$ref": "#/$defs/BlockQuoteNode"
+          },
+          {
+            "$ref": "#/$defs/BulletListNode"
+          },
+          {
+            "$ref": "#/$defs/EnumeratedListNode"
+          },
+          {
+            "$ref": "#/$defs/AdmonitionNode"
+          },
+          {
+            "$ref": "#/$defs/DefinitionListNode"
+          },
+          {
+            "$ref": "#/$defs/SymbolRefNode"
+          }
+        ]
+      },
+      "title": "Docstring Body",
+      "type": "array"
+    },
+    "docstring_summary": {
+      "title": "Docstring Summary",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "function",
+        "class",
+        "method",
+        "attribute",
+        "property",
+        "enum",
+        "dataclass",
+        "module"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "module": {
+      "title": "Module",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "parameters": {
+      "items": {
+        "$ref": "#/$defs/Parameter"
+      },
+      "title": "Parameters",
+      "type": "array"
+    },
+    "qualname": {
+      "title": "Qualname",
+      "type": "string"
+    },
+    "returns": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Returns"
+    },
+    "signature": {
+      "title": "Signature",
+      "type": "string"
+    },
+    "source": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SymbolSource"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "qualname",
+    "module",
+    "signature",
+    "parameters",
+    "returns",
+    "docstring_summary",
+    "docstring_body",
+    "source"
+  ],
+  "title": "Symbol",
+  "type": "object"
+}
