@@ -1,0 +1,40 @@
+---
+/**
+ * SiteHead — meta-tag bundle stamped into every page's ``<head>``.
+ *
+ * The pure ``buildOgMeta`` helper (TDD'd via vitest) computes the
+ * ``<meta>`` tag list from title + description + URL + optional
+ * image; this template renders it. Static lookups (favicon SVG,
+ * web manifest) sit alongside.
+ */
+import { buildOgMeta } from '../lib/og-meta.ts'
+
+interface Props {
+  title: string
+  description: string
+  canonicalUrl: string
+  imageUrl?: string
+}
+
+const { title, description, canonicalUrl, imageUrl } = Astro.props
+
+const tags = buildOgMeta({
+  title,
+  description,
+  canonicalUrl,
+  siteName: 'gp-sphinx',
+  imageUrl,
+})
+---
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="manifest" href="/manifest.webmanifest" />
+<link rel="canonical" href={canonicalUrl} />
+<meta name="theme-color" content="#1f5fb0" />
+{tags.map((tag) =>
+  tag.name !== undefined ? (
+    <meta name={tag.name} content={tag.content} />
+  ) : (
+    <meta property={tag.property} content={tag.content} />
+  ),
+)}

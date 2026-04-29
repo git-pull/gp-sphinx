@@ -10,6 +10,7 @@
     "./schemas/symbol": "./src/schemas/symbol.ts",
     "./schemas/xref": "./src/schemas/xref.ts",
     "./render/build-toc": "./src/render/build-toc.ts",
+    "./render/extract-description": "./src/render/extract-description.ts",
     "./render/render-node": "./src/render/render-node.ts",
     "./render/render-symbol": "./src/render/render-symbol.ts"
   },

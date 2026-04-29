@@ -17,7 +17,11 @@ export const getStaticPaths = (async () => {
 
 const { entry } = Astro.props
 const html = renderSymbol(entry.data)
+const description =
+  entry.data.docstring_summary !== ''
+    ? entry.data.docstring_summary
+    : `${entry.data.kind} ${entry.id}`
 ---
-<Doc title={entry.data.qualname || entry.id}>
+<Doc title={entry.data.qualname || entry.id} description={description}>
   <Fragment set:html={html} />
 </Doc>
