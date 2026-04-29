@@ -87,6 +87,7 @@ conf = merge_sphinx_config(
         "sphinx_autodoc_sphinx",
         "sphinx_autodoc_argparse.exemplar",
         "sphinx_ux_autodoc_layout",
+        "gp_sphinx_astro_builder",
     ],
     fastmcp_tool_modules=["fastmcp_demo_tools"],
     fastmcp_area_map={"fastmcp_demo_tools": "packages/sphinx-autodoc-fastmcp"},

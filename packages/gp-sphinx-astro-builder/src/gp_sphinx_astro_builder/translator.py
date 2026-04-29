@@ -27,6 +27,22 @@ if t.TYPE_CHECKING:
     from gp_sphinx_astro_builder.symbols import SymbolAccumulator
 
 
+def _has_block_children(node: nodes.Element) -> bool:
+    """Return ``True`` if ``node`` contains at least one block-level child.
+
+    Used to dispatch ``compact_paragraph`` between paragraph-wrap and
+    pass-through modes. We can't use ``isinstance(c, nodes.Body)`` because
+    docutils' ``reference`` (and ``image``) inherit *both* ``Inline`` and
+    ``Body`` via the ``General`` group — so ``Body`` membership is not a
+    block discriminator. Inverting the check (non-inline = block) handles
+    that correctly: ``Text`` and any subclass of ``nodes.Inline`` count as
+    inline, everything else (paragraph, bullet_list, …) counts as block.
+    """
+    return any(
+        not isinstance(child, (nodes.Inline, nodes.Text)) for child in node.children
+    )
+
+
 _FrameKind = t.Literal[
     "section",
     "title",
@@ -181,6 +197,29 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         """Close the paragraph and attach it to the parent block frame."""
         frame = self._stack.pop()
         self._stack[-1]["data"]["children"].append(frame["data"])
+
+    # Sphinx's toctree, captioned figures, and a handful of other directives
+    # wrap content in a ``compact_paragraph`` rather than a regular
+    # ``paragraph``. The trouble is the wrapper is overloaded: at the inner
+    # level (``list_item / compact_paragraph / reference``) it carries inline
+    # content and must be wrapped as a ``paragraph``; at the outer level
+    # (``section / compact_paragraph / bullet_list``) it carries a
+    # block-level child and must be transparent so the bullet_list attaches
+    # to the parent section directly. We dispatch on children: block-bearing
+    # compact_paragraphs become pass-through, inline-bearing ones become
+    # paragraphs.
+    def visit_compact_paragraph(self, node: nodes.Element) -> None:
+        """Open a paragraph frame, or pass through when wrapping block content."""
+        if _has_block_children(node):
+            node["_astro_skip_frame"] = True
+            return
+        self.visit_paragraph(node)
+
+    def depart_compact_paragraph(self, node: nodes.Element) -> None:
+        """Close the paragraph frame, unless this compact_paragraph was skipped."""
+        if node.get("_astro_skip_frame", False):
+            return
+        self.depart_paragraph(node)
 
     def visit_emphasis(self, node: nodes.Element) -> None:
         """Open an emphasis frame."""

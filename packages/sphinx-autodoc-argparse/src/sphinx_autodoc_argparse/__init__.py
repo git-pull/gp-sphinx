@@ -12,8 +12,6 @@ from __future__ import annotations
 
 import typing as t
 
-from sphinx_autodoc_argparse.directive import ArgparseDirective
-from sphinx_autodoc_argparse.domain import ArgparseDomain
 from sphinx_autodoc_argparse._visitors_json import (
     depart_argparse_argument_json,
     depart_argparse_group_json,
@@ -28,6 +26,8 @@ from sphinx_autodoc_argparse._visitors_json import (
     visit_argparse_subcommands_json,
     visit_argparse_usage_json,
 )
+from sphinx_autodoc_argparse.directive import ArgparseDirective
+from sphinx_autodoc_argparse.domain import ArgparseDomain
 from sphinx_autodoc_argparse.nodes import (
     argparse_argument,
     argparse_group,

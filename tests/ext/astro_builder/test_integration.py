@@ -507,8 +507,11 @@ def test_astro_builder_emits_cli_command_via_argparse_visitor(
     )
     result = build_isolated_sphinx_result(cache_root, tmp_path, scenario)
 
+    from docutils import nodes  # noqa: PLC0415
+
     doctree = result.app.env.get_doctree("index")
     section = doctree.children[0]
+    assert isinstance(section, nodes.Element)
 
     program = argparse_program()
     program["prog"] = "myapp"
@@ -590,3 +593,102 @@ def _walk_cli_command(node: dict[str, t.Any]) -> t.Iterator[dict[str, t.Any]]:
         yield node
         for child in node.get("children", []):
             yield from _walk_cli_command(child)
+
+
+_MULTI_PAGE_CONF_PY = textwrap.dedent(
+    """\
+    project = "Multi"
+    extensions = ["gp_sphinx_astro_builder"]
+    master_doc = "index"
+    exclude_patterns = ["_build"]
+    """,
+)
+
+_MULTI_PAGE_INDEX_RST = textwrap.dedent(
+    """\
+    Multi
+    =====
+
+    Welcome.
+
+    .. toctree::
+
+       guide
+       reference
+    """,
+)
+
+_MULTI_PAGE_GUIDE_RST = textwrap.dedent(
+    """\
+    Guide
+    =====
+
+    See :doc:`reference` for details.
+    """,
+)
+
+_MULTI_PAGE_REFERENCE_RST = textwrap.dedent(
+    """\
+    Reference
+    =========
+
+    See :doc:`guide` to learn first.
+    """,
+)
+
+
+@pytest.mark.integration
+def test_astro_builder_emits_one_json_per_page(
+    tmp_path: pathlib.Path,
+) -> None:
+    r"""A toctree spanning three docs emits one JSON file per page.
+
+    This is the smallest end-to-end shape that exercises multi-page
+    behavior the dogfood site relies on: each source doc becomes a
+    ``src/content/docs/<slug>.json`` file, every emitted JSON validates
+    as a ``Document``, and internal ``:doc:`...``` cross-references
+    resolve to anchors that the renderer can dispatch on.
+    """
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("conf.py", _MULTI_PAGE_CONF_PY),
+            ScenarioFile("index.rst", _MULTI_PAGE_INDEX_RST),
+            ScenarioFile("guide.rst", _MULTI_PAGE_GUIDE_RST),
+            ScenarioFile("reference.rst", _MULTI_PAGE_REFERENCE_RST),
+        ),
+    )
+    result = build_isolated_sphinx_result(cache_root, tmp_path, scenario)
+
+    docs_dir = result.outdir / "src" / "content" / "docs"
+    emitted = sorted(p.name for p in docs_dir.glob("*.json"))
+    assert emitted == ["guide.json", "index.json", "reference.json"], (
+        f"expected one JSON per page; got {emitted}"
+    )
+
+    # Each emitted JSON file must validate against the Pydantic Document
+    # contract — we treat schema parity as a hard gate, not a soft one.
+    for slug in ("index", "guide", "reference"):
+        doc = Document.model_validate_json(
+            (docs_dir / f"{slug}.json").read_text("utf-8"),
+        )
+        assert doc.id == slug
+
+    # The :doc:`reference` xref in guide.rst must turn into a reference
+    # node whose href points at the sibling page.
+    guide = json.loads((docs_dir / "guide.json").read_text("utf-8"))
+    refs = [
+        child
+        for paragraph in guide["tree"]["children"]
+        if paragraph.get("type") == "paragraph"
+        for child in paragraph.get("children", [])
+        if child.get("type") == "reference"
+    ]
+    assert len(refs) >= 1, (
+        f"expected at least one reference in guide.json; tree: {guide['tree']}"
+    )
+    hrefs = {ref["href"] for ref in refs}
+    assert any("reference" in href for href in hrefs), (
+        f"expected a cross-doc href to 'reference'; got: {hrefs}"
+    )
