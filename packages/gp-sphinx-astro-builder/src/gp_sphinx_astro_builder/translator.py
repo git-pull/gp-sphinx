@@ -27,6 +27,42 @@ if t.TYPE_CHECKING:
     from gp_sphinx_astro_builder.symbols import SymbolAccumulator
 
 
+_BLOCK_CONTEXT_FRAMES: frozenset[str] = frozenset(
+    {
+        "section",
+        "listItem",
+        "blockQuote",
+        "admonition",
+        "definition",
+        "desc_content",
+        # Frames pushed by extension JSON visitors. ``apiLayout`` and
+        # ``cliCommand`` both declare ``children: list[BlockNode]`` in
+        # their Pydantic models, so any inline content that lands inside
+        # them — typically the signature literals + badges that
+        # ``sphinx-ux-autodoc-layout`` and ``sphinx-ux-badges`` emit —
+        # has to be paragraph-wrapped before validation.
+        "apiLayout",
+        "cliCommand",
+    },
+)
+"""Frame kinds whose ``children`` slot may only hold ``BlockNode`` payloads.
+
+When :meth:`DocTreeJSONTranslator.append_node` is asked to attach an inline
+typed-JSON dict to a frame in this set, it wraps the inline data in an
+implicit paragraph (or merges it into a trailing paragraph). That keeps
+the wire format's inline/block split intact even when source documents
+emit inline content directly into a block context — common with
+``sphinx-design`` cards, ``container`` directives, custom directives that
+produce ``PassthroughTextElement``, and the toctree's expanded
+``compact_paragraph`` chain.
+"""
+
+_INLINE_TYPES: frozenset[str] = frozenset(
+    {"text", "literal", "emphasis", "strong", "reference", "image", "badge"},
+)
+"""Wire-format ``type`` discriminators that count as inline."""
+
+
 def _has_block_children(node: nodes.Element) -> bool:
     """Return ``True`` if ``node`` contains at least one block-level child.
 
@@ -233,7 +269,7 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
     def depart_emphasis(self, node: nodes.Element) -> None:
         """Close the emphasis run and attach it to the parent inline collector."""
         frame = self._stack.pop()
-        self._stack[-1]["data"]["children"].append(frame["data"])
+        self.append_node(frame["data"])
 
     def visit_strong(self, node: nodes.Element) -> None:
         """Open a strong-emphasis frame."""
@@ -247,7 +283,7 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
     def depart_strong(self, node: nodes.Element) -> None:
         """Close the strong run and attach it to the parent inline collector."""
         frame = self._stack.pop()
-        self._stack[-1]["data"]["children"].append(frame["data"])
+        self.append_node(frame["data"])
 
     def visit_literal(self, node: nodes.Element) -> None:
         """Capture a literal run's text value and skip child traversal.
@@ -269,7 +305,7 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
     def depart_literal(self, node: nodes.Element) -> None:
         """Close the literal run and attach it to the parent inline collector."""
         frame = self._stack.pop()
-        self._stack[-1]["data"]["children"].append(frame["data"])
+        self.append_node(frame["data"])
 
     def visit_reference(self, node: nodes.Element) -> None:
         """Open a reference frame, normalising refuri / refid into one href."""
@@ -293,9 +329,9 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         )
 
     def depart_reference(self, node: nodes.Element) -> None:
-        """Close the reference and attach it to the parent inline collector."""
+        """Close the reference and attach it to the parent collector."""
         frame = self._stack.pop()
-        self._stack[-1]["data"]["children"].append(frame["data"])
+        self.append_node(frame["data"])
 
     def visit_image(self, node: nodes.Element) -> None:
         """Append an image leaf node to the current inline collector.
@@ -306,14 +342,13 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
             Always: ``image`` is a leaf in docutils — there are no children
             to traverse and no closing handler is needed.
         """
-        if self._stack:
-            self._stack[-1]["data"]["children"].append(
-                {
-                    "type": "image",
-                    "uri": node.get("uri", ""),
-                    "alt": node.get("alt"),
-                },
-            )
+        self.append_node(
+            {
+                "type": "image",
+                "uri": node.get("uri", ""),
+                "alt": node.get("alt"),
+            },
+        )
         raise nodes.SkipNode
 
     def visit_literal_block(self, node: nodes.Element) -> None:
@@ -588,6 +623,32 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
     visit_rubric = visit_paragraph
     depart_rubric = depart_paragraph
 
+    # Generic structural wrappers that the JSON wire format does not
+    # need to preserve. ``container`` (docutils' ``.. container::``,
+    # also reused by ``sphinx-design`` for grids and cards) and
+    # ``compound`` (the toctree's outer wrapper) are pass-through. So is
+    # ``PassthroughTextElement`` from sphinx-design, which holds the
+    # title text of a card. Their children attach to whatever real frame
+    # is above on the stack; ``append_node`` then promotes inline content
+    # into an implicit paragraph if that real frame is block-only.
+    def visit_container(self, node: nodes.Element) -> None:
+        """Pass through a ``container`` (no frame; children attach to parent)."""
+
+    def depart_container(self, node: nodes.Element) -> None:
+        """Companion no-op for :meth:`visit_container`."""
+
+    def visit_compound(self, node: nodes.Element) -> None:
+        """Pass through a ``compound`` (toctree wrapper)."""
+
+    def depart_compound(self, node: nodes.Element) -> None:
+        """Companion no-op for :meth:`visit_compound`."""
+
+    def visit_PassthroughTextElement(self, node: nodes.Element) -> None:
+        """Pass through sphinx-design's title-text wrapper."""
+
+    def depart_PassthroughTextElement(self, node: nodes.Element) -> None:
+        """Companion no-op for :meth:`visit_PassthroughTextElement`."""
+
     def append_node(self, data: dict[str, t.Any]) -> None:
         """Append a typed-JSON node dict to the current frame's children list.
 
@@ -603,11 +664,28 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         of those frames belong to a sub-section the translator hasn't
         pushed a proper frame for yet, so we drop them silently rather
         than crashing the build.
+
+        When the parent frame is block-only (a ``section``, ``list_item``
+        body, an ``admonition``, …) and ``data`` is an inline payload, the
+        method wraps it in an implicit paragraph rather than letting the
+        inline node leak into a block-context children list and fail
+        Pydantic validation. Sequential inline payloads in the same block
+        context merge into the trailing paragraph so they read as one
+        run rather than a stack of single-word paragraphs.
         """
         if not self._stack:
             return
+        parent_kind = self._stack[-1]["kind"]
         children = self._stack[-1]["data"].get("children")
         if not isinstance(children, list):
+            return
+        if parent_kind in _BLOCK_CONTEXT_FRAMES and data.get("type") in _INLINE_TYPES:
+            if children and children[-1].get("type") == "paragraph":
+                last_children = children[-1].get("children")
+                if isinstance(last_children, list):
+                    last_children.append(data)
+                    return
+            children.append({"type": "paragraph", "children": [data]})
             return
         children.append(data)
 

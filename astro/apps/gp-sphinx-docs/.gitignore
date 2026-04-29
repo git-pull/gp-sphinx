@@ -5,6 +5,8 @@ schemas/
 xref-index.json
 objects.inv
 .doctrees/
+_sphinx_design_static/
+sitemap.xml
 
 # Astro build output and cache
 dist/

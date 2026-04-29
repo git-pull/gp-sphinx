@@ -595,6 +595,68 @@ def _walk_cli_command(node: dict[str, t.Any]) -> t.Iterator[dict[str, t.Any]]:
             yield from _walk_cli_command(child)
 
 
+_GRID_CARD_CONF_PY = textwrap.dedent(
+    """\
+    project = "Demo"
+    extensions = ["myst_parser", "sphinx_design", "gp_sphinx_astro_builder"]
+    master_doc = "index"
+    exclude_patterns = ["_build"]
+    myst_enable_extensions = ["colon_fence"]
+    """,
+)
+
+_GRID_CARD_INDEX_MD = textwrap.dedent(
+    """\
+    # Demo
+
+    :::{grid} 1
+
+    :::{grid-item-card} sphinx-ux-badges
+    :link: target
+    :link-type: doc
+
+    Badge primitives, colour palette, and CSS infrastructure.
+    :::
+
+    :::
+    """,
+)
+
+_GRID_CARD_TARGET_MD = "# Target\n\nhi\n"
+
+
+@pytest.mark.integration
+def test_astro_builder_handles_sphinx_design_grid_item_card(
+    tmp_path: pathlib.Path,
+) -> None:
+    """A sphinx_design ``grid-item-card`` validates as a Document.
+
+    sphinx-design wraps card content in nested ``container`` nodes plus
+    a ``PassthroughTextElement`` for the title. Without explicit
+    handlers, the inline title text and the link reference leak into
+    the surrounding section's block-children slot and break Pydantic
+    validation.
+    """
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("conf.py", _GRID_CARD_CONF_PY),
+            ScenarioFile("index.md", _GRID_CARD_INDEX_MD),
+            ScenarioFile("target.md", _GRID_CARD_TARGET_MD),
+        ),
+    )
+    result = build_isolated_sphinx_result(cache_root, tmp_path, scenario)
+
+    output_path = result.outdir / "src" / "content" / "docs" / "index.json"
+    assert output_path.exists(), (
+        f"expected {output_path} to be emitted; "
+        f"outdir contents: {list(result.outdir.rglob('*'))}"
+    )
+    document = Document.model_validate_json(output_path.read_text("utf-8"))
+    assert document.id == "index"
+
+
 _NUMPY_DOCSTRING_MODULE_SOURCE = textwrap.dedent(
     '''\
     from __future__ import annotations
