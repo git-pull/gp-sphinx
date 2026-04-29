@@ -4,6 +4,7 @@ src/content.config.ts
 schemas/
 xref-index.json
 objects.inv
+.doctrees/
 
 # Astro build output and cache
 dist/
