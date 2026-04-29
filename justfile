@@ -119,6 +119,36 @@ start-docs:
 design-docs:
     just -f docs/justfile design
 
+# Start the Astro dogfood site with live reload.
+#
+# Runs sphinx-autobuild against docs/ → astro/apps/gp-sphinx-docs/
+# (re-emitting JSON content, the Symbol payload, and Zod-mirrored
+# schemas on every source change) and concurrently runs the Astro dev
+# server which watches src/content/ for changes. --fresh-env and
+# --write-all force a complete read on each rebuild so the
+# _symbol_accumulator collects from every doc, not just stale ones.
+#
+# Astro dev binds to http://localhost:4321 by default; sphinx-autobuild
+# binds its (unused) preview server to 8765 to avoid conflicting with
+# the existing Furo flow on 8000.
+start-astro-docs:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cleanup() {
+        kill 0 2>/dev/null || true
+    }
+    trap cleanup SIGINT SIGTERM EXIT
+    uv run sphinx-autobuild \
+        --builder astro \
+        --fresh-env \
+        --write-all \
+        --port 8765 \
+        docs \
+        astro/apps/gp-sphinx-docs \
+        &
+    pnpm --dir astro/apps/gp-sphinx-docs dev &
+    wait
+
 # Format code with ruff
 ruff-format:
     uv run ruff format .
