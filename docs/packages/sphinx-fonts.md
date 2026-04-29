@@ -58,7 +58,6 @@ template context that downstream themes receive.
 ## Configuration values
 
 ```{eval-rst}
-.. autoconfigvalue-index:: sphinx_fonts
 .. autoconfigvalues:: sphinx_fonts
 ```
 

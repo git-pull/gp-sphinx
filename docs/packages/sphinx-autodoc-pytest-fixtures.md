@@ -43,7 +43,6 @@ You do not need to add them separately to your `extensions` list.
 ## Registered configuration values
 
 ```{eval-rst}
-.. autoconfigvalue-index:: sphinx_autodoc_pytest_fixtures
 .. autoconfigvalues:: sphinx_autodoc_pytest_fixtures
 ```
 

@@ -86,12 +86,9 @@ Generated from `app.add_directive()` registrations in
 [`sphinx_autodoc_sphinx/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-sphinx/src/sphinx_autodoc_sphinx/__init__.py)
 via `sphinx-autodoc-docutils` — a meta-loop where the package that
 documents config values uses its sibling package to document its own
-directives. The summary table indexes every directive; the descriptor
-blocks below carry the per-item signature, badge, and options.
+directives.
 
 ```{eval-rst}
-.. autodirective-index:: sphinx_autodoc_sphinx
-
 .. autodirectives:: sphinx_autodoc_sphinx
 ```
 

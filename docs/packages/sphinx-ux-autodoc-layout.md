@@ -117,7 +117,6 @@ Generated from `app.add_config_value()` registrations in
 [`sphinx_ux_autodoc_layout/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-ux-autodoc-layout/src/sphinx_ux_autodoc_layout/__init__.py).
 
 ```{eval-rst}
-.. autoconfigvalue-index:: sphinx_ux_autodoc_layout
 .. autoconfigvalues:: sphinx_ux_autodoc_layout
 ```
 

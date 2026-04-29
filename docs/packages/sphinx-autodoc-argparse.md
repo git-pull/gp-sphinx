@@ -93,14 +93,12 @@ for program-scoped clarity.
 ### Base extension
 
 ```{eval-rst}
-.. autoconfigvalue-index:: sphinx_autodoc_argparse
 .. autoconfigvalues:: sphinx_autodoc_argparse
 ```
 
 ### Exemplar layer
 
 ```{eval-rst}
-.. autoconfigvalue-index:: sphinx_autodoc_argparse.exemplar
 .. autoconfigvalues:: sphinx_autodoc_argparse.exemplar
 ```
 
@@ -122,7 +120,6 @@ for program-scoped clarity.
 ### CLI role callables
 
 ```{eval-rst}
-.. autorole-index:: sphinx_autodoc_argparse.roles
 .. autoroles:: sphinx_autodoc_argparse.roles
 ```
 
