@@ -16,6 +16,6 @@ export const getStaticPaths = (async () => {
 const { entry } = Astro.props
 const html = renderDocument(entry.data)
 ---
-<Doc title={entry.data.title}>
+<Doc title={entry.data.title} tocTree={entry.data.tree}>
   <Fragment set:html={html} />
 </Doc>
