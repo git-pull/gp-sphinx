@@ -1,0 +1,11 @@
+[
+  {
+    "id": "py:function:demo_api.merge_demo",
+    "domain": "py",
+    "role": "function",
+    "target": "demo_api.merge_demo",
+    "href": "index.json#demo_api.merge_demo",
+    "display": null,
+    "priority": 1
+  }
+]
