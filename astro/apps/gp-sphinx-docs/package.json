@@ -7,6 +7,7 @@
   "scripts": {
     "prebuild": "uv run sphinx-build --builder astro --fresh-env --write-all ../../../docs .",
     "build": "astro build",
+    "postbuild": "pagefind --site dist",
     "dev": "astro dev",
     "preview": "astro preview",
     "test": "vitest run --passWithNoTests",
@@ -22,7 +23,9 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.8",
+    "@pagefind/default-ui": "^1.5.2",
     "happy-dom": "^20.9.0",
+    "pagefind": "^1.5.2",
     "vitest": "^3.0.0"
   }
 }

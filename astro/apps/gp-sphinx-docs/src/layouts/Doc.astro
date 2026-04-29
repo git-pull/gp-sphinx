@@ -39,7 +39,11 @@ const { title, tocTree } = Astro.props
     <MobileSidebar />
     <div class="mx-auto flex w-full max-w-7xl flex-1 px-4 py-8">
       <Sidebar />
-      <main class="gp-sphinx-astro-doc min-w-0 flex-1">
+      <main
+        class="gp-sphinx-astro-doc min-w-0 flex-1"
+        data-pagefind-body
+        data-pagefind-meta={`title:${title}`}
+      >
         <slot />
       </main>
       <TableOfContents tree={tocTree} />
