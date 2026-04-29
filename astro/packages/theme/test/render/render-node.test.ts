@@ -504,13 +504,24 @@ describe('renderBlockNode — cliCommand', () => {
 })
 
 describe('renderBlockNode — symbolRef', () => {
-  test('symbolRef emits a typed link with data-symbol-id', () => {
+  test('symbolRef emits a typed link pointing at the symbol page', () => {
     const html = renderBlockNode({
       type: 'symbolRef',
       symbolId: 'gp_sphinx.config.merge_sphinx_config',
     })
     expect(html).toContain('data-symbol-id="gp_sphinx.config.merge_sphinx_config"')
-    expect(html).toContain('href="#gp_sphinx.config.merge_sphinx_config"')
+    // Symbol pages live at /api/<id>/ in the dogfood Astro app; the
+    // doctree's symbolRef anchors the cross-doc navigation.
+    expect(html).toContain('href="/api/gp_sphinx.config.merge_sphinx_config/"')
+  })
+
+  test('symbolRef escapes path-unfriendly characters in the href', () => {
+    const html = renderBlockNode({
+      type: 'symbolRef',
+      symbolId: 'mod.<weird>',
+    })
+    expect(html).toContain('data-symbol-id="mod.&lt;weird&gt;"')
+    expect(html).toContain('href="/api/mod.&lt;weird&gt;/"')
   })
 })
 

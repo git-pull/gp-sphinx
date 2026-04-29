@@ -1,0 +1,23 @@
+---
+import type { GetStaticPaths } from 'astro'
+import { getCollection } from 'astro:content'
+import { renderSymbol } from '@gp-sphinx-astro/theme/render/render-symbol'
+import Doc from '../../layouts/Doc.astro'
+
+export const getStaticPaths = (async () => {
+  const symbols = await getCollection('api')
+  return symbols.map((entry) => ({
+    // The api collection's `id` is the symbol's fully-qualified path
+    // (e.g. ``gp_sphinx.config.merge_sphinx_config``) and is what
+    // ``renderBlockNode``'s symbolRef links to.
+    params: { slug: entry.id },
+    props: { entry },
+  }))
+}) satisfies GetStaticPaths
+
+const { entry } = Astro.props
+const html = renderSymbol(entry.data)
+---
+<Doc title={entry.data.qualname || entry.id}>
+  <Fragment set:html={html} />
+</Doc>
