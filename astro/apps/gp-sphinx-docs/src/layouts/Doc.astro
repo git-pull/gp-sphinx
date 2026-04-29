@@ -86,14 +86,39 @@ const pageDescription = description ?? SITE_DESCRIPTION
     <Footer />
     <script>
       import { enhanceCodeBlocks } from '../lib/code-copy.ts'
-      function setup(): void {
+      import { initKeyboardShortcuts } from '../lib/keyboard-shortcuts.ts'
+
+      function setupCodeCopy(): void {
         const main = document.querySelector('main.gp-sphinx-astro-doc')
         if (main !== null) {
           enhanceCodeBlocks(main)
         }
       }
-      setup()
-      document.addEventListener('astro:after-swap', setup)
+
+      function focusSearch(): void {
+        const input = document.querySelector<HTMLInputElement>(
+          'input.pagefind-ui__search-input',
+        )
+        input?.focus()
+      }
+
+      setupCodeCopy()
+      // The shortcut binder attaches a single document-level listener
+      // — installing it once per page load is enough; ``astro:after-swap``
+      // doesn't tear listeners down.
+      initKeyboardShortcuts({
+        scrollToTop: () => {
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        },
+        scrollToBottom: () => {
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: 'smooth',
+          })
+        },
+        focusSearch,
+      })
+      document.addEventListener('astro:after-swap', setupCodeCopy)
     </script>
   </body>
 </html>
