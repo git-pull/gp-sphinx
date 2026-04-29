@@ -29,6 +29,46 @@ from gp_sphinx_astro_builder.symbols import normalize_symbol_kind
 _log = logging.getLogger(__name__)
 
 
+def normalize_doc_href(href: str) -> str:
+    """Rewrite a docutils refuri to a canonical Astro route URL.
+
+    The ``AstroBuilder`` declares ``.json`` as its output suffix, so
+    Sphinx-resolved refuris look like ``packages/gp-sphinx.json#api``.
+    The rendered HTML lives at trailing-slash routes
+    (``/packages/gp-sphinx/``) — leaving the raw refuri in the doctree
+    would point readers at the JSON content payload rather than the
+    rendered page.
+
+    External URLs (``https://…``), in-page anchors (``#id``), the empty
+    string, and any path that doesn't end in ``.json`` (or
+    ``.json#fragment``) pass through untouched.
+
+    Examples
+    --------
+    >>> normalize_doc_href("packages/gp-sphinx.json#api")
+    '/packages/gp-sphinx/#api'
+    >>> normalize_doc_href("index.json")
+    '/'
+    >>> normalize_doc_href("https://example.com/page")
+    'https://example.com/page'
+    """
+    if href == "" or href.startswith(("http://", "https://", "//", "#", "mailto:")):
+        return href
+    fragment = ""
+    path = href
+    if "#" in path:
+        path, fragment = path.split("#", 1)
+        fragment = f"#{fragment}"
+    if not path.endswith(".json"):
+        return href
+    slug = path.removesuffix(".json")
+    if slug == "index":
+        return f"/{fragment}"
+    if slug.endswith("/index"):
+        slug = slug[: -len("/index")]
+    return f"/{slug}/{fragment}"
+
+
 def _resolve_symbol_source(
     *,
     module_name: str,
@@ -362,11 +402,19 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         self.append_node(frame["data"])
 
     def visit_reference(self, node: nodes.Element) -> None:
-        """Open a reference frame, normalising refuri / refid into one href."""
+        """Open a reference frame, normalising refuri / refid into one href.
+
+        Sphinx-resolved refuris that target other docs end with the
+        builder's ``.json`` output suffix (e.g.
+        ``packages/gp-sphinx.json#api``); ``normalize_doc_href``
+        rewrites these to the canonical site routes
+        (``/packages/gp-sphinx/#api``) so clicking lands on the
+        rendered HTML page instead of the JSON content payload.
+        """
         refuri = node.get("refuri")
         refid = node.get("refid")
         if refuri:
-            href = refuri
+            href = normalize_doc_href(refuri)
         elif refid:
             href = f"#{refid}"
         else:
