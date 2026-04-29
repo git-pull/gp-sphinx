@@ -83,7 +83,10 @@
             "tip",
             "hint",
             "danger",
-            "error"
+            "error",
+            "versionadded",
+            "versionchanged",
+            "deprecated"
           ],
           "title": "Variant",
           "type": "string"

@@ -250,6 +250,9 @@ export const admonitionVariantSchema = z.enum([
   'hint',
   'danger',
   'error',
+  'versionadded',
+  'versionchanged',
+  'deprecated',
 ])
 
 export const admonitionNodeSchema = z.object({

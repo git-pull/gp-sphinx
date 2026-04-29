@@ -493,6 +493,56 @@ def test_translator_handles_each_admonition_variant(
     assert block_child.children[0].children == [TextNode(type="text", value="body")]
 
 
+class VersionDirectiveFixture(t.NamedTuple):
+    """One Sphinx ``versionmodified`` ``type`` mapped to its admonition variant."""
+
+    test_id: str
+    type_attr: str
+    variant: str
+
+
+_VERSION_DIRECTIVE_FIXTURES: list[VersionDirectiveFixture] = [
+    VersionDirectiveFixture("versionadded", "versionadded", "versionadded"),
+    VersionDirectiveFixture("versionchanged", "versionchanged", "versionchanged"),
+    VersionDirectiveFixture("deprecated", "deprecated", "deprecated"),
+]
+
+
+@pytest.mark.parametrize(
+    list(VersionDirectiveFixture._fields),
+    _VERSION_DIRECTIVE_FIXTURES,
+    ids=[f.test_id for f in _VERSION_DIRECTIVE_FIXTURES],
+)
+def test_translator_handles_versionmodified(
+    test_id: str,
+    type_attr: str,
+    variant: str,
+) -> None:
+    """Sphinx ``versionmodified`` nodes become admonitions with the type variant."""
+    del test_id
+    from sphinx import addnodes  # noqa: PLC0415
+
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    versioned = addnodes.versionmodified()
+    versioned["type"] = type_attr
+    para = nodes.paragraph()
+    para += nodes.Text("Notes about this version.")
+    versioned += para
+    section += title
+    section += versioned
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    block_child = translator.result().tree.children[0]
+    assert isinstance(block_child, AdmonitionNode)
+    assert block_child.variant == variant
+    assert isinstance(block_child.children[0], ParagraphNode)
+
+
 def test_translator_handles_definition_list() -> None:
     """A definition_list with one item produces nested DefinitionList shape."""
     doc = _new_document()

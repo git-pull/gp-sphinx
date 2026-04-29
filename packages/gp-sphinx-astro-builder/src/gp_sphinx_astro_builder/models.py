@@ -296,13 +296,17 @@ AdmonitionVariant = t.Literal[
     "hint",
     "danger",
     "error",
+    "versionadded",
+    "versionchanged",
+    "deprecated",
 ]
 """Allowed values for :attr:`AdmonitionNode.variant`.
 
-The nine variants correspond one-to-one with docutils' typed admonition node
-classes (``nodes.note``, ``nodes.warning``, etc.); the translator collapses
-them into a single Pydantic model so the Astro renderer dispatches on one
-component instead of nine.
+The first nine variants correspond one-to-one with docutils' typed admonition
+node classes (``nodes.note``, ``nodes.warning``, etc.). The three ``version*``
+variants come from Sphinx's ``versionmodified`` node, which is collapsed onto
+the same Pydantic model so the Astro renderer dispatches on one component
+instead of twelve.
 """
 
 
