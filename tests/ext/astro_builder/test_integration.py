@@ -453,3 +453,140 @@ def test_astro_builder_emission_matches_snapshot(
 
     output_path = result.outdir / "src" / "content" / "docs" / "index.json"
     assert output_path.read_text("utf-8") == snapshot
+
+
+_ARGPARSE_CONF_PY = textwrap.dedent(
+    """\
+    project = "Demo"
+    extensions = ["sphinx_autodoc_argparse", "gp_sphinx_astro_builder"]
+    master_doc = "index"
+    exclude_patterns = ["_build"]
+    """,
+)
+
+_ARGPARSE_INDEX_RST = textwrap.dedent(
+    """\
+    Demo
+    ====
+
+    CLI placeholder.
+    """,
+)
+
+
+@pytest.mark.integration
+def test_astro_builder_emits_cli_command_via_argparse_visitor(
+    tmp_path: pathlib.Path,
+) -> None:
+    """``sphinx-autodoc-argparse``'s JSON visitors emit a ``cliCommand`` block.
+
+    The fixture builds a tiny Sphinx project that wires the
+    :mod:`sphinx_autodoc_argparse` extension. Argparse nodes are
+    normally produced by the directive against a real argparse parser;
+    here we inject the six custom node types into the built doctree
+    directly, re-run the translator, and assert that each emits the
+    expected ``cliCommand`` JSON shape with the right ``component``
+    discriminator.
+    """
+    from sphinx_autodoc_argparse.nodes import (  # noqa: PLC0415
+        argparse_argument,
+        argparse_group,
+        argparse_program,
+        argparse_subcommand,
+        argparse_subcommands,
+        argparse_usage,
+    )
+
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("conf.py", _ARGPARSE_CONF_PY),
+            ScenarioFile("index.rst", _ARGPARSE_INDEX_RST),
+        ),
+    )
+    result = build_isolated_sphinx_result(cache_root, tmp_path, scenario)
+
+    doctree = result.app.env.get_doctree("index")
+    section = doctree.children[0]
+
+    program = argparse_program()
+    program["prog"] = "myapp"
+
+    usage = argparse_usage()
+    usage["usage"] = "myapp [-h] [--verbose] cmd"
+    program += usage
+
+    group = argparse_group()
+    group["title"] = "Options"
+    group["description"] = "General options"
+
+    arg = argparse_argument()
+    arg["names"] = ["-v", "--verbose"]
+    arg["help"] = "Increase output verbosity"
+    arg["default"] = "False"
+    arg["choices"] = []
+    arg["required"] = False
+    arg["metavar"] = "LEVEL"
+    group += arg
+    program += group
+
+    subcommands = argparse_subcommands()
+    subcommands["title"] = "Commands"
+    sub = argparse_subcommand()
+    sub["name"] = "build"
+    sub["aliases"] = ["b"]
+    sub["help"] = "Build the project"
+    subcommands += sub
+    program += subcommands
+
+    section += program
+
+    builder = result.app.builder
+    builder.write_doc("index", doctree)
+
+    output_path = result.outdir / "src" / "content" / "docs" / "index.json"
+    document = json.loads(output_path.read_text("utf-8"))
+
+    cli_blocks = [
+        child
+        for child in document["tree"]["children"]
+        if child.get("type") == "cliCommand"
+    ]
+    assert len(cli_blocks) == 1, (
+        f"expected one top-level cliCommand block, got: {cli_blocks}"
+    )
+    program_block = cli_blocks[0]
+    assert program_block["component"] == "program"
+    assert program_block["prog"] == "myapp"
+
+    components = [node["component"] for node in _walk_cli_command(program_block)]
+    assert components == [
+        "program",
+        "usage",
+        "group",
+        "argument",
+        "subcommands",
+        "subcommand",
+    ]
+
+    by_component = {
+        node["component"]: node for node in _walk_cli_command(program_block)
+    }
+    assert by_component["usage"]["usage"] == "myapp [-h] [--verbose] cmd"
+    assert by_component["group"]["title"] == "Options"
+    assert by_component["argument"]["names"] == ["-v", "--verbose"]
+    assert by_component["argument"]["metavar"] == "LEVEL"
+    assert by_component["subcommand"]["name"] == "build"
+    assert by_component["subcommand"]["aliases"] == ["b"]
+
+    # The whole tree must validate through the Pydantic Document model.
+    Document.model_validate(document)
+
+
+def _walk_cli_command(node: dict[str, t.Any]) -> t.Iterator[dict[str, t.Any]]:
+    """Pre-order walk of nested ``cliCommand`` blocks."""
+    if node.get("type") == "cliCommand":
+        yield node
+        for child in node.get("children", []):
+            yield from _walk_cli_command(child)

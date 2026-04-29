@@ -11,6 +11,7 @@
                 "apiLayout": "#/$defs/ApiLayoutNode",
                 "blockQuote": "#/$defs/BlockQuoteNode",
                 "bulletList": "#/$defs/BulletListNode",
+                "cliCommand": "#/$defs/CliCommandNode",
                 "comment": "#/$defs/CommentNode",
                 "definitionList": "#/$defs/DefinitionListNode",
                 "enumeratedList": "#/$defs/EnumeratedListNode",
@@ -58,6 +59,9 @@
               },
               {
                 "$ref": "#/$defs/ApiLayoutNode"
+              },
+              {
+                "$ref": "#/$defs/CliCommandNode"
               }
             ]
           },
@@ -105,6 +109,7 @@
                 "apiLayout": "#/$defs/ApiLayoutNode",
                 "blockQuote": "#/$defs/BlockQuoteNode",
                 "bulletList": "#/$defs/BulletListNode",
+                "cliCommand": "#/$defs/CliCommandNode",
                 "comment": "#/$defs/CommentNode",
                 "definitionList": "#/$defs/DefinitionListNode",
                 "enumeratedList": "#/$defs/EnumeratedListNode",
@@ -152,6 +157,9 @@
               },
               {
                 "$ref": "#/$defs/ApiLayoutNode"
+              },
+              {
+                "$ref": "#/$defs/CliCommandNode"
               }
             ]
           },
@@ -368,6 +376,7 @@
                 "apiLayout": "#/$defs/ApiLayoutNode",
                 "blockQuote": "#/$defs/BlockQuoteNode",
                 "bulletList": "#/$defs/BulletListNode",
+                "cliCommand": "#/$defs/CliCommandNode",
                 "comment": "#/$defs/CommentNode",
                 "definitionList": "#/$defs/DefinitionListNode",
                 "enumeratedList": "#/$defs/EnumeratedListNode",
@@ -415,6 +424,9 @@
               },
               {
                 "$ref": "#/$defs/ApiLayoutNode"
+              },
+              {
+                "$ref": "#/$defs/CliCommandNode"
               }
             ]
           },
@@ -457,30 +469,19 @@
       "title": "BulletListNode",
       "type": "object"
     },
-    "CommentNode": {
-      "description": "A docutils comment block, preserved as raw text.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import CommentNode\n>>> CommentNode(type=\"comment\", value=\"TODO\").value\n'TODO'",
+    "CliCommandNode": {
+      "description": "A CLI documentation primitive emitted by :mod:`sphinx_autodoc_argparse`.\n\nThe six custom node types from that extension share a structural shape:\na wrapper carrying optional argparse-derived attributes (program name,\nusage line, argument names, default values, choices, subcommand\naliases\u2026) plus block children. Modelling them as a single discriminated\ncontainer lets the Astro renderer dispatch on ``component`` without\nneeding six near-identical Pydantic classes.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import CliCommandNode\n>>> arg = CliCommandNode(\n...     type=\"cliCommand\",\n...     component=\"argument\",\n...     names=[\"-v\", \"--verbose\"],\n...     help=\"Increase output verbosity\",\n... )\n>>> arg.names\n['-v', '--verbose']",
       "properties": {
-        "type": {
-          "const": "comment",
-          "title": "Type",
-          "type": "string"
+        "aliases": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
         },
-        "value": {
-          "title": "Value",
-          "type": "string"
-        }
-      },
-      "required": [
-        "type",
-        "value"
-      ],
-      "title": "CommentNode",
-      "type": "object"
-    },
-    "DefinitionListItemNode": {
-      "description": "One entry in a definition list, pairing a term with a definition.\n\nThe ``term`` slot accepts inline content (emphasis, strong, literal,\nreferences\u2026); the ``definition`` slot accepts block content (paragraphs,\nlists, code blocks\u2026). docutils also supports optional ``classifier``\nnodes between term and definition; we omit them here and revisit when a\nreal document needs them.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import DefinitionListItemNode\n>>> node = DefinitionListItemNode.model_validate(\n...     {\n...         \"type\": \"definitionListItem\",\n...         \"term\": [{\"type\": \"text\", \"value\": \"foo\"}],\n...         \"definition\": [\n...             {\n...                 \"type\": \"paragraph\",\n...                 \"children\": [{\"type\": \"text\", \"value\": \"x\"}],\n...             },\n...         ],\n...     },\n... )\n>>> node.term[0].value\n'foo'",
-      "properties": {
-        "definition": {
+        "children": {
+          "default": [],
           "items": {
             "discriminator": {
               "mapping": {
@@ -488,6 +489,7 @@
                 "apiLayout": "#/$defs/ApiLayoutNode",
                 "blockQuote": "#/$defs/BlockQuoteNode",
                 "bulletList": "#/$defs/BulletListNode",
+                "cliCommand": "#/$defs/CliCommandNode",
                 "comment": "#/$defs/CommentNode",
                 "definitionList": "#/$defs/DefinitionListNode",
                 "enumeratedList": "#/$defs/EnumeratedListNode",
@@ -535,6 +537,247 @@
               },
               {
                 "$ref": "#/$defs/ApiLayoutNode"
+              },
+              {
+                "$ref": "#/$defs/CliCommandNode"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "choices": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Choices",
+          "type": "array"
+        },
+        "classes": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Classes",
+          "type": "array"
+        },
+        "component": {
+          "enum": [
+            "program",
+            "usage",
+            "group",
+            "argument",
+            "subcommands",
+            "subcommand"
+          ],
+          "title": "Component",
+          "type": "string"
+        },
+        "default": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "help": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Help"
+        },
+        "metavar": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metavar"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "names": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Names",
+          "type": "array"
+        },
+        "prog": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prog"
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "type": {
+          "const": "cliCommand",
+          "title": "Type",
+          "type": "string"
+        },
+        "usage": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Usage"
+        }
+      },
+      "required": [
+        "type",
+        "component"
+      ],
+      "title": "CliCommandNode",
+      "type": "object"
+    },
+    "CommentNode": {
+      "description": "A docutils comment block, preserved as raw text.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import CommentNode\n>>> CommentNode(type=\"comment\", value=\"TODO\").value\n'TODO'",
+      "properties": {
+        "type": {
+          "const": "comment",
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ],
+      "title": "CommentNode",
+      "type": "object"
+    },
+    "DefinitionListItemNode": {
+      "description": "One entry in a definition list, pairing a term with a definition.\n\nThe ``term`` slot accepts inline content (emphasis, strong, literal,\nreferences\u2026); the ``definition`` slot accepts block content (paragraphs,\nlists, code blocks\u2026). docutils also supports optional ``classifier``\nnodes between term and definition; we omit them here and revisit when a\nreal document needs them.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import DefinitionListItemNode\n>>> node = DefinitionListItemNode.model_validate(\n...     {\n...         \"type\": \"definitionListItem\",\n...         \"term\": [{\"type\": \"text\", \"value\": \"foo\"}],\n...         \"definition\": [\n...             {\n...                 \"type\": \"paragraph\",\n...                 \"children\": [{\"type\": \"text\", \"value\": \"x\"}],\n...             },\n...         ],\n...     },\n... )\n>>> node.term[0].value\n'foo'",
+      "properties": {
+        "definition": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "admonition": "#/$defs/AdmonitionNode",
+                "apiLayout": "#/$defs/ApiLayoutNode",
+                "blockQuote": "#/$defs/BlockQuoteNode",
+                "bulletList": "#/$defs/BulletListNode",
+                "cliCommand": "#/$defs/CliCommandNode",
+                "comment": "#/$defs/CommentNode",
+                "definitionList": "#/$defs/DefinitionListNode",
+                "enumeratedList": "#/$defs/EnumeratedListNode",
+                "literalBlock": "#/$defs/LiteralBlockNode",
+                "paragraph": "#/$defs/ParagraphNode",
+                "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
+                "transition": "#/$defs/TransitionNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ParagraphNode"
+              },
+              {
+                "$ref": "#/$defs/SectionNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralBlockNode"
+              },
+              {
+                "$ref": "#/$defs/CommentNode"
+              },
+              {
+                "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/BlockQuoteNode"
+              },
+              {
+                "$ref": "#/$defs/BulletListNode"
+              },
+              {
+                "$ref": "#/$defs/EnumeratedListNode"
+              },
+              {
+                "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
+              },
+              {
+                "$ref": "#/$defs/ApiLayoutNode"
+              },
+              {
+                "$ref": "#/$defs/CliCommandNode"
               }
             ]
           },
@@ -754,6 +997,7 @@
                 "apiLayout": "#/$defs/ApiLayoutNode",
                 "blockQuote": "#/$defs/BlockQuoteNode",
                 "bulletList": "#/$defs/BulletListNode",
+                "cliCommand": "#/$defs/CliCommandNode",
                 "comment": "#/$defs/CommentNode",
                 "definitionList": "#/$defs/DefinitionListNode",
                 "enumeratedList": "#/$defs/EnumeratedListNode",
@@ -801,6 +1045,9 @@
               },
               {
                 "$ref": "#/$defs/ApiLayoutNode"
+              },
+              {
+                "$ref": "#/$defs/CliCommandNode"
               }
             ]
           },
@@ -1002,6 +1249,7 @@
                 "apiLayout": "#/$defs/ApiLayoutNode",
                 "blockQuote": "#/$defs/BlockQuoteNode",
                 "bulletList": "#/$defs/BulletListNode",
+                "cliCommand": "#/$defs/CliCommandNode",
                 "comment": "#/$defs/CommentNode",
                 "definitionList": "#/$defs/DefinitionListNode",
                 "enumeratedList": "#/$defs/EnumeratedListNode",
@@ -1049,6 +1297,9 @@
               },
               {
                 "$ref": "#/$defs/ApiLayoutNode"
+              },
+              {
+                "$ref": "#/$defs/CliCommandNode"
               }
             ]
           },

@@ -14,6 +14,20 @@ import typing as t
 
 from sphinx_autodoc_argparse.directive import ArgparseDirective
 from sphinx_autodoc_argparse.domain import ArgparseDomain
+from sphinx_autodoc_argparse._visitors_json import (
+    depart_argparse_argument_json,
+    depart_argparse_group_json,
+    depart_argparse_program_json,
+    depart_argparse_subcommand_json,
+    depart_argparse_subcommands_json,
+    depart_argparse_usage_json,
+    visit_argparse_argument_json,
+    visit_argparse_group_json,
+    visit_argparse_program_json,
+    visit_argparse_subcommand_json,
+    visit_argparse_subcommands_json,
+    visit_argparse_usage_json,
+)
 from sphinx_autodoc_argparse.nodes import (
     argparse_argument,
     argparse_group,
@@ -94,30 +108,40 @@ def setup(app: Sphinx) -> SetupDict:
         description="Show type information",
     )
 
-    # Register custom nodes
+    # Register custom nodes. Each node gets both an HTML visitor pair
+    # (for Sphinx's standard html builder) and a JSON visitor pair (for
+    # the gp-sphinx-astro-builder pipeline). The JSON visitors emit
+    # ``cliCommand`` blocks with a ``component`` discriminator preserving
+    # the docutils class.
     app.add_node(
         argparse_program,
         html=(visit_argparse_program_html, depart_argparse_program_html),
+        json=(visit_argparse_program_json, depart_argparse_program_json),
     )
     app.add_node(
         argparse_usage,
         html=(visit_argparse_usage_html, depart_argparse_usage_html),
+        json=(visit_argparse_usage_json, depart_argparse_usage_json),
     )
     app.add_node(
         argparse_group,
         html=(visit_argparse_group_html, depart_argparse_group_html),
+        json=(visit_argparse_group_json, depart_argparse_group_json),
     )
     app.add_node(
         argparse_argument,
         html=(visit_argparse_argument_html, depart_argparse_argument_html),
+        json=(visit_argparse_argument_json, depart_argparse_argument_json),
     )
     app.add_node(
         argparse_subcommands,
         html=(visit_argparse_subcommands_html, depart_argparse_subcommands_html),
+        json=(visit_argparse_subcommands_json, depart_argparse_subcommands_json),
     )
     app.add_node(
         argparse_subcommand,
         html=(visit_argparse_subcommand_html, depart_argparse_subcommand_html),
+        json=(visit_argparse_subcommand_json, depart_argparse_subcommand_json),
     )
 
     # Register the argparse domain so :argparse:program: / :argparse:option: /

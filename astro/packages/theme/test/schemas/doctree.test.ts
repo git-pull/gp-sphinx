@@ -4,6 +4,7 @@ import {
   blockNodeSchema,
   blockQuoteNodeSchema,
   bulletListNodeSchema,
+  cliCommandNodeSchema,
   commentNodeSchema,
   definitionListItemNodeSchema,
   definitionListNodeSchema,
@@ -326,6 +327,75 @@ describe('doctree zod schemas — discriminated unions', () => {
 
   test('blockNodeSchema rejects an inline node', () => {
     expect(() => blockNodeSchema.parse({ type: 'text', value: 'x' })).toThrow()
+  })
+})
+
+describe('doctree zod schemas — cliCommand', () => {
+  test('cliCommandNodeSchema accepts the program component with prog', () => {
+    const data = {
+      type: 'cliCommand',
+      component: 'program',
+      prog: 'myapp',
+      usage: null,
+      title: null,
+      description: null,
+      names: [],
+      help: null,
+      default: null,
+      choices: [],
+      required: false,
+      metavar: null,
+      name: null,
+      aliases: [],
+      classes: [],
+      children: [],
+    }
+    expect(cliCommandNodeSchema.parse(data)).toEqual(data)
+  })
+
+  test('cliCommandNodeSchema fills defaults for the argument component', () => {
+    const parsed = cliCommandNodeSchema.parse({
+      type: 'cliCommand',
+      component: 'argument',
+      names: ['-v', '--verbose'],
+      help: 'Increase output verbosity',
+      metavar: 'LEVEL',
+    })
+    expect(parsed.component).toBe('argument')
+    expect(parsed.names).toEqual(['-v', '--verbose'])
+    expect(parsed.metavar).toBe('LEVEL')
+    expect(parsed.required).toBe(false)
+    expect(parsed.aliases).toEqual([])
+  })
+
+  test('cliCommandNodeSchema accepts the subcommand component with name + aliases', () => {
+    const parsed = cliCommandNodeSchema.parse({
+      type: 'cliCommand',
+      component: 'subcommand',
+      name: 'build',
+      aliases: ['b'],
+      help: 'Build the project',
+    })
+    expect(parsed.name).toBe('build')
+    expect(parsed.aliases).toEqual(['b'])
+  })
+
+  test('cliCommandNodeSchema rejects an unknown component', () => {
+    expect(() =>
+      cliCommandNodeSchema.parse({
+        type: 'cliCommand',
+        component: 'spaceship',
+      }),
+    ).toThrow()
+  })
+
+  test('blockNodeSchema validates a cliCommand payload through the union', () => {
+    const parsed = blockNodeSchema.parse({
+      type: 'cliCommand',
+      component: 'program',
+      prog: 'myapp',
+    })
+    expect(parsed.type).toBe('cliCommand')
   })
 })
 
