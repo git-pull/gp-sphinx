@@ -58,6 +58,7 @@ export type BlockNode =
   | { type: 'enumeratedList'; start: number | null; children: ListItemNode[] }
   | { type: 'admonition'; variant: AdmonitionVariant; children: BlockNode[] }
   | { type: 'definitionList'; children: DefinitionListItemNode[] }
+  | { type: 'symbolRef'; symbolId: string }
 
 export type Document = {
   id: string
@@ -193,6 +194,11 @@ export const definitionListNodeSchema = z.object({
   children: z.array(definitionListItemNodeSchema),
 })
 
+export const symbolRefNodeSchema = z.object({
+  type: z.literal('symbolRef'),
+  symbolId: z.string(),
+})
+
 export const sectionNodeSchema = z.object({
   type: z.literal('section'),
   id: z.string(),
@@ -213,6 +219,7 @@ export const blockNodeSchema: z.ZodType<BlockNode> = z.discriminatedUnion('type'
   enumeratedListNodeSchema,
   admonitionNodeSchema,
   definitionListNodeSchema,
+  symbolRefNodeSchema,
 ])
 
 // ─── Top-level document
