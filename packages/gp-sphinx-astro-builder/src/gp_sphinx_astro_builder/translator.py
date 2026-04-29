@@ -562,6 +562,32 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         if self._stack:
             self._stack[-1]["data"]["definition"] = frame["data"]["children"]
 
+    # Sphinx's autodoc + sphinx-autodoc-typehints render NumPy docstring
+    # rubrics (Parameters, Returns, Examples, …) as ``field_list / field /
+    # field_name / field_body`` chains. The shape is exactly a definition
+    # list: each ``field`` pairs an inline ``field_name`` (term) with
+    # block ``field_body`` content (definition). Aliasing onto the
+    # existing definition_list visitors avoids growing the wire format.
+    visit_field_list = visit_definition_list
+    depart_field_list = depart_definition_list
+    visit_field = visit_definition_list_item
+    depart_field = depart_definition_list_item
+    visit_field_name = visit_term
+    depart_field_name = depart_term
+    visit_field_body = visit_definition
+    depart_field_body = depart_definition
+
+    # Sphinx renders NumPy "Examples", "Notes", "See Also" rubrics as
+    # ``rubric`` nodes whose only child is the inline label text. Without
+    # explicit handling, that bare ``Text`` leaks into the surrounding
+    # block context — exactly the same failure mode as ``field_name``
+    # before the field_list aliases above. Treating ``rubric`` as a
+    # paragraph wraps the inline label correctly and preserves the
+    # rubric's class list (e.g. ``classes=["rubric-h2"]``) for the
+    # renderer to dispatch on if it cares about the visual hierarchy.
+    visit_rubric = visit_paragraph
+    depart_rubric = depart_paragraph
+
     def append_node(self, data: dict[str, t.Any]) -> None:
         """Append a typed-JSON node dict to the current frame's children list.
 
