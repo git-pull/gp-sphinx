@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import typing as t
 
-from gp_sphinx_astro_builder.models import Document, Symbol
+from gp_sphinx_astro_builder.models import Document, Symbol, XrefEntry
 from gp_sphinx_astro_builder.schemas import (
     export_doctree_schema,
     export_symbol_schema,
+    export_xref_index_schema,
 )
 
 if t.TYPE_CHECKING:
@@ -127,3 +128,40 @@ def test_export_symbol_schema_matches_snapshot(
 ) -> None:
     """The full Symbol JSON Schema is byte-stable against a syrupy snapshot."""
     assert export_symbol_schema() == snapshot
+
+
+def test_export_xref_index_schema_returns_array_schema() -> None:
+    """``export_xref_index_schema`` returns an array-of-XrefEntry schema."""
+    schema = export_xref_index_schema()
+    assert isinstance(schema, dict)
+    assert schema.get("type") == "array"
+
+
+def test_export_xref_index_schema_contains_xref_entry_def() -> None:
+    """The schema's items reference an ``XrefEntry`` ``$defs`` entry."""
+    schema = export_xref_index_schema()
+    defs = schema.get("$defs", {})
+    assert "XrefEntry" in defs
+
+
+def test_export_xref_index_schema_round_trips_entry() -> None:
+    """A canonical XrefEntry validates through the model."""
+    entry = XrefEntry.model_validate(
+        {
+            "id": "py:func:foo",
+            "domain": "py",
+            "role": "func",
+            "target": "foo",
+            "href": "/api/foo/",
+            "display": None,
+            "priority": 0,
+        },
+    )
+    assert entry.target == "foo"
+
+
+def test_export_xref_index_schema_matches_snapshot(
+    snapshot: SnapshotAssertion,
+) -> None:
+    """The xref-index JSON Schema is byte-stable against a syrupy snapshot."""
+    assert export_xref_index_schema() == snapshot

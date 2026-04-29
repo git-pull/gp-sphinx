@@ -15,8 +15,10 @@ import typing as t
 
 from sphinx.builders import Builder
 from sphinx.util import logging
+from sphinx.util.inventory import InventoryFile
 from sphinx.util.osutil import _last_modified_time
 
+from gp_sphinx_astro_builder.intersphinx import build_xref_index_entries
 from gp_sphinx_astro_builder.schemas import (
     export_doctree_schema,
     export_symbol_schema,
@@ -126,6 +128,19 @@ class AstroBuilder(Builder):
         symbols_path.parent.mkdir(parents=True, exist_ok=True)
         symbols_path.write_text(
             self._symbol_accumulator.to_json(),
+            encoding="utf-8",
+        )
+
+        # Cross-reference inventory: Sphinx-format objects.inv plus a typed
+        # JSON shape that the Astro side can ingest without parsing zlib.
+        InventoryFile.dump(str(self.outdir / "objects.inv"), self.env, self)
+        xref_entries = build_xref_index_entries(self.env, self)
+        (self.outdir / "xref-index.json").write_text(
+            json.dumps(
+                [entry.model_dump() for entry in xref_entries],
+                indent=2,
+            )
+            + "\n",
             encoding="utf-8",
         )
 

@@ -526,6 +526,42 @@ class SymbolSource(BaseModel):
     line: int
 
 
+class XrefEntry(BaseModel):
+    """One entry in the cross-reference index.
+
+    Mirrors what Sphinx writes to ``objects.inv``: each entry pairs a
+    fully-qualified target (``"gp_sphinx.config.merge_sphinx_config"``)
+    with the URL that resolves it on the rendered site, scoped by the
+    ``domain`` it lives in (``"py"``, ``"std"``, ``"c"``…) and the
+    ``role`` that introduced it (``"func"``, ``"class"``, ``"data"``…).
+
+    The ``id`` field is the canonical join key — typically
+    ``f"{domain}:{role}:{target}"`` — so a downstream Astro site can
+    look up an entry without parsing.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import XrefEntry
+    >>> entry = XrefEntry(
+    ...     id="py:func:foo",
+    ...     domain="py",
+    ...     role="func",
+    ...     target="foo",
+    ...     href="/api/foo/",
+    ... )
+    >>> entry.priority
+    0
+    """
+
+    id: str
+    domain: str
+    role: str
+    target: str
+    href: str
+    display: str | None = None
+    priority: int = 0
+
+
 class Symbol(BaseModel):
     """One API symbol — function, class, method, etc. — emitted by autodoc.
 

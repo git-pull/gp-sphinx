@@ -31,6 +31,7 @@ from gp_sphinx_astro_builder.models import (
     SymbolSource,
     TextNode,
     TransitionNode,
+    XrefEntry,
 )
 
 
@@ -644,6 +645,44 @@ def test_symbol_ref_node_round_trips() -> None:
         "type": "symbolRef",
         "symbolId": "gp_sphinx.config.merge_sphinx_config",
     }
+
+
+def test_xref_entry_round_trips_with_full_payload() -> None:
+    """``XrefEntry`` carries domain, role, target, href, display, priority."""
+    payload = {
+        "id": "py:func:gp_sphinx.config.merge_sphinx_config",
+        "domain": "py",
+        "role": "func",
+        "target": "gp_sphinx.config.merge_sphinx_config",
+        "href": "/api/gp_sphinx.config.merge_sphinx_config/",
+        "display": "merge_sphinx_config",
+        "priority": 0,
+    }
+    entry = XrefEntry.model_validate(payload)
+    assert entry.model_dump() == payload
+
+
+def test_xref_entry_optional_fields_default() -> None:
+    """``XrefEntry`` defaults ``display`` to None and ``priority`` to 0."""
+    entry = XrefEntry.model_validate(
+        {
+            "id": "py:class:Foo",
+            "domain": "py",
+            "role": "class",
+            "target": "Foo",
+            "href": "/api/Foo/",
+        },
+    )
+    assert entry.display is None
+    assert entry.priority == 0
+
+
+def test_xref_entry_rejects_missing_required_field() -> None:
+    """``XrefEntry`` requires id, domain, role, target, href."""
+    with pytest.raises(ValidationError):
+        XrefEntry.model_validate(
+            {"domain": "py", "role": "func", "target": "foo", "href": "/x/"},
+        )
 
 
 def test_section_accepts_symbol_ref_node_as_block_child() -> None:

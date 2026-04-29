@@ -28,6 +28,7 @@ import pathlib
 from gp_sphinx_astro_builder.schemas import (
     export_doctree_schema,
     export_symbol_schema,
+    export_xref_index_schema,
 )
 
 _REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
@@ -55,4 +56,16 @@ def test_pydantic_symbol_schema_fixture_matches_live_export() -> None:
     assert live == committed, (
         "astro/fixtures/symbol.schema.json is stale; "
         "regenerate it from gp_sphinx_astro_builder.schemas.export_symbol_schema."
+    )
+
+
+def test_pydantic_xref_index_schema_fixture_matches_live_export() -> None:
+    """The committed xref-index fixture must match the live Pydantic export."""
+    live = export_xref_index_schema()
+    committed = json.loads(
+        (_FIXTURES_DIR / "xref-index.schema.json").read_text("utf-8"),
+    )
+    assert live == committed, (
+        "astro/fixtures/xref-index.schema.json is stale; "
+        "regenerate it from gp_sphinx_astro_builder.schemas.export_xref_index_schema."
     )

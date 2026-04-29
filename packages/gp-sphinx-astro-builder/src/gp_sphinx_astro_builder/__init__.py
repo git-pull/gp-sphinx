@@ -46,10 +46,12 @@ from gp_sphinx_astro_builder.models import (
     SymbolSource,
     TextNode,
     TransitionNode,
+    XrefEntry,
 )
 from gp_sphinx_astro_builder.schemas import (
     export_doctree_schema,
     export_symbol_schema,
+    export_xref_index_schema,
 )
 from gp_sphinx_astro_builder.translator import DocTreeJSONTranslator
 
@@ -87,8 +89,10 @@ __all__ = [
     "SymbolSource",
     "TextNode",
     "TransitionNode",
+    "XrefEntry",
     "export_doctree_schema",
     "export_symbol_schema",
+    "export_xref_index_schema",
     "setup",
 ]
 
