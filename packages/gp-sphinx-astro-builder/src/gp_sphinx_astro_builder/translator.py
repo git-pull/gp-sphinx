@@ -17,6 +17,7 @@ from __future__ import annotations
 import typing as t
 
 from docutils import nodes
+from sphinx import addnodes
 
 from gp_sphinx_astro_builder.models import Document, Symbol
 from gp_sphinx_astro_builder.symbols import normalize_symbol_kind
@@ -827,7 +828,22 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
             fullname = node.get("fullname", "") or ""
             sym["qualname"] = fullname
             sym["name"] = fullname.rsplit(".", 1)[-1] if fullname else ""
-            sym["signature"] = node.astext()
+            # Capture only the parameter list (already wrapped in
+            # ``(...)`` by ``addnodes.desc_parameterlist.astext``) and the
+            # optional return annotation (already prefixed with ``" -> "``
+            # by ``addnodes.desc_returns.astext``). Calling ``astext()``
+            # on the entire ``desc_signature`` would re-include the
+            # qualified name (already in ``module`` / ``qualname``) and
+            # the inline ``objtype`` badge that ``sphinx-autodoc-api-style``
+            # injects into the signature subtree.
+            parts: list[str] = []
+            for plist in node.findall(addnodes.desc_parameterlist):
+                parts.append(plist.astext())
+                break
+            for returns in node.findall(addnodes.desc_returns):
+                parts.append(returns.astext())
+                break
+            sym["signature"] = "".join(parts)
         raise nodes.SkipNode
 
     def visit_desc_content(self, node: nodes.Element) -> None:
