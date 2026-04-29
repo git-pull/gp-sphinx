@@ -5,6 +5,7 @@ import type { Document } from '@gp-sphinx-astro/theme/schemas/doctree'
 import Footer from '../components/Footer.astro'
 import MobileSidebar from '../components/MobileSidebar.astro'
 import Sidebar from '../components/Sidebar.astro'
+import SiteHead from '../components/SiteHead.astro'
 import TableOfContents from '../components/TableOfContents.astro'
 import ThemeScript from '../components/ThemeScript.astro'
 import TopNav from '../components/TopNav.astro'
@@ -12,6 +13,12 @@ import '../styles/global.css'
 
 interface Props {
   title: string
+  /**
+   * Optional page description used for ``<meta name="description">``,
+   * Open Graph, and Twitter unfurl. Defaults to a generic site
+   * description when the caller doesn't pass one.
+   */
+  description?: string
   /**
    * Optional doctree to feed the right-rail in-page TOC. Doc pages
    * pass ``entry.data.tree``; symbol pages omit it (they have their
@@ -27,7 +34,12 @@ interface Props {
   editUrl?: string
 }
 
-const { title, tocTree, editUrl } = Astro.props
+const SITE_DESCRIPTION =
+  'Shared Sphinx documentation platform — consolidated config, bundled extensions, and a typed Astro renderer.'
+
+const { title, description, tocTree, editUrl } = Astro.props
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString()
+const pageDescription = description ?? SITE_DESCRIPTION
 ---
 <!doctype html>
 <html lang="en">
@@ -36,6 +48,11 @@ const { title, tocTree, editUrl } = Astro.props
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <SiteHead
+      title={title}
+      description={pageDescription}
+      canonicalUrl={canonicalUrl}
+    />
     <Font cssVariable="--font-sans" preload />
     <Font cssVariable="--font-mono" />
     <ThemeScript />

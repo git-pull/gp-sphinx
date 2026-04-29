@@ -1,6 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro'
 import { getCollection } from 'astro:content'
+import { extractDescription } from '@gp-sphinx-astro/theme/render/extract-description'
 import { renderDocument } from '@gp-sphinx-astro/theme/render/render-node'
 import Doc from '../layouts/Doc.astro'
 import { editOnGithubUrl } from '../lib/edit-link.ts'
@@ -24,7 +25,13 @@ const editUrl = editOnGithubUrl({
   // link must point at the on-disk source, so we use the former.
   docname: entry.data.id,
 })
+const description = extractDescription(entry.data.tree, { maxChars: 160 })
 ---
-<Doc title={entry.data.title} tocTree={entry.data.tree} editUrl={editUrl}>
+<Doc
+  title={entry.data.title}
+  description={description ?? undefined}
+  tocTree={entry.data.tree}
+  editUrl={editUrl}
+>
   <Fragment set:html={html} />
 </Doc>

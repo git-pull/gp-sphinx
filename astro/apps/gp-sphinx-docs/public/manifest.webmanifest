@@ -1,0 +1,17 @@
+{
+  "name": "gp-sphinx",
+  "short_name": "gp-sphinx",
+  "description": "Shared Sphinx documentation platform — consolidated config, bundled extensions, and a typed Astro renderer.",
+  "start_url": "/",
+  "display": "minimal-ui",
+  "scope": "/",
+  "background_color": "#fafbfc",
+  "theme_color": "#1f5fb0",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
