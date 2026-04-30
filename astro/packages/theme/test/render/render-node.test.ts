@@ -872,10 +872,10 @@ describe('renderBlockNode — table', () => {
       ],
     })
     expect(html).toBe(
-      '<table class="docutils">' +
+      '<div class="gp-sphinx-table-wrap"><table class="docutils">' +
         '<thead><tr><th><p>Object</p></th><th><p>CSS class</p></th></tr></thead>' +
         '<tbody><tr><td><p>function</p></td><td><p><code>gp-sphinx-badge--type-function</code></p></td></tr></tbody>' +
-        '</table>',
+        '</table></div>',
     )
   })
 
@@ -898,6 +898,36 @@ describe('renderBlockNode — table', () => {
     })
     expect(html).not.toContain('<thead')
     expect(html).toContain('<tbody><tr><td>')
+  })
+
+  test('table is wrapped in a scroll container so wide cells do not push the layout', () => {
+    const html = renderBlockNode({
+      type: 'table',
+      head: [],
+      body: [
+        {
+          type: 'tableRow',
+          cells: [
+            {
+              type: 'tableCell',
+              header: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [{ type: 'text', value: 'extremely long content' }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+    // Wrapping the table in a horizontally-scrollable container
+    // means a cell with a 200-char URL no longer makes the parent
+    // section ~360px wider than the main column.
+    expect(html.startsWith('<div class="gp-sphinx-table-wrap">')).toBe(true)
+    expect(html.endsWith('</div>')).toBe(true)
+    expect(html).toContain('<table class="docutils">')
   })
 
   test('table with empty body omits the tbody element', () => {

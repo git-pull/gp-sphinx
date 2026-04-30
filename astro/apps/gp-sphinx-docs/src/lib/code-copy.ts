@@ -87,6 +87,25 @@ export function formatCopyText(text: string): string {
   return result.endsWith('\n') ? result.slice(0, -1) : result
 }
 
+/**
+ * Token strings that, when they appear as the EXACT textContent of
+ * a Shiki span, mark that span as a REPL / shell prompt. Tagging
+ * these spans with ``select-none`` (Tailwind ``user-select: none``)
+ * means triple-clicking a prompted line picks the command body —
+ * the user can paste it back into a shell or REPL without manually
+ * stripping the ``>>> `` / ``$ `` prefix. Mirrors the contract of
+ * sphinx-copybutton's prompt detection.
+ */
+const PROMPT_TOKENS: ReadonlySet<string> = new Set(['>>>', '...', '$', '#'])
+
+function markPromptSpans(code: Element): void {
+  for (const span of code.querySelectorAll('span')) {
+    if (PROMPT_TOKENS.has(span.textContent ?? '')) {
+      span.classList.add('select-none')
+    }
+  }
+}
+
 export function enhanceCodeBlocks(root: ParentNode): void {
   const pres = root.querySelectorAll<HTMLPreElement>('pre')
   for (const pre of pres) {
@@ -99,6 +118,7 @@ export function enhanceCodeBlocks(root: ParentNode): void {
     }
     pre.setAttribute('data-code-copy-enhanced', 'true')
     pre.style.position = pre.style.position === '' ? 'relative' : pre.style.position
+    markPromptSpans(code)
     const button = document.createElement('button')
     button.type = 'button'
     button.setAttribute('data-test-id', 'code-copy')
