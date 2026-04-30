@@ -171,37 +171,16 @@ def test_build_doc_pytest_plugin_intro_nodes_include_install_and_link() -> None:
     assert "fixture-demo test suite" in intro_nodes[4].astext()
 
 
-def test_build_doc_pytest_plugin_fixture_section_scaffold_sets_module() -> None:
-    """``include_index=True`` adds a Fixture Summary rubric + index placeholder."""
-    scaffold = spf_directives._build_doc_pytest_plugin_fixture_section_scaffold(
-        "fixture_mod",
-        include_index=True,
-    )
-
-    assert [type(node) for node in scaffold] == [
-        nodes.rubric,
-        spf_directives.autofixture_index_node,
-        nodes.rubric,
-    ]
-    assert scaffold[0].astext() == "Fixture Summary"
-    assert scaffold[1]["module"] == "fixture_mod"
-    assert scaffold[1]["exclude"] == set()
-    assert scaffold[2].astext() == "Fixture Reference"
-
-
-def test_build_doc_pytest_plugin_fixture_section_scaffold_defaults_to_no_summary() -> (
+def test_build_doc_pytest_plugin_fixture_section_scaffold_emits_reference_rubric() -> (
     None
 ):
-    """Default ``include_index=False`` emits only the Fixture Reference rubric."""
+    """The scaffold emits a single ``Fixture Reference`` rubric."""
     scaffold = spf_directives._build_doc_pytest_plugin_fixture_section_scaffold(
         "fixture_mod",
     )
 
     assert [type(node) for node in scaffold] == [nodes.rubric]
     assert scaffold[0].astext() == "Fixture Reference"
-    assert not any(
-        isinstance(node, spf_directives.autofixture_index_node) for node in scaffold
-    )
 
 
 def test_compose_doc_pytest_plugin_nodes_preserves_display_order() -> None:
@@ -1382,31 +1361,6 @@ def test_build_doc_pytest_plugin_intro_nodes_uses_generic_test_suite_text() -> N
     assert intro_nodes[-1].astext() == (
         "For real-world usage examples, see the test suite."
     )
-
-
-def test_build_doc_pytest_plugin_fixture_section_scaffold_contains_index_node() -> None:
-    """``include_index=True`` produces both rubrics + the index placeholder."""
-    section_nodes = spf_directives._build_doc_pytest_plugin_fixture_section_scaffold(
-        "fixture_mod",
-        include_index=True,
-    )
-
-    assert [
-        node.astext() for node in section_nodes if isinstance(node, nodes.rubric)
-    ] == [
-        "Fixture Summary",
-        "Fixture Reference",
-    ]
-    assert isinstance(
-        section_nodes[1],
-        spf_directives.autofixture_index_node,
-    )
-    assert isinstance(
-        section_nodes[1],
-        sphinx_autodoc_pytest_fixtures.autofixture_index_node,
-    )
-    assert section_nodes[1]["module"] == "fixture_mod"
-    assert section_nodes[1]["exclude"] == set()
 
 
 def test_compose_doc_pytest_plugin_nodes_orders_generated_sections() -> None:

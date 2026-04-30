@@ -171,7 +171,6 @@ def myst_smoke_result(spf_doctree_root: pathlib.Path) -> SharedSphinxResult:
                     :package: fixture-demo
                     :summary: fixture-demo ships a pytest plugin for local test setup.
                     :tests-url: https://example.com/fixture-demo/tests
-                    :fixture-index:
 
                     ## Recommended fixtures
 
@@ -589,7 +588,6 @@ def test_doc_pytest_plugin_rst_snapshot(
            :summary: fixture-demo ships a pytest plugin for local test setup.
            :tests-url: https://example.com/fixture-demo/tests
            :install-command: uv add --dev fixture-demo
-           :fixture-index:
 
            Use the plugin when you want isolated test resources with minimal
            conftest boilerplate.
@@ -621,7 +619,7 @@ def test_doc_pytest_plugin_myst_smoke(
 
     assert "Recommended fixtures" in doctree_text
     assert "generated fixture docs and authored notes" in doctree_text
-    assert "Fixture Summary" in doctree_text
+    assert "Fixture Summary" not in doctree_text
     assert "Fixture Reference" in doctree_text
     assert "fixture_mod.my_server" in doctree_text
 

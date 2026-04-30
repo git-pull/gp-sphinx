@@ -218,33 +218,17 @@ def _build_doc_pytest_plugin_intro_nodes(
 
 def _build_doc_pytest_plugin_fixture_section_scaffold(
     modname: str,
-    *,
-    include_index: bool = False,
 ) -> list[nodes.Node]:
     """Return the generated fixture-section scaffold nodes.
 
-    Parameters
-    ----------
-    modname : str
-        Module the fixture-index placeholder targets.
-    include_index : bool, optional
-        When ``True``, prefix the section with a "Fixture Summary" rubric
-        and an :class:`autofixture_index_node` placeholder before the
-        "Fixture Reference" detail block.  Defaults to ``False`` because
-        Furo's ToC sidebar already enumerates each ``:fixture:`` anchor
-        — the summary table only adds value on dense plugin pages where
-        a scan-all-options view is desired.  Toggle on via the
-        ``:fixture-index:`` flag on ``auto-pytest-plugin``.
+    Emits a single ``Fixture Reference`` rubric — the ``autofixtures``
+    detail blocks render below it via
+    :func:`_render_autofixtures_nodes`. ``modname`` is accepted for
+    parity with the other scaffolding helpers in this module even
+    though it is unused at present.
     """
-    section_nodes: list[nodes.Node] = []
-    if include_index:
-        idx_node = autofixture_index_node()
-        idx_node["module"] = modname
-        idx_node["exclude"] = set()
-        section_nodes.append(nodes.rubric("", "Fixture Summary"))
-        section_nodes.append(idx_node)
-    section_nodes.append(nodes.rubric("", "Fixture Reference"))
-    return section_nodes
+    del modname  # kept for parity with sibling helpers
+    return [nodes.rubric("", "Fixture Reference")]
 
 
 def _compose_doc_pytest_plugin_nodes(
@@ -780,7 +764,6 @@ class AutoPytestPluginDirective(SphinxDirective):
         "summary": directives.unchanged,
         "tests-url": directives.unchanged,
         "install-command": directives.unchanged,
-        "fixture-index": directives.flag,
     }
 
     def run(self) -> list[nodes.Node]:
@@ -813,7 +796,6 @@ class AutoPytestPluginDirective(SphinxDirective):
             fixture_section_nodes = self._build_fixture_section_nodes(
                 modname=modname,
                 entries=entries,
-                include_index="fixture-index" in self.options,
             )
 
         return _compose_doc_pytest_plugin_nodes(
@@ -878,9 +860,8 @@ class AutoPytestPluginDirective(SphinxDirective):
         *,
         modname: str,
         entries: list[tuple[str, str, t.Any]],
-        include_index: bool = False,
     ) -> list[nodes.Node]:
-        """Build generated fixture summary/reference nodes.
+        """Build generated fixture-reference nodes.
 
         Parameters
         ----------
@@ -888,18 +869,9 @@ class AutoPytestPluginDirective(SphinxDirective):
             Module containing the fixtures.
         entries : list[tuple[str, str, Any]]
             Discovered ``(public_name, attribute_name, fixture_fn)`` tuples.
-        include_index : bool, optional
-            Forwarded to
-            :func:`_build_doc_pytest_plugin_fixture_section_scaffold` —
-            controls whether the ``Fixture Summary`` rubric and
-            :class:`autofixture_index_node` placeholder render before the
-            detail blocks.  Defaults to ``False``.
         """
         return [
-            *_build_doc_pytest_plugin_fixture_section_scaffold(
-                modname,
-                include_index=include_index,
-            ),
+            *_build_doc_pytest_plugin_fixture_section_scaffold(modname),
             *_render_autofixtures_nodes(
                 self,
                 modname=modname,
