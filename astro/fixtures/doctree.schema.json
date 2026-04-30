@@ -21,6 +21,7 @@
                 "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
+                "table": "#/$defs/TableNode",
                 "transition": "#/$defs/TransitionNode"
               },
               "propertyName": "type"
@@ -43,6 +44,9 @@
               },
               {
                 "$ref": "#/$defs/RubricNode"
+              },
+              {
+                "$ref": "#/$defs/TableNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -183,6 +187,7 @@
                 "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
+                "table": "#/$defs/TableNode",
                 "transition": "#/$defs/TransitionNode"
               },
               "propertyName": "type"
@@ -205,6 +210,9 @@
               },
               {
                 "$ref": "#/$defs/RubricNode"
+              },
+              {
+                "$ref": "#/$defs/TableNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -466,6 +474,7 @@
                 "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
+                "table": "#/$defs/TableNode",
                 "transition": "#/$defs/TransitionNode"
               },
               "propertyName": "type"
@@ -488,6 +497,9 @@
               },
               {
                 "$ref": "#/$defs/RubricNode"
+              },
+              {
+                "$ref": "#/$defs/TableNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -587,6 +599,7 @@
                 "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
+                "table": "#/$defs/TableNode",
                 "transition": "#/$defs/TransitionNode"
               },
               "propertyName": "type"
@@ -609,6 +622,9 @@
               },
               {
                 "$ref": "#/$defs/RubricNode"
+              },
+              {
+                "$ref": "#/$defs/TableNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -833,6 +849,7 @@
                 "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
+                "table": "#/$defs/TableNode",
                 "transition": "#/$defs/TransitionNode"
               },
               "propertyName": "type"
@@ -855,6 +872,9 @@
               },
               {
                 "$ref": "#/$defs/RubricNode"
+              },
+              {
+                "$ref": "#/$defs/TableNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -1087,6 +1107,7 @@
                 "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
+                "table": "#/$defs/TableNode",
                 "transition": "#/$defs/TransitionNode"
               },
               "propertyName": "type"
@@ -1109,6 +1130,9 @@
               },
               {
                 "$ref": "#/$defs/RubricNode"
+              },
+              {
+                "$ref": "#/$defs/TableNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -1261,6 +1285,7 @@
                 "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
+                "table": "#/$defs/TableNode",
                 "transition": "#/$defs/TransitionNode"
               },
               "propertyName": "type"
@@ -1283,6 +1308,9 @@
               },
               {
                 "$ref": "#/$defs/RubricNode"
+              },
+              {
+                "$ref": "#/$defs/TableNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -1557,6 +1585,7 @@
                 "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
+                "table": "#/$defs/TableNode",
                 "transition": "#/$defs/TransitionNode"
               },
               "propertyName": "type"
@@ -1579,6 +1608,9 @@
               },
               {
                 "$ref": "#/$defs/RubricNode"
+              },
+              {
+                "$ref": "#/$defs/TableNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -1755,6 +1787,158 @@
         "symbolId"
       ],
       "title": "SymbolRefNode",
+      "type": "object"
+    },
+    "TableCellNode": {
+      "description": "One cell in a docutils table \u2014 the equivalent of an ``<entry>`` node.\n\nThe ``header`` flag distinguishes ``<th>`` (rows from ``<thead>``)\nfrom ``<td>`` (rows from ``<tbody>``); the renderer dispatches on\nthat flag rather than on a parent-row enum so a single\ndiscriminator stays sufficient.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import TableCellNode\n>>> TableCellNode(type=\"tableCell\", header=True, children=[]).header\nTrue",
+      "properties": {
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "admonition": "#/$defs/AdmonitionNode",
+                "apiLayout": "#/$defs/ApiLayoutNode",
+                "blockQuote": "#/$defs/BlockQuoteNode",
+                "bulletList": "#/$defs/BulletListNode",
+                "cliCommand": "#/$defs/CliCommandNode",
+                "comment": "#/$defs/CommentNode",
+                "definitionList": "#/$defs/DefinitionListNode",
+                "enumeratedList": "#/$defs/EnumeratedListNode",
+                "footnote": "#/$defs/FootnoteNode",
+                "literalBlock": "#/$defs/LiteralBlockNode",
+                "paragraph": "#/$defs/ParagraphNode",
+                "rubric": "#/$defs/RubricNode",
+                "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
+                "table": "#/$defs/TableNode",
+                "transition": "#/$defs/TransitionNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ParagraphNode"
+              },
+              {
+                "$ref": "#/$defs/SectionNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralBlockNode"
+              },
+              {
+                "$ref": "#/$defs/CommentNode"
+              },
+              {
+                "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/RubricNode"
+              },
+              {
+                "$ref": "#/$defs/TableNode"
+              },
+              {
+                "$ref": "#/$defs/BlockQuoteNode"
+              },
+              {
+                "$ref": "#/$defs/BulletListNode"
+              },
+              {
+                "$ref": "#/$defs/EnumeratedListNode"
+              },
+              {
+                "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/FootnoteNode"
+              },
+              {
+                "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
+              },
+              {
+                "$ref": "#/$defs/ApiLayoutNode"
+              },
+              {
+                "$ref": "#/$defs/CliCommandNode"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "header": {
+          "title": "Header",
+          "type": "boolean"
+        },
+        "type": {
+          "const": "tableCell",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "header",
+        "children"
+      ],
+      "title": "TableCellNode",
+      "type": "object"
+    },
+    "TableNode": {
+      "description": "A docutils table with separate head + body row groups.\n\ndocutils emits ``table > tgroup > (thead, tbody) > row > entry``;\nwe collapse the ``tgroup`` wrapper (no semantic role beyond\ngrouping ``thead`` + ``tbody``) and surface ``head`` + ``body``\nas parallel arrays of rows. Empty ``head`` is valid for tables\nwithout a header row.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import TableNode\n>>> TableNode(type=\"table\", head=[], body=[]).type\n'table'",
+      "properties": {
+        "body": {
+          "items": {
+            "$ref": "#/$defs/TableRowNode"
+          },
+          "title": "Body",
+          "type": "array"
+        },
+        "head": {
+          "items": {
+            "$ref": "#/$defs/TableRowNode"
+          },
+          "title": "Head",
+          "type": "array"
+        },
+        "type": {
+          "const": "table",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "head",
+        "body"
+      ],
+      "title": "TableNode",
+      "type": "object"
+    },
+    "TableRowNode": {
+      "description": "One row in a docutils table \u2014 the equivalent of a ``<row>`` node.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import TableRowNode\n>>> TableRowNode(type=\"tableRow\", cells=[]).type\n'tableRow'",
+      "properties": {
+        "cells": {
+          "items": {
+            "$ref": "#/$defs/TableCellNode"
+          },
+          "title": "Cells",
+          "type": "array"
+        },
+        "type": {
+          "const": "tableRow",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "cells"
+      ],
+      "title": "TableRowNode",
       "type": "object"
     },
     "TextNode": {

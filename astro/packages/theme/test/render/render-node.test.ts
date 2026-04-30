@@ -827,6 +827,101 @@ describe('renderBlockNode — footnote', () => {
   })
 })
 
+describe('renderBlockNode — table', () => {
+  test('table with thead + tbody emits matching structural HTML', () => {
+    const html = renderBlockNode({
+      type: 'table',
+      head: [
+        {
+          type: 'tableRow',
+          cells: [
+            {
+              type: 'tableCell',
+              header: true,
+              children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Object' }] }],
+            },
+            {
+              type: 'tableCell',
+              header: true,
+              children: [{ type: 'paragraph', children: [{ type: 'text', value: 'CSS class' }] }],
+            },
+          ],
+        },
+      ],
+      body: [
+        {
+          type: 'tableRow',
+          cells: [
+            {
+              type: 'tableCell',
+              header: false,
+              children: [{ type: 'paragraph', children: [{ type: 'text', value: 'function' }] }],
+            },
+            {
+              type: 'tableCell',
+              header: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [{ type: 'literal', value: 'gp-sphinx-badge--type-function' }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+    expect(html).toBe(
+      '<table class="docutils">' +
+        '<thead><tr><th><p>Object</p></th><th><p>CSS class</p></th></tr></thead>' +
+        '<tbody><tr><td><p>function</p></td><td><p><code>gp-sphinx-badge--type-function</code></p></td></tr></tbody>' +
+        '</table>',
+    )
+  })
+
+  test('table with empty head omits the thead element', () => {
+    const html = renderBlockNode({
+      type: 'table',
+      head: [],
+      body: [
+        {
+          type: 'tableRow',
+          cells: [
+            {
+              type: 'tableCell',
+              header: false,
+              children: [{ type: 'paragraph', children: [{ type: 'text', value: 'x' }] }],
+            },
+          ],
+        },
+      ],
+    })
+    expect(html).not.toContain('<thead')
+    expect(html).toContain('<tbody><tr><td>')
+  })
+
+  test('table with empty body omits the tbody element', () => {
+    const html = renderBlockNode({
+      type: 'table',
+      head: [
+        {
+          type: 'tableRow',
+          cells: [
+            {
+              type: 'tableCell',
+              header: true,
+              children: [{ type: 'paragraph', children: [{ type: 'text', value: 'h' }] }],
+            },
+          ],
+        },
+      ],
+      body: [],
+    })
+    expect(html).not.toContain('<tbody')
+    expect(html).toContain('<thead><tr><th>')
+  })
+})
+
 describe('renderBlockNode — rubric', () => {
   test('rubric emits a styled paragraph with the gp-sphinx-rubric class', () => {
     const html = renderBlockNode({ type: 'rubric', text: 'Examples' })
@@ -846,6 +941,7 @@ describe('renderBlockNode — type-coverage', () => {
     { type: 'comment', value: '' },
     { type: 'transition' },
     { type: 'rubric', text: 'Examples' },
+    { type: 'table', head: [], body: [] },
     { type: 'blockQuote', children: [] },
     { type: 'bulletList', children: [] },
     { type: 'enumeratedList', start: null, children: [] },

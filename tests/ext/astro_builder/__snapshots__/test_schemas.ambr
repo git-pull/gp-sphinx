@@ -43,6 +43,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -65,6 +66,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -225,6 +229,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -247,6 +252,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -542,6 +550,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -564,6 +573,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -697,6 +709,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -719,6 +732,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -980,6 +996,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -1002,6 +1019,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -1294,6 +1314,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -1316,6 +1337,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -1511,6 +1535,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -1533,6 +1558,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -1896,6 +1924,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -1918,6 +1947,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -2124,6 +2156,193 @@
         'title': 'SymbolRefNode',
         'type': 'object',
       }),
+      'TableCellNode': dict({
+        'description': '''
+          One cell in a docutils table — the equivalent of an ``<entry>`` node.
+          
+          The ``header`` flag distinguishes ``<th>`` (rows from ``<thead>``)
+          from ``<td>`` (rows from ``<tbody>``); the renderer dispatches on
+          that flag rather than on a parent-row enum so a single
+          discriminator stays sufficient.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import TableCellNode
+          >>> TableCellNode(type="tableCell", header=True, children=[]).header
+          True
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
+                  'blockQuote': '#/$defs/BlockQuoteNode',
+                  'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
+                  'comment': '#/$defs/CommentNode',
+                  'definitionList': '#/$defs/DefinitionListNode',
+                  'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
+                  'literalBlock': '#/$defs/LiteralBlockNode',
+                  'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
+                  'section': '#/$defs/SectionNode',
+                  'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
+                  'transition': '#/$defs/TransitionNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/ParagraphNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SectionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralBlockNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CommentNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BlockQuoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BulletListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EnumeratedListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/DefinitionListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'header': dict({
+            'title': 'Header',
+            'type': 'boolean',
+          }),
+          'type': dict({
+            'const': 'tableCell',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'header',
+          'children',
+        ]),
+        'title': 'TableCellNode',
+        'type': 'object',
+      }),
+      'TableNode': dict({
+        'description': '''
+          A docutils table with separate head + body row groups.
+          
+          docutils emits ``table > tgroup > (thead, tbody) > row > entry``;
+          we collapse the ``tgroup`` wrapper (no semantic role beyond
+          grouping ``thead`` + ``tbody``) and surface ``head`` + ``body``
+          as parallel arrays of rows. Empty ``head`` is valid for tables
+          without a header row.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import TableNode
+          >>> TableNode(type="table", head=[], body=[]).type
+          'table'
+        ''',
+        'properties': dict({
+          'body': dict({
+            'items': dict({
+              '$ref': '#/$defs/TableRowNode',
+            }),
+            'title': 'Body',
+            'type': 'array',
+          }),
+          'head': dict({
+            'items': dict({
+              '$ref': '#/$defs/TableRowNode',
+            }),
+            'title': 'Head',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'table',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'head',
+          'body',
+        ]),
+        'title': 'TableNode',
+        'type': 'object',
+      }),
+      'TableRowNode': dict({
+        'description': '''
+          One row in a docutils table — the equivalent of a ``<row>`` node.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import TableRowNode
+          >>> TableRowNode(type="tableRow", cells=[]).type
+          'tableRow'
+        ''',
+        'properties': dict({
+          'cells': dict({
+            'items': dict({
+              '$ref': '#/$defs/TableCellNode',
+            }),
+            'title': 'Cells',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'tableRow',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'cells',
+        ]),
+        'title': 'TableRowNode',
+        'type': 'object',
+      }),
       'TextNode': dict({
         'description': '''
           A leaf node containing literal text.
@@ -2264,6 +2483,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -2286,6 +2506,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -2446,6 +2669,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -2468,6 +2692,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -2763,6 +2990,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -2785,6 +3013,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -2918,6 +3149,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -2940,6 +3172,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -3201,6 +3436,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -3223,6 +3459,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -3515,6 +3754,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -3537,6 +3777,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -3732,6 +3975,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -3754,6 +3998,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -4175,6 +4422,7 @@
                   'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
                   'transition': '#/$defs/TransitionNode',
                 }),
                 'propertyName': 'type',
@@ -4197,6 +4445,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -4435,6 +4686,193 @@
         'title': 'SymbolSource',
         'type': 'object',
       }),
+      'TableCellNode': dict({
+        'description': '''
+          One cell in a docutils table — the equivalent of an ``<entry>`` node.
+          
+          The ``header`` flag distinguishes ``<th>`` (rows from ``<thead>``)
+          from ``<td>`` (rows from ``<tbody>``); the renderer dispatches on
+          that flag rather than on a parent-row enum so a single
+          discriminator stays sufficient.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import TableCellNode
+          >>> TableCellNode(type="tableCell", header=True, children=[]).header
+          True
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
+                  'blockQuote': '#/$defs/BlockQuoteNode',
+                  'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
+                  'comment': '#/$defs/CommentNode',
+                  'definitionList': '#/$defs/DefinitionListNode',
+                  'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
+                  'literalBlock': '#/$defs/LiteralBlockNode',
+                  'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
+                  'section': '#/$defs/SectionNode',
+                  'symbolRef': '#/$defs/SymbolRefNode',
+                  'table': '#/$defs/TableNode',
+                  'transition': '#/$defs/TransitionNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/ParagraphNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SectionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralBlockNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CommentNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TableNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BlockQuoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BulletListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EnumeratedListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/DefinitionListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'header': dict({
+            'title': 'Header',
+            'type': 'boolean',
+          }),
+          'type': dict({
+            'const': 'tableCell',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'header',
+          'children',
+        ]),
+        'title': 'TableCellNode',
+        'type': 'object',
+      }),
+      'TableNode': dict({
+        'description': '''
+          A docutils table with separate head + body row groups.
+          
+          docutils emits ``table > tgroup > (thead, tbody) > row > entry``;
+          we collapse the ``tgroup`` wrapper (no semantic role beyond
+          grouping ``thead`` + ``tbody``) and surface ``head`` + ``body``
+          as parallel arrays of rows. Empty ``head`` is valid for tables
+          without a header row.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import TableNode
+          >>> TableNode(type="table", head=[], body=[]).type
+          'table'
+        ''',
+        'properties': dict({
+          'body': dict({
+            'items': dict({
+              '$ref': '#/$defs/TableRowNode',
+            }),
+            'title': 'Body',
+            'type': 'array',
+          }),
+          'head': dict({
+            'items': dict({
+              '$ref': '#/$defs/TableRowNode',
+            }),
+            'title': 'Head',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'table',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'head',
+          'body',
+        ]),
+        'title': 'TableNode',
+        'type': 'object',
+      }),
+      'TableRowNode': dict({
+        'description': '''
+          One row in a docutils table — the equivalent of a ``<row>`` node.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import TableRowNode
+          >>> TableRowNode(type="tableRow", cells=[]).type
+          'tableRow'
+        ''',
+        'properties': dict({
+          'cells': dict({
+            'items': dict({
+              '$ref': '#/$defs/TableCellNode',
+            }),
+            'title': 'Cells',
+            'type': 'array',
+          }),
+          'type': dict({
+            'const': 'tableRow',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'cells',
+        ]),
+        'title': 'TableRowNode',
+        'type': 'object',
+      }),
       'TextNode': dict({
         'description': '''
           A leaf node containing literal text.
@@ -4535,6 +4973,7 @@
               'rubric': '#/$defs/RubricNode',
               'section': '#/$defs/SectionNode',
               'symbolRef': '#/$defs/SymbolRefNode',
+              'table': '#/$defs/TableNode',
               'transition': '#/$defs/TransitionNode',
             }),
             'propertyName': 'type',
@@ -4557,6 +4996,9 @@
             }),
             dict({
               '$ref': '#/$defs/RubricNode',
+            }),
+            dict({
+              '$ref': '#/$defs/TableNode',
             }),
             dict({
               '$ref': '#/$defs/BlockQuoteNode',

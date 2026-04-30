@@ -65,6 +65,17 @@ export type InlineNode =
 
 export type ListItemNode = { type: 'listItem'; children: BlockNode[] }
 
+export type TableCellNode = {
+  type: 'tableCell'
+  header: boolean
+  children: BlockNode[]
+}
+
+export type TableRowNode = {
+  type: 'tableRow'
+  cells: TableCellNode[]
+}
+
 export type DefinitionListItemNode = {
   type: 'definitionListItem'
   term: InlineNode[]
@@ -95,6 +106,7 @@ export type BlockNode =
   | { type: 'comment'; value: string }
   | { type: 'transition' }
   | { type: 'rubric'; text: string }
+  | { type: 'table'; head: TableRowNode[]; body: TableRowNode[] }
   | { type: 'blockQuote'; children: BlockNode[] }
   | { type: 'bulletList'; children: ListItemNode[] }
   | { type: 'enumeratedList'; start: number | null; children: ListItemNode[] }
@@ -252,6 +264,23 @@ export const rubricNodeSchema = z.object({
   text: z.string(),
 })
 
+export const tableCellNodeSchema = z.object({
+  type: z.literal('tableCell'),
+  header: z.boolean(),
+  children: z.lazy(() => z.array(blockNodeSchema)),
+})
+
+export const tableRowNodeSchema = z.object({
+  type: z.literal('tableRow'),
+  cells: z.array(tableCellNodeSchema),
+})
+
+export const tableNodeSchema = z.object({
+  type: z.literal('table'),
+  head: z.array(tableRowNodeSchema),
+  body: z.array(tableRowNodeSchema),
+})
+
 // ─── Block shapes with non-recursive inline children
 
 export const paragraphNodeSchema = z.object({
@@ -404,6 +433,7 @@ export const blockNodeSchema: z.ZodType<BlockNode> = z.discriminatedUnion('type'
   commentNodeSchema,
   transitionNodeSchema,
   rubricNodeSchema,
+  tableNodeSchema,
   blockQuoteNodeSchema,
   bulletListNodeSchema,
   enumeratedListNodeSchema,

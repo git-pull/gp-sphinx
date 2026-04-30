@@ -280,6 +280,61 @@ class RubricNode(BaseModel):
     text: str
 
 
+class TableCellNode(BaseModel):
+    """One cell in a docutils table — the equivalent of an ``<entry>`` node.
+
+    The ``header`` flag distinguishes ``<th>`` (rows from ``<thead>``)
+    from ``<td>`` (rows from ``<tbody>``); the renderer dispatches on
+    that flag rather than on a parent-row enum so a single
+    discriminator stays sufficient.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import TableCellNode
+    >>> TableCellNode(type="tableCell", header=True, children=[]).header
+    True
+    """
+
+    type: t.Literal["tableCell"]
+    header: bool
+    children: list[BlockNode]
+
+
+class TableRowNode(BaseModel):
+    """One row in a docutils table — the equivalent of a ``<row>`` node.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import TableRowNode
+    >>> TableRowNode(type="tableRow", cells=[]).type
+    'tableRow'
+    """
+
+    type: t.Literal["tableRow"]
+    cells: list[TableCellNode]
+
+
+class TableNode(BaseModel):
+    """A docutils table with separate head + body row groups.
+
+    docutils emits ``table > tgroup > (thead, tbody) > row > entry``;
+    we collapse the ``tgroup`` wrapper (no semantic role beyond
+    grouping ``thead`` + ``tbody``) and surface ``head`` + ``body``
+    as parallel arrays of rows. Empty ``head`` is valid for tables
+    without a header row.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import TableNode
+    >>> TableNode(type="table", head=[], body=[]).type
+    'table'
+    """
+
+    type: t.Literal["table"]
+    head: list[TableRowNode]
+    body: list[TableRowNode]
+
+
 class BlockQuoteNode(BaseModel):
     """A block-level quote wrapping block-level children.
 
@@ -736,6 +791,7 @@ BlockNode = t.Annotated[
     | CommentNode
     | TransitionNode
     | RubricNode
+    | TableNode
     | BlockQuoteNode
     | BulletListNode
     | EnumeratedListNode
@@ -909,4 +965,7 @@ FootnoteNode.model_rebuild()
 DefinitionListItemNode.model_rebuild()
 ApiLayoutNode.model_rebuild()
 CliCommandNode.model_rebuild()
+TableCellNode.model_rebuild()
+TableRowNode.model_rebuild()
+TableNode.model_rebuild()
 Symbol.model_rebuild()
