@@ -129,6 +129,8 @@ export function renderBlockNode(node: BlockNode): string {
       return `<!-- ${escapeHtml(node.value)} -->`
     case 'transition':
       return '<hr />'
+    case 'rubric':
+      return `<p class="gp-sphinx-rubric">${escapeHtml(node.text)}</p>`
     case 'blockQuote':
       return `<blockquote>${node.children.map(renderBlockNode).join('')}</blockquote>`
     case 'bulletList':

@@ -792,11 +792,13 @@ def test_astro_builder_emits_field_list_as_definition_list(
     types = [block["type"] for block in body]
     # Expected shape: summary paragraph; then the field_list capturing
     # Parameters / Returns / Return type; then the Examples rubric (now
-    # wrapped as a paragraph) and the doctest block beneath it.
-    assert types == ["paragraph", "definitionList", "paragraph", "literalBlock"], (
+    # promoted to a first-class ``rubric`` block per cycle 65) and the
+    # doctest block beneath it.
+    assert types == ["paragraph", "definitionList", "rubric", "literalBlock"], (
         f"expected summary, definitionList, examples rubric, and a doctest "
         f"literalBlock; got block types: {types}"
     )
+    assert body[2]["text"] == "Examples"
 
     items = body[1]["children"]
     terms = [
@@ -806,13 +808,9 @@ def test_astro_builder_emits_field_list_as_definition_list(
     assert "Parameters" in terms
     assert "Returns" in terms
 
-    # The Examples rubric must keep its label as inline text inside the
-    # paragraph, so renderers can identify it. The doctest_block follows.
-    rubric = body[2]
-    rubric_text = "".join(
-        c.get("value", "") for c in rubric["children"] if c.get("type") == "text"
-    )
-    assert "Examples" in rubric_text
+    # The Examples rubric carries its label as a top-level ``text``
+    # field on the rubric block (cycle 65). The doctest_block follows.
+    assert body[2]["text"] == "Examples"
     assert body[3]["language"] == "python"
     assert "shape(3, 4)" in body[3]["code"]
 

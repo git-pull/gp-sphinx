@@ -258,6 +258,28 @@ class TransitionNode(BaseModel):
     type: t.Literal["transition"]
 
 
+class RubricNode(BaseModel):
+    """A short section label like ``Examples`` / ``Notes`` / ``See Also``.
+
+    Sphinx's ``rubric`` directive — and the ``rubric`` node that NumPy-style
+    docstrings produce when their section headers are promoted — appears
+    inside autodoc bodies as a small bold heading rather than as body
+    prose. Furo themes them with ``<p class="rubric">``; we promote them
+    to a first-class wire-format node so the renderer applies matching
+    small-caps section-header styling that distinguishes them from regular
+    paragraphs.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import RubricNode
+    >>> RubricNode(type="rubric", text="Examples").text
+    'Examples'
+    """
+
+    type: t.Literal["rubric"]
+    text: str
+
+
 class BlockQuoteNode(BaseModel):
     """A block-level quote wrapping block-level children.
 
@@ -703,6 +725,7 @@ BlockNode = t.Annotated[
     | LiteralBlockNode
     | CommentNode
     | TransitionNode
+    | RubricNode
     | BlockQuoteNode
     | BulletListNode
     | EnumeratedListNode

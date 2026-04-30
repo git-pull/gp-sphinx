@@ -873,16 +873,21 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
     visit_field_body = visit_definition
     depart_field_body = depart_definition
 
-    # Sphinx renders NumPy "Examples", "Notes", "See Also" rubrics as
-    # ``rubric`` nodes whose only child is the inline label text. Without
-    # explicit handling, that bare ``Text`` leaks into the surrounding
-    # block context — exactly the same failure mode as ``field_name``
-    # before the field_list aliases above. Treating ``rubric`` as a
-    # paragraph wraps the inline label correctly and preserves the
-    # rubric's class list (e.g. ``classes=["rubric-h2"]``) for the
-    # renderer to dispatch on if it cares about the visual hierarchy.
-    visit_rubric = visit_paragraph
-    depart_rubric = depart_paragraph
+    def visit_rubric(self, node: nodes.Element) -> None:
+        """Emit a first-class ``rubric`` block carrying the inline label.
+
+        Sphinx renders NumPy "Examples", "Notes", "See Also" rubrics as
+        ``rubric`` nodes whose only child is the inline label text. We
+        promote them to a typed wire-format node so the renderer can
+        apply small-caps section-header styling that distinguishes
+        the label from the body prose that follows it — Furo's
+        ``<p class="rubric">`` shape, but with our own typography.
+        """
+        self.append_node({"type": "rubric", "text": node.astext()})
+        raise nodes.SkipNode
+
+    def depart_rubric(self, node: nodes.Element) -> None:
+        """No-op companion for ``visit_rubric`` (which raises ``SkipNode``)."""
 
     # Generic structural wrappers that the JSON wire format does not
     # need to preserve. ``container`` (docutils' ``.. container::``,

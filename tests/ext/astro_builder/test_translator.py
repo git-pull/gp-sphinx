@@ -813,6 +813,34 @@ def test_translator_handles_footnote_and_reference(
     assert len(body_child.children) >= 1
 
 
+def test_translator_handles_rubric_node() -> None:
+    """A docutils ``rubric`` becomes a first-class ``RubricNode`` block.
+
+    Sphinx emits ``rubric`` for the small section labels NumPy-style
+    docstrings use (``Examples``, ``Notes``, ``See Also``). Furo
+    distinguishes them from body prose with ``<p class="rubric">``;
+    we promote them to a typed wire-format node so the renderer can
+    apply matching small-caps section-header styling.
+    """
+    from gp_sphinx_astro_builder.models import RubricNode
+
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    rubric = nodes.rubric()
+    rubric += nodes.Text("Examples")
+    section += title
+    section += rubric
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    block_child = translator.result().tree.children[0]
+    assert isinstance(block_child, RubricNode)
+    assert block_child.text == "Examples"
+
+
 def test_translator_result_validates_through_pydantic() -> None:
     """The translator result is a real Pydantic ``Document``, not a dict."""
     doc = _new_document()

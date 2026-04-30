@@ -18,6 +18,7 @@
                 "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
+                "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
                 "transition": "#/$defs/TransitionNode"
@@ -39,6 +40,9 @@
               },
               {
                 "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/RubricNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -123,6 +127,7 @@
                 "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
+                "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
                 "transition": "#/$defs/TransitionNode"
@@ -144,6 +149,9 @@
               },
               {
                 "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/RubricNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -402,6 +410,7 @@
                 "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
+                "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
                 "transition": "#/$defs/TransitionNode"
@@ -423,6 +432,9 @@
               },
               {
                 "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/RubricNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -519,6 +531,7 @@
                 "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
+                "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
                 "transition": "#/$defs/TransitionNode"
@@ -540,6 +553,9 @@
               },
               {
                 "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/RubricNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -761,6 +777,7 @@
                 "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
+                "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
                 "transition": "#/$defs/TransitionNode"
@@ -782,6 +799,9 @@
               },
               {
                 "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/RubricNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -1011,6 +1031,7 @@
                 "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
+                "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
                 "transition": "#/$defs/TransitionNode"
@@ -1032,6 +1053,9 @@
               },
               {
                 "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/RubricNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -1181,6 +1205,7 @@
                 "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
+                "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
                 "transition": "#/$defs/TransitionNode"
@@ -1202,6 +1227,9 @@
               },
               {
                 "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/RubricNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -1484,6 +1512,26 @@
       "title": "ReferenceNode",
       "type": "object"
     },
+    "RubricNode": {
+      "description": "A short section label like ``Examples`` / ``Notes`` / ``See Also``.\n\nSphinx's ``rubric`` directive \u2014 and the ``rubric`` node that NumPy-style\ndocstrings produce when their section headers are promoted \u2014 appears\ninside autodoc bodies as a small bold heading rather than as body\nprose. Furo themes them with ``<p class=\"rubric\">``; we promote them\nto a first-class wire-format node so the renderer applies matching\nsmall-caps section-header styling that distinguishes them from regular\nparagraphs.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import RubricNode\n>>> RubricNode(type=\"rubric\", text=\"Examples\").text\n'Examples'",
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "const": "rubric",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "text"
+      ],
+      "title": "RubricNode",
+      "type": "object"
+    },
     "SectionNode": {
       "description": "A document section with id, inline title, and block children.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import SectionNode\n>>> node = SectionNode.model_validate(\n...     {\n...         \"type\": \"section\",\n...         \"id\": \"intro\",\n...         \"title\": [{\"type\": \"text\", \"value\": \"Intro\"}],\n...         \"children\": [],\n...     },\n... )\n>>> node.id\n'intro'",
       "properties": {
@@ -1502,6 +1550,7 @@
                 "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
+                "rubric": "#/$defs/RubricNode",
                 "section": "#/$defs/SectionNode",
                 "symbolRef": "#/$defs/SymbolRefNode",
                 "transition": "#/$defs/TransitionNode"
@@ -1523,6 +1572,9 @@
               },
               {
                 "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/RubricNode"
               },
               {
                 "$ref": "#/$defs/BlockQuoteNode"
@@ -1778,6 +1830,7 @@
             "footnote": "#/$defs/FootnoteNode",
             "literalBlock": "#/$defs/LiteralBlockNode",
             "paragraph": "#/$defs/ParagraphNode",
+            "rubric": "#/$defs/RubricNode",
             "section": "#/$defs/SectionNode",
             "symbolRef": "#/$defs/SymbolRefNode",
             "transition": "#/$defs/TransitionNode"
@@ -1799,6 +1852,9 @@
           },
           {
             "$ref": "#/$defs/TransitionNode"
+          },
+          {
+            "$ref": "#/$defs/RubricNode"
           },
           {
             "$ref": "#/$defs/BlockQuoteNode"
