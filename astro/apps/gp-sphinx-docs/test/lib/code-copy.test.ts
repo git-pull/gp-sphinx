@@ -12,7 +12,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { enhanceCodeBlocks } from '../../src/lib/code-copy.ts'
+import { enhanceCodeBlocks, formatCopyText } from '../../src/lib/code-copy.ts'
 
 let writeText: ReturnType<typeof vi.fn>
 
@@ -113,5 +113,77 @@ describe('enhanceCodeBlocks — copy behaviour', () => {
     await Promise.resolve()
     await Promise.resolve()
     expect(button?.getAttribute('data-state')).toBe('copied')
+  })
+
+  test('strips Python REPL prompts when copying a doctest block', async () => {
+    const root = document.createElement('div')
+    root.appendChild(
+      makePre(
+        'python',
+        '>>> spec = BadgeSpec("config")\n>>> spec.text\n\'config\'',
+      ),
+    )
+    document.body.appendChild(root)
+    enhanceCodeBlocks(root)
+    const button = root.querySelector<HTMLButtonElement>(
+      '[data-test-id="code-copy"]',
+    )
+    button?.click()
+    await Promise.resolve()
+    expect(writeText).toHaveBeenCalledWith(
+      'spec = BadgeSpec("config")\nspec.text',
+    )
+  })
+
+  test('strips shell ``$ `` prompts and skips output lines', async () => {
+    const root = document.createElement('div')
+    root.appendChild(
+      makePre('console', '$ pip install gp-sphinx\nSuccessfully installed'),
+    )
+    document.body.appendChild(root)
+    enhanceCodeBlocks(root)
+    const button = root.querySelector<HTMLButtonElement>(
+      '[data-test-id="code-copy"]',
+    )
+    button?.click()
+    await Promise.resolve()
+    expect(writeText).toHaveBeenCalledWith('pip install gp-sphinx')
+  })
+})
+
+describe('formatCopyText — prompt stripping', () => {
+  test('returns text unchanged when no prompt is present', () => {
+    const out = formatCopyText('const x = 1\nconsole.log(x)')
+    expect(out).toBe('const x = 1\nconsole.log(x)')
+  })
+
+  test('strips Python REPL ``>>> `` prompt and skips output lines', () => {
+    const out = formatCopyText('>>> a = 1\n>>> a\n1\n>>> a + 1\n2')
+    expect(out).toBe('a = 1\na\na + 1')
+  })
+
+  test('strips Python REPL continuation ``... `` prompt', () => {
+    const out = formatCopyText('>>> def f():\n...     return 1\n...\n>>> f()\n1')
+    expect(out).toBe('def f():\n    return 1\n\nf()')
+  })
+
+  test('strips shell ``$ `` prompt and skips output lines', () => {
+    const out = formatCopyText('$ pip install foo\nCollecting foo\n$ pip list\nfoo 1.0')
+    expect(out).toBe('pip install foo\npip list')
+  })
+
+  test('strips root-shell ``# `` prompt', () => {
+    const out = formatCopyText('# apt-get update\nReading package lists...\n# apt-get install foo')
+    expect(out).toBe('apt-get update\napt-get install foo')
+  })
+
+  test('preserves blank lines between prompted lines', () => {
+    const out = formatCopyText('>>> a = 1\n\n>>> b = 2')
+    expect(out).toBe('a = 1\n\nb = 2')
+  })
+
+  test('trims a single trailing newline so paste does not auto-execute', () => {
+    const out = formatCopyText('>>> a = 1\n')
+    expect(out).toBe('a = 1')
   })
 })
