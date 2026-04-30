@@ -18,6 +18,25 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### What's new
+
+#### `sphinx-gp-theme`: Light-mode code blocks now render with a light palette
+
+Light mode previously fell back to monokai-on-light because both
+Furo Pygments slots defaulted to monokai. The theme now ships
+`gp-sphinx-light` (a CodeMirror-derived light palette) and pairs it
+with monokai under `body[data-theme="dark"]`, so both modes pick up
+appropriate code-block colors out of the box. (#24)
+
+### Bug fixes
+
+#### `sphinx-gp-theme`: argparse directives now follow the active theme
+
+`.. argparse::` blocks hardcoded a One Dark palette and rendered
+dark-on-light in light mode. Token colors now flow through
+`--gp-sphinx-argparse-*` custom properties with light defaults and
+dark overrides scoped to `body[data-theme="dark"]`. (#24)
+
 ## gp-sphinx 0.0.1a12 (2026-04-27)
 
 ### Bug fixes
