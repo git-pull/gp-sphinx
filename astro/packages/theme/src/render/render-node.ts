@@ -42,8 +42,15 @@ export function renderInlineNode(node: InlineNode): string {
       return `<em>${node.children.map(renderInlineNode).join('')}</em>`
     case 'strong':
       return `<strong>${node.children.map(renderInlineNode).join('')}</strong>`
-    case 'reference':
-      return `<a href="${escapeHtml(node.href)}">${node.children.map(renderInlineNode).join('')}</a>`
+    case 'reference': {
+      // Preserve Sphinx domain-role classes (``xref`` / ``py-func`` /
+      // ``std-term`` / …) so CSS can style each role distinctly. The
+      // attribute is omitted when the class list is empty so plain
+      // external links don't gain a stray ``class=""``.
+      const classAttr =
+        node.classes.length === 0 ? '' : ` class="${escapeHtml(node.classes.join(' '))}"`
+      return `<a href="${escapeHtml(node.href)}"${classAttr}>${node.children.map(renderInlineNode).join('')}</a>`
+    }
     case 'footnoteReference': {
       // Footnote / citation jumps render as a bracketed superscript so
       // they read as inline references rather than body text. The

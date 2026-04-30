@@ -58,9 +58,30 @@ describe('renderInlineNode — recursive shapes', () => {
       renderInlineNode({
         type: 'reference',
         href: 'https://example.com',
+        classes: [],
         children: [{ type: 'text', value: 'Example' }],
       }),
     ).toBe('<a href="https://example.com">Example</a>')
+  })
+
+  test('reference with xref classes emits a class attribute', () => {
+    const html = renderInlineNode({
+      type: 'reference',
+      href: '/api/foo/',
+      classes: ['xref', 'py', 'py-func'],
+      children: [{ type: 'literal', value: 'foo()' }],
+    })
+    expect(html).toBe('<a href="/api/foo/" class="xref py py-func"><code>foo()</code></a>')
+  })
+
+  test('reference omits class attribute when classes are empty', () => {
+    const html = renderInlineNode({
+      type: 'reference',
+      href: '/x',
+      classes: [],
+      children: [{ type: 'text', value: 'x' }],
+    })
+    expect(html).not.toContain('class=')
   })
 
   test('nested emphasis renders recursively', () => {
@@ -706,6 +727,7 @@ describe('renderInlineNode — type-coverage', () => {
     {
       type: 'reference',
       href: '/x',
+      classes: [],
       children: [{ type: 'text', value: 'x' }],
     },
     {

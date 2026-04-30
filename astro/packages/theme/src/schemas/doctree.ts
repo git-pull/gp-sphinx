@@ -46,7 +46,7 @@ export type InlineNode =
   | { type: 'image'; uri: string; alt: string | null }
   | { type: 'emphasis'; children: InlineNode[] }
   | { type: 'strong'; children: InlineNode[] }
-  | { type: 'reference'; href: string; children: InlineNode[] }
+  | { type: 'reference'; href: string; classes: string[]; children: InlineNode[] }
   | {
       type: 'footnoteReference'
       kind: FootnoteKind
@@ -196,6 +196,7 @@ export const strongNodeSchema = z.object({
 export const referenceNodeSchema = z.object({
   type: z.literal('reference'),
   href: z.string(),
+  classes: z.array(z.string()).default([]),
   children: z.lazy(() => z.array(inlineNodeSchema)),
 })
 

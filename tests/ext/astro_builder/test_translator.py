@@ -196,6 +196,72 @@ def test_translator_handles_internal_reference_via_refid() -> None:
     assert ref_child.href == "#intro"
 
 
+class XrefClassFixture(t.NamedTuple):
+    """Test case for xref role class preservation on references."""
+
+    test_id: str
+    classes: list[str]
+    expected_classes: list[str]
+
+
+_XREF_CLASS_FIXTURES: list[XrefClassFixture] = [
+    XrefClassFixture(
+        test_id="py-func",
+        classes=["xref", "py", "py-func"],
+        expected_classes=["xref", "py", "py-func"],
+    ),
+    XrefClassFixture(
+        test_id="std-term",
+        classes=["xref", "std", "std-term"],
+        expected_classes=["xref", "std", "std-term"],
+    ),
+    XrefClassFixture(
+        test_id="filters-noise",
+        classes=["xref", "py", "py-class", "internal", "external"],
+        expected_classes=["xref", "py", "py-class"],
+    ),
+    XrefClassFixture(
+        test_id="empty",
+        classes=[],
+        expected_classes=[],
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(XrefClassFixture._fields),
+    _XREF_CLASS_FIXTURES,
+    ids=[f.test_id for f in _XREF_CLASS_FIXTURES],
+)
+def test_translator_preserves_xref_classes(
+    test_id: str,
+    classes: list[str],
+    expected_classes: list[str],
+) -> None:
+    """``xref`` / ``std-*`` / ``py-*`` classes carry through onto ReferenceNode."""
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    para = nodes.paragraph()
+    ref = nodes.reference(refuri="https://example.com")
+    if classes:
+        ref["classes"] = classes
+    ref += nodes.Text("Example")
+    para += ref
+    section += title
+    section += para
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    paragraph_child = translator.result().tree.children[0]
+    assert isinstance(paragraph_child, ParagraphNode)
+    ref_child = paragraph_child.children[0]
+    assert isinstance(ref_child, ReferenceNode)
+    assert ref_child.classes == expected_classes
+
+
 def test_translator_handles_image_with_uri_and_alt() -> None:
     """An image node becomes an ImageNode with uri and optional alt."""
     doc = _new_document()
