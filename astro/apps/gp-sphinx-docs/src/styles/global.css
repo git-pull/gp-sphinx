@@ -438,10 +438,32 @@
     background: color-mix(in oklab, var(--color-admonition-deprecated) 8%, var(--color-bg));
   }
 
+  /* ``symbolRef`` blocks point at sibling symbol pages — most often
+   * the methods of a class, emitted by autodoc as a flat sequence
+   * of references inside the class's docstring body. Rendering them
+   * as inline-block produced run-on text (no whitespace separating
+   * adjacent links). Render each as a block-level row instead so
+   * they read as a member list. */
   .gp-sphinx-astro-doc .symbol-ref {
-    display: inline-block;
+    display: block;
     font-family: var(--font-mono);
-    font-size: 0.95em;
+    font-size: 0.92em;
+    padding: 0.25rem 0;
+    border-bottom: 1px dashed
+      color-mix(in oklab, var(--color-border) 50%, var(--color-bg));
+  }
+
+  .gp-sphinx-astro-doc .symbol-ref:last-of-type {
+    border-bottom: 0;
+  }
+
+  /* When a symbolRef appears as inline content inside prose (rare —
+   * mostly the cross-reference badge in narrative pages), keep it
+   * inline so it doesn't break paragraph flow. */
+  .gp-sphinx-astro-doc p .symbol-ref {
+    display: inline-block;
+    padding: 0;
+    border-bottom: 0;
   }
 
   /* ─── API / Symbol pages ──────────────────────────────────────

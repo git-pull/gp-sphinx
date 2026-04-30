@@ -744,6 +744,80 @@ _NUMPY_DOCSTRING_INDEX_RST = textwrap.dedent(
 )
 
 
+_AUTOCLASS_MODULE_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+
+    class Widget:
+        """A clickable widget for the demo gallery.
+
+        Renders a button that dispatches a custom event on click.
+        """
+
+        def __init__(self, label: str) -> None:
+            self.label = label
+    ''',
+)
+
+
+_AUTOCLASS_INDEX_RST = textwrap.dedent(
+    """\
+    Demo
+    ====
+
+    .. autoclass:: numpy_demo.Widget
+       :show-inheritance:
+    """,
+)
+
+
+@pytest.mark.integration
+def test_astro_builder_skips_bases_paragraph_for_class_summary(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Sphinx's auto-injected ``Bases: <link>`` paragraph must not become the summary.
+
+    Sphinx's autoclass directive prepends a ``Bases: <pending_xref>``
+    paragraph to every class's content. The translator extracts the
+    first body paragraph as ``docstring_summary``; without filtering,
+    classes get ``"Bases: "`` (just the lead-in text, since the
+    inline reference is dropped from text-only summary extraction)
+    instead of their real docstring summary. That string then leaks
+    into the rendered ``__summary__`` paragraph and the OpenGraph
+    ``description`` meta tag — visible to readers and search crawlers.
+    """
+    cache_root = derive_sphinx_scenario_cache_root(tmp_path)
+    scenario = SphinxScenario(
+        buildername="astro",
+        files=(
+            ScenarioFile("numpy_demo.py", _AUTOCLASS_MODULE_SOURCE),
+            ScenarioFile(
+                "conf.py",
+                _NUMPY_DOCSTRING_CONF_PY.replace(
+                    "__SCENARIO_SRCDIR__",
+                    SCENARIO_SRCDIR_TOKEN,
+                ),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("index.rst", _AUTOCLASS_INDEX_RST),
+        ),
+    )
+    result = build_isolated_sphinx_result(
+        cache_root,
+        tmp_path,
+        scenario,
+        purge_modules=("numpy_demo",),
+    )
+
+    symbols_path = result.outdir / "src" / "content" / "api" / "symbols.json"
+    symbols = json.loads(symbols_path.read_text("utf-8"))
+    widget = next(s for s in symbols if s["id"] == "numpy_demo.Widget")
+    assert widget["docstring_summary"] == "A clickable widget for the demo gallery.", (
+        f"expected real class summary; got {widget['docstring_summary']!r}"
+    )
+
+
 @pytest.mark.integration
 def test_astro_builder_emits_field_list_as_definition_list(
     tmp_path: pathlib.Path,
