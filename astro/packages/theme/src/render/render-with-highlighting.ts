@@ -82,8 +82,15 @@ function renderBlock(node: BlockNode, highlight: CodeHighlight): string {
       const startAttr = node.start === null ? '' : ` start="${node.start}"`
       return `<ol${startAttr}>${node.children.map((c) => renderListItem(c, highlight)).join('')}</ol>`
     }
-    case 'admonition':
-      return `<aside class="admonition admonition--${escapeHtml(node.variant)}">${node.children.map((c) => renderBlock(c, highlight)).join('')}</aside>`
+    case 'admonition': {
+      const variant = escapeHtml(node.variant)
+      const titleHtml =
+        node.title === null
+          ? ''
+          : `<p class="admonition-title">${node.title.map(renderInlineNode).join('')}</p>`
+      const bodyHtml = node.children.map((c) => renderBlock(c, highlight)).join('')
+      return `<aside class="admonition admonition--${variant}">${titleHtml}${bodyHtml}</aside>`
+    }
     case 'footnote': {
       const baseClass = `gp-sphinx-${node.kind}`
       const idAttr = node.id === '' ? '' : ` id="${escapeHtml(node.id)}"`

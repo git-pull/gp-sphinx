@@ -264,6 +264,7 @@ describe('renderBlockNode — admonitions', () => {
     const html = renderBlockNode({
       type: 'admonition',
       variant,
+      title: null,
       children: [
         {
           type: 'paragraph',
@@ -273,6 +274,32 @@ describe('renderBlockNode — admonitions', () => {
     })
     expect(html).toContain(`admonition admonition--${variant}`)
     expect(html).toContain('<p>note body</p>')
+  })
+
+  test('admonition with custom title renders an admonition-title heading', () => {
+    const html = renderBlockNode({
+      type: 'admonition',
+      variant: 'warning',
+      title: [{ type: 'text', value: 'Alpha' }],
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ type: 'text', value: 'Pre-1.0 status.' }],
+        },
+      ],
+    })
+    expect(html).toContain('<p class="admonition-title">Alpha</p>')
+    expect(html).toContain('<p>Pre-1.0 status.</p>')
+  })
+
+  test('admonition with title=null omits the admonition-title element', () => {
+    const html = renderBlockNode({
+      type: 'admonition',
+      variant: 'note',
+      title: null,
+      children: [],
+    })
+    expect(html).not.toContain('admonition-title')
   })
 })
 
@@ -825,6 +852,7 @@ describe('renderBlockNode — type-coverage', () => {
     {
       type: 'admonition',
       variant: 'note',
+      title: null,
       children: [],
     },
     {

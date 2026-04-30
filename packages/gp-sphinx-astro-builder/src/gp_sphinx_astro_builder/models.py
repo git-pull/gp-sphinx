@@ -599,6 +599,16 @@ class AdmonitionNode(BaseModel):
 
     type: t.Literal["admonition"]
     variant: AdmonitionVariant
+    title: list[InlineNode] | None = None
+    """Custom inline label for the admonition.
+
+    MyST's ``:::{admonition} Foo :class: warning`` syntax (and the
+    docutils ``.. admonition:: Foo`` directive) lets the author
+    provide a free-form title that overrides the variant's default
+    label. Typed admonitions (``:::{warning}``, ``.. note::``) carry
+    no custom label, so this field is ``None``; the renderer falls
+    back to the variant's own name in that case.
+    """
     children: list[BlockNode]
 
 

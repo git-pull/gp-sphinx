@@ -253,6 +253,19 @@ describe('doctree zod schemas — admonitions', () => {
         },
       ],
     }
+    // ``title`` defaults to null when absent so existing callers
+    // (Furo-style typed admonitions with no custom label) keep
+    // their old payloads valid.
+    expect(admonitionNodeSchema.parse(data)).toEqual({ ...data, title: null })
+  })
+
+  test('admonitionNodeSchema preserves a custom inline title', () => {
+    const data = {
+      type: 'admonition',
+      variant: 'warning',
+      title: [{ type: 'text', value: 'Alpha' }],
+      children: [],
+    }
     expect(admonitionNodeSchema.parse(data)).toEqual(data)
   })
 
