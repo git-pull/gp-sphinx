@@ -36,9 +36,49 @@ function flattenInline(nodes: readonly InlineNode[]): string {
   return parts.join('')
 }
 
+/**
+ * Return ``true`` if a paragraph carries no real prose — only badges,
+ * cross-references with badge-like labels, and whitespace text.
+ *
+ * gp-sphinx package overview pages open with a row of status / source
+ * / PyPI badges (e.g. ``Alpha GitHub PyPI``); flattening those into
+ * meta description text produces a useless three-word string. Skip
+ * such paragraphs so the first real prose sentence wins.
+ */
+function isBadgeOnlyParagraph(paragraph: ParagraphNode): boolean {
+  let sawSubstantive = false
+  for (const child of paragraph.children) {
+    if (child.type === 'badge') {
+      continue
+    }
+    if (child.type === 'text' && child.value.trim() === '') {
+      continue
+    }
+    if (child.type === 'reference') {
+      // A reference whose only inline content is a single short text
+      // node (≤16 chars, no internal whitespace) is treated as a
+      // badge-equivalent link — typical for "GitHub", "PyPI",
+      // "Docs", "Issues" header chips. Anything longer is real prose.
+      const refText = child.children
+        .map((c) => (c.type === 'text' ? c.value : ''))
+        .join('')
+        .trim()
+      if (refText.length > 0 && refText.length <= 16 && !/\s/.test(refText)) {
+        continue
+      }
+    }
+    sawSubstantive = true
+    break
+  }
+  return !sawSubstantive
+}
+
 function findFirstParagraph(section: SectionNode): ParagraphNode | null {
   for (const child of section.children) {
     if (child.type === 'paragraph') {
+      if (isBadgeOnlyParagraph(child)) {
+        continue
+      }
       return child
     }
     if (child.type === 'section') {
