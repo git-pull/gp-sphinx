@@ -136,11 +136,6 @@ Tool documentation with safety badges and parameter tables.
 :no-index:
 ```
 
-### Fixture index
-
-```{autofixture-index} spf_demo_fixtures
-```
-
 ### Fixture reference
 
 ```{eval-rst}
@@ -151,10 +146,6 @@ Tool documentation with safety badges and parameter tables.
 ---
 
 ## Sphinx config values
-
-```{eval-rst}
-.. autoconfigvalue-index:: sphinx_config_demo
-```
 
 ```{eval-rst}
 .. autoconfigvalues:: sphinx_config_demo
@@ -168,19 +159,11 @@ Tool documentation with safety badges and parameter tables.
 ### Directives
 
 ```{eval-rst}
-.. autodirective-index:: docutils_demo
-```
-
-```{eval-rst}
 .. autodirective:: docutils_demo.DemoBadgeDirective
    :no-index:
 ```
 
 ### Roles
-
-```{eval-rst}
-.. autorole-index:: docutils_demo
-```
 
 ```{eval-rst}
 .. autorole:: docutils_demo.demo_badge_role

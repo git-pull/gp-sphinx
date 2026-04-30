@@ -30,8 +30,6 @@ Then document fixtures with:
 
 .. autofixtures:: myproject.conftest
 
-.. autofixture-index:: myproject.conftest
-
 .. auto-pytest-plugin:: myproject.pytest_plugin
    :project: myproject
    :package: myproject

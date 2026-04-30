@@ -46,21 +46,7 @@ You do not need to add them separately to your `extensions` list.
 .. autoconfigvalues:: sphinx_autodoc_pytest_fixtures
 ```
 
-## Registered directives and roles
-
-```{eval-rst}
-.. autodirective-index:: sphinx_autodoc_pytest_fixtures
-.. autorole-index:: sphinx_autodoc_pytest_fixtures
-```
-
 ## Working usage examples
-
-Render one fixture index:
-
-````myst
-```{autofixture-index} my_project.pytest_plugin
-```
-````
 
 Render a standard pytest plugin page:
 
@@ -73,11 +59,6 @@ Render a standard pytest plugin page:
 ## Live demos
 
 ```{py:module} spf_demo_fixtures
-```
-
-### Fixture index
-
-```{autofixture-index} spf_demo_fixtures
 ```
 
 ### Bulk autodoc
@@ -102,24 +83,6 @@ Use this directive for a standard pytest plugin page where you want consistent
 house-style: an install section, the `pytest11` autodiscovery note, and a
 generated fixture summary and reference.
 
-#### Manual recipe (power path)
-
-When you need custom layout — a different section order, content between the
-summary and reference, or no install block — use the low-level directives
-directly:
-
-````markdown
-## Fixture Summary
-
-```{autofixture-index} libvcs.pytest_plugin
-```
-
-## Fixture Reference
-
-```{autofixtures} libvcs.pytest_plugin
-```
-````
-
 #### autofixtures options
 
 | Option | Default | Description |
@@ -127,12 +90,6 @@ directly:
 | `:order:` | `"source"` | `"source"` preserves module order; `"alpha"` sorts alphabetically |
 | `:exclude:` | (empty) | Comma-separated fixture names to skip |
 | `:no-index:` | (off) | Emit descriptions without registering fixtures in the domain index; use when the same module is documented twice on one page |
-
-#### autofixture-index options
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `:exclude:` | (empty) | Comma-separated fixture names to exclude from index |
 
 ### Single autodoc entries
 

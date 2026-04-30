@@ -34,10 +34,8 @@ Then document directive classes and role callables with `eval-rst`:
 For module-wide reference pages:
 
 ```rst
-.. autodirective-index:: my_project.docs_ext
 .. autodirectives:: my_project.docs_ext
 
-.. autorole-index:: my_project.docs_roles
 .. autoroles:: my_project.docs_roles
 ```
 

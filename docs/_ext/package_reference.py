@@ -5,9 +5,9 @@ Architecture
 This Sphinx extension auto-generates the "Copyable config snippet" and
 "Package metadata" sections that appear on every ``docs/packages/<name>.md``
 page.  Surface documentation (config values, directives, roles) is owned by
-the autodoc directives in ``sphinx-autodoc-sphinx`` (``autoconfigvalue``)
-and ``sphinx-autodoc-docutils`` (``autodirective-index`` /
-``autorole-index``) — invoke them on the page directly.
+the autodoc directives in ``sphinx-autodoc-sphinx`` (``autoconfigvalues``)
+and ``sphinx-autodoc-docutils`` (``autodirectives`` / ``autoroles``) —
+invoke them on the page directly.
 
 It works in three layers:
 

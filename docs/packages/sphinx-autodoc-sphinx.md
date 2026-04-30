@@ -49,7 +49,7 @@ Render every config value from an extension module:
 
 ````myst
 ```{eval-rst}
-.. autoconfigvalue-index:: sphinx_config_demo
+.. autoconfigvalues:: sphinx_config_demo
 ```
 ````
 
@@ -58,12 +58,6 @@ Render every config value from an extension module:
 This page also uses `sphinx-autodoc-docutils` to document the config-doc
 directives themselves, so the page demonstrates both config-value output and
 directive documentation.
-
-### Index a demo extension's config surface
-
-```{eval-rst}
-.. autoconfigvalue-index:: sphinx_config_demo
-```
 
 ### Render a single demo config value
 

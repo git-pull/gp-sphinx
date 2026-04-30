@@ -50,23 +50,12 @@ Use a single-object directive when you want one rendered reference entry:
 ```
 ````
 
-Use the bulk directives to render a full module reference plus an index:
-
-````myst
-```{eval-rst}
-.. autodirective-index:: my_project.docs_ext
-```
-````
+Use the bulk directives to render every directive or role a module
+registers:
 
 ````myst
 ```{eval-rst}
 .. autodirectives:: my_project.docs_ext
-```
-````
-
-````myst
-```{eval-rst}
-.. autorole-index:: my_project.docs_roles
 ```
 ````
 
@@ -82,23 +71,11 @@ This page intentionally uses directive and role autodoc to document the
 documentation helpers themselves. If that feels a little recursive, that is the
 point: roles and directives should be documentable the same way fixtures are.
 
-### Index demo directives
-
-```{eval-rst}
-.. autodirective-index:: docutils_demo
-```
-
 ### Document one demo directive
 
 ```{eval-rst}
 .. autodirective:: docutils_demo.DemoBadgeDirective
    :no-index:
-```
-
-### Index demo roles
-
-```{eval-rst}
-.. autorole-index:: docutils_demo
 ```
 
 ### Document one demo role

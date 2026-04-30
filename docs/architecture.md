@@ -54,7 +54,7 @@ project-specific rendering logic:
 | {doc}`sphinx-autodoc-argparse <packages/sphinx-autodoc-argparse>` | Custom `argparse` domain — programs, options, subcommands, positionals | `argparse` |
 | {doc}`sphinx-autodoc-docutils <packages/sphinx-autodoc-docutils>` | docutils | `autodirective`, `autorole` |
 | {doc}`sphinx-autodoc-fastmcp <packages/sphinx-autodoc-fastmcp>` | FastMCP tools | `fastmcp-tool`, `fastmcp-tool-summary` |
-| {doc}`sphinx-autodoc-pytest-fixtures <packages/sphinx-autodoc-pytest-fixtures>` | pytest fixtures (extends `py` domain) | `autofixture`, `autofixture-index` |
+| {doc}`sphinx-autodoc-pytest-fixtures <packages/sphinx-autodoc-pytest-fixtures>` | pytest fixtures (extends `py` domain) | `autofixture`, `autofixtures`, `auto-pytest-plugin` |
 | {doc}`sphinx-autodoc-sphinx <packages/sphinx-autodoc-sphinx>` | Sphinx config | `autoconfigvalue`, `autoconfigvalues` |
 
 Each domain package calls `app.setup_extension()` to auto-register its
