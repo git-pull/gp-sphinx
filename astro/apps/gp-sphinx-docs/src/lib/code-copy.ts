@@ -99,23 +99,20 @@ export function formatCopyText(text: string): string {
 const PROMPT_TOKENS: ReadonlySet<string> = new Set(['>>>', '...', '$', '#'])
 
 /**
- * Regex matching a recognised prompt at the START of a string.
- * Capture group 1 is the prompt token ALONE (without trailing
- * whitespace) so the tagged span carries exactly the prompt; the
- * trailing space stays with the command body.
+ * Regex matching a recognised prompt at the START of a string,
+ * INCLUDING the trailing whitespace separator. The full match is
+ * what gets moved into a non-selectable prefix span so triple-
+ * click selection starts cleanly at the command body rather than
+ * at a leading space.
  */
-const PROMPT_PREFIX = /^(>>>|\.\.\.|\$|#)(\s)/
+const PROMPT_PREFIX = /^(>>>|\.\.\.|\$|#)(\s+)/
 
 function splitPromptIfBundled(span: HTMLElement): void {
   // Shiki's ``console`` (and some Python shell renderings)
-  // tokenize the entire line as a single coloured span:
-  // ``<span style="…">$ pip install foo</span>``. Triple-clicking
-  // selects the prompt because it's inside that span. Detect the
-  // leading prompt + space, split into a non-selectable prefix
-  // span carrying just the prompt, and shrink the original span
-  // to the trailing command body.
+  // tokenize the entire line as a single coloured span. Detect a
+  // leading prompt + whitespace, hoist BOTH into a non-selectable
+  // prefix so the selection cursor stops at the command body.
   if (span.children.length > 0) {
-    // Already split or contains nested markup — skip.
     return
   }
   const text = span.textContent ?? ''
@@ -123,29 +120,60 @@ function splitPromptIfBundled(span: HTMLElement): void {
   if (match === null) {
     return
   }
-  const prompt = match[1] ?? ''
-  const separator = match[2] ?? ''
-  const rest = text.slice(prompt.length + separator.length)
-  // Build the prompt span carrying the prompt token, marked
-  // non-selectable. Inherit the inline style so the colour grammar
-  // stays consistent with the surrounding tokens.
+  const prefix = match[0]
+  const rest = text.slice(prefix.length)
   const promptSpan = document.createElement('span')
   promptSpan.classList.add('select-none')
   if (span.getAttribute('style') !== null) {
     promptSpan.setAttribute('style', span.getAttribute('style') ?? '')
   }
-  promptSpan.textContent = prompt
-  // Reduce the original span to the separator + remaining body.
-  span.textContent = `${separator}${rest}`
+  promptSpan.textContent = prefix
+  span.textContent = rest
   span.parentNode?.insertBefore(promptSpan, span)
+}
+
+/**
+ * After a span has been tagged exact-match as a prompt token
+ * (cycle 74's first pass), check its NEXT-sibling span. If that
+ * sibling starts with whitespace, hoist the leading whitespace
+ * into a select-none sibling between them so the selection cursor
+ * stops at the command body, not before the leading space. Mirrors
+ * the bundled-prompt split for the non-bundled case.
+ */
+function hoistTrailingWhitespace(promptSpan: HTMLElement): void {
+  const next = promptSpan.nextElementSibling
+  if (!(next instanceof HTMLElement)) {
+    return
+  }
+  if (next.children.length > 0) {
+    return
+  }
+  const text = next.textContent ?? ''
+  const wsMatch = text.match(/^(\s+)(.*)$/s)
+  if (wsMatch === null) {
+    return
+  }
+  const ws = wsMatch[1] ?? ''
+  const rest = wsMatch[2] ?? ''
+  const wsSpan = document.createElement('span')
+  wsSpan.classList.add('select-none')
+  if (next.getAttribute('style') !== null) {
+    wsSpan.setAttribute('style', next.getAttribute('style') ?? '')
+  }
+  wsSpan.textContent = ws
+  next.textContent = rest
+  next.parentNode?.insertBefore(wsSpan, next)
 }
 
 function markPromptSpans(code: Element): void {
   // First pass: tag spans whose text is exactly a prompt token
   // (Shiki's Python tokenization, where ``>>>`` is its own span).
+  // Then hoist the leading whitespace from the next sibling so the
+  // separator after the prompt is also non-selectable.
   for (const span of code.querySelectorAll<HTMLElement>('span')) {
     if (PROMPT_TOKENS.has(span.textContent ?? '')) {
       span.classList.add('select-none')
+      hoistTrailingWhitespace(span)
     }
   }
   // Second pass: split bundled-prompt spans (Shiki's ``console``
@@ -154,9 +182,6 @@ function markPromptSpans(code: Element): void {
   // ``<span class="line">`` — a ``$`` mid-line is not a prompt.
   const lines = code.querySelectorAll<HTMLElement>('span.line')
   if (lines.length === 0) {
-    // Some Shiki output (older versions, or when ``defaultColor``
-    // is set differently) skips the line wrapper. Fall back to the
-    // direct children of ``code``.
     for (const span of Array.from(code.children).filter(
       (c) => c instanceof HTMLElement,
     ) as HTMLElement[]) {

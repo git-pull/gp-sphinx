@@ -164,20 +164,30 @@ function makeShikiPre(html: string): HTMLPreElement {
 
 describe('enhanceCodeBlocks — prompt non-selection', () => {
   test('marks ``>>> `` Python REPL prompt spans as non-selectable', () => {
+    // Shiki's Python lexer puts ``>>>`` in its own span; the
+    // following space is typically inside the next span carrying
+    // the variable name. We split the next span's leading
+    // whitespace into the non-selectable prefix so triple-click
+    // selection starts at ``spec`` rather than `` spec``.
     const root = document.createElement('div')
     root.appendChild(
       makeShikiPre(
-        '<span class="line"><span style="color:#D73A49">&gt;&gt;&gt;</span> spec = 1</span>',
+        '<span class="line"><span style="color:#D73A49">&gt;&gt;&gt;</span><span style="color:#005CC5"> spec</span><span style="color:#000"> = 1</span></span>',
       ),
     )
     document.body.appendChild(root)
     enhanceCodeBlocks(root)
-    const spans = root.querySelectorAll('code span')
-    const promptSpan = Array.from(spans).find(
-      (s) => s.textContent === '>>>',
-    ) as HTMLElement | undefined
-    expect(promptSpan).toBeDefined()
+    const spans = Array.from(root.querySelectorAll('code span'))
+    const promptSpan = spans.find((s) => s.textContent === '>>>') as
+      | HTMLElement
+      | undefined
     expect(promptSpan?.classList.contains('select-none')).toBe(true)
+    // The leading space from the next span (`` spec``) is hoisted
+    // into a select-none sibling so selection starts at ``spec``.
+    const leadingSpaceSpan = spans.find(
+      (s) => s.textContent === ' ' && s.classList.contains('select-none'),
+    )
+    expect(leadingSpaceSpan).toBeDefined()
   })
 
   test('marks ``$`` shell prompt span as non-selectable', () => {
@@ -197,13 +207,12 @@ describe('enhanceCodeBlocks — prompt non-selection', () => {
     expect(promptSpan?.classList.contains('select-none')).toBe(true)
   })
 
-  test('splits ``$ `` prefix when Shiki bundles it into the rest of the line', () => {
+  test('splits ``$ `` prefix INCLUDING trailing space as non-selectable', () => {
     // Shiki's ``console`` language renders the whole line as a
-    // single span — ``<span>$ pip install foo</span>``. Triple-
-    // clicking the line still selects the ``$`` because it's
-    // inside the same selectable span. The fix is to split: emit a
-    // non-selectable span for the prompt prefix and a regular span
-    // for the rest.
+    // single span. The fix splits both the ``$`` AND the
+    // separator space into the non-selectable prefix so a
+    // triple-click selection starts cleanly at ``pip`` rather
+    // than ``  pip``.
     const root = document.createElement('div')
     root.appendChild(
       makeShikiPre(
@@ -213,19 +222,18 @@ describe('enhanceCodeBlocks — prompt non-selection', () => {
     document.body.appendChild(root)
     enhanceCodeBlocks(root)
     const line = root.querySelector('span.line')
-    expect(line).toBeDefined()
-    // After split there should be a span carrying just the prompt
-    // with select-none, plus a sibling carrying the rest.
     const promptSpan = Array.from(line?.querySelectorAll('span') ?? []).find(
-      (s) => s.textContent === '$' && s.classList.contains('select-none'),
+      (s) => s.classList.contains('select-none'),
     )
     expect(promptSpan).toBeDefined()
-    // The full line text content is preserved end-to-end (a single
-    // space between prompt and command).
+    // The non-selectable prefix carries BOTH the prompt token and
+    // the trailing space — so selection cleanly starts at ``pip``.
+    expect(promptSpan?.textContent).toBe('$ ')
+    // The full line text content is preserved end-to-end.
     expect(line?.textContent).toBe('$ pip install foo')
   })
 
-  test('splits ``>>> `` prefix when bundled with command in single span', () => {
+  test('splits ``>>> `` prefix INCLUDING trailing space when bundled with command', () => {
     const root = document.createElement('div')
     root.appendChild(
       makeShikiPre(
@@ -236,9 +244,9 @@ describe('enhanceCodeBlocks — prompt non-selection', () => {
     enhanceCodeBlocks(root)
     const line = root.querySelector('span.line')
     const promptSpan = Array.from(line?.querySelectorAll('span') ?? []).find(
-      (s) => s.textContent === '>>>' && s.classList.contains('select-none'),
+      (s) => s.classList.contains('select-none'),
     )
-    expect(promptSpan).toBeDefined()
+    expect(promptSpan?.textContent).toBe('>>> ')
     expect(line?.textContent).toBe('>>> print("hi")')
   })
 
