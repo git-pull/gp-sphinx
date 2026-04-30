@@ -119,13 +119,9 @@ describe('extractDescription', () => {
       },
       {
         type: 'paragraph',
-        children: [
-          { type: 'text', value: 'Sphinx extension for documenting FastMCP tools.' },
-        ],
+        children: [{ type: 'text', value: 'Sphinx extension for documenting FastMCP tools.' }],
       },
     ])
-    expect(extractDescription(tree)).toBe(
-      'Sphinx extension for documenting FastMCP tools.',
-    )
+    expect(extractDescription(tree)).toBe('Sphinx extension for documenting FastMCP tools.')
   })
 })

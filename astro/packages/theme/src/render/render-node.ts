@@ -18,6 +18,8 @@ import type {
   Document,
   InlineNode,
   ListItemNode,
+  TableCellNode,
+  TableRowNode,
 } from '../schemas/doctree.ts'
 
 const HTML_ESCAPES: Record<string, string> = {
@@ -92,6 +94,48 @@ function renderListItem(item: ListItemNode): string {
   return `<li>${item.children.map(renderBlockNode).join('')}</li>`
 }
 
+/**
+ * Render a single table cell (``<th>`` or ``<td>``) using the
+ * provided block renderer. Splitting this out lets the
+ * highlighting-aware variant pass its own block renderer so any
+ * ``literalBlock`` nested inside a cell reaches the highlighter.
+ */
+export function renderTableCell(
+  cell: TableCellNode,
+  renderBlock: (node: BlockNode) => string,
+): string {
+  const tag = cell.header ? 'th' : 'td'
+  const inner = cell.children.map(renderBlock).join('')
+  return `<${tag}>${inner}</${tag}>`
+}
+
+export function renderTableRow(
+  row: TableRowNode,
+  renderBlock: (node: BlockNode) => string,
+): string {
+  return `<tr>${row.cells.map((c) => renderTableCell(c, renderBlock)).join('')}</tr>`
+}
+
+/**
+ * Render a ``TableNode`` to ``<table>`` HTML with optional
+ * ``<thead>`` / ``<tbody>`` row groups, leveraging the existing
+ * docutils-flavoured CSS in ``global.css``.
+ */
+export function renderTable(
+  table: Extract<BlockNode, { type: 'table' }>,
+  renderBlock: (node: BlockNode) => string,
+): string {
+  const thead =
+    table.head.length === 0
+      ? ''
+      : `<thead>${table.head.map((r) => renderTableRow(r, renderBlock)).join('')}</thead>`
+  const tbody =
+    table.body.length === 0
+      ? ''
+      : `<tbody>${table.body.map((r) => renderTableRow(r, renderBlock)).join('')}</tbody>`
+  return `<table class="docutils">${thead}${tbody}</table>`
+}
+
 function renderDefinitionListItem(item: DefinitionListItemNode): string {
   const term = `<dt>${item.term.map(renderInlineNode).join('')}</dt>`
   const definition = `<dd>${item.definition.map(renderBlockNode).join('')}</dd>`
@@ -131,6 +175,8 @@ export function renderBlockNode(node: BlockNode): string {
       return '<hr />'
     case 'rubric':
       return `<p class="gp-sphinx-rubric">${escapeHtml(node.text)}</p>`
+    case 'table':
+      return renderTable(node, renderBlockNode)
     case 'blockQuote':
       return `<blockquote>${node.children.map(renderBlockNode).join('')}</blockquote>`
     case 'bulletList':

@@ -23,6 +23,7 @@ import {
   renderBlockNode,
   renderCliCommandChrome,
   renderInlineNode,
+  renderTable,
 } from './render-node.ts'
 
 export type CodeHighlight = (code: string, language: string | null) => string
@@ -117,6 +118,12 @@ function renderBlock(node: BlockNode, highlight: CodeHighlight): string {
         node,
         node.children.map((c) => renderBlock(c, highlight)).join(''),
       )
+    case 'table':
+      // Recurse cell children through the highlighting block
+      // renderer so a ``literalBlock`` (e.g. a code example
+      // inside a cell) reaches Shiki rather than falling back
+      // to plain ``<pre>``.
+      return renderTable(node, (c) => renderBlock(c, highlight))
     default:
       return renderBlockNode(node)
   }

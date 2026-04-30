@@ -813,6 +813,87 @@ def test_translator_handles_footnote_and_reference(
     assert len(body_child.children) >= 1
 
 
+def test_translator_handles_basic_table() -> None:
+    """A docutils ``nodes.table`` with thead + tbody round-trips through the translator.
+
+    Markdown tables (``| col1 | col2 |``) and RST ``.. list-table::``
+    directives both produce ``nodes.table`` containing
+    ``tgroup`` → ``thead?`` + ``tbody`` → ``row`` → ``entry`` chains.
+    Without explicit handlers the cell contents (``paragraph``
+    children) leak into the parent section as flat ``<p>`` streams,
+    which is what every special-autodoc package overview page
+    currently does. This test pins the correct shape: the section's
+    children contain a single ``TableNode`` with structured head /
+    body / row / cell payload.
+    """
+    from gp_sphinx_astro_builder.models import (
+        TableCellNode,
+        TableNode,
+        TableRowNode,
+    )
+
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+    section += title
+
+    table = nodes.table()
+    tgroup = nodes.tgroup(cols=2)
+    tgroup += nodes.colspec(colwidth=1)
+    tgroup += nodes.colspec(colwidth=1)
+
+    thead = nodes.thead()
+    head_row = nodes.row()
+    for header_text in ("Object type", "CSS class"):
+        entry = nodes.entry()
+        para = nodes.paragraph()
+        para += nodes.Text(header_text)
+        entry += para
+        head_row += entry
+    thead += head_row
+    tgroup += thead
+
+    tbody = nodes.tbody()
+    body_row = nodes.row()
+    for body_text in ("function", "gp-sphinx-badge--type-function"):
+        entry = nodes.entry()
+        para = nodes.paragraph()
+        para += nodes.Text(body_text)
+        entry += para
+        body_row += entry
+    tbody += body_row
+    tgroup += tbody
+
+    table += tgroup
+    section += table
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    block_child = translator.result().tree.children[0]
+    assert isinstance(block_child, TableNode), (
+        f"expected the section's first child to be a TableNode; "
+        f"got {type(block_child).__name__}"
+    )
+    assert len(block_child.head) == 1
+    assert isinstance(block_child.head[0], TableRowNode)
+    assert len(block_child.head[0].cells) == 2
+    assert all(c.header for c in block_child.head[0].cells)
+
+    assert len(block_child.body) == 1
+    assert isinstance(block_child.body[0], TableRowNode)
+    assert len(block_child.body[0].cells) == 2
+    assert all(not c.header for c in block_child.body[0].cells)
+
+    first_head_cell = block_child.head[0].cells[0]
+    assert isinstance(first_head_cell, TableCellNode)
+    assert len(first_head_cell.children) == 1
+    paragraph = first_head_cell.children[0]
+    assert isinstance(paragraph, ParagraphNode)
+    assert paragraph.children == [TextNode(type="text", value="Object type")]
+
+
 def test_translator_handles_generic_admonition_with_title() -> None:
     """A generic ``nodes.admonition`` (MyST ``:::{admonition} Foo``) keeps its title.
 

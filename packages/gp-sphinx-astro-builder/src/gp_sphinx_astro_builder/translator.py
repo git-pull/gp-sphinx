@@ -141,6 +141,10 @@ _BLOCK_CONTEXT_FRAMES: frozenset[str] = frozenset(
         # has to be paragraph-wrapped before validation.
         "apiLayout",
         "cliCommand",
+        # Table cells declare ``children: list[BlockNode]`` so any
+        # bare inline content (rare — most cells contain a single
+        # paragraph already) gets implicit-paragraph-wrapped.
+        "tableCell",
     },
 )
 """Frame kinds whose ``children`` slot may only hold ``BlockNode`` payloads.
@@ -254,6 +258,9 @@ _FrameKind = t.Literal[
     "definition",
     "desc",
     "desc_content",
+    "table",
+    "tableRow",
+    "tableCell",
 ]
 
 
@@ -962,6 +969,112 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
 
     def depart_rubric(self, node: nodes.Element) -> None:
         """No-op companion for ``visit_rubric`` (which raises ``SkipNode``)."""
+
+    # ─── Tables ──────────────────────────────────────────────────
+    # docutils tables look like:
+    #     table > tgroup > (colspec*, thead?, tbody) > row > entry > paragraph
+    # We collapse the ``tgroup`` wrapper (no semantic role) and the
+    # ``colspec`` width hints (CSS handles widths), surfacing
+    # ``head`` / ``body`` as parallel arrays of rows on the
+    # ``TableNode``. The ``_table_section`` instance attribute
+    # tracks whether the current row group is the head or body so
+    # ``visit_entry`` can flag its cell as a ``<th>`` vs ``<td>``.
+
+    def visit_table(self, node: nodes.Element) -> None:
+        """Open a table frame collecting head + body row groups."""
+        self._stack.append(
+            {
+                "kind": "table",
+                "data": {
+                    "type": "table",
+                    "head": [],
+                    "body": [],
+                },
+            },
+        )
+        # Track which row group (head / body) the current row
+        # belongs to. ``None`` means we haven't entered a thead /
+        # tbody yet — defensive default that routes orphan rows
+        # to ``body`` to avoid losing them.
+        self._table_section: t.Literal["head", "body"] = "body"
+
+    def depart_table(self, node: nodes.Element) -> None:
+        """Close the table frame and attach to the parent block collector."""
+        frame = self._stack.pop()
+        self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def visit_tgroup(self, node: nodes.Element) -> None:
+        """``tgroup`` is a structural wrapper; pass through transparently."""
+
+    def depart_tgroup(self, node: nodes.Element) -> None:
+        """Companion no-op for :meth:`visit_tgroup`."""
+
+    def visit_colspec(self, node: nodes.Element) -> None:
+        """Skip ``colspec`` width hints — CSS handles column widths.
+
+        Raises
+        ------
+        docutils.nodes.SkipNode
+            Always: ``colspec`` has no children worth traversing.
+        """
+        raise nodes.SkipNode
+
+    def depart_colspec(self, node: nodes.Element) -> None:
+        """No-op companion for ``visit_colspec`` (which raises ``SkipNode``)."""
+
+    def visit_thead(self, node: nodes.Element) -> None:
+        """Mark subsequent rows as belonging to the table's head group."""
+        self._table_section = "head"
+
+    def depart_thead(self, node: nodes.Element) -> None:
+        """No state to pop — the next ``visit_tbody`` flips the section."""
+
+    def visit_tbody(self, node: nodes.Element) -> None:
+        """Mark subsequent rows as belonging to the table's body group."""
+        self._table_section = "body"
+
+    def depart_tbody(self, node: nodes.Element) -> None:
+        """No-op; row group state stays sticky until the next thead/tbody."""
+
+    def visit_row(self, node: nodes.Element) -> None:
+        """Open a table row frame collecting its cells."""
+        self._stack.append(
+            {
+                "kind": "tableRow",
+                "data": {
+                    "type": "tableRow",
+                    "cells": [],
+                },
+            },
+        )
+
+    def depart_row(self, node: nodes.Element) -> None:
+        """Close the row and attach it to its table's head or body slot."""
+        frame = self._stack.pop()
+        # The parent frame is the surrounding table (tgroup is
+        # pass-through). Append into the matching row group based
+        # on the section tracker set by visit_thead / visit_tbody.
+        table_data = self._stack[-1]["data"]
+        section_key = self._table_section
+        table_data[section_key].append(frame["data"])
+
+    def visit_entry(self, node: nodes.Element) -> None:
+        """Open a table cell frame; ``header`` flag from current row group."""
+        self._stack.append(
+            {
+                "kind": "tableCell",
+                "data": {
+                    "type": "tableCell",
+                    "header": self._table_section == "head",
+                    "children": [],
+                },
+            },
+        )
+
+    def depart_entry(self, node: nodes.Element) -> None:
+        """Close the cell and attach to the row's cells list."""
+        frame = self._stack.pop()
+        self._stack[-1]["data"]["cells"].append(frame["data"])
 
     # Generic structural wrappers that the JSON wire format does not
     # need to preserve. ``container`` (docutils' ``.. container::``,
