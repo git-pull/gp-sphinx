@@ -481,6 +481,10 @@
   }
 
   .gp-sphinx-symbol__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
     border: 1px solid var(--color-border);
     border-radius: 6px;
     background: var(--color-code-bg);
@@ -490,6 +494,8 @@
   }
 
   .gp-sphinx-symbol__signature {
+    flex: 1 1 auto;
+    min-width: 0;
     background: transparent;
     padding: 0;
     font-family: var(--font-mono);
@@ -498,6 +504,92 @@
     color: var(--color-fg);
     white-space: pre-wrap;
     word-break: break-word;
+  }
+
+  /* Inline kind badge + ``[source]`` jump anchor pinned to the right
+   * of the signature card, mirroring Furo's signature-header chrome.
+   * The two elements are grouped under ``__header-meta`` so they
+   * collapse together onto a new line on narrow viewports rather
+   * than detaching from each other. */
+  .gp-sphinx-symbol__header-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+    padding-top: 0.1rem;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+  }
+
+  .gp-sphinx-symbol__kind {
+    display: inline-block;
+    padding: 0.1rem 0.55rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  /* Per-kind palette tokens reused from cycle 64's badge grammar
+   * — shared internal variables let the same tinted backgrounds
+   * apply here without duplicating the palette tables. */
+  .gp-sphinx-symbol__kind--class {
+    background: color-mix(in oklab, oklch(60% 0.18 280) 14%, var(--color-bg));
+    border-color: color-mix(in oklab, oklch(60% 0.18 280) 45%, var(--color-border));
+  }
+  .gp-sphinx-symbol__kind--function {
+    background: color-mix(in oklab, oklch(60% 0.16 245) 14%, var(--color-bg));
+    border-color: color-mix(in oklab, oklch(60% 0.16 245) 45%, var(--color-border));
+  }
+  .gp-sphinx-symbol__kind--method {
+    background: color-mix(in oklab, oklch(60% 0.14 200) 14%, var(--color-bg));
+    border-color: color-mix(in oklab, oklch(60% 0.14 200) 45%, var(--color-border));
+  }
+  .gp-sphinx-symbol__kind--property,
+  .gp-sphinx-symbol__kind--attribute {
+    background: color-mix(in oklab, oklch(62% 0.14 170) 14%, var(--color-bg));
+    border-color: color-mix(in oklab, oklch(62% 0.14 170) 45%, var(--color-border));
+  }
+  .gp-sphinx-symbol__kind--data {
+    background: color-mix(in oklab, oklch(50% 0.005 0) 12%, var(--color-bg));
+    border-color: color-mix(in oklab, oklch(50% 0.005 0) 45%, var(--color-border));
+  }
+  .gp-sphinx-symbol__kind--exception {
+    background: color-mix(in oklab, oklch(60% 0.22 25) 14%, var(--color-bg));
+    border-color: color-mix(in oklab, oklch(60% 0.22 25) 45%, var(--color-border));
+  }
+  .gp-sphinx-symbol__kind--enum,
+  .gp-sphinx-symbol__kind--dataclass {
+    background: color-mix(in oklab, oklch(60% 0.15 160) 14%, var(--color-bg));
+    border-color: color-mix(in oklab, oklch(60% 0.15 160) 45%, var(--color-border));
+  }
+
+  .gp-sphinx-symbol__source-link {
+    color: var(--color-muted);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+  }
+
+  .gp-sphinx-symbol__source-link:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+
+  /* Stack the meta below the signature on narrow viewports so the
+   * signature gets its full width back. */
+  @media (max-width: 640px) {
+    .gp-sphinx-symbol__header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .gp-sphinx-symbol__header-meta {
+      align-self: flex-end;
+    }
   }
 
   .gp-sphinx-symbol__module {
