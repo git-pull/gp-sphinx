@@ -70,6 +70,14 @@ export function renderInlineNode(node: InlineNode): string {
       if (node.size !== null) {
         classes.push(`gp-sphinx-badge--size-${node.size}`)
       }
+      // Modifier classes from the wire format
+      // (``gp-sphinx-badge--type-*``, ``--state-*``, ``--scope-*``,
+      // ``--mod-*``, ``--meta-*``, ``--dense``, ``--underline-*``).
+      // The translator filters them to the ``gp-sphinx-badge--`` family
+      // so we trust the input here and append wholesale.
+      for (const c of node.classes) {
+        classes.push(c)
+      }
       const tooltipAttr =
         node.tooltip === null
           ? ''

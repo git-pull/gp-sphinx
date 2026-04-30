@@ -1114,14 +1114,15 @@
     align-items: center;
     gap: 0.25rem;
     padding: 0.05rem 0.5rem;
-    border: 1px solid var(--color-border);
+    border: 1px solid
+      var(--gp-sphinx-badge-border, var(--color-border));
     border-radius: 999px;
     font-family: var(--font-sans);
     font-size: 0.75rem;
     font-weight: 500;
     line-height: 1.4;
-    background: var(--color-code-bg);
-    color: var(--color-fg);
+    background: var(--gp-sphinx-badge-bg, var(--color-code-bg));
+    color: var(--gp-sphinx-badge-fg, var(--color-fg));
     vertical-align: middle;
   }
 
@@ -1168,5 +1169,248 @@
   .gp-sphinx-badge--size-xl {
     font-size: 1rem;
     padding: 0.2rem 0.75rem;
+  }
+
+  /* ─── sphinx-ux-badges palette + density variants ─────────────
+   * The Furo flow ships a colour grammar that distinguishes
+   * Python kinds (function / class / method / property / attribute
+   * / data / exception), pytest fixture / docutils directive /
+   * config-value / role kinds, and modifier states (async /
+   * deprecated / classmethod / staticmethod / abstract / final /
+   * factory / autouse / override / readonly), plus scopes
+   * (instance / class / module / session) and meta tags. Each
+   * adds a tinted background + matching border / foreground so
+   * the badge reads at a glance. We mirror it via internal
+   * ``--gp-sphinx-badge-{bg,fg,border}`` tokens that the base
+   * ``.gp-sphinx-badge`` rule already consumes (see line ~1112). */
+
+  /* Type palette — Python domain. */
+  .gp-sphinx-badge--type-function {
+    --gp-sphinx-badge-bg: oklch(96% 0.04 245);
+    --gp-sphinx-badge-fg: oklch(48% 0.16 245);
+    --gp-sphinx-badge-border: oklch(70% 0.18 245);
+  }
+  .gp-sphinx-badge--type-class {
+    --gp-sphinx-badge-bg: oklch(96% 0.04 280);
+    --gp-sphinx-badge-fg: oklch(45% 0.18 280);
+    --gp-sphinx-badge-border: oklch(70% 0.18 280);
+  }
+  .gp-sphinx-badge--type-method {
+    --gp-sphinx-badge-bg: oklch(96% 0.04 200);
+    --gp-sphinx-badge-fg: oklch(48% 0.14 200);
+    --gp-sphinx-badge-border: oklch(72% 0.16 200);
+  }
+  .gp-sphinx-badge--type-property {
+    --gp-sphinx-badge-bg: oklch(96% 0.04 170);
+    --gp-sphinx-badge-fg: oklch(48% 0.14 170);
+    --gp-sphinx-badge-border: oklch(70% 0.16 170);
+  }
+  .gp-sphinx-badge--type-attribute {
+    --gp-sphinx-badge-bg: oklch(95% 0.01 240);
+    --gp-sphinx-badge-fg: oklch(48% 0.02 240);
+    --gp-sphinx-badge-border: oklch(75% 0.02 240);
+  }
+  .gp-sphinx-badge--type-data {
+    --gp-sphinx-badge-bg: oklch(95% 0.005 0);
+    --gp-sphinx-badge-fg: oklch(45% 0.005 0);
+    --gp-sphinx-badge-border: oklch(72% 0.005 0);
+  }
+  .gp-sphinx-badge--type-exception {
+    --gp-sphinx-badge-bg: oklch(96% 0.04 20);
+    --gp-sphinx-badge-fg: oklch(48% 0.18 20);
+    --gp-sphinx-badge-border: oklch(70% 0.20 20);
+  }
+  .gp-sphinx-badge--type-module {
+    --gp-sphinx-badge-bg: oklch(95% 0.04 100);
+    --gp-sphinx-badge-fg: oklch(45% 0.14 100);
+    --gp-sphinx-badge-border: oklch(70% 0.16 100);
+  }
+  .gp-sphinx-badge--type-typealias {
+    --gp-sphinx-badge-bg: oklch(95% 0.04 320);
+    --gp-sphinx-badge-fg: oklch(48% 0.16 320);
+    --gp-sphinx-badge-border: oklch(72% 0.18 320);
+  }
+
+  /* Type palette — Sphinx-side roles / directives / fixtures. */
+  .gp-sphinx-badge--type-fixture {
+    --gp-sphinx-badge-bg: oklch(95% 0.04 145);
+    --gp-sphinx-badge-fg: oklch(45% 0.14 145);
+    --gp-sphinx-badge-border: oklch(70% 0.16 145);
+  }
+  .gp-sphinx-badge--type-directive {
+    --gp-sphinx-badge-bg: oklch(95% 0.04 60);
+    --gp-sphinx-badge-fg: oklch(48% 0.14 60);
+    --gp-sphinx-badge-border: oklch(72% 0.16 60);
+  }
+  .gp-sphinx-badge--type-role {
+    --gp-sphinx-badge-bg: oklch(95% 0.04 30);
+    --gp-sphinx-badge-fg: oklch(48% 0.16 30);
+    --gp-sphinx-badge-border: oklch(72% 0.18 30);
+  }
+  .gp-sphinx-badge--type-config,
+  .gp-sphinx-badge--type-option {
+    --gp-sphinx-badge-bg: oklch(95% 0.04 220);
+    --gp-sphinx-badge-fg: oklch(45% 0.14 220);
+    --gp-sphinx-badge-border: oklch(70% 0.16 220);
+  }
+
+  /* State / mod / scope / meta modifiers — slimmer palette,
+   * read as inline qualifiers rather than primary kind chips. */
+  .gp-sphinx-badge--mod-async,
+  .gp-sphinx-badge--mod-classmethod,
+  .gp-sphinx-badge--mod-staticmethod {
+    --gp-sphinx-badge-bg: oklch(95% 0.03 200);
+    --gp-sphinx-badge-fg: oklch(45% 0.12 200);
+    --gp-sphinx-badge-border: oklch(72% 0.14 200);
+  }
+  .gp-sphinx-badge--mod-abstract,
+  .gp-sphinx-badge--mod-final,
+  .gp-sphinx-badge--mod-rebuild {
+    --gp-sphinx-badge-bg: oklch(95% 0.02 240);
+    --gp-sphinx-badge-fg: oklch(45% 0.06 240);
+    --gp-sphinx-badge-border: oklch(72% 0.08 240);
+  }
+  .gp-sphinx-badge--state-deprecated {
+    --gp-sphinx-badge-bg: oklch(94% 0.04 25);
+    --gp-sphinx-badge-fg: oklch(45% 0.16 25);
+    --gp-sphinx-badge-border: oklch(70% 0.18 25);
+    text-decoration: line-through
+      color-mix(in oklab, currentColor 70%, transparent);
+  }
+  .gp-sphinx-badge--state-autouse,
+  .gp-sphinx-badge--state-factory,
+  .gp-sphinx-badge--state-override {
+    --gp-sphinx-badge-bg: oklch(95% 0.04 145);
+    --gp-sphinx-badge-fg: oklch(45% 0.14 145);
+    --gp-sphinx-badge-border: oklch(70% 0.16 145);
+  }
+  .gp-sphinx-badge--scope-class,
+  .gp-sphinx-badge--scope-module,
+  .gp-sphinx-badge--scope-session {
+    --gp-sphinx-badge-bg: oklch(96% 0.02 60);
+    --gp-sphinx-badge-fg: oklch(48% 0.10 60);
+    --gp-sphinx-badge-border: oklch(72% 0.12 60);
+  }
+  .gp-sphinx-badge--meta-alpha,
+  .gp-sphinx-badge--meta-beta,
+  .gp-sphinx-badge--meta-link {
+    --gp-sphinx-badge-bg: oklch(96% 0.01 240);
+    --gp-sphinx-badge-fg: oklch(48% 0.02 240);
+    --gp-sphinx-badge-border: oklch(72% 0.04 240);
+  }
+
+  /* Density variant — used for inline-in-signature badges. Tighter
+   * padding, smaller font, dotted underline label so it reads as
+   * an annotation rather than a chip. */
+  .gp-sphinx-badge--dense {
+    padding: 0.05rem 0.35rem;
+    font-size: 0.67rem;
+    border-width: 1px;
+    line-height: 1.2;
+  }
+  .gp-sphinx-badge--dense .gp-sphinx-badge__label {
+    text-decoration: underline dotted
+      color-mix(in oklab, currentColor 60%, transparent);
+    text-underline-offset: 0.15em;
+  }
+
+  /* Underline variants — inherited from sphinx-ux-badges. */
+  .gp-sphinx-badge--underline-dotted .gp-sphinx-badge__label {
+    text-decoration: underline dotted;
+  }
+  .gp-sphinx-badge--underline-solid .gp-sphinx-badge__label {
+    text-decoration: underline solid;
+  }
+  .gp-sphinx-badge--underline-none .gp-sphinx-badge__label {
+    text-decoration: none;
+  }
+}
+
+/* Dark-mode badge palette — desaturate the backgrounds, lift the
+ * foregrounds, soften the borders so the chips read clearly against
+ * the darker page background. */
+:root[data-theme-mode='dark'] {
+  /* Type — Python */
+  --gp-sphinx-badge-bg-function: oklch(28% 0.06 245);
+  --gp-sphinx-badge-bg-class: oklch(28% 0.06 280);
+  --gp-sphinx-badge-bg-method: oklch(28% 0.06 200);
+  --gp-sphinx-badge-bg-property: oklch(28% 0.05 170);
+  --gp-sphinx-badge-bg-attribute: oklch(28% 0.01 240);
+  --gp-sphinx-badge-bg-data: oklch(28% 0.005 0);
+  --gp-sphinx-badge-bg-exception: oklch(28% 0.07 20);
+  --gp-sphinx-badge-bg-module: oklch(28% 0.06 100);
+  --gp-sphinx-badge-bg-typealias: oklch(28% 0.07 320);
+  --gp-sphinx-badge-bg-fixture: oklch(28% 0.06 145);
+  --gp-sphinx-badge-bg-directive: oklch(28% 0.06 60);
+  --gp-sphinx-badge-bg-role: oklch(28% 0.07 30);
+  --gp-sphinx-badge-bg-config: oklch(28% 0.06 220);
+}
+
+@layer components {
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-function {
+    --gp-sphinx-badge-bg: var(--gp-sphinx-badge-bg-function);
+    --gp-sphinx-badge-fg: oklch(82% 0.16 245);
+    --gp-sphinx-badge-border: oklch(60% 0.18 245);
+  }
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-class {
+    --gp-sphinx-badge-bg: var(--gp-sphinx-badge-bg-class);
+    --gp-sphinx-badge-fg: oklch(80% 0.18 280);
+    --gp-sphinx-badge-border: oklch(60% 0.18 280);
+  }
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-method {
+    --gp-sphinx-badge-bg: var(--gp-sphinx-badge-bg-method);
+    --gp-sphinx-badge-fg: oklch(82% 0.14 200);
+    --gp-sphinx-badge-border: oklch(60% 0.16 200);
+  }
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-property {
+    --gp-sphinx-badge-bg: var(--gp-sphinx-badge-bg-property);
+    --gp-sphinx-badge-fg: oklch(82% 0.14 170);
+    --gp-sphinx-badge-border: oklch(60% 0.16 170);
+  }
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-attribute {
+    --gp-sphinx-badge-bg: var(--gp-sphinx-badge-bg-attribute);
+    --gp-sphinx-badge-fg: oklch(82% 0.02 240);
+    --gp-sphinx-badge-border: oklch(60% 0.02 240);
+  }
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-data {
+    --gp-sphinx-badge-bg: var(--gp-sphinx-badge-bg-data);
+    --gp-sphinx-badge-fg: oklch(82% 0.005 0);
+    --gp-sphinx-badge-border: oklch(60% 0.005 0);
+  }
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-exception {
+    --gp-sphinx-badge-bg: var(--gp-sphinx-badge-bg-exception);
+    --gp-sphinx-badge-fg: oklch(82% 0.18 20);
+    --gp-sphinx-badge-border: oklch(60% 0.20 20);
+  }
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-module {
+    --gp-sphinx-badge-bg: var(--gp-sphinx-badge-bg-module);
+    --gp-sphinx-badge-fg: oklch(82% 0.14 100);
+    --gp-sphinx-badge-border: oklch(60% 0.16 100);
+  }
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-typealias {
+    --gp-sphinx-badge-bg: var(--gp-sphinx-badge-bg-typealias);
+    --gp-sphinx-badge-fg: oklch(82% 0.16 320);
+    --gp-sphinx-badge-border: oklch(60% 0.18 320);
+  }
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-fixture {
+    --gp-sphinx-badge-bg: var(--gp-sphinx-badge-bg-fixture);
+    --gp-sphinx-badge-fg: oklch(82% 0.14 145);
+    --gp-sphinx-badge-border: oklch(60% 0.16 145);
+  }
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-directive {
+    --gp-sphinx-badge-bg: var(--gp-sphinx-badge-bg-directive);
+    --gp-sphinx-badge-fg: oklch(82% 0.14 60);
+    --gp-sphinx-badge-border: oklch(60% 0.16 60);
+  }
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-role {
+    --gp-sphinx-badge-bg: var(--gp-sphinx-badge-bg-role);
+    --gp-sphinx-badge-fg: oklch(82% 0.16 30);
+    --gp-sphinx-badge-border: oklch(60% 0.18 30);
+  }
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-config,
+  :root[data-theme-mode='dark'] .gp-sphinx-badge--type-option {
+    --gp-sphinx-badge-bg: var(--gp-sphinx-badge-bg-config);
+    --gp-sphinx-badge-fg: oklch(82% 0.14 220);
+    --gp-sphinx-badge-border: oklch(60% 0.16 220);
   }
 }

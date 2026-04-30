@@ -651,7 +651,7 @@ def test_symbol_ref_node_round_trips() -> None:
 
 
 def test_badge_node_round_trips_with_full_payload() -> None:
-    """``BadgeNode`` carries text, optional tooltip/icon/size, and style."""
+    """``BadgeNode`` carries text, optional tooltip/icon/size, style, and classes."""
     payload = {
         "type": "badge",
         "text": "readonly",
@@ -659,6 +659,7 @@ def test_badge_node_round_trips_with_full_payload() -> None:
         "icon": "🔒",
         "size": "sm",
         "style": "filled",
+        "classes": ["gp-sphinx-badge--state-readonly"],
     }
     node = BadgeNode.model_validate(payload)
     assert node.model_dump() == payload
@@ -671,6 +672,25 @@ def test_badge_node_optional_fields_default() -> None:
     assert node.icon is None
     assert node.size is None
     assert node.style == "full"
+    assert node.classes == []
+
+
+def test_badge_node_carries_classes_field() -> None:
+    """``BadgeNode.classes`` preserves type/state/scope/mod modifier classes."""
+    node = BadgeNode.model_validate(
+        {
+            "type": "badge",
+            "text": "function",
+            "classes": [
+                "gp-sphinx-badge--type-function",
+                "gp-sphinx-badge--dense",
+            ],
+        },
+    )
+    assert node.classes == [
+        "gp-sphinx-badge--type-function",
+        "gp-sphinx-badge--dense",
+    ]
 
 
 def test_badge_node_rejects_unknown_size() -> None:

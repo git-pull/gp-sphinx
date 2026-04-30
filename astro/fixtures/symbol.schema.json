@@ -303,6 +303,14 @@
     "BadgeNode": {
       "description": "An inline badge produced by :mod:`sphinx_ux_badges`.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import BadgeNode\n>>> badge = BadgeNode(\n...     type=\"badge\",\n...     text=\"readonly\",\n...     tooltip=\"Read-only operation\",\n... )\n>>> badge.style\n'full'",
       "properties": {
+        "classes": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Classes",
+          "type": "array"
+        },
         "icon": {
           "anyOf": [
             {

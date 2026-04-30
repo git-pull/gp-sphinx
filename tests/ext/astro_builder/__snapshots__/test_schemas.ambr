@@ -359,6 +359,15 @@
           'full'
         ''',
         'properties': dict({
+          'classes': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'type': 'string',
+            }),
+            'title': 'Classes',
+            'type': 'array',
+          }),
           'icon': dict({
             'anyOf': list([
               dict({
@@ -2450,6 +2459,15 @@
           'full'
         ''',
         'properties': dict({
+          'classes': dict({
+            'default': list([
+            ]),
+            'items': dict({
+              'type': 'string',
+            }),
+            'title': 'Classes',
+            'type': 'array',
+          }),
           'icon': dict({
             'anyOf': list([
               dict({
