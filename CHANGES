@@ -18,6 +18,8 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+## gp-sphinx 0.0.1a13 (2026-04-30)
+
 ### What's new
 
 #### `sphinx-gp-theme`: Light-mode code blocks now render with a light palette
