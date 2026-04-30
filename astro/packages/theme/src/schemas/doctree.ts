@@ -94,6 +94,7 @@ export type BlockNode =
   | { type: 'literalBlock'; language: string | null; code: string }
   | { type: 'comment'; value: string }
   | { type: 'transition' }
+  | { type: 'rubric'; text: string }
   | { type: 'blockQuote'; children: BlockNode[] }
   | { type: 'bulletList'; children: ListItemNode[] }
   | { type: 'enumeratedList'; start: number | null; children: ListItemNode[] }
@@ -239,6 +240,11 @@ export const commentNodeSchema = z.object({
 
 export const transitionNodeSchema = z.object({
   type: z.literal('transition'),
+})
+
+export const rubricNodeSchema = z.object({
+  type: z.literal('rubric'),
+  text: z.string(),
 })
 
 // ─── Block shapes with non-recursive inline children
@@ -388,6 +394,7 @@ export const blockNodeSchema: z.ZodType<BlockNode> = z.discriminatedUnion('type'
   literalBlockNodeSchema,
   commentNodeSchema,
   transitionNodeSchema,
+  rubricNodeSchema,
   blockQuoteNodeSchema,
   bulletListNodeSchema,
   enumeratedListNodeSchema,

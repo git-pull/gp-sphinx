@@ -612,6 +612,33 @@
     color: var(--color-muted);
   }
 
+  /* Rubric labels (NumPy "Examples", "Notes", "See Also" headers
+   * inside autodoc bodies; also any standalone ``.. rubric::``
+   * directive). Styled as a small uppercase header + accent rule
+   * so the reader sees them as section labels rather than as a
+   * lone paragraph. */
+  .gp-sphinx-rubric {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-fg);
+    margin: 1.4rem 0 0.45rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid
+      color-mix(in oklab, var(--color-border) 70%, var(--color-bg));
+  }
+
+  .gp-sphinx-rubric:first-child {
+    margin-top: 0;
+  }
+
+  /* Tight rubric inside a symbol body: shave the top margin since
+   * the surrounding card already provides whitespace. */
+  .gp-sphinx-symbol__body .gp-sphinx-rubric {
+    margin-top: 1.1rem;
+  }
+
   /* In-body field lists ("Parameters", "Returns", "Return type",
    * "Examples", "Notes") — these came from Sphinx field_list nodes
    * aliased onto definition_list in cycle 29. We render them as a

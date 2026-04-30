@@ -40,6 +40,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -61,6 +62,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -165,6 +169,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -186,6 +191,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -478,6 +486,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -499,6 +508,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -629,6 +641,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -650,6 +663,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -908,6 +924,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -929,6 +946,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -1218,6 +1238,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -1239,6 +1260,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -1431,6 +1455,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -1452,6 +1477,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -1742,6 +1770,42 @@
         'title': 'ReferenceNode',
         'type': 'object',
       }),
+      'RubricNode': dict({
+        'description': '''
+          A short section label like ``Examples`` / ``Notes`` / ``See Also``.
+          
+          Sphinx's ``rubric`` directive — and the ``rubric`` node that NumPy-style
+          docstrings produce when their section headers are promoted — appears
+          inside autodoc bodies as a small bold heading rather than as body
+          prose. Furo themes them with ``<p class="rubric">``; we promote them
+          to a first-class wire-format node so the renderer applies matching
+          small-caps section-header styling that distinguishes them from regular
+          paragraphs.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import RubricNode
+          >>> RubricNode(type="rubric", text="Examples").text
+          'Examples'
+        ''',
+        'properties': dict({
+          'text': dict({
+            'title': 'Text',
+            'type': 'string',
+          }),
+          'type': dict({
+            'const': 'rubric',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'text',
+        ]),
+        'title': 'RubricNode',
+        'type': 'object',
+      }),
       'SectionNode': dict({
         'description': '''
           A document section with id, inline title, and block children.
@@ -1776,6 +1840,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -1797,6 +1862,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -2140,6 +2208,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -2161,6 +2230,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -2265,6 +2337,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -2286,6 +2359,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -2578,6 +2654,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -2599,6 +2676,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -2729,6 +2809,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -2750,6 +2831,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -3008,6 +3092,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -3029,6 +3114,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -3318,6 +3406,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -3339,6 +3428,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -3531,6 +3623,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -3552,6 +3645,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -3900,6 +3996,42 @@
         'title': 'ReferenceNode',
         'type': 'object',
       }),
+      'RubricNode': dict({
+        'description': '''
+          A short section label like ``Examples`` / ``Notes`` / ``See Also``.
+          
+          Sphinx's ``rubric`` directive — and the ``rubric`` node that NumPy-style
+          docstrings produce when their section headers are promoted — appears
+          inside autodoc bodies as a small bold heading rather than as body
+          prose. Furo themes them with ``<p class="rubric">``; we promote them
+          to a first-class wire-format node so the renderer applies matching
+          small-caps section-header styling that distinguishes them from regular
+          paragraphs.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import RubricNode
+          >>> RubricNode(type="rubric", text="Examples").text
+          'Examples'
+        ''',
+        'properties': dict({
+          'text': dict({
+            'title': 'Text',
+            'type': 'string',
+          }),
+          'type': dict({
+            'const': 'rubric',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'text',
+        ]),
+        'title': 'RubricNode',
+        'type': 'object',
+      }),
       'SectionNode': dict({
         'description': '''
           A document section with id, inline title, and block children.
@@ -3934,6 +4066,7 @@
                   'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
+                  'rubric': '#/$defs/RubricNode',
                   'section': '#/$defs/SectionNode',
                   'symbolRef': '#/$defs/SymbolRefNode',
                   'transition': '#/$defs/TransitionNode',
@@ -3955,6 +4088,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/RubricNode',
                 }),
                 dict({
                   '$ref': '#/$defs/BlockQuoteNode',
@@ -4290,6 +4426,7 @@
               'footnote': '#/$defs/FootnoteNode',
               'literalBlock': '#/$defs/LiteralBlockNode',
               'paragraph': '#/$defs/ParagraphNode',
+              'rubric': '#/$defs/RubricNode',
               'section': '#/$defs/SectionNode',
               'symbolRef': '#/$defs/SymbolRefNode',
               'transition': '#/$defs/TransitionNode',
@@ -4311,6 +4448,9 @@
             }),
             dict({
               '$ref': '#/$defs/TransitionNode',
+            }),
+            dict({
+              '$ref': '#/$defs/RubricNode',
             }),
             dict({
               '$ref': '#/$defs/BlockQuoteNode',

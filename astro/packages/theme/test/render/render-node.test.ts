@@ -800,12 +800,25 @@ describe('renderBlockNode — footnote', () => {
   })
 })
 
+describe('renderBlockNode — rubric', () => {
+  test('rubric emits a styled paragraph with the gp-sphinx-rubric class', () => {
+    const html = renderBlockNode({ type: 'rubric', text: 'Examples' })
+    expect(html).toBe('<p class="gp-sphinx-rubric">Examples</p>')
+  })
+
+  test('rubric escapes HTML in its label text', () => {
+    const html = renderBlockNode({ type: 'rubric', text: '<x> & "y"' })
+    expect(html).toBe('<p class="gp-sphinx-rubric">&lt;x&gt; &amp; &quot;y&quot;</p>')
+  })
+})
+
 describe('renderBlockNode — type-coverage', () => {
   const blockFixtures: BlockNode[] = [
     { type: 'paragraph', children: [] },
     { type: 'literalBlock', language: null, code: '' },
     { type: 'comment', value: '' },
     { type: 'transition' },
+    { type: 'rubric', text: 'Examples' },
     { type: 'blockQuote', children: [] },
     { type: 'bulletList', children: [] },
     { type: 'enumeratedList', start: null, children: [] },
