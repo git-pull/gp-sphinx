@@ -650,6 +650,48 @@ describe('renderInlineNode — badge', () => {
   })
 })
 
+describe('renderInlineNode — footnoteReference', () => {
+  test('numeric footnote reference renders as a bracketed superscript link', () => {
+    const html = renderInlineNode({
+      type: 'footnoteReference',
+      kind: 'footnote',
+      href: '#footnote-1',
+      label: '1',
+    })
+    expect(html).toBe(
+      '<sup class="gp-sphinx-footnote-reference-wrap"><a class="gp-sphinx-footnote-reference" href="#footnote-1">[1]</a></sup>',
+    )
+  })
+
+  test('citation reference uses the citation class instead of footnote', () => {
+    const html = renderInlineNode({
+      type: 'footnoteReference',
+      kind: 'citation',
+      href: '#smith2020',
+      label: 'Smith2020',
+    })
+    expect(html).toContain('class="gp-sphinx-citation-reference-wrap"')
+    expect(html).toContain('class="gp-sphinx-citation-reference"')
+    expect(html).toContain('[Smith2020]')
+    expect(html).toContain('href="#smith2020"')
+  })
+
+  test('escapes hostile content in label and href', () => {
+    const html = renderInlineNode({
+      type: 'footnoteReference',
+      kind: 'footnote',
+      href: '"</a>',
+      label: '<x>',
+    })
+    // The legitimate closing sequence ends with ``</a></sup>``; the
+    // hostile attempt would inject an additional ``</a>`` mid-tag.
+    // Counting confirms only the legitimate closer survives.
+    expect(html.match(/<\/a>/g)?.length ?? 0).toBe(1)
+    expect(html).toContain('&quot;')
+    expect(html).toContain('&lt;x&gt;')
+  })
+})
+
 describe('renderInlineNode — type-coverage', () => {
   // Sanity check that every InlineNode variant is dispatched. If a new
   // variant is added to the schema without updating renderInlineNode,
@@ -667,6 +709,12 @@ describe('renderInlineNode — type-coverage', () => {
       children: [{ type: 'text', value: 'x' }],
     },
     {
+      type: 'footnoteReference',
+      kind: 'footnote',
+      href: '#footnote-1',
+      label: '1',
+    },
+    {
       type: 'badge',
       text: 'x',
       tooltip: null,
@@ -682,6 +730,36 @@ describe('renderInlineNode — type-coverage', () => {
   })
 })
 
+describe('renderBlockNode — footnote', () => {
+  test('footnote body renders with id, label, and aside chrome', () => {
+    const html = renderBlockNode({
+      type: 'footnote',
+      kind: 'footnote',
+      id: 'footnote-1',
+      label: '1',
+      children: [{ type: 'paragraph', children: [{ type: 'text', value: 'A note.' }] }],
+    })
+    expect(html).toContain('class="gp-sphinx-footnote"')
+    expect(html).toContain('id="footnote-1"')
+    expect(html).toContain('role="doc-footnote"')
+    expect(html).toContain('<span class="gp-sphinx-footnote__label">[1]</span>')
+    expect(html).toContain('<div class="gp-sphinx-footnote__body"><p>A note.</p></div>')
+  })
+
+  test('citation body uses the citation class and biblioentry role', () => {
+    const html = renderBlockNode({
+      type: 'footnote',
+      kind: 'citation',
+      id: 'smith2020',
+      label: 'Smith2020',
+      children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Smith, J.' }] }],
+    })
+    expect(html).toContain('class="gp-sphinx-citation"')
+    expect(html).toContain('role="doc-biblioentry"')
+    expect(html).toContain('<span class="gp-sphinx-citation__label">[Smith2020]</span>')
+  })
+})
+
 describe('renderBlockNode — type-coverage', () => {
   const blockFixtures: BlockNode[] = [
     { type: 'paragraph', children: [] },
@@ -694,6 +772,13 @@ describe('renderBlockNode — type-coverage', () => {
     {
       type: 'admonition',
       variant: 'note',
+      children: [],
+    },
+    {
+      type: 'footnote',
+      kind: 'footnote',
+      id: 'footnote-1',
+      label: '1',
       children: [],
     },
     { type: 'definitionList', children: [] },

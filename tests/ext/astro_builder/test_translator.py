@@ -643,6 +643,110 @@ def test_translator_handles_nested_sections() -> None:
     assert nested_child.title == [TextNode(type="text", value="Inner")]
 
 
+class FootnoteFixture(t.NamedTuple):
+    """Test case for footnote / citation handlers."""
+
+    test_id: str
+    factory: t.Callable[[], nodes.Element]
+    ref_factory: t.Callable[[], nodes.Element]
+    body_kind: t.Literal["footnote", "citation"]
+
+
+def _make_footnote() -> nodes.Element:
+    fn = nodes.footnote(ids=["footnote-1"], names=["1"])
+    label = nodes.label()
+    label += nodes.Text("1")
+    para = nodes.paragraph()
+    para += nodes.Text("First footnote.")
+    fn += label
+    fn += para
+    return fn
+
+
+def _make_footnote_ref() -> nodes.Element:
+    ref = nodes.footnote_reference(refid="footnote-1")
+    ref += nodes.Text("1")
+    return ref
+
+
+def _make_citation() -> nodes.Element:
+    cit = nodes.citation(ids=["smith2020"], names=["smith2020"])
+    label = nodes.label()
+    label += nodes.Text("Smith2020")
+    para = nodes.paragraph()
+    para += nodes.Text("Smith, J. (2020). A study.")
+    cit += label
+    cit += para
+    return cit
+
+
+def _make_citation_ref() -> nodes.Element:
+    ref = nodes.citation_reference(refid="smith2020")
+    ref += nodes.Text("Smith2020")
+    return ref
+
+
+_FOOTNOTE_FIXTURES: list[FootnoteFixture] = [
+    FootnoteFixture("footnote", _make_footnote, _make_footnote_ref, "footnote"),
+    FootnoteFixture("citation", _make_citation, _make_citation_ref, "citation"),
+]
+
+
+@pytest.mark.parametrize(
+    list(FootnoteFixture._fields),
+    _FOOTNOTE_FIXTURES,
+    ids=[f.test_id for f in _FOOTNOTE_FIXTURES],
+)
+def test_translator_handles_footnote_and_reference(
+    test_id: str,
+    factory: t.Callable[[], nodes.Element],
+    ref_factory: t.Callable[[], nodes.Element],
+    body_kind: t.Literal["footnote", "citation"],
+) -> None:
+    """Footnote / citation bodies and inline references round-trip."""
+    from gp_sphinx_astro_builder.models import (
+        FootnoteNode,
+        FootnoteReferenceNode,
+    )
+
+    doc = _new_document()
+    section = nodes.section(ids=["s"])
+    title = nodes.title()
+    title += nodes.Text("S")
+
+    para_with_ref = nodes.paragraph()
+    para_with_ref += nodes.Text("See ")
+    para_with_ref += ref_factory()
+    para_with_ref += nodes.Text(" for details.")
+
+    body = factory()
+
+    section += title
+    section += para_with_ref
+    section += body
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="s")
+    doc.walkabout(translator)
+    children = translator.result().tree.children
+
+    paragraph_child = children[0]
+    assert isinstance(paragraph_child, ParagraphNode)
+    inline_children = paragraph_child.children
+    ref_child = inline_children[1]
+    assert isinstance(ref_child, FootnoteReferenceNode)
+    assert ref_child.kind == body_kind
+    assert ref_child.href.startswith("#")
+    assert ref_child.label != ""
+
+    body_child = children[1]
+    assert isinstance(body_child, FootnoteNode)
+    assert body_child.kind == body_kind
+    assert body_child.id != ""
+    assert body_child.label != ""
+    assert len(body_child.children) >= 1
+
+
 def test_translator_result_validates_through_pydantic() -> None:
     """The translator result is a real Pydantic ``Document``, not a dict."""
     doc = _new_document()

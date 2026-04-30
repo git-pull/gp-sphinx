@@ -79,6 +79,13 @@ function renderBlock(node: BlockNode, highlight: CodeHighlight): string {
     }
     case 'admonition':
       return `<aside class="admonition admonition--${escapeHtml(node.variant)}">${node.children.map((c) => renderBlock(c, highlight)).join('')}</aside>`
+    case 'footnote': {
+      const baseClass = `gp-sphinx-${node.kind}`
+      const idAttr = node.id === '' ? '' : ` id="${escapeHtml(node.id)}"`
+      const labelHtml = `<span class="${baseClass}__label">[${escapeHtml(node.label)}]</span>`
+      const bodyHtml = `<div class="${baseClass}__body">${node.children.map((c) => renderBlock(c, highlight)).join('')}</div>`
+      return `<aside class="${baseClass}" role="doc-${node.kind === 'footnote' ? 'footnote' : 'biblioentry'}"${idAttr}>${labelHtml}${bodyHtml}</aside>`
+    }
     case 'definitionList':
       return `<dl>${node.children.map((c) => renderDefinitionListItem(c, highlight)).join('')}</dl>`
     default:

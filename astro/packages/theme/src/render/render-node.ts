@@ -44,6 +44,16 @@ export function renderInlineNode(node: InlineNode): string {
       return `<strong>${node.children.map(renderInlineNode).join('')}</strong>`
     case 'reference':
       return `<a href="${escapeHtml(node.href)}">${node.children.map(renderInlineNode).join('')}</a>`
+    case 'footnoteReference': {
+      // Footnote / citation jumps render as a bracketed superscript so
+      // they read as inline references rather than body text. The
+      // ``kind`` discriminator drives a single class so CSS can style
+      // citations (``Smith2020``) differently from numeric footnotes.
+      const refClass = `gp-sphinx-${node.kind}-reference`
+      const escapedHref = escapeHtml(node.href)
+      const escapedLabel = escapeHtml(node.label)
+      return `<sup class="${refClass}-wrap"><a class="${refClass}" href="${escapedHref}">[${escapedLabel}]</a></sup>`
+    }
     case 'image':
       return node.alt === null
         ? `<img src="${escapeHtml(node.uri)}" />`
@@ -114,6 +124,13 @@ export function renderBlockNode(node: BlockNode): string {
     }
     case 'admonition':
       return `<aside class="admonition admonition--${escapeHtml(node.variant)}">${node.children.map(renderBlockNode).join('')}</aside>`
+    case 'footnote': {
+      const baseClass = `gp-sphinx-${node.kind}`
+      const idAttr = node.id === '' ? '' : ` id="${escapeHtml(node.id)}"`
+      const labelHtml = `<span class="${baseClass}__label">[${escapeHtml(node.label)}]</span>`
+      const bodyHtml = `<div class="${baseClass}__body">${node.children.map(renderBlockNode).join('')}</div>`
+      return `<aside class="${baseClass}" role="doc-${node.kind === 'footnote' ? 'footnote' : 'biblioentry'}"${idAttr}>${labelHtml}${bodyHtml}</aside>`
+    }
     case 'definitionList':
       return `<dl>${node.children.map(renderDefinitionListItem).join('')}</dl>`
     case 'symbolRef': {

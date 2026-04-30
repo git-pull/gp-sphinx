@@ -129,6 +129,10 @@ _BLOCK_CONTEXT_FRAMES: frozenset[str] = frozenset(
         "admonition",
         "definition",
         "desc_content",
+        # Footnote and citation bodies declare ``children: list[BlockNode]``
+        # so paragraph-wrap any inline content (rare, but possible if a
+        # citation body somehow holds bare text).
+        "footnote",
         # Frames pushed by extension JSON visitors. ``apiLayout`` and
         # ``cliCommand`` both declare ``children: list[BlockNode]`` in
         # their Pydantic models, so any inline content that lands inside
@@ -152,7 +156,16 @@ produce ``PassthroughTextElement``, and the toctree's expanded
 """
 
 _INLINE_TYPES: frozenset[str] = frozenset(
-    {"text", "literal", "emphasis", "strong", "reference", "image", "badge"},
+    {
+        "text",
+        "literal",
+        "emphasis",
+        "strong",
+        "reference",
+        "footnoteReference",
+        "image",
+        "badge",
+    },
 )
 """Wire-format ``type`` discriminators that count as inline."""
 
@@ -186,6 +199,7 @@ _FrameKind = t.Literal[
     "enumeratedList",
     "listItem",
     "admonition",
+    "footnote",
     "definitionList",
     "definitionListItem",
     "term",
@@ -664,6 +678,98 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
     def depart_versionmodified(self, node: nodes.Element) -> None:
         """Close the version-modified admonition frame."""
         self._close_admonition()
+
+    def _open_footnote(self, node: nodes.Element, kind: str) -> None:
+        """Push a footnote / citation frame, extracting label + id from the node.
+
+        docutils stores the label as a child ``<label>`` node and the anchor
+        target on ``node["ids"]``. We pre-extract both so the body of the
+        frame can be filled with regular block content via the standard
+        block dispatch (``visit_paragraph``, ``visit_bullet_list``…).
+        """
+        node_ids = node.get("ids") or []
+        target_id = node_ids[0] if node_ids else ""
+        label_text = ""
+        for child in node.children:
+            if isinstance(child, nodes.label):
+                label_text = child.astext()
+                break
+        self._stack.append(
+            {
+                "kind": "footnote",
+                "data": {
+                    "type": "footnote",
+                    "kind": kind,
+                    "id": target_id,
+                    "label": label_text,
+                    "children": [],
+                },
+            },
+        )
+
+    def _close_footnote(self) -> None:
+        """Pop the current footnote frame and attach to the parent."""
+        frame = self._stack.pop()
+        self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def visit_footnote(self, node: nodes.Element) -> None:
+        """Open a footnote frame; the label child is captured, others walk."""
+        self._open_footnote(node, "footnote")
+
+    def depart_footnote(self, node: nodes.Element) -> None:
+        """Close the footnote frame."""
+        self._close_footnote()
+
+    def visit_citation(self, node: nodes.Element) -> None:
+        """Open a citation frame (same chrome as footnote, different ``kind``)."""
+        self._open_footnote(node, "citation")
+
+    def depart_citation(self, node: nodes.Element) -> None:
+        """Close the citation frame."""
+        self._close_footnote()
+
+    def visit_label(self, node: nodes.Element) -> None:
+        """Skip the label child of a footnote / citation.
+
+        Labels are pre-extracted in ``_open_footnote`` and stored on the
+        footnote frame; rendering them again as a paragraph would duplicate
+        the bracketed identifier in the output.
+        """
+        raise nodes.SkipNode
+
+    def _emit_footnote_like_reference(
+        self,
+        node: nodes.Element,
+        kind: str,
+    ) -> None:
+        """Append a ``footnoteReference`` inline node to the current frame."""
+        refid = node.get("refid") or node.get("refname") or ""
+        href = f"#{refid}" if refid else ""
+        label_text = node.astext()
+        self.append_node(
+            {
+                "type": "footnoteReference",
+                "kind": kind,
+                "href": href,
+                "label": label_text,
+            },
+        )
+
+    def visit_footnote_reference(self, node: nodes.Element) -> None:
+        """Emit an inline ``footnoteReference`` jump anchor."""
+        self._emit_footnote_like_reference(node, "footnote")
+        raise nodes.SkipNode
+
+    def depart_footnote_reference(self, node: nodes.Element) -> None:
+        """No-op; ``visit_footnote_reference`` raises ``SkipNode``."""
+
+    def visit_citation_reference(self, node: nodes.Element) -> None:
+        """Emit an inline ``footnoteReference`` jump anchor with citation kind."""
+        self._emit_footnote_like_reference(node, "citation")
+        raise nodes.SkipNode
+
+    def depart_citation_reference(self, node: nodes.Element) -> None:
+        """No-op; ``visit_citation_reference`` raises ``SkipNode``."""
 
     def visit_definition_list(self, node: nodes.Element) -> None:
         """Open a definition_list frame."""

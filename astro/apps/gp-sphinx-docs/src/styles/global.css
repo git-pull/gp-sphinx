@@ -729,6 +729,83 @@
     }
   }
 
+  /* ─── Footnotes and citations ─────────────────────────────────
+   * docutils ``footnote`` / ``citation`` bodies render as a tinted
+   * ``<aside>`` with a bracketed label inline-flowed before the
+   * body text. Their inline references are bracketed superscripts
+   * with a subtle accent colour to mark them apart from regular
+   * links. */
+
+  .gp-sphinx-footnote-reference-wrap,
+  .gp-sphinx-citation-reference-wrap {
+    font-size: 0.7em;
+    line-height: 0;
+    vertical-align: super;
+    margin-left: 0.05em;
+  }
+
+  .gp-sphinx-footnote-reference,
+  .gp-sphinx-citation-reference {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .gp-sphinx-footnote-reference:hover,
+  .gp-sphinx-citation-reference:hover {
+    text-decoration: underline;
+  }
+
+  .gp-sphinx-footnote,
+  .gp-sphinx-citation {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 0.5rem;
+    align-items: baseline;
+    padding: 0.4rem 0.75rem;
+    margin: 0.25rem 0;
+    background: color-mix(in oklab, var(--color-code-bg) 30%, var(--color-bg));
+    border-left: 3px solid var(--color-accent);
+    border-radius: 0 4px 4px 0;
+    font-size: 0.9rem;
+  }
+
+  .gp-sphinx-footnote__label,
+  .gp-sphinx-citation__label {
+    font-weight: 600;
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+  }
+
+  .gp-sphinx-footnote__body,
+  .gp-sphinx-citation__body {
+    min-width: 0;
+  }
+
+  .gp-sphinx-footnote__body > p,
+  .gp-sphinx-citation__body > p {
+    margin: 0.15rem 0;
+  }
+
+  .gp-sphinx-footnote__body > p:first-child,
+  .gp-sphinx-citation__body > p:first-child {
+    margin-top: 0;
+  }
+
+  .gp-sphinx-footnote__body > p:last-child,
+  .gp-sphinx-citation__body > p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Group adjacent footnotes / citations into a tight stack so the
+   * page reads as a footnote section rather than a row of unrelated
+   * call-outs. */
+  .gp-sphinx-footnote + .gp-sphinx-footnote,
+  .gp-sphinx-citation + .gp-sphinx-citation {
+    border-top: 1px dashed
+      color-mix(in oklab, var(--color-border) 60%, var(--color-bg));
+  }
+
   /* ─── apiLayout / autodoc layout components ───────────────────
    * The ``sphinx-ux-autodoc-layout`` extension emits seven generic
    * layout primitives (region, fold, sig_fold, component,

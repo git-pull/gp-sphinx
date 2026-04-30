@@ -15,6 +15,7 @@
                 "comment": "#/$defs/CommentNode",
                 "definitionList": "#/$defs/DefinitionListNode",
                 "enumeratedList": "#/$defs/EnumeratedListNode",
+                "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
                 "section": "#/$defs/SectionNode",
@@ -50,6 +51,9 @@
               },
               {
                 "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/FootnoteNode"
               },
               {
                 "$ref": "#/$defs/DefinitionListNode"
@@ -116,6 +120,7 @@
                 "comment": "#/$defs/CommentNode",
                 "definitionList": "#/$defs/DefinitionListNode",
                 "enumeratedList": "#/$defs/EnumeratedListNode",
+                "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
                 "section": "#/$defs/SectionNode",
@@ -151,6 +156,9 @@
               },
               {
                 "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/FootnoteNode"
               },
               {
                 "$ref": "#/$defs/DefinitionListNode"
@@ -383,6 +391,7 @@
                 "comment": "#/$defs/CommentNode",
                 "definitionList": "#/$defs/DefinitionListNode",
                 "enumeratedList": "#/$defs/EnumeratedListNode",
+                "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
                 "section": "#/$defs/SectionNode",
@@ -418,6 +427,9 @@
               },
               {
                 "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/FootnoteNode"
               },
               {
                 "$ref": "#/$defs/DefinitionListNode"
@@ -496,6 +508,7 @@
                 "comment": "#/$defs/CommentNode",
                 "definitionList": "#/$defs/DefinitionListNode",
                 "enumeratedList": "#/$defs/EnumeratedListNode",
+                "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
                 "section": "#/$defs/SectionNode",
@@ -531,6 +544,9 @@
               },
               {
                 "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/FootnoteNode"
               },
               {
                 "$ref": "#/$defs/DefinitionListNode"
@@ -734,6 +750,7 @@
                 "comment": "#/$defs/CommentNode",
                 "definitionList": "#/$defs/DefinitionListNode",
                 "enumeratedList": "#/$defs/EnumeratedListNode",
+                "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
                 "section": "#/$defs/SectionNode",
@@ -771,6 +788,9 @@
                 "$ref": "#/$defs/AdmonitionNode"
               },
               {
+                "$ref": "#/$defs/FootnoteNode"
+              },
+              {
                 "$ref": "#/$defs/DefinitionListNode"
               },
               {
@@ -793,6 +813,7 @@
               "mapping": {
                 "badge": "#/$defs/BadgeNode",
                 "emphasis": "#/$defs/EmphasisNode",
+                "footnoteReference": "#/$defs/FootnoteReferenceNode",
                 "image": "#/$defs/ImageNode",
                 "literal": "#/$defs/LiteralNode",
                 "reference": "#/$defs/ReferenceNode",
@@ -816,6 +837,9 @@
               },
               {
                 "$ref": "#/$defs/ReferenceNode"
+              },
+              {
+                "$ref": "#/$defs/FootnoteReferenceNode"
               },
               {
                 "$ref": "#/$defs/ImageNode"
@@ -874,6 +898,7 @@
               "mapping": {
                 "badge": "#/$defs/BadgeNode",
                 "emphasis": "#/$defs/EmphasisNode",
+                "footnoteReference": "#/$defs/FootnoteReferenceNode",
                 "image": "#/$defs/ImageNode",
                 "literal": "#/$defs/LiteralNode",
                 "reference": "#/$defs/ReferenceNode",
@@ -897,6 +922,9 @@
               },
               {
                 "$ref": "#/$defs/ReferenceNode"
+              },
+              {
+                "$ref": "#/$defs/FootnoteReferenceNode"
               },
               {
                 "$ref": "#/$defs/ImageNode"
@@ -957,6 +985,144 @@
       "title": "EnumeratedListNode",
       "type": "object"
     },
+    "FootnoteNode": {
+      "description": "A block-level footnote or citation body.\n\nPairs a ``label`` (the bracketed identifier rendered alongside the body)\nwith a stable ``id`` (the anchor target a ``FootnoteReferenceNode`` jumps\nto) and a list of block children \u2014 typically a single paragraph but\ndocutils permits multiple blocks for rich citations.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import FootnoteNode\n>>> node = FootnoteNode.model_validate(\n...     {\n...         \"type\": \"footnote\",\n...         \"kind\": \"footnote\",\n...         \"id\": \"footnote-1\",\n...         \"label\": \"1\",\n...         \"children\": [\n...             {\n...                 \"type\": \"paragraph\",\n...                 \"children\": [{\"type\": \"text\", \"value\": \"x\"}],\n...             },\n...         ],\n...     },\n... )\n>>> node.label\n'1'",
+      "properties": {
+        "children": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "admonition": "#/$defs/AdmonitionNode",
+                "apiLayout": "#/$defs/ApiLayoutNode",
+                "blockQuote": "#/$defs/BlockQuoteNode",
+                "bulletList": "#/$defs/BulletListNode",
+                "cliCommand": "#/$defs/CliCommandNode",
+                "comment": "#/$defs/CommentNode",
+                "definitionList": "#/$defs/DefinitionListNode",
+                "enumeratedList": "#/$defs/EnumeratedListNode",
+                "footnote": "#/$defs/FootnoteNode",
+                "literalBlock": "#/$defs/LiteralBlockNode",
+                "paragraph": "#/$defs/ParagraphNode",
+                "section": "#/$defs/SectionNode",
+                "symbolRef": "#/$defs/SymbolRefNode",
+                "transition": "#/$defs/TransitionNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ParagraphNode"
+              },
+              {
+                "$ref": "#/$defs/SectionNode"
+              },
+              {
+                "$ref": "#/$defs/LiteralBlockNode"
+              },
+              {
+                "$ref": "#/$defs/CommentNode"
+              },
+              {
+                "$ref": "#/$defs/TransitionNode"
+              },
+              {
+                "$ref": "#/$defs/BlockQuoteNode"
+              },
+              {
+                "$ref": "#/$defs/BulletListNode"
+              },
+              {
+                "$ref": "#/$defs/EnumeratedListNode"
+              },
+              {
+                "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/FootnoteNode"
+              },
+              {
+                "$ref": "#/$defs/DefinitionListNode"
+              },
+              {
+                "$ref": "#/$defs/SymbolRefNode"
+              },
+              {
+                "$ref": "#/$defs/ApiLayoutNode"
+              },
+              {
+                "$ref": "#/$defs/CliCommandNode"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "footnote",
+            "citation"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "type": {
+          "const": "footnote",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "kind",
+        "id",
+        "label",
+        "children"
+      ],
+      "title": "FootnoteNode",
+      "type": "object"
+    },
+    "FootnoteReferenceNode": {
+      "description": "An inline footnote or citation reference (the bracketed superscript).\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import FootnoteReferenceNode\n>>> node = FootnoteReferenceNode.model_validate(\n...     {\n...         \"type\": \"footnoteReference\",\n...         \"kind\": \"footnote\",\n...         \"href\": \"#footnote-1\",\n...         \"label\": \"1\",\n...     },\n... )\n>>> node.kind\n'footnote'",
+      "properties": {
+        "href": {
+          "title": "Href",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "footnote",
+            "citation"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "type": {
+          "const": "footnoteReference",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "kind",
+        "href",
+        "label"
+      ],
+      "title": "FootnoteReferenceNode",
+      "type": "object"
+    },
     "ImageNode": {
       "description": "An inline image leaf with a uri and optional alt text.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import ImageNode\n>>> ImageNode(type=\"image\", uri=\"/img/x.svg\", alt=\"X\").alt\n'X'",
       "properties": {
@@ -1004,6 +1170,7 @@
                 "comment": "#/$defs/CommentNode",
                 "definitionList": "#/$defs/DefinitionListNode",
                 "enumeratedList": "#/$defs/EnumeratedListNode",
+                "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
                 "section": "#/$defs/SectionNode",
@@ -1039,6 +1206,9 @@
               },
               {
                 "$ref": "#/$defs/AdmonitionNode"
+              },
+              {
+                "$ref": "#/$defs/FootnoteNode"
               },
               {
                 "$ref": "#/$defs/DefinitionListNode"
@@ -1131,6 +1301,7 @@
               "mapping": {
                 "badge": "#/$defs/BadgeNode",
                 "emphasis": "#/$defs/EmphasisNode",
+                "footnoteReference": "#/$defs/FootnoteReferenceNode",
                 "image": "#/$defs/ImageNode",
                 "literal": "#/$defs/LiteralNode",
                 "reference": "#/$defs/ReferenceNode",
@@ -1154,6 +1325,9 @@
               },
               {
                 "$ref": "#/$defs/ReferenceNode"
+              },
+              {
+                "$ref": "#/$defs/FootnoteReferenceNode"
               },
               {
                 "$ref": "#/$defs/ImageNode"
@@ -1188,6 +1362,7 @@
               "mapping": {
                 "badge": "#/$defs/BadgeNode",
                 "emphasis": "#/$defs/EmphasisNode",
+                "footnoteReference": "#/$defs/FootnoteReferenceNode",
                 "image": "#/$defs/ImageNode",
                 "literal": "#/$defs/LiteralNode",
                 "reference": "#/$defs/ReferenceNode",
@@ -1211,6 +1386,9 @@
               },
               {
                 "$ref": "#/$defs/ReferenceNode"
+              },
+              {
+                "$ref": "#/$defs/FootnoteReferenceNode"
               },
               {
                 "$ref": "#/$defs/ImageNode"
@@ -1256,6 +1434,7 @@
                 "comment": "#/$defs/CommentNode",
                 "definitionList": "#/$defs/DefinitionListNode",
                 "enumeratedList": "#/$defs/EnumeratedListNode",
+                "footnote": "#/$defs/FootnoteNode",
                 "literalBlock": "#/$defs/LiteralBlockNode",
                 "paragraph": "#/$defs/ParagraphNode",
                 "section": "#/$defs/SectionNode",
@@ -1293,6 +1472,9 @@
                 "$ref": "#/$defs/AdmonitionNode"
               },
               {
+                "$ref": "#/$defs/FootnoteNode"
+              },
+              {
                 "$ref": "#/$defs/DefinitionListNode"
               },
               {
@@ -1319,6 +1501,7 @@
               "mapping": {
                 "badge": "#/$defs/BadgeNode",
                 "emphasis": "#/$defs/EmphasisNode",
+                "footnoteReference": "#/$defs/FootnoteReferenceNode",
                 "image": "#/$defs/ImageNode",
                 "literal": "#/$defs/LiteralNode",
                 "reference": "#/$defs/ReferenceNode",
@@ -1342,6 +1525,9 @@
               },
               {
                 "$ref": "#/$defs/ReferenceNode"
+              },
+              {
+                "$ref": "#/$defs/FootnoteReferenceNode"
               },
               {
                 "$ref": "#/$defs/ImageNode"
@@ -1378,6 +1564,7 @@
               "mapping": {
                 "badge": "#/$defs/BadgeNode",
                 "emphasis": "#/$defs/EmphasisNode",
+                "footnoteReference": "#/$defs/FootnoteReferenceNode",
                 "image": "#/$defs/ImageNode",
                 "literal": "#/$defs/LiteralNode",
                 "reference": "#/$defs/ReferenceNode",
@@ -1401,6 +1588,9 @@
               },
               {
                 "$ref": "#/$defs/ReferenceNode"
+              },
+              {
+                "$ref": "#/$defs/FootnoteReferenceNode"
               },
               {
                 "$ref": "#/$defs/ImageNode"

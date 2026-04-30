@@ -103,6 +103,40 @@ class ReferenceNode(BaseModel):
     children: list[InlineNode]
 
 
+FootnoteKind = t.Literal["footnote", "citation"]
+"""Whether a footnote-shaped node carries a numeric footnote or a named citation.
+
+docutils splits ``footnote`` and ``citation`` into separate node classes, but
+Astro renders them with the same chrome (``<sup>`` jump for the inline ref,
+``<aside>`` block for the body) — only the CSS class differs. We collapse the
+two onto one model and discriminate on this field at render time.
+"""
+
+
+class FootnoteReferenceNode(BaseModel):
+    """An inline footnote or citation reference (the bracketed superscript).
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import FootnoteReferenceNode
+    >>> node = FootnoteReferenceNode.model_validate(
+    ...     {
+    ...         "type": "footnoteReference",
+    ...         "kind": "footnote",
+    ...         "href": "#footnote-1",
+    ...         "label": "1",
+    ...     },
+    ... )
+    >>> node.kind
+    'footnote'
+    """
+
+    type: t.Literal["footnoteReference"]
+    kind: FootnoteKind
+    href: str
+    label: str
+
+
 BadgeSize = t.Literal["xxs", "xs", "sm", "md", "lg", "xl"]
 """Allowed values for :attr:`BadgeNode.size`.
 
@@ -523,6 +557,42 @@ class AdmonitionNode(BaseModel):
     children: list[BlockNode]
 
 
+class FootnoteNode(BaseModel):
+    """A block-level footnote or citation body.
+
+    Pairs a ``label`` (the bracketed identifier rendered alongside the body)
+    with a stable ``id`` (the anchor target a ``FootnoteReferenceNode`` jumps
+    to) and a list of block children — typically a single paragraph but
+    docutils permits multiple blocks for rich citations.
+
+    Examples
+    --------
+    >>> from gp_sphinx_astro_builder.models import FootnoteNode
+    >>> node = FootnoteNode.model_validate(
+    ...     {
+    ...         "type": "footnote",
+    ...         "kind": "footnote",
+    ...         "id": "footnote-1",
+    ...         "label": "1",
+    ...         "children": [
+    ...             {
+    ...                 "type": "paragraph",
+    ...                 "children": [{"type": "text", "value": "x"}],
+    ...             },
+    ...         ],
+    ...     },
+    ... )
+    >>> node.label
+    '1'
+    """
+
+    type: t.Literal["footnote"]
+    kind: FootnoteKind
+    id: str
+    label: str
+    children: list[BlockNode]
+
+
 class ParagraphNode(BaseModel):
     """A block-level paragraph wrapping inline children.
 
@@ -597,6 +667,7 @@ InlineNode = t.Annotated[
     | StrongNode
     | LiteralNode
     | ReferenceNode
+    | FootnoteReferenceNode
     | ImageNode
     | BadgeNode,
     Field(discriminator="type"),
@@ -613,6 +684,7 @@ BlockNode = t.Annotated[
     | BulletListNode
     | EnumeratedListNode
     | AdmonitionNode
+    | FootnoteNode
     | DefinitionListNode
     | SymbolRefNode
     | ApiLayoutNode
@@ -777,6 +849,7 @@ SectionNode.model_rebuild()
 BlockQuoteNode.model_rebuild()
 ListItemNode.model_rebuild()
 AdmonitionNode.model_rebuild()
+FootnoteNode.model_rebuild()
 DefinitionListItemNode.model_rebuild()
 ApiLayoutNode.model_rebuild()
 CliCommandNode.model_rebuild()
