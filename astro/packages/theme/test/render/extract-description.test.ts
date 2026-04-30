@@ -81,4 +81,51 @@ describe('extractDescription', () => {
     expect(result).toHaveLength(160)
     expect(result?.endsWith('…')).toBe(true)
   })
+
+  test('skips a leading badge-only paragraph and uses the first prose paragraph', () => {
+    // Mirrors the gp-sphinx package overview shape: a header row of
+    // status badges + GitHub/PyPI links, followed by the real
+    // intro paragraph. The badge labels concatenated as
+    // "Alpha GitHub PyPI" make a useless OG description; the
+    // real summary lives in paragraph #2.
+    const tree = section('pkg', 'Package', [
+      {
+        type: 'paragraph',
+        children: [
+          {
+            type: 'badge',
+            text: 'Alpha',
+            tooltip: null,
+            icon: null,
+            size: null,
+            style: 'full',
+            classes: ['gp-sphinx-badge--meta-alpha'],
+          },
+          { type: 'text', value: ' ' },
+          {
+            type: 'reference',
+            href: 'https://github.com/git-pull/gp-sphinx',
+            classes: [],
+            children: [{ type: 'text', value: 'GitHub' }],
+          },
+          { type: 'text', value: ' ' },
+          {
+            type: 'reference',
+            href: 'https://pypi.org/project/sphinx-autodoc-fastmcp/',
+            classes: [],
+            children: [{ type: 'text', value: 'PyPI' }],
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Sphinx extension for documenting FastMCP tools.' },
+        ],
+      },
+    ])
+    expect(extractDescription(tree)).toBe(
+      'Sphinx extension for documenting FastMCP tools.',
+    )
+  })
 })
