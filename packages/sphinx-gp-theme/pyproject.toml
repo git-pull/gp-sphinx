@@ -33,6 +33,9 @@ dependencies = [
 [project.entry-points."sphinx.html_themes"]
 "sphinx-gp-theme" = "sphinx_gp_theme"
 
+[project.entry-points."pygments.styles"]
+"gp-sphinx-light" = "sphinx_gp_theme.pygments_styles:GpSphinxLightStyle"
+
 [project.urls]
 Repository = "https://github.com/git-pull/gp-sphinx"
 

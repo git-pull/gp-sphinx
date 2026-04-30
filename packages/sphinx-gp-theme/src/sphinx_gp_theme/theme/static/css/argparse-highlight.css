@@ -2,20 +2,94 @@
  * Argparse/CLI Highlighting Styles
  *
  * Styles for CLI inline roles and argparse help output highlighting.
- * Uses "One Dark" inspired color palette (Python 3.14 argparse style).
+ * Two parallel palettes are exposed via custom properties:
  *
- * Color Palette:
- *   Background:    #282C34
- *   Default text:  #CCCED4
- *   Usage label:   #61AFEF (blue, bold)
- *   Program name:  #C678DD (purple, bold)
- *   Subcommands:   #98C379 (green)
- *   Options:       #56B6C2 (teal)
- *   Metavars:      #E5C07B (yellow, italic)
- *   Choices:       #98C379 (green)
- *   Headings:      #E5E5E5 (bright, bold)
- *   Punctuation:   #CCCED4
+ *   - Light mode (default)  : CodeMirror light palette (Microviz / social-embed).
+ *   - Dark mode (overrides) : "One Dark" inspired palette (the historic
+ *                             Python 3.14 argparse style).
+ *
+ * Dark overrides follow Furo's scoping convention: applied under
+ * `body[data-theme="dark"]` and inside
+ * `@media (prefers-color-scheme: dark) { body:not([data-theme="light"]) … }`,
+ * so theme switches and the OS-level "auto" mode both Just Work.
+ *
+ * Token role -> Custom property:
+ *   Code background       --gp-sphinx-argparse-code-bg
+ *   Default text          --gp-sphinx-argparse-text
+ *   Usage label           --gp-sphinx-argparse-usage-label   (bold)
+ *   Section heading       --gp-sphinx-argparse-section       (bold)
+ *   Program / command lbl --gp-sphinx-argparse-command       (bold)
+ *   Subcommand            --gp-sphinx-argparse-subcommand    (bold)
+ *   Choice value          --gp-sphinx-argparse-choice
+ *   Option flag (-h, --x) --gp-sphinx-argparse-option
+ *   Metavar (FILE, PATH)  --gp-sphinx-argparse-metavar       (italic)
+ *   Default value         --gp-sphinx-argparse-default       (italic)
+ *   Punctuation/operator  --gp-sphinx-argparse-punctuation
+ *   Meta tag bg / border  --gp-sphinx-argparse-meta-tag-bg / --…-meta-tag-border
  */
+
+/* ==========================================================================
+   Palette — light mode defaults
+   ========================================================================== */
+
+:root {
+	--gp-sphinx-argparse-code-bg: #f1f5f9;
+	--gp-sphinx-argparse-text: #0f172a;
+	--gp-sphinx-argparse-usage-label: #3b82f6;
+	--gp-sphinx-argparse-section: #0f172a;
+	--gp-sphinx-argparse-command: #7c3aed;
+	--gp-sphinx-argparse-subcommand: #16a34a;
+	--gp-sphinx-argparse-choice: #16a34a;
+	--gp-sphinx-argparse-option: #a855f7;
+	--gp-sphinx-argparse-metavar: #ca8a04;
+	--gp-sphinx-argparse-default: #64748b;
+	--gp-sphinx-argparse-punctuation: #64748b;
+	--gp-sphinx-argparse-meta-tag-bg: #fef3c780;
+	--gp-sphinx-argparse-meta-tag-border: #fcd34d80;
+	/*
+	 * Back-compat alias: pre.argparse-usage and .argparse-meta-value .nv
+	 * still reference --argparse-code-background in templates and snapshots.
+	 */
+	--argparse-code-background: var(--gp-sphinx-argparse-code-bg);
+}
+
+/* ==========================================================================
+   Palette — dark mode overrides (One Dark)
+   ========================================================================== */
+
+body[data-theme="dark"] {
+	--gp-sphinx-argparse-code-bg: #272822;
+	--gp-sphinx-argparse-text: #ccced4;
+	--gp-sphinx-argparse-usage-label: #61afef;
+	--gp-sphinx-argparse-section: #e5e5e5;
+	--gp-sphinx-argparse-command: #c678dd;
+	--gp-sphinx-argparse-subcommand: #98c379;
+	--gp-sphinx-argparse-choice: #98c379;
+	--gp-sphinx-argparse-option: #56b6c2;
+	--gp-sphinx-argparse-metavar: #e5c07b;
+	--gp-sphinx-argparse-default: #ccced4;
+	--gp-sphinx-argparse-punctuation: #ccced4;
+	--gp-sphinx-argparse-meta-tag-bg: #78350f60;
+	--gp-sphinx-argparse-meta-tag-border: #b4530980;
+}
+
+@media (prefers-color-scheme: dark) {
+	body:not([data-theme="light"]) {
+		--gp-sphinx-argparse-code-bg: #272822;
+		--gp-sphinx-argparse-text: #ccced4;
+		--gp-sphinx-argparse-usage-label: #61afef;
+		--gp-sphinx-argparse-section: #e5e5e5;
+		--gp-sphinx-argparse-command: #c678dd;
+		--gp-sphinx-argparse-subcommand: #98c379;
+		--gp-sphinx-argparse-choice: #98c379;
+		--gp-sphinx-argparse-option: #56b6c2;
+		--gp-sphinx-argparse-metavar: #e5c07b;
+		--gp-sphinx-argparse-default: #ccced4;
+		--gp-sphinx-argparse-punctuation: #ccced4;
+		--gp-sphinx-argparse-meta-tag-bg: #78350f60;
+		--gp-sphinx-argparse-meta-tag-border: #b4530980;
+	}
+}
 
 /* ==========================================================================
    Inline Role Styles
@@ -33,51 +107,32 @@
 	font-size: var(--code-font-size);
 }
 
-/*
- * CLI Options
- *
- * Long options (--verbose) and short options (-h) both use teal color.
- */
+/* Long options (--verbose) and short options (-h) */
 .cli-option-long,
 .cli-option-short {
-	color: #56b6c2;
+	color: var(--gp-sphinx-argparse-option);
 }
 
-/*
- * CLI Metavars
- *
- * Placeholder values like FILE, PATH, DIRECTORY.
- * Yellow/amber to indicate "replace me" - distinct from flags (teal).
- */
+/* Placeholder values like FILE, PATH, DIRECTORY */
 .cli-metavar {
-	color: #e5c07b;
+	color: var(--gp-sphinx-argparse-metavar);
 	font-style: italic;
 }
 
-/*
- * CLI Commands and Choices
- *
- * Both use green to indicate valid enumerated values.
- * Commands: subcommand names like sync, add, list
- * Choices: enumeration values like json, yaml, table
- */
-.cli-command,
-.cli-choice {
-	color: #98c379;
-}
-
+/* Subcommand names like sync, add, list */
 .cli-command {
+	color: var(--gp-sphinx-argparse-subcommand);
 	font-weight: bold;
 }
 
-/*
- * CLI Default Values
- *
- * Default values shown in help text like None, "auto".
- * Subtle styling to not distract from options.
- */
+/* Enumeration values like json, yaml, table */
+.cli-choice {
+	color: var(--gp-sphinx-argparse-choice);
+}
+
+/* Default values shown in help text like None, "auto" */
 .cli-default {
-	color: #ccced4;
+	color: var(--gp-sphinx-argparse-default);
 	font-style: italic;
 }
 
@@ -90,83 +145,83 @@
  * argparse, argparse-usage, or argparse-help lexers.
  */
 
-/* Usage heading "usage:" - bold blue */
+/* Usage heading "usage:" */
 .highlight-argparse .gh,
 .highlight-argparse-usage .gh,
 .highlight-argparse-help .gh {
-	color: #61afef;
+	color: var(--gp-sphinx-argparse-usage-label);
 	font-weight: bold;
 }
 
-/* Section headers like "positional arguments:", "options:" - neutral bright */
+/* Section headers like "positional arguments:", "options:" */
 .highlight-argparse .gs,
 .highlight-argparse-help .gs {
-	color: #e5e5e5;
+	color: var(--gp-sphinx-argparse-section);
 	font-weight: bold;
 }
 
-/* Long options --foo - teal */
+/* Long options --foo */
 .highlight-argparse .nt,
 .highlight-argparse-usage .nt,
 .highlight-argparse-help .nt {
-	color: #56b6c2;
+	color: var(--gp-sphinx-argparse-option);
 	font-weight: normal;
 }
 
-/* Short options -h - teal (same as long) */
+/* Short options -h */
 .highlight-argparse .na,
 .highlight-argparse-usage .na,
 .highlight-argparse-help .na {
-	color: #56b6c2;
+	color: var(--gp-sphinx-argparse-option);
 	font-weight: normal;
 }
 
-/* Metavar placeholders FILE, PATH - yellow/amber italic */
+/* Metavar placeholders FILE, PATH */
 .highlight-argparse .nv,
 .highlight-argparse-usage .nv,
 .highlight-argparse-help .nv {
-	color: #e5c07b;
+	color: var(--gp-sphinx-argparse-metavar);
 	font-style: italic;
 }
 
-/* Command/program names - purple bold */
+/* Command/program names */
 .highlight-argparse .nl,
 .highlight-argparse-usage .nl,
 .highlight-argparse-help .nl {
-	color: #c678dd;
+	color: var(--gp-sphinx-argparse-command);
 	font-weight: bold;
 }
 
-/* Subcommands - bold green */
+/* Subcommands */
 .highlight-argparse .nf,
 .highlight-argparse-usage .nf,
 .highlight-argparse-help .nf {
-	color: #98c379;
+	color: var(--gp-sphinx-argparse-subcommand);
 	font-weight: bold;
 }
 
-/* Choice values - green */
+/* Choice values */
 .highlight-argparse .no,
 .highlight-argparse-usage .no,
 .highlight-argparse-help .no,
 .highlight-argparse .nc,
 .highlight-argparse-usage .nc,
 .highlight-argparse-help .nc {
-	color: #98c379;
+	color: var(--gp-sphinx-argparse-choice);
 }
 
-/* Punctuation [], {}, () - neutral gray */
+/* Punctuation [], {}, () */
 .highlight-argparse .p,
 .highlight-argparse-usage .p,
 .highlight-argparse-help .p {
-	color: #ccced4;
+	color: var(--gp-sphinx-argparse-punctuation);
 }
 
-/* Operators like | - neutral gray */
+/* Operators like | */
 .highlight-argparse .o,
 .highlight-argparse-usage .o,
 .highlight-argparse-help .o {
-	color: #ccced4;
+	color: var(--gp-sphinx-argparse-punctuation);
 	font-weight: normal;
 }
 
@@ -175,23 +230,13 @@
    ========================================================================== */
 
 /*
- * These styles apply to the argparse directive output which uses custom
- * nodes rendered by sphinx_autodoc_argparse. The directive adds highlight spans
- * directly to the HTML output.
+ * These styles apply to the argparse directive output rendered by
+ * sphinx_autodoc_argparse, which adds highlight spans directly to HTML.
  */
 
-/*
- * Usage Block (.argparse-usage)
- *
- * The usage block now has both .argparse-usage and .highlight-argparse-usage
- * classes. The .highlight-argparse-usage selectors above already handle the
- * token highlighting. These selectors provide fallback and ensure consistent
- * styling.
- */
-
-/* Usage block container - match Pygments monokai background and code block styling */
+/* Usage block container */
 pre.argparse-usage {
-	background: var(--argparse-code-background);
+	background: var(--gp-sphinx-argparse-code-bg);
 	font-size: var(--code-font-size);
 	padding: 0.625rem 0.875rem;
 	line-height: 1.5;
@@ -201,47 +246,47 @@ pre.argparse-usage {
 }
 
 .argparse-usage .gh {
-	color: #61afef;
+	color: var(--gp-sphinx-argparse-usage-label);
 	font-weight: bold;
 }
 
 .argparse-usage .nt {
-	color: #56b6c2;
+	color: var(--gp-sphinx-argparse-option);
 	font-weight: normal;
 }
 
 .argparse-usage .na {
-	color: #56b6c2;
+	color: var(--gp-sphinx-argparse-option);
 	font-weight: normal;
 }
 
 .argparse-usage .nv {
-	color: #e5c07b;
+	color: var(--gp-sphinx-argparse-metavar);
 	font-style: italic;
 }
 
 .argparse-usage .nl {
-	color: #c678dd;
+	color: var(--gp-sphinx-argparse-command);
 	font-weight: bold;
 }
 
 .argparse-usage .nf {
-	color: #98c379;
+	color: var(--gp-sphinx-argparse-subcommand);
 	font-weight: bold;
 }
 
 .argparse-usage .no,
 .argparse-usage .nc {
-	color: #98c379;
+	color: var(--gp-sphinx-argparse-choice);
 }
 
 .argparse-usage .o {
-	color: #ccced4;
+	color: var(--gp-sphinx-argparse-punctuation);
 	font-weight: normal;
 }
 
 .argparse-usage .p {
-	color: #ccced4;
+	color: var(--gp-sphinx-argparse-punctuation);
 }
 
 /*
@@ -251,22 +296,22 @@ pre.argparse-usage {
  * semantic spans for options and metavars.
  */
 .argparse-argument-name .nt {
-	color: #56b6c2;
+	color: var(--gp-sphinx-argparse-option);
 	font-weight: normal;
 }
 
 .argparse-argument-name .na {
-	color: #56b6c2;
+	color: var(--gp-sphinx-argparse-option);
 	font-weight: normal;
 }
 
 .argparse-argument-name .nv {
-	color: #e5c07b;
+	color: var(--gp-sphinx-argparse-metavar);
 	font-style: italic;
 }
 
 .argparse-argument-name .nl {
-	color: #c678dd;
+	color: var(--gp-sphinx-argparse-command);
 	font-weight: bold;
 }
 
@@ -275,19 +320,11 @@ pre.argparse-usage {
    ========================================================================== */
 
 /*
- * Argparse-specific code background (monokai #272822)
- * Uses a custom variable to avoid affecting Furo's --color-inline-code-background.
- */
-:root {
-	--argparse-code-background: #272822;
-}
-
-/*
- * Background styling for argument names - subtle background like code.literal
- * This provides visual weight and hierarchy for argument definitions.
+ * Background styling for argument names — subtle background like code.literal
+ * to provide visual weight and hierarchy for argument definitions.
  */
 .argparse-argument-name {
-	background: var(--argparse-code-background);
+	background: var(--gp-sphinx-argparse-code-bg);
 	border-radius: 0.2rem;
 	padding: 0.485rem 0.875rem;
 	font-family: var(--font-stack--monospace);
@@ -297,7 +334,7 @@ pre.argparse-usage {
 }
 
 /*
- * Wrapper for linking - enables scroll-margin for fixed header navigation
+ * Wrapper for linking — enables scroll-margin for fixed header navigation
  * and :target pseudo-class for highlighting when linked.
  */
 .argparse-argument-wrapper {
@@ -305,9 +342,8 @@ pre.argparse-usage {
 }
 
 /*
- * Headerlink anchor (¶) - hidden until hover
- * Positioned outside the dt element to the right.
- * Follows Sphinx documentation convention for linkable headings.
+ * Headerlink anchor (¶) — hidden until hover, positioned outside the dt to
+ * the right. Follows Sphinx's documented convention for linkable headings.
  */
 .argparse-argument-name .headerlink {
 	visibility: hidden;
@@ -319,9 +355,7 @@ pre.argparse-usage {
 	text-decoration: none;
 }
 
-/*
- * Show headerlink on hover or when targeted via URL fragment
- */
+/* Show headerlink on hover or when targeted via URL fragment */
 .argparse-argument-wrapper:hover .headerlink,
 .argparse-argument-wrapper:target .headerlink {
 	visibility: visible;
@@ -332,29 +366,7 @@ pre.argparse-usage {
 }
 
 /*
- * Light mode headerlink color overrides
- * Needed because code block has dark background regardless of theme
- */
-body[data-theme="light"] .argparse-argument-name .headerlink {
-	color: #9ca0a5;
-
-	&:hover:not(:visited) {
-		color: #cfd0d0;
-	}
-}
-
-@media (prefers-color-scheme: light) {
-	body:not([data-theme="dark"]) .argparse-argument-name .headerlink {
-		color: #9ca0a5;
-
-		&:hover:not(:visited) {
-			color: #cfd0d0;
-		}
-	}
-}
-
-/*
- * Highlight when targeted via URL fragment
+ * Highlight when targeted via URL fragment.
  * Uses Furo's highlight-on-target color for consistency.
  */
 .argparse-argument-wrapper:target .argparse-argument-name {
@@ -362,10 +374,9 @@ body[data-theme="light"] .argparse-argument-name .headerlink {
 }
 
 /*
- * Argument metadata definition list
- *
- * Renders metadata (Default, Type, Choices, Required) as a horizontal
- * flexbox of key-value pairs and standalone tags.
+ * Argument metadata definition list — renders metadata
+ * (Default, Type, Choices, Required) as a horizontal flexbox of key-value
+ * pairs and standalone tags.
  */
 .argparse-argument-meta {
 	margin: 0.5rem 0 0 0;
@@ -392,22 +403,21 @@ body[data-theme="light"] .argparse-argument-name .headerlink {
 }
 
 .argparse-meta-value .nv {
-	background: var(--argparse-code-background);
+	background: var(--gp-sphinx-argparse-code-bg);
 	border-radius: 0.2rem;
 	padding: 0.1rem 0.3rem;
 	font-family: var(--font-stack--monospace);
 	font-size: var(--code-font-size);
-	color: #e5c07b;
+	color: var(--gp-sphinx-argparse-metavar);
 }
 
 /*
- * Meta tag (e.g., "Required") - follows Furo's guilabel pattern
- * Uses semi-transparent amber background with border for visibility
- * without the harshness of solid fills. Amber conveys "needs attention".
+ * Meta tag (e.g., "Required") — follows Furo's guilabel pattern.
+ * Semi-transparent amber conveys "needs attention" without harshness.
  */
 .argparse-meta-tag {
-	background-color: #fef3c780;
-	border: 1px solid #fcd34d80;
+	background-color: var(--gp-sphinx-argparse-meta-tag-bg);
+	border: 1px solid var(--gp-sphinx-argparse-meta-tag-border);
 	color: var(--color-foreground-primary);
 	font-size: var(--code-font-size);
 	padding: 0.1rem 0.4rem;
@@ -415,22 +425,9 @@ body[data-theme="light"] .argparse-argument-name .headerlink {
 	font-weight: 500;
 }
 
-/* Dark mode: darker amber with adjusted border */
-body[data-theme="dark"] .argparse-meta-tag {
-	background-color: #78350f60;
-	border-color: #b4530980;
-}
-
-@media (prefers-color-scheme: dark) {
-	body:not([data-theme="light"]) .argparse-meta-tag {
-		background-color: #78350f60;
-		border-color: #b4530980;
-	}
-}
-
 /*
- * Help text description
- * Adds spacing above for visual separation from argument name.
+ * Help text description — adds spacing above for visual separation from
+ * the argument name.
  */
 .argparse-argument-help {
 	padding-block-start: 0.5rem;

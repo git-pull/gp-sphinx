@@ -184,11 +184,22 @@ Examples
 ['_templates']
 """
 
-DEFAULT_PYGMENTS_STYLE: str = "monokai"
-"""Default Pygments syntax highlighting style."""
+DEFAULT_PYGMENTS_STYLE: str = "gp-sphinx-light"
+"""Default Pygments style applied in Furo's light mode.
+
+Resolves to :class:`sphinx_gp_theme.pygments_styles.GpSphinxLightStyle`
+via the ``pygments.styles`` entry point shipped by ``sphinx-gp-theme``.
+The palette mirrors the Microviz CodeMirror light theme.
+"""
 
 DEFAULT_PYGMENTS_DARK_STYLE: str = "monokai"
-"""Default Pygments syntax highlighting style for dark mode."""
+"""Default Pygments style applied in Furo's dark mode.
+
+Furo combines :data:`DEFAULT_PYGMENTS_STYLE` and this value into a single
+``pygments.css`` whose dark rules are scoped under
+``body[data-theme="dark"] .highlight``. ``monokai`` is kept here because it
+is the long-standing dark-mode appearance for git-pull project docs.
+"""
 
 DEFAULT_SPHINX_FONTS: list[FontConfig] = [
     {
