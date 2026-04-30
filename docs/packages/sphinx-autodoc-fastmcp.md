@@ -48,20 +48,7 @@ fastmcp_server_module = "my_project.server:mcp"
 `sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via `app.setup_extension()`.
 You do not need to add them separately to your `extensions` list.
 
-## Configuration
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `fastmcp_tool_modules` | `[]` | Python module paths that expose tool callables |
-| `fastmcp_area_map` | `{}` | Maps module stem to area path for ToC labels |
-| `fastmcp_collector_mode` | `"register"` | `"register"` or `"introspect"` — how tools are discovered |
-| `fastmcp_server_module` | `""` | `"module.path:attr"` — live FastMCP instance for prompt/resource autodoc |
-| `fastmcp_model_module` | `None` | Module containing Pydantic model classes |
-| `fastmcp_model_classes` | `set()` | Set of model class names to cross-reference |
-| `fastmcp_section_badge_map` | `{}` | Maps section names to safety badge labels |
-| `fastmcp_section_badge_pages` | `set()` | Pages where section safety badges are injected |
-
-### `fastmcp_server_module`
+## `fastmcp_server_module`
 
 Pointing the collector at a live FastMCP instance enables autodoc of
 **prompts**, **resources**, and **resource templates** — see the four new
