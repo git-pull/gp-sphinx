@@ -37,6 +37,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -72,6 +73,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
@@ -158,6 +162,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -193,6 +198,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
@@ -458,6 +466,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -493,6 +502,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
@@ -605,6 +617,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -640,6 +653,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
@@ -880,6 +896,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -917,6 +934,9 @@
                   '$ref': '#/$defs/AdmonitionNode',
                 }),
                 dict({
+                  '$ref': '#/$defs/FootnoteNode',
+                }),
+                dict({
                   '$ref': '#/$defs/DefinitionListNode',
                 }),
                 dict({
@@ -939,6 +959,7 @@
                 'mapping': dict({
                   'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
+                  'footnoteReference': '#/$defs/FootnoteReferenceNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
                   'reference': '#/$defs/ReferenceNode',
@@ -962,6 +983,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteReferenceNode',
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
@@ -1042,6 +1066,7 @@
                 'mapping': dict({
                   'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
+                  'footnoteReference': '#/$defs/FootnoteReferenceNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
                   'reference': '#/$defs/ReferenceNode',
@@ -1065,6 +1090,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteReferenceNode',
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
@@ -1134,6 +1162,187 @@
           'children',
         ]),
         'title': 'EnumeratedListNode',
+        'type': 'object',
+      }),
+      'FootnoteNode': dict({
+        'description': '''
+          A block-level footnote or citation body.
+          
+          Pairs a ``label`` (the bracketed identifier rendered alongside the body)
+          with a stable ``id`` (the anchor target a ``FootnoteReferenceNode`` jumps
+          to) and a list of block children — typically a single paragraph but
+          docutils permits multiple blocks for rich citations.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import FootnoteNode
+          >>> node = FootnoteNode.model_validate(
+          ...     {
+          ...         "type": "footnote",
+          ...         "kind": "footnote",
+          ...         "id": "footnote-1",
+          ...         "label": "1",
+          ...         "children": [
+          ...             {
+          ...                 "type": "paragraph",
+          ...                 "children": [{"type": "text", "value": "x"}],
+          ...             },
+          ...         ],
+          ...     },
+          ... )
+          >>> node.label
+          '1'
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
+                  'blockQuote': '#/$defs/BlockQuoteNode',
+                  'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
+                  'comment': '#/$defs/CommentNode',
+                  'definitionList': '#/$defs/DefinitionListNode',
+                  'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
+                  'literalBlock': '#/$defs/LiteralBlockNode',
+                  'paragraph': '#/$defs/ParagraphNode',
+                  'section': '#/$defs/SectionNode',
+                  'symbolRef': '#/$defs/SymbolRefNode',
+                  'transition': '#/$defs/TransitionNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/ParagraphNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SectionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralBlockNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CommentNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BlockQuoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BulletListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EnumeratedListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/DefinitionListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'id': dict({
+            'title': 'Id',
+            'type': 'string',
+          }),
+          'kind': dict({
+            'enum': list([
+              'footnote',
+              'citation',
+            ]),
+            'title': 'Kind',
+            'type': 'string',
+          }),
+          'label': dict({
+            'title': 'Label',
+            'type': 'string',
+          }),
+          'type': dict({
+            'const': 'footnote',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'kind',
+          'id',
+          'label',
+          'children',
+        ]),
+        'title': 'FootnoteNode',
+        'type': 'object',
+      }),
+      'FootnoteReferenceNode': dict({
+        'description': '''
+          An inline footnote or citation reference (the bracketed superscript).
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import FootnoteReferenceNode
+          >>> node = FootnoteReferenceNode.model_validate(
+          ...     {
+          ...         "type": "footnoteReference",
+          ...         "kind": "footnote",
+          ...         "href": "#footnote-1",
+          ...         "label": "1",
+          ...     },
+          ... )
+          >>> node.kind
+          'footnote'
+        ''',
+        'properties': dict({
+          'href': dict({
+            'title': 'Href',
+            'type': 'string',
+          }),
+          'kind': dict({
+            'enum': list([
+              'footnote',
+              'citation',
+            ]),
+            'title': 'Kind',
+            'type': 'string',
+          }),
+          'label': dict({
+            'title': 'Label',
+            'type': 'string',
+          }),
+          'type': dict({
+            'const': 'footnoteReference',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'kind',
+          'href',
+          'label',
+        ]),
+        'title': 'FootnoteReferenceNode',
         'type': 'object',
       }),
       'ImageNode': dict({
@@ -1210,6 +1419,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -1245,6 +1455,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
@@ -1365,6 +1578,7 @@
                 'mapping': dict({
                   'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
+                  'footnoteReference': '#/$defs/FootnoteReferenceNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
                   'reference': '#/$defs/ReferenceNode',
@@ -1388,6 +1602,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteReferenceNode',
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
@@ -1442,6 +1659,7 @@
                 'mapping': dict({
                   'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
+                  'footnoteReference': '#/$defs/FootnoteReferenceNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
                   'reference': '#/$defs/ReferenceNode',
@@ -1465,6 +1683,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteReferenceNode',
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
@@ -1526,6 +1747,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -1563,6 +1785,9 @@
                   '$ref': '#/$defs/AdmonitionNode',
                 }),
                 dict({
+                  '$ref': '#/$defs/FootnoteNode',
+                }),
+                dict({
                   '$ref': '#/$defs/DefinitionListNode',
                 }),
                 dict({
@@ -1589,6 +1814,7 @@
                 'mapping': dict({
                   'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
+                  'footnoteReference': '#/$defs/FootnoteReferenceNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
                   'reference': '#/$defs/ReferenceNode',
@@ -1612,6 +1838,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteReferenceNode',
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
@@ -1659,6 +1888,7 @@
                 'mapping': dict({
                   'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
+                  'footnoteReference': '#/$defs/FootnoteReferenceNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
                   'reference': '#/$defs/ReferenceNode',
@@ -1682,6 +1912,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteReferenceNode',
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
@@ -1878,6 +2111,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -1913,6 +2147,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
@@ -1999,6 +2236,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -2034,6 +2272,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
@@ -2299,6 +2540,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -2334,6 +2576,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
@@ -2446,6 +2691,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -2481,6 +2727,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
@@ -2721,6 +2970,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -2758,6 +3008,9 @@
                   '$ref': '#/$defs/AdmonitionNode',
                 }),
                 dict({
+                  '$ref': '#/$defs/FootnoteNode',
+                }),
+                dict({
                   '$ref': '#/$defs/DefinitionListNode',
                 }),
                 dict({
@@ -2780,6 +3033,7 @@
                 'mapping': dict({
                   'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
+                  'footnoteReference': '#/$defs/FootnoteReferenceNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
                   'reference': '#/$defs/ReferenceNode',
@@ -2803,6 +3057,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteReferenceNode',
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
@@ -2883,6 +3140,7 @@
                 'mapping': dict({
                   'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
+                  'footnoteReference': '#/$defs/FootnoteReferenceNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
                   'reference': '#/$defs/ReferenceNode',
@@ -2906,6 +3164,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteReferenceNode',
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
@@ -2975,6 +3236,187 @@
           'children',
         ]),
         'title': 'EnumeratedListNode',
+        'type': 'object',
+      }),
+      'FootnoteNode': dict({
+        'description': '''
+          A block-level footnote or citation body.
+          
+          Pairs a ``label`` (the bracketed identifier rendered alongside the body)
+          with a stable ``id`` (the anchor target a ``FootnoteReferenceNode`` jumps
+          to) and a list of block children — typically a single paragraph but
+          docutils permits multiple blocks for rich citations.
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import FootnoteNode
+          >>> node = FootnoteNode.model_validate(
+          ...     {
+          ...         "type": "footnote",
+          ...         "kind": "footnote",
+          ...         "id": "footnote-1",
+          ...         "label": "1",
+          ...         "children": [
+          ...             {
+          ...                 "type": "paragraph",
+          ...                 "children": [{"type": "text", "value": "x"}],
+          ...             },
+          ...         ],
+          ...     },
+          ... )
+          >>> node.label
+          '1'
+        ''',
+        'properties': dict({
+          'children': dict({
+            'items': dict({
+              'discriminator': dict({
+                'mapping': dict({
+                  'admonition': '#/$defs/AdmonitionNode',
+                  'apiLayout': '#/$defs/ApiLayoutNode',
+                  'blockQuote': '#/$defs/BlockQuoteNode',
+                  'bulletList': '#/$defs/BulletListNode',
+                  'cliCommand': '#/$defs/CliCommandNode',
+                  'comment': '#/$defs/CommentNode',
+                  'definitionList': '#/$defs/DefinitionListNode',
+                  'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
+                  'literalBlock': '#/$defs/LiteralBlockNode',
+                  'paragraph': '#/$defs/ParagraphNode',
+                  'section': '#/$defs/SectionNode',
+                  'symbolRef': '#/$defs/SymbolRefNode',
+                  'transition': '#/$defs/TransitionNode',
+                }),
+                'propertyName': 'type',
+              }),
+              'oneOf': list([
+                dict({
+                  '$ref': '#/$defs/ParagraphNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SectionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/LiteralBlockNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CommentNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/TransitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BlockQuoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/BulletListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/EnumeratedListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/DefinitionListNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/SymbolRefNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/ApiLayoutNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/CliCommandNode',
+                }),
+              ]),
+            }),
+            'title': 'Children',
+            'type': 'array',
+          }),
+          'id': dict({
+            'title': 'Id',
+            'type': 'string',
+          }),
+          'kind': dict({
+            'enum': list([
+              'footnote',
+              'citation',
+            ]),
+            'title': 'Kind',
+            'type': 'string',
+          }),
+          'label': dict({
+            'title': 'Label',
+            'type': 'string',
+          }),
+          'type': dict({
+            'const': 'footnote',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'kind',
+          'id',
+          'label',
+          'children',
+        ]),
+        'title': 'FootnoteNode',
+        'type': 'object',
+      }),
+      'FootnoteReferenceNode': dict({
+        'description': '''
+          An inline footnote or citation reference (the bracketed superscript).
+          
+          Examples
+          --------
+          >>> from gp_sphinx_astro_builder.models import FootnoteReferenceNode
+          >>> node = FootnoteReferenceNode.model_validate(
+          ...     {
+          ...         "type": "footnoteReference",
+          ...         "kind": "footnote",
+          ...         "href": "#footnote-1",
+          ...         "label": "1",
+          ...     },
+          ... )
+          >>> node.kind
+          'footnote'
+        ''',
+        'properties': dict({
+          'href': dict({
+            'title': 'Href',
+            'type': 'string',
+          }),
+          'kind': dict({
+            'enum': list([
+              'footnote',
+              'citation',
+            ]),
+            'title': 'Kind',
+            'type': 'string',
+          }),
+          'label': dict({
+            'title': 'Label',
+            'type': 'string',
+          }),
+          'type': dict({
+            'const': 'footnoteReference',
+            'title': 'Type',
+            'type': 'string',
+          }),
+        }),
+        'required': list([
+          'type',
+          'kind',
+          'href',
+          'label',
+        ]),
+        'title': 'FootnoteReferenceNode',
         'type': 'object',
       }),
       'ImageNode': dict({
@@ -3051,6 +3493,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -3086,6 +3529,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/AdmonitionNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteNode',
                 }),
                 dict({
                   '$ref': '#/$defs/DefinitionListNode',
@@ -3206,6 +3652,7 @@
                 'mapping': dict({
                   'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
+                  'footnoteReference': '#/$defs/FootnoteReferenceNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
                   'reference': '#/$defs/ReferenceNode',
@@ -3229,6 +3676,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteReferenceNode',
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
@@ -3341,6 +3791,7 @@
                 'mapping': dict({
                   'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
+                  'footnoteReference': '#/$defs/FootnoteReferenceNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
                   'reference': '#/$defs/ReferenceNode',
@@ -3364,6 +3815,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteReferenceNode',
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
@@ -3425,6 +3879,7 @@
                   'comment': '#/$defs/CommentNode',
                   'definitionList': '#/$defs/DefinitionListNode',
                   'enumeratedList': '#/$defs/EnumeratedListNode',
+                  'footnote': '#/$defs/FootnoteNode',
                   'literalBlock': '#/$defs/LiteralBlockNode',
                   'paragraph': '#/$defs/ParagraphNode',
                   'section': '#/$defs/SectionNode',
@@ -3462,6 +3917,9 @@
                   '$ref': '#/$defs/AdmonitionNode',
                 }),
                 dict({
+                  '$ref': '#/$defs/FootnoteNode',
+                }),
+                dict({
                   '$ref': '#/$defs/DefinitionListNode',
                 }),
                 dict({
@@ -3488,6 +3946,7 @@
                 'mapping': dict({
                   'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
+                  'footnoteReference': '#/$defs/FootnoteReferenceNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
                   'reference': '#/$defs/ReferenceNode',
@@ -3511,6 +3970,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteReferenceNode',
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
@@ -3558,6 +4020,7 @@
                 'mapping': dict({
                   'badge': '#/$defs/BadgeNode',
                   'emphasis': '#/$defs/EmphasisNode',
+                  'footnoteReference': '#/$defs/FootnoteReferenceNode',
                   'image': '#/$defs/ImageNode',
                   'literal': '#/$defs/LiteralNode',
                   'reference': '#/$defs/ReferenceNode',
@@ -3581,6 +4044,9 @@
                 }),
                 dict({
                   '$ref': '#/$defs/ReferenceNode',
+                }),
+                dict({
+                  '$ref': '#/$defs/FootnoteReferenceNode',
                 }),
                 dict({
                   '$ref': '#/$defs/ImageNode',
@@ -3769,6 +4235,7 @@
               'comment': '#/$defs/CommentNode',
               'definitionList': '#/$defs/DefinitionListNode',
               'enumeratedList': '#/$defs/EnumeratedListNode',
+              'footnote': '#/$defs/FootnoteNode',
               'literalBlock': '#/$defs/LiteralBlockNode',
               'paragraph': '#/$defs/ParagraphNode',
               'section': '#/$defs/SectionNode',
@@ -3804,6 +4271,9 @@
             }),
             dict({
               '$ref': '#/$defs/AdmonitionNode',
+            }),
+            dict({
+              '$ref': '#/$defs/FootnoteNode',
             }),
             dict({
               '$ref': '#/$defs/DefinitionListNode',

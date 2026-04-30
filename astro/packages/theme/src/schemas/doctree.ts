@@ -30,6 +30,11 @@ export type AdmonitionVariant =
   | 'hint'
   | 'danger'
   | 'error'
+  | 'versionadded'
+  | 'versionchanged'
+  | 'deprecated'
+
+export type FootnoteKind = 'footnote' | 'citation'
 
 export type BadgeSize = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
@@ -42,6 +47,12 @@ export type InlineNode =
   | { type: 'emphasis'; children: InlineNode[] }
   | { type: 'strong'; children: InlineNode[] }
   | { type: 'reference'; href: string; children: InlineNode[] }
+  | {
+      type: 'footnoteReference'
+      kind: FootnoteKind
+      href: string
+      label: string
+    }
   | {
       type: 'badge'
       text: string
@@ -86,6 +97,13 @@ export type BlockNode =
   | { type: 'bulletList'; children: ListItemNode[] }
   | { type: 'enumeratedList'; start: number | null; children: ListItemNode[] }
   | { type: 'admonition'; variant: AdmonitionVariant; children: BlockNode[] }
+  | {
+      type: 'footnote'
+      kind: FootnoteKind
+      id: string
+      label: string
+      children: BlockNode[]
+    }
   | { type: 'definitionList'; children: DefinitionListItemNode[] }
   | { type: 'symbolRef'; symbolId: string }
   | {
@@ -181,6 +199,15 @@ export const referenceNodeSchema = z.object({
   children: z.lazy(() => z.array(inlineNodeSchema)),
 })
 
+export const footnoteKindSchema = z.enum(['footnote', 'citation'])
+
+export const footnoteReferenceNodeSchema = z.object({
+  type: z.literal('footnoteReference'),
+  kind: footnoteKindSchema,
+  href: z.string(),
+  label: z.string(),
+})
+
 // ─── Inline discriminated union (z.ZodType<InlineNode> on the union breaks the cycle)
 
 export const inlineNodeSchema: z.ZodType<InlineNode> = z.discriminatedUnion('type', [
@@ -190,6 +217,7 @@ export const inlineNodeSchema: z.ZodType<InlineNode> = z.discriminatedUnion('typ
   emphasisNodeSchema,
   strongNodeSchema,
   referenceNodeSchema,
+  footnoteReferenceNodeSchema,
   badgeNodeSchema,
 ])
 
@@ -258,6 +286,14 @@ export const admonitionVariantSchema = z.enum([
 export const admonitionNodeSchema = z.object({
   type: z.literal('admonition'),
   variant: admonitionVariantSchema,
+  children: z.lazy(() => z.array(blockNodeSchema)),
+})
+
+export const footnoteNodeSchema = z.object({
+  type: z.literal('footnote'),
+  kind: footnoteKindSchema,
+  id: z.string(),
+  label: z.string(),
   children: z.lazy(() => z.array(blockNodeSchema)),
 })
 
@@ -353,6 +389,7 @@ export const blockNodeSchema: z.ZodType<BlockNode> = z.discriminatedUnion('type'
   bulletListNodeSchema,
   enumeratedListNodeSchema,
   admonitionNodeSchema,
+  footnoteNodeSchema,
   definitionListNodeSchema,
   symbolRefNodeSchema,
   apiLayoutNodeSchema,
