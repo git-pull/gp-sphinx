@@ -529,30 +529,3 @@ class AutoconfigvalueIndexDirective(SphinxDirective):
             build_api_summary_section(node) if isinstance(node, nodes.table) else node
             for node in rendered
         ]
-
-
-class AutoconfigvaluePageDirective(SphinxDirective):
-    """Render a drop-in index plus detailed ``confval`` blocks.
-
-    This keeps the legacy directive useful on package pages without forcing
-    authors to remember a second directive just to get the detailed entries.
-    """
-
-    required_arguments = 1
-    has_content = False
-
-    def run(self) -> list[nodes.Node]:
-        module_name = self.arguments[0]
-        result: list[nodes.Node] = []
-        markup = render_config_index_markup(module_name, heading="Sphinx Config Index")
-        if markup:
-            rendered = parse_generated_markup(self, markup)
-            result.extend(
-                build_api_summary_section(node)
-                if isinstance(node, nodes.table)
-                else node
-                for node in rendered
-            )
-        for value in discover_config_values(module_name):
-            result.extend(_render_config_value_nodes(self, value))
-        return result

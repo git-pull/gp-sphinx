@@ -31,10 +31,7 @@ Then document one config value:
 Or generate a full reference section for an extension module:
 
 ```rst
-.. autoconfigvalue-index:: sphinx_fonts
 .. autoconfigvalues:: sphinx_fonts
-
-.. autoconfigvalue-page:: sphinx_autodoc_argparse.exemplar
 ```
 
 ## Documentation
