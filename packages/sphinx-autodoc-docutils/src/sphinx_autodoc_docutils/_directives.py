@@ -18,7 +18,6 @@ from sphinx_ux_autodoc_layout import (
     API,
     ApiFactRow,
     build_api_facts_section,
-    build_api_summary_section,
     build_api_table_section,
     inject_signature_slots,
     iter_desc_nodes,
@@ -57,7 +56,7 @@ def _module_members(
     Examples
     --------
     >>> members = _module_members("sphinx_autodoc_docutils._directives")
-    >>> any(name == "AutoDirectiveIndex" for name, _value in members)
+    >>> any(name == "AutoDirectives" for name, _value in members)
     True
     """
     module = importlib.import_module(module_name)
@@ -101,9 +100,8 @@ class SetupRecorder:
 def replay_setup(module_name: str) -> SetupRecorder | None:
     """Run a module's ``setup()`` against a recorder; return None on failure.
 
-    Cached because every invocation of ``autodirective-index`` /
-    ``autodirectives`` / ``autorole-index`` / ``autoroles`` calls in
-    here, and a docs build with N package pages × M directive
+    Cached because every invocation of ``autodirectives`` / ``autoroles``
+    calls in here, and a docs build with N package pages × M directive
     invocations would otherwise re-import + re-replay each package's
     ``setup()`` for every call. The recorder is read-only by contract
     (consumers iterate ``recorder.calls`` and never mutate it). Tests
@@ -149,7 +147,7 @@ def _registered_directives(module_name: str) -> list[tuple[str, type[Directive]]
     Examples
     --------
     >>> pairs = _registered_directives("sphinx_autodoc_docutils")
-    >>> ("autodirective-index", AutoDirectiveIndex) in pairs
+    >>> ("autodirectives", AutoDirectives) in pairs
     True
     """
     recorder = replay_setup(module_name)
@@ -219,7 +217,7 @@ def _directive_classes(module_name: str) -> list[tuple[str, type[Directive]]]:
     Examples
     --------
     >>> directives = _directive_classes("sphinx_autodoc_docutils._directives")
-    >>> any(name == "AutoDirectiveIndex" for name, _value in directives)
+    >>> any(name == "AutoDirectives" for name, _value in directives)
     True
     """
     results: list[tuple[str, type[Directive]]] = []
@@ -254,18 +252,16 @@ def _registered_name(name: str) -> str:
 
     Examples
     --------
-    >>> _registered_name("AutoDirectiveIndex")
-    'autodirective-index'
+    >>> _registered_name("AutoDirectives")
+    'autodirectives'
     >>> _registered_name("cli_option_role")
     'cli-option'
     """
     explicit = {
         "AutoDirective": "autodirective",
         "AutoDirectives": "autodirectives",
-        "AutoDirectiveIndex": "autodirective-index",
         "AutoRole": "autorole",
         "AutoRoles": "autoroles",
-        "AutoRoleIndex": "autorole-index",
     }
     if name in explicit:
         return explicit[name]
@@ -534,38 +530,6 @@ def _role_markup(
     return "\n".join(lines)
 
 
-def _index_markup(heading: str, rows: list[tuple[str, str, str]]) -> str:
-    """Return a reStructuredText summary table for autodocumented objects.
-
-    Examples
-    --------
-    >>> markup = _index_markup("Demo", [("x", "p.x", "summary")])
-    >>> ".. list-table::" in markup
-    True
-    """
-    if not rows:
-        return ""
-    lines = [
-        f".. rubric:: {heading}",
-        "",
-        ".. list-table::",
-        "   :header-rows: 1",
-        "",
-        "   * - Name",
-        "     - Python path",
-        "     - Summary",
-    ]
-    for name, path, summary in rows:
-        lines.extend(
-            [
-                f"   * - ``{name}``",
-                f"     - ``{path}``",
-                f"     - {summary}",
-            ]
-        )
-    return "\n".join(lines)
-
-
 class AutoDirective(SphinxDirective):
     """Render documentation for a single directive class."""
 
@@ -621,38 +585,6 @@ class AutoDirectives(SphinxDirective):
             _normalize_directive_nodes(rendered, path=path, directive_cls=directive_cls)
             results.extend(rendered)
         return results
-
-
-class AutoDirectiveIndex(SphinxDirective):
-    """Generate a summary index for all directives a package registers.
-
-    Accepts either an extension package (whose ``setup()`` runs against a
-    recorder so each ``app.add_directive(name, cls)`` call surfaces by its
-    real registered name) or a directive-defining module (introspected for
-    ``Directive`` subclasses, with names derived from class names).
-    """
-
-    required_arguments = 1
-    has_content = False
-
-    def run(self) -> list[nodes.Node]:
-        module_name = self.arguments[0]
-        rows = [
-            (
-                registered_name,
-                f"{directive_cls.__module__}.{directive_cls.__name__}",
-                _summary(directive_cls),
-            )
-            for registered_name, directive_cls in _registered_directives(module_name)
-        ]
-        markup = _index_markup("Directive Index", rows)
-        if not markup:
-            return []
-        rendered = parse_generated_markup(self, markup)
-        return [
-            build_api_summary_section(node) if isinstance(node, nodes.table) else node
-            for node in rendered
-        ]
 
 
 class AutoRole(SphinxDirective):
@@ -713,37 +645,3 @@ class AutoRoles(SphinxDirective):
             _normalize_role_nodes(rendered, path=path, role_fn=role_fn)
             results.extend(rendered)
         return results
-
-
-class AutoRoleIndex(SphinxDirective):
-    """Generate a summary index for all roles a package registers.
-
-    Accepts either an extension package (whose ``setup()`` runs against a
-    recorder so each ``app.add_role(name, fn)`` call surfaces by its real
-    registered name) or a role-defining module (introspected for ``*_role``
-    callables, with names derived from function names).
-    """
-
-    required_arguments = 1
-    has_content = False
-
-    def run(self) -> list[nodes.Node]:
-        module_name = self.arguments[0]
-        rows = [
-            (
-                registered_name,
-                f"{role_fn.__module__}.{role_fn.__name__}"
-                if hasattr(role_fn, "__module__") and hasattr(role_fn, "__name__")
-                else module_name,
-                _summary(role_fn),
-            )
-            for registered_name, role_fn in _registered_roles(module_name)
-        ]
-        markup = _index_markup("Role Index", rows)
-        if not markup:
-            return []
-        rendered = parse_generated_markup(self, markup)
-        return [
-            build_api_summary_section(node) if isinstance(node, nodes.table) else node
-            for node in rendered
-        ]

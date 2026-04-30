@@ -8,10 +8,8 @@ import typing as t
 
 from sphinx_autodoc_docutils._directives import (
     AutoDirective,
-    AutoDirectiveIndex,
     AutoDirectives,
     AutoRole,
-    AutoRoleIndex,
     AutoRoles,
     SetupRecorder,
     replay_setup,
@@ -19,10 +17,8 @@ from sphinx_autodoc_docutils._directives import (
 
 __all__ = [
     "AutoDirective",
-    "AutoDirectiveIndex",
     "AutoDirectives",
     "AutoRole",
-    "AutoRoleIndex",
     "AutoRoles",
     "SetupRecorder",
     "replay_setup",
@@ -68,10 +64,8 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.setup_extension("sphinx_autodoc_typehints_gp")
     app.add_directive("autodirective", AutoDirective)
     app.add_directive("autodirectives", AutoDirectives)
-    app.add_directive("autodirective-index", AutoDirectiveIndex)
     app.add_directive("autorole", AutoRole)
     app.add_directive("autoroles", AutoRoles)
-    app.add_directive("autorole-index", AutoRoleIndex)
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
 

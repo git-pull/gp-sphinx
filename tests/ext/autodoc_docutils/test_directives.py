@@ -33,7 +33,7 @@ def test_directive_classes_discovers_public_directives() -> None:
     directives = _directive_classes("sphinx_autodoc_docutils._directives")
     names = {name for name, _directive in directives}
     assert "AutoDirective" in names
-    assert "AutoDirectiveIndex" in names
+    assert "AutoDirectives" in names
 
 
 def test_role_callables_discovers_public_roles() -> None:
@@ -47,15 +47,15 @@ def test_role_callables_discovers_public_roles() -> None:
 def test_directive_markup_contains_path_and_summary() -> None:
     """Rendered directive markup carries the signature and summary prose."""
     directive_cls = dict(_directive_classes("sphinx_autodoc_docutils._directives"))[
-        "AutoDirectiveIndex"
+        "AutoDirectives"
     ]
     markup = _directive_markup(
-        "sphinx_autodoc_docutils._directives.AutoDirectiveIndex",
+        "sphinx_autodoc_docutils._directives.AutoDirectives",
         directive_cls,
-        directive_name="autodirective-index",
+        directive_name="autodirectives",
     )
-    assert ".. rst:directive:: autodirective-index" in markup
-    assert "Generate a summary index for all directives a package registers." in markup
+    assert ".. rst:directive:: autodirectives" in markup
+    assert "Render documentation for every directive a package registers." in markup
 
 
 def test_directive_classes_empty_for_module_with_no_directives() -> None:
@@ -153,7 +153,7 @@ def test_registered_directives_falls_back_to_module_introspection() -> None:
     """A module with no setup() is introspected for Directive subclasses."""
     pairs = dict(_registered_directives("sphinx_autodoc_docutils._directives"))
     # Class-name fallback maps via _registered_name's explicit table.
-    assert "autodirective-index" in pairs
+    assert "autodirectives" in pairs
 
 
 def test_registered_roles_uses_real_registration_names_for_packages() -> None:
