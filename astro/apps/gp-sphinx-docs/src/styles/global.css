@@ -703,8 +703,11 @@
   }
 
   /* Single-column collapse for narrow viewports — keep the label as
-   * an uppercase header above its value cell. */
-  @media (max-width: 640px) {
+   * an uppercase header above its value cell. The 768px breakpoint
+   * covers tablets where the desktop 2-column grid would otherwise
+   * truncate parameter names against the ``minmax(7.5rem, max-content)``
+   * column-1 ceiling. */
+  @media (max-width: 768px) {
     .gp-sphinx-symbol__body dl,
     .gp-sphinx-astro-doc article dl,
     .gp-sphinx-astro-doc section dl {
@@ -1056,11 +1059,17 @@
   }
 
   .gp-sphinx-cli__choices,
-  .gp-sphinx-cli__default {
+  .gp-sphinx-cli__default,
+  .gp-sphinx-cli__aliases {
     display: inline-block;
     margin-left: 0.5rem;
     font-size: 0.8rem;
     color: var(--color-muted);
+  }
+
+  .gp-sphinx-cli__aliases {
+    font-family: var(--font-mono);
+    font-style: italic;
   }
 
   .gp-sphinx-cli__subcommands-title {
