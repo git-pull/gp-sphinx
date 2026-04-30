@@ -157,7 +157,19 @@ export function renderBlockNode(node: BlockNode): string {
   }
 }
 
-function renderApiLayoutNode(node: Extract<BlockNode, { type: 'apiLayout' }>): string {
+/**
+ * Compose the apiLayout chrome around a pre-rendered ``childrenHtml`` string.
+ *
+ * Split out from ``renderApiLayoutNode`` so the highlighting-aware
+ * variant in ``render-with-highlighting.ts`` can recurse through the
+ * tree (passing the highlighter to nested ``literalBlock`` nodes) and
+ * still reuse the exact same chrome — no markup duplication, no risk
+ * of the two renderers drifting apart.
+ */
+export function renderApiLayoutChrome(
+  node: Extract<BlockNode, { type: 'apiLayout' }>,
+  childrenHtml: string,
+): string {
   const baseClasses = ['gp-sphinx-api', `gp-sphinx-api--${node.component}`]
   if (node.kind !== null) {
     baseClasses.push(`gp-sphinx-api--kind-${node.kind}`)
@@ -169,7 +181,6 @@ function renderApiLayoutNode(node: Extract<BlockNode, { type: 'apiLayout' }>): s
     baseClasses.push(c)
   }
 
-  const childrenHtml = node.children.map(renderBlockNode).join('')
   const classAttr = `class="${baseClasses.join(' ')}"`
 
   switch (node.component) {
@@ -197,13 +208,24 @@ function renderApiLayoutNode(node: Extract<BlockNode, { type: 'apiLayout' }>): s
   }
 }
 
-function renderCliCommandNode(node: Extract<BlockNode, { type: 'cliCommand' }>): string {
+function renderApiLayoutNode(node: Extract<BlockNode, { type: 'apiLayout' }>): string {
+  return renderApiLayoutChrome(node, node.children.map(renderBlockNode).join(''))
+}
+
+/**
+ * Compose the cliCommand chrome around a pre-rendered ``childrenHtml`` string.
+ *
+ * Mirror of :func:`renderApiLayoutChrome`. Same rationale.
+ */
+export function renderCliCommandChrome(
+  node: Extract<BlockNode, { type: 'cliCommand' }>,
+  childrenHtml: string,
+): string {
   const baseClasses = ['gp-sphinx-cli', `gp-sphinx-cli--${node.component}`]
   for (const c of node.classes) {
     baseClasses.push(c)
   }
   const classAttr = `class="${baseClasses.join(' ')}"`
-  const childrenHtml = node.children.map(renderBlockNode).join('')
 
   switch (node.component) {
     case 'program': {
@@ -260,6 +282,10 @@ function renderCliCommandNode(node: Extract<BlockNode, { type: 'cliCommand' }>):
       return `<details ${classAttr}>${summaryHtml}${helpHtml}${childrenHtml}</details>`
     }
   }
+}
+
+function renderCliCommandNode(node: Extract<BlockNode, { type: 'cliCommand' }>): string {
+  return renderCliCommandChrome(node, node.children.map(renderBlockNode).join(''))
 }
 
 export function renderDocument(doc: Document): string {

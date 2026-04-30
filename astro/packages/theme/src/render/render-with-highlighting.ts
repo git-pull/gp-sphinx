@@ -18,7 +18,12 @@ import type {
   Document,
   ListItemNode,
 } from '../schemas/doctree.ts'
-import { renderBlockNode, renderInlineNode } from './render-node.ts'
+import {
+  renderApiLayoutChrome,
+  renderBlockNode,
+  renderCliCommandChrome,
+  renderInlineNode,
+} from './render-node.ts'
 
 export type CodeHighlight = (code: string, language: string | null) => string
 
@@ -88,14 +93,24 @@ function renderBlock(node: BlockNode, highlight: CodeHighlight): string {
     }
     case 'definitionList':
       return `<dl>${node.children.map((c) => renderDefinitionListItem(c, highlight)).join('')}</dl>`
+    case 'apiLayout':
+      // Recurse through apiLayout children with the highlighter so any
+      // nested ``literalBlock`` (NumPy ``Examples`` doctests, fenced
+      // code inside autodoc-style regions, confval/role example
+      // blocks…) reaches the highlighter rather than falling back to
+      // plain ``<pre><code>``. The chrome itself is composed by the
+      // shared ``renderApiLayoutChrome`` helper to avoid duplicating
+      // the per-component markup.
+      return renderApiLayoutChrome(
+        node,
+        node.children.map((c) => renderBlock(c, highlight)).join(''),
+      )
+    case 'cliCommand':
+      return renderCliCommandChrome(
+        node,
+        node.children.map((c) => renderBlock(c, highlight)).join(''),
+      )
     default:
-      // ``apiLayout`` and ``cliCommand`` carry block children too, but
-      // their rendering chrome (open/close tags) is private to
-      // ``render-node.ts``; rather than duplicate that markup, we
-      // delegate the entire branch — nested literalBlocks inside an
-      // ``apiLayout`` keep the legacy ``<pre><code>`` rendering, which
-      // is acceptable since those layouts mostly carry inline content
-      // (signatures, badges) rather than fenced code.
       return renderBlockNode(node)
   }
 }
