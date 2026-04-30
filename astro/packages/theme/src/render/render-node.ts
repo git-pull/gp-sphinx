@@ -118,8 +118,10 @@ export function renderTableRow(
 
 /**
  * Render a ``TableNode`` to ``<table>`` HTML with optional
- * ``<thead>`` / ``<tbody>`` row groups, leveraging the existing
- * docutils-flavoured CSS in ``global.css``.
+ * ``<thead>`` / ``<tbody>`` row groups, wrapped in a horizontally
+ * scrollable container so cells with long content (e.g. 100-char
+ * URLs in a defaults column) do not push the parent column past
+ * the main content width.
  */
 export function renderTable(
   table: Extract<BlockNode, { type: 'table' }>,
@@ -133,7 +135,7 @@ export function renderTable(
     table.body.length === 0
       ? ''
       : `<tbody>${table.body.map((r) => renderTableRow(r, renderBlock)).join('')}</tbody>`
-  return `<table class="docutils">${thead}${tbody}</table>`
+  return `<div class="gp-sphinx-table-wrap"><table class="docutils">${thead}${tbody}</table></div>`
 }
 
 function renderDefinitionListItem(item: DefinitionListItemNode): string {

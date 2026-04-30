@@ -151,6 +151,71 @@ describe('enhanceCodeBlocks — copy behaviour', () => {
   })
 })
 
+function makeShikiPre(html: string): HTMLPreElement {
+  // Build a fake Shiki-style ``<pre><code>…</code></pre>`` block. The
+  // test ``html`` is a literal hard-coded fixture, not user input.
+  const pre = document.createElement('pre')
+  const code = document.createElement('code')
+  // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted test fixture
+  code.innerHTML = html
+  pre.appendChild(code)
+  return pre
+}
+
+describe('enhanceCodeBlocks — prompt non-selection', () => {
+  test('marks ``>>> `` Python REPL prompt spans as non-selectable', () => {
+    const root = document.createElement('div')
+    root.appendChild(
+      makeShikiPre(
+        '<span class="line"><span style="color:#D73A49">&gt;&gt;&gt;</span> spec = 1</span>',
+      ),
+    )
+    document.body.appendChild(root)
+    enhanceCodeBlocks(root)
+    const spans = root.querySelectorAll('code span')
+    const promptSpan = Array.from(spans).find(
+      (s) => s.textContent === '>>>',
+    ) as HTMLElement | undefined
+    expect(promptSpan).toBeDefined()
+    expect(promptSpan?.classList.contains('select-none')).toBe(true)
+  })
+
+  test('marks ``$`` shell prompt span as non-selectable', () => {
+    const root = document.createElement('div')
+    root.appendChild(
+      makeShikiPre(
+        '<span class="line"><span style="color:#D73A49">$</span> pip install gp-sphinx</span>',
+      ),
+    )
+    document.body.appendChild(root)
+    enhanceCodeBlocks(root)
+    const spans = root.querySelectorAll('code span')
+    const promptSpan = Array.from(spans).find(
+      (s) => s.textContent === '$',
+    ) as HTMLElement | undefined
+    expect(promptSpan).toBeDefined()
+    expect(promptSpan?.classList.contains('select-none')).toBe(true)
+  })
+
+  test('does not tag spans whose text is incidentally a prompt-like substring', () => {
+    // A span whose text is ``$`` AS PART OF a longer token — e.g.
+    // a price ``$10`` — should NOT be marked non-selectable. We
+    // only tag spans whose textContent is EXACTLY a recognised
+    // prompt.
+    const root = document.createElement('div')
+    root.appendChild(
+      makeShikiPre(
+        '<span class="line"><span style="color:#000">$10 each</span></span>',
+      ),
+    )
+    document.body.appendChild(root)
+    enhanceCodeBlocks(root)
+    const spans = root.querySelectorAll('code span')
+    const inner = Array.from(spans).find((s) => s.textContent?.includes('$10'))
+    expect(inner?.classList.contains('select-none')).toBe(false)
+  })
+})
+
 describe('formatCopyText — prompt stripping', () => {
   test('returns text unchanged when no prompt is present', () => {
     const out = formatCopyText('const x = 1\nconsole.log(x)')

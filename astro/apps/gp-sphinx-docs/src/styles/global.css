@@ -278,15 +278,26 @@
   }
 
   /* Tables — bordered and lightly tinted header. The Astro renderer
-   * passes through docutils' table HTML; this gives every page-side
-   * table a consistent visual weight matching the rest of the
-   * chrome. */
+   * wraps each table in a ``.gp-sphinx-table-wrap`` so cells with
+   * very long content (e.g. 100-char URLs in a defaults column on
+   * ``/packages/sphinx-autodoc-pytest-fixtures/``) scroll within
+   * the wrap rather than pushing the parent section past the main
+   * column boundary. */
+  .gp-sphinx-astro-doc .gp-sphinx-table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 1.25rem 0;
+  }
+
+  .gp-sphinx-astro-doc .gp-sphinx-table-wrap > table {
+    margin: 0;
+  }
+
   .gp-sphinx-astro-doc table {
     width: 100%;
     border-collapse: collapse;
     margin: 1.25rem 0;
     font-size: 0.9rem;
-    overflow-x: auto;
   }
 
   .gp-sphinx-astro-doc table th,
@@ -295,6 +306,23 @@
     padding: 0.5rem 0.75rem;
     text-align: left;
     vertical-align: top;
+    /* Keep each column readable: a column with a long Python
+     * identifier like ``pytest_fixture_hidden_dependencies``
+     * should not be squeezed into per-character lines just so
+     * other wide columns can fit. The wrap container (above)
+     * provides horizontal scroll when the sum of mins exceeds
+     * the available width. */
+    min-width: 8rem;
+  }
+
+  /* Break very long URLs / identifiers ONLY when they appear as
+   * inline ``<code>`` content inside a cell. This keeps regular
+   * prose flowing naturally while a 100-char URL still wraps
+   * within its column rather than pushing past the wrap. */
+  .gp-sphinx-astro-doc table td code,
+  .gp-sphinx-astro-doc table td .shiki {
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .gp-sphinx-astro-doc table th {
