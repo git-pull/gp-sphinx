@@ -197,6 +197,74 @@ describe('enhanceCodeBlocks — prompt non-selection', () => {
     expect(promptSpan?.classList.contains('select-none')).toBe(true)
   })
 
+  test('splits ``$ `` prefix when Shiki bundles it into the rest of the line', () => {
+    // Shiki's ``console`` language renders the whole line as a
+    // single span — ``<span>$ pip install foo</span>``. Triple-
+    // clicking the line still selects the ``$`` because it's
+    // inside the same selectable span. The fix is to split: emit a
+    // non-selectable span for the prompt prefix and a regular span
+    // for the rest.
+    const root = document.createElement('div')
+    root.appendChild(
+      makeShikiPre(
+        '<span class="line"><span style="color:#000">$ pip install foo</span></span>',
+      ),
+    )
+    document.body.appendChild(root)
+    enhanceCodeBlocks(root)
+    const line = root.querySelector('span.line')
+    expect(line).toBeDefined()
+    // After split there should be a span carrying just the prompt
+    // with select-none, plus a sibling carrying the rest.
+    const promptSpan = Array.from(line?.querySelectorAll('span') ?? []).find(
+      (s) => s.textContent === '$' && s.classList.contains('select-none'),
+    )
+    expect(promptSpan).toBeDefined()
+    // The full line text content is preserved end-to-end (a single
+    // space between prompt and command).
+    expect(line?.textContent).toBe('$ pip install foo')
+  })
+
+  test('splits ``>>> `` prefix when bundled with command in single span', () => {
+    const root = document.createElement('div')
+    root.appendChild(
+      makeShikiPre(
+        '<span class="line"><span style="color:#000">&gt;&gt;&gt; print("hi")</span></span>',
+      ),
+    )
+    document.body.appendChild(root)
+    enhanceCodeBlocks(root)
+    const line = root.querySelector('span.line')
+    const promptSpan = Array.from(line?.querySelectorAll('span') ?? []).find(
+      (s) => s.textContent === '>>>' && s.classList.contains('select-none'),
+    )
+    expect(promptSpan).toBeDefined()
+    expect(line?.textContent).toBe('>>> print("hi")')
+  })
+
+  test('after splitting a bundled prompt, copying still strips it correctly', async () => {
+    // Regression test for the interaction between
+    // ``splitPromptIfBundled`` and ``formatCopyText``: after the
+    // DOM split, the code's textContent is unchanged
+    // (``$ pip install foo``), so ``formatCopyText`` running on
+    // that text still correctly strips the ``$ `` prefix and
+    // writes ``pip install foo`` to the clipboard.
+    const root = document.createElement('div')
+    root.appendChild(
+      makeShikiPre(
+        '<span class="line"><span style="color:#000">$ pip install foo</span></span>',
+      ),
+    )
+    document.body.appendChild(root)
+    enhanceCodeBlocks(root)
+    const button = root.querySelector<HTMLButtonElement>(
+      '[data-test-id="code-copy"]',
+    )
+    button?.click()
+    await Promise.resolve()
+    expect(writeText).toHaveBeenCalledWith('pip install foo')
+  })
+
   test('does not tag spans whose text is incidentally a prompt-like substring', () => {
     // A span whose text is ``$`` AS PART OF a longer token — e.g.
     // a price ``$10`` — should NOT be marked non-selectable. We

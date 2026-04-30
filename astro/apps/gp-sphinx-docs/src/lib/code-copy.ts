@@ -98,11 +98,78 @@ export function formatCopyText(text: string): string {
  */
 const PROMPT_TOKENS: ReadonlySet<string> = new Set(['>>>', '...', '$', '#'])
 
+/**
+ * Regex matching a recognised prompt at the START of a string.
+ * Capture group 1 is the prompt token ALONE (without trailing
+ * whitespace) so the tagged span carries exactly the prompt; the
+ * trailing space stays with the command body.
+ */
+const PROMPT_PREFIX = /^(>>>|\.\.\.|\$|#)(\s)/
+
+function splitPromptIfBundled(span: HTMLElement): void {
+  // Shiki's ``console`` (and some Python shell renderings)
+  // tokenize the entire line as a single coloured span:
+  // ``<span style="…">$ pip install foo</span>``. Triple-clicking
+  // selects the prompt because it's inside that span. Detect the
+  // leading prompt + space, split into a non-selectable prefix
+  // span carrying just the prompt, and shrink the original span
+  // to the trailing command body.
+  if (span.children.length > 0) {
+    // Already split or contains nested markup — skip.
+    return
+  }
+  const text = span.textContent ?? ''
+  const match = text.match(PROMPT_PREFIX)
+  if (match === null) {
+    return
+  }
+  const prompt = match[1] ?? ''
+  const separator = match[2] ?? ''
+  const rest = text.slice(prompt.length + separator.length)
+  // Build the prompt span carrying the prompt token, marked
+  // non-selectable. Inherit the inline style so the colour grammar
+  // stays consistent with the surrounding tokens.
+  const promptSpan = document.createElement('span')
+  promptSpan.classList.add('select-none')
+  if (span.getAttribute('style') !== null) {
+    promptSpan.setAttribute('style', span.getAttribute('style') ?? '')
+  }
+  promptSpan.textContent = prompt
+  // Reduce the original span to the separator + remaining body.
+  span.textContent = `${separator}${rest}`
+  span.parentNode?.insertBefore(promptSpan, span)
+}
+
 function markPromptSpans(code: Element): void {
-  for (const span of code.querySelectorAll('span')) {
+  // First pass: tag spans whose text is exactly a prompt token
+  // (Shiki's Python tokenization, where ``>>>`` is its own span).
+  for (const span of code.querySelectorAll<HTMLElement>('span')) {
     if (PROMPT_TOKENS.has(span.textContent ?? '')) {
       span.classList.add('select-none')
     }
+  }
+  // Second pass: split bundled-prompt spans (Shiki's ``console``
+  // tokenization, where the entire line is one span). We only
+  // consider the FIRST text-bearing span inside each
+  // ``<span class="line">`` — a ``$`` mid-line is not a prompt.
+  const lines = code.querySelectorAll<HTMLElement>('span.line')
+  if (lines.length === 0) {
+    // Some Shiki output (older versions, or when ``defaultColor``
+    // is set differently) skips the line wrapper. Fall back to the
+    // direct children of ``code``.
+    for (const span of Array.from(code.children).filter(
+      (c) => c instanceof HTMLElement,
+    ) as HTMLElement[]) {
+      splitPromptIfBundled(span)
+    }
+    return
+  }
+  for (const line of lines) {
+    const firstSpan = line.querySelector<HTMLElement>(':scope > span')
+    if (firstSpan === null) {
+      continue
+    }
+    splitPromptIfBundled(firstSpan)
   }
 }
 
