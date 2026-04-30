@@ -183,6 +183,29 @@ either the bare or the compound selector.
 """
 
 
+def _is_bases_paragraph(block: dict[str, t.Any]) -> bool:
+    """Return ``True`` if ``block`` looks like Sphinx's auto-injected ``Bases:`` line.
+
+    Sphinx's ``autoclass`` directive (with ``:show-inheritance:``)
+    prepends a paragraph reading ``Bases: <pending_xref>`` to every
+    class's docstring body. That paragraph is structural metadata
+    rather than prose, so we skip past it when extracting the
+    docstring summary. We can't structurally test for "Bases" because
+    the inline reference's text content is dropped during summary
+    extraction; we test the literal lead-in string instead.
+    """
+    if block.get("type") != "paragraph":
+        return False
+    children = block.get("children") or []
+    if not children:
+        return False
+    first = children[0]
+    if first.get("type") != "text":
+        return False
+    value = first.get("value", "")
+    return isinstance(value, str) and value.startswith("Bases:")
+
+
 def _is_xref_class(value: str) -> bool:
     """Return ``True`` if ``value`` is an xref / domain / role class.
 
@@ -1161,11 +1184,21 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         sym["docstring_body"] = body
         if not body:
             return
-        first_block = body[0]
-        if first_block.get("type") != "paragraph":
+        # Sphinx's autoclass directive (with ``:show-inheritance:``)
+        # auto-prepends a paragraph reading ``Bases: <pending_xref>`` to
+        # the docstring body. That string is structural metadata, not
+        # the prose summary — so skip past it when extracting the
+        # summary so search engines and the rendered summary card see
+        # the real first sentence ("A clickable widget…") instead of
+        # the bare label "Bases: ".
+        first_meaningful = next(
+            (block for block in body if not _is_bases_paragraph(block)),
+            None,
+        )
+        if first_meaningful is None or first_meaningful.get("type") != "paragraph":
             return
         sym["docstring_summary"] = "".join(
             child.get("value", "")
-            for child in first_block.get("children", [])
+            for child in first_meaningful.get("children", [])
             if child.get("type") == "text"
         )
