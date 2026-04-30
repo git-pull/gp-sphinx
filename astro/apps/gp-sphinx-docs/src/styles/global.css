@@ -614,48 +614,119 @@
 
   /* In-body field lists ("Parameters", "Returns", "Return type",
    * "Examples", "Notes") — these came from Sphinx field_list nodes
-   * aliased onto definition_list in cycle 29. We give each section
-   * label a small uppercase heading + a tinted indented body so the
-   * structure reads as a parameter table rather than a tag/value
-   * list. */
+   * aliased onto definition_list in cycle 29. We render them as a
+   * Furo-style two-column grid so labels (``Parameters``) line up
+   * with their values (``foo (str) – ...``) rather than stacking
+   * vertically as a tag/value list.
+   *
+   * On narrow viewports the grid collapses to single-column so the
+   * label sits above its value with the same separator + indent the
+   * stacked-block layout used previously. */
   .gp-sphinx-symbol__body dl,
-  .gp-sphinx-astro-doc :where(.gp-sphinx-astro-doc) dl.field-list,
   .gp-sphinx-astro-doc article dl,
   .gp-sphinx-astro-doc section dl {
-    display: block;
+    display: grid;
+    grid-template-columns: minmax(7.5rem, max-content) minmax(0, 1fr);
+    column-gap: 1.25rem;
+    row-gap: 0.4rem;
     margin: 1.25rem 0;
+    padding: 0.75rem 0.95rem;
+    background: color-mix(in oklab, var(--color-code-bg) 35%, var(--color-bg));
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
   }
 
   .gp-sphinx-symbol__body dl > dt,
   .gp-sphinx-astro-doc article dl > dt,
   .gp-sphinx-astro-doc section dl > dt {
-    font-size: 0.8rem;
+    grid-column: 1;
+    font-size: 0.78rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-muted);
-    margin: 1rem 0 0.5rem;
-    padding-bottom: 0.25rem;
-    border-bottom: 1px solid var(--color-border);
+    padding-top: 0.1rem;
+    margin: 0;
   }
 
   .gp-sphinx-symbol__body dl > dd,
   .gp-sphinx-astro-doc article dl > dd,
   .gp-sphinx-astro-doc section dl > dd {
-    margin: 0 0 0.75rem 0;
-    padding-left: 1.25rem;
-    border-left: 2px solid var(--color-border);
+    grid-column: 2;
+    margin: 0;
+    padding: 0;
+    font-size: 0.9rem;
   }
 
   .gp-sphinx-symbol__body dl > dd > p,
   .gp-sphinx-astro-doc article dl > dd > p,
   .gp-sphinx-astro-doc section dl > dd > p {
-    margin: 0.25rem 0;
-    font-size: 0.9rem;
+    margin: 0.15rem 0;
   }
 
-  .gp-sphinx-symbol__body dl > dd > p:first-child {
+  .gp-sphinx-symbol__body dl > dd > p:first-child,
+  .gp-sphinx-astro-doc article dl > dd > p:first-child,
+  .gp-sphinx-astro-doc section dl > dd > p:first-child {
     margin-top: 0;
+  }
+
+  .gp-sphinx-symbol__body dl > dd > p:last-child,
+  .gp-sphinx-astro-doc article dl > dd > p:last-child,
+  .gp-sphinx-astro-doc section dl > dd > p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Parameter rows — the renderer emits ``<dd><ul><li><p>name (type)
+   * – description</p></li>…</ul></dd>`` for autodoc'd functions.
+   * Strip the bullet glyphs and tighten spacing so the list reads
+   * as a table of rows. */
+  .gp-sphinx-symbol__body dl > dd > ul,
+  .gp-sphinx-astro-doc article dl > dd > ul,
+  .gp-sphinx-astro-doc section dl > dd > ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .gp-sphinx-symbol__body dl > dd > ul > li,
+  .gp-sphinx-astro-doc article dl > dd > ul > li,
+  .gp-sphinx-astro-doc section dl > dd > ul > li {
+    margin: 0;
+    padding: 0.1rem 0;
+  }
+
+  .gp-sphinx-symbol__body dl > dd > ul > li + li,
+  .gp-sphinx-astro-doc article dl > dd > ul > li + li,
+  .gp-sphinx-astro-doc section dl > dd > ul > li + li {
+    border-top: 1px dashed
+      color-mix(in oklab, var(--color-border) 60%, var(--color-bg));
+  }
+
+  /* Single-column collapse for narrow viewports — keep the label as
+   * an uppercase header above its value cell. */
+  @media (max-width: 640px) {
+    .gp-sphinx-symbol__body dl,
+    .gp-sphinx-astro-doc article dl,
+    .gp-sphinx-astro-doc section dl {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 0.6rem;
+    }
+
+    .gp-sphinx-symbol__body dl > dt,
+    .gp-sphinx-astro-doc article dl > dt,
+    .gp-sphinx-astro-doc section dl > dt {
+      grid-column: 1;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 0.2rem;
+    }
+
+    .gp-sphinx-symbol__body dl > dd,
+    .gp-sphinx-astro-doc article dl > dd,
+    .gp-sphinx-astro-doc section dl > dd {
+      grid-column: 1;
+      padding-left: 0.6rem;
+      border-left: 2px solid var(--color-border);
+    }
   }
 
   /* ─── apiLayout / autodoc layout components ───────────────────
