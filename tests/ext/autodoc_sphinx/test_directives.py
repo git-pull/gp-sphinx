@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import inspect
 import typing as t
 
 import pytest
 
-import sphinx_autodoc_sphinx._directives as sas_directives
 from sphinx_autodoc_sphinx import setup
 from sphinx_autodoc_sphinx._directives import (
     SphinxConfigValue,
@@ -15,7 +13,6 @@ from sphinx_autodoc_sphinx._directives import (
     _make_default_block,
     discover_config_value,
     discover_config_values,
-    render_config_index_markup,
     render_config_value_markup,
 )
 
@@ -50,53 +47,6 @@ def test_discover_config_value_resolves_qualified_paths() -> None:
     value = discover_config_value("sphinx_fonts.sphinx_font_preload")
     assert value.name == "sphinx_font_preload"
     assert value.module_name == "sphinx_fonts"
-
-
-def test_config_index_renders_summary_table() -> None:
-    """The summary index renders a real list-table instead of placeholder text."""
-    markup = render_config_index_markup("sphinx_fonts")
-    assert ".. list-table::" in markup
-    assert "sphinx_font_css_variables" in markup
-
-
-def test_config_index_uses_shared_type_collection_normalizer(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Config index rendering delegates type text to the shared helper."""
-    seen: list[tuple[object, object]] = []
-
-    def _fake_normalize_type_collection_text(
-        types: object,
-        *,
-        default: object = inspect.Parameter.empty,
-    ) -> str:
-        seen.append((types, default))
-        return "normalized-type"
-
-    monkeypatch.setattr(
-        sas_directives,
-        "normalize_type_collection_text",
-        _fake_normalize_type_collection_text,
-    )
-    monkeypatch.setattr(
-        sas_directives,
-        "discover_config_values",
-        lambda _module_name: [
-            SphinxConfigValue(
-                "demo_ext",
-                "demo_option",
-                True,
-                "env",
-                (bool,),
-                "Enable the demo option.",
-            )
-        ],
-    )
-
-    markup = render_config_index_markup("demo_ext")
-
-    assert seen == [((bool,), True)]
-    assert "normalized-type" in markup
 
 
 class IsComplexCase(t.NamedTuple):

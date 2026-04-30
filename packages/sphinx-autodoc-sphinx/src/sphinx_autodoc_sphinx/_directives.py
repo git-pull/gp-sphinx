@@ -10,10 +10,6 @@ Examples
 ...     "sphinx_font_preload",
 ... }
 True
-
->>> markup = render_config_index_markup("sphinx_fonts")
->>> ".. list-table::" in markup
-True
 """
 
 from __future__ import annotations
@@ -33,7 +29,6 @@ from sphinx_autodoc_typehints_gp import normalize_type_collection_text
 from sphinx_ux_autodoc_layout import (
     ApiFactRow,
     build_api_facts_section,
-    build_api_summary_section,
     inject_signature_slots,
     iter_desc_nodes,
     parse_generated_markup,
@@ -158,19 +153,6 @@ def _call_setup(module_name: str) -> RecorderApp:
     setup = module.setup
     setup(app)
     return app
-
-
-def _render_default(value: object) -> str:  # object: only calls repr()
-    """Render a compact literal for a ``:default:`` option.
-
-    Examples
-    --------
-    >>> _render_default(True)
-    '``True``'
-    >>> _render_default("demo")
-    "``'demo'``"
-    """
-    return f"``{value!r}``"
 
 
 def _literal_paragraph(text: str) -> nodes.paragraph:
@@ -360,50 +342,6 @@ def render_config_values_markup(module_name: str, *, no_index: bool = False) -> 
     )
 
 
-def render_config_index_markup(
-    module_name: str,
-    *,
-    heading: str = "Config Value Index",
-) -> str:
-    """Return a list-table index summarizing a module's config values.
-
-    Examples
-    --------
-    >>> markup = render_config_index_markup("sphinx_fonts")
-    >>> "sphinx_font_preload" in markup
-    True
-    """
-    values = discover_config_values(module_name)
-    if not values:
-        return ""
-
-    lines = [
-        f".. rubric:: {heading}",
-        "",
-        ".. list-table::",
-        "   :header-rows: 1",
-        "",
-        "   * - Name",
-        "     - Type",
-        "     - Default",
-        "     - Rebuild",
-    ]
-    for value in values:
-        type_text = normalize_type_collection_text(
-            value.types,
-            default=value.default,
-        )
-        lines.extend(
-            [
-                f"   * - ``{value.name}``",
-                f"     - ``{type_text}``",
-                f"     - {_render_default(value.default)}",
-                f"     - ``{value.rebuild or 'none'}``",
-            ],
-        )
-    return "\n".join(lines)
-
-
 def _iter_desc_content(
     node_list: list[nodes.Node],
 ) -> t.Iterator[addnodes.desc_content]:
@@ -512,20 +450,3 @@ class AutoconfigvaluesDirective(SphinxDirective):
                 _render_config_value_nodes(self, value, no_index=no_index),
             )
         return result
-
-
-class AutoconfigvalueIndexDirective(SphinxDirective):
-    """Render a summary table for a module's config values."""
-
-    required_arguments = 1
-    has_content = False
-
-    def run(self) -> list[nodes.Node]:
-        markup = render_config_index_markup(self.arguments[0])
-        if not markup:
-            return []
-        rendered = parse_generated_markup(self, markup)
-        return [
-            build_api_summary_section(node) if isinstance(node, nodes.table) else node
-            for node in rendered
-        ]
