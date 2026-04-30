@@ -33,8 +33,26 @@ function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (c) => HTML_ESCAPES[c] ?? c)
 }
 
+/**
+ * Kind keywords that mirror Sphinx's autodoc-emitted ``desc_annotation``
+ * prefix. Classes and exceptions get a leading ``class `` / ``exception ``
+ * keyword in front of the qualname so the signature reads like Python
+ * source (``class libtmux.common.CmdProtocol``). Functions, methods,
+ * properties, attributes, data, and other kinds carry no such prefix
+ * since the kind is already conveyed by the inline kind badge in
+ * the header meta group.
+ */
+const KEYWORD_PREFIX_BY_KIND: Record<string, string> = {
+  class: 'class ',
+  exception: 'exception ',
+}
+
 function renderSignature(symbol: ApiSymbol): string {
   const parts: string[] = []
+  const keyword = KEYWORD_PREFIX_BY_KIND[symbol.kind]
+  if (keyword !== undefined) {
+    parts.push(`<em class="gp-sphinx-symbol__keyword">${escapeHtml(keyword)}</em>`)
+  }
   if (symbol.module !== '') {
     parts.push(`<span class="gp-sphinx-symbol__module">${escapeHtml(symbol.module)}.</span>`)
   }

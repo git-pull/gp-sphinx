@@ -602,6 +602,12 @@
     font-weight: 600;
   }
 
+  .gp-sphinx-symbol__keyword {
+    color: var(--color-muted);
+    font-style: italic;
+    font-weight: 500;
+  }
+
   .gp-sphinx-symbol__summary {
     font-size: 1rem;
     color: var(--color-fg);

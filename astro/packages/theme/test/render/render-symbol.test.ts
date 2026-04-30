@@ -108,6 +108,28 @@ describe('renderSymbol — header and identity', () => {
     const html = renderSymbol(makeFunctionSymbol({ source: null }))
     expect(html).not.toContain('gp-sphinx-symbol__source-link')
   })
+
+  test('class signature prefixes the qualname with a class keyword', () => {
+    const html = renderSymbol(makeFunctionSymbol({ kind: 'class' }))
+    // Furo emits ``<em class="property">class </em>`` before the
+    // signature; we render the same affordance with our own hook so
+    // CSS can italicise the keyword consistently.
+    expect(html).toContain('<em class="gp-sphinx-symbol__keyword">class </em>')
+  })
+
+  test('exception signature prefixes with the exception keyword', () => {
+    const html = renderSymbol(makeFunctionSymbol({ kind: 'exception' }))
+    expect(html).toContain('<em class="gp-sphinx-symbol__keyword">exception </em>')
+  })
+
+  test('function and method signatures carry no leading keyword prefix', () => {
+    expect(renderSymbol(makeFunctionSymbol({ kind: 'function' }))).not.toContain(
+      'gp-sphinx-symbol__keyword',
+    )
+    expect(renderSymbol(makeFunctionSymbol({ kind: 'method' }))).not.toContain(
+      'gp-sphinx-symbol__keyword',
+    )
+  })
 })
 
 describe('renderSymbol — summary', () => {
