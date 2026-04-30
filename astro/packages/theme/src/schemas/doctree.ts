@@ -98,7 +98,12 @@ export type BlockNode =
   | { type: 'blockQuote'; children: BlockNode[] }
   | { type: 'bulletList'; children: ListItemNode[] }
   | { type: 'enumeratedList'; start: number | null; children: ListItemNode[] }
-  | { type: 'admonition'; variant: AdmonitionVariant; children: BlockNode[] }
+  | {
+      type: 'admonition'
+      variant: AdmonitionVariant
+      title: InlineNode[] | null
+      children: BlockNode[]
+    }
   | {
       type: 'footnote'
       kind: FootnoteKind
@@ -295,6 +300,10 @@ export const admonitionVariantSchema = z.enum([
 export const admonitionNodeSchema = z.object({
   type: z.literal('admonition'),
   variant: admonitionVariantSchema,
+  title: z
+    .lazy(() => z.array(inlineNodeSchema))
+    .nullable()
+    .default(null),
   children: z.lazy(() => z.array(blockNodeSchema)),
 })
 

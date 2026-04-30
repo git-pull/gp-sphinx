@@ -813,6 +813,53 @@ def test_translator_handles_footnote_and_reference(
     assert len(body_child.children) >= 1
 
 
+def test_translator_handles_generic_admonition_with_title() -> None:
+    """A generic ``nodes.admonition`` (MyST ``:::{admonition} Foo``) keeps its title.
+
+    Without a ``visit_admonition`` handler, MyST's generic admonition
+    (used when the directive name is the literal ``admonition`` and a
+    custom label is provided as the first argument) falls through to
+    SparseNodeVisitor. Its inner ``<title>Foo</title>`` then leaks
+    upward and overwrites the parent section's title — so the H1
+    on a doc page silently changes from the page heading to the
+    admonition label. This test pins the correct behaviour: section
+    title stays intact, admonition variant comes from ``classes``,
+    and the admonition's own title is captured in a new ``title``
+    field on the wire-format ``AdmonitionNode``.
+    """
+    from gp_sphinx_astro_builder.models import AdmonitionNode
+
+    doc = _new_document()
+    section = nodes.section(ids=["page"])
+    section_title = nodes.title()
+    section_title += nodes.Text("Page heading")
+    section += section_title
+
+    adm = nodes.admonition()
+    adm["classes"] = ["admonition", "warning"]
+    adm_title = nodes.title()
+    adm_title += nodes.Text("Alpha")
+    adm += adm_title
+    body = nodes.paragraph()
+    body += nodes.Text("Status: pre-1.0.")
+    adm += body
+
+    section += adm
+    doc += section
+
+    translator = DocTreeJSONTranslator(doc, docname="page")
+    doc.walkabout(translator)
+    result = translator.result()
+
+    # Section heading must NOT be overwritten by the admonition's title.
+    assert result.tree.title == [TextNode(type="text", value="Page heading")]
+
+    block_child = result.tree.children[0]
+    assert isinstance(block_child, AdmonitionNode)
+    assert block_child.variant == "warning"
+    assert block_child.title == [TextNode(type="text", value="Alpha")]
+
+
 def test_translator_handles_rubric_node() -> None:
     """A docutils ``rubric`` becomes a first-class ``RubricNode`` block.
 

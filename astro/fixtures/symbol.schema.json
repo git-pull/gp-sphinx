@@ -76,6 +76,59 @@
           "title": "Children",
           "type": "array"
         },
+        "title": {
+          "anyOf": [
+            {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "badge": "#/$defs/BadgeNode",
+                    "emphasis": "#/$defs/EmphasisNode",
+                    "footnoteReference": "#/$defs/FootnoteReferenceNode",
+                    "image": "#/$defs/ImageNode",
+                    "literal": "#/$defs/LiteralNode",
+                    "reference": "#/$defs/ReferenceNode",
+                    "strong": "#/$defs/StrongNode",
+                    "text": "#/$defs/TextNode"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/TextNode"
+                  },
+                  {
+                    "$ref": "#/$defs/EmphasisNode"
+                  },
+                  {
+                    "$ref": "#/$defs/StrongNode"
+                  },
+                  {
+                    "$ref": "#/$defs/LiteralNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ReferenceNode"
+                  },
+                  {
+                    "$ref": "#/$defs/FootnoteReferenceNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ImageNode"
+                  },
+                  {
+                    "$ref": "#/$defs/BadgeNode"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
         "type": {
           "const": "admonition",
           "title": "Type",

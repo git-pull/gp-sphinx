@@ -98,6 +98,59 @@
             'title': 'Children',
             'type': 'array',
           }),
+          'title': dict({
+            'anyOf': list([
+              dict({
+                'items': dict({
+                  'discriminator': dict({
+                    'mapping': dict({
+                      'badge': '#/$defs/BadgeNode',
+                      'emphasis': '#/$defs/EmphasisNode',
+                      'footnoteReference': '#/$defs/FootnoteReferenceNode',
+                      'image': '#/$defs/ImageNode',
+                      'literal': '#/$defs/LiteralNode',
+                      'reference': '#/$defs/ReferenceNode',
+                      'strong': '#/$defs/StrongNode',
+                      'text': '#/$defs/TextNode',
+                    }),
+                    'propertyName': 'type',
+                  }),
+                  'oneOf': list([
+                    dict({
+                      '$ref': '#/$defs/TextNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/EmphasisNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/StrongNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/LiteralNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/ReferenceNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/FootnoteReferenceNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/ImageNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/BadgeNode',
+                    }),
+                  ]),
+                }),
+                'type': 'array',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Title',
+          }),
           'type': dict({
             'const': 'admonition',
             'title': 'Type',
@@ -2265,6 +2318,59 @@
             }),
             'title': 'Children',
             'type': 'array',
+          }),
+          'title': dict({
+            'anyOf': list([
+              dict({
+                'items': dict({
+                  'discriminator': dict({
+                    'mapping': dict({
+                      'badge': '#/$defs/BadgeNode',
+                      'emphasis': '#/$defs/EmphasisNode',
+                      'footnoteReference': '#/$defs/FootnoteReferenceNode',
+                      'image': '#/$defs/ImageNode',
+                      'literal': '#/$defs/LiteralNode',
+                      'reference': '#/$defs/ReferenceNode',
+                      'strong': '#/$defs/StrongNode',
+                      'text': '#/$defs/TextNode',
+                    }),
+                    'propertyName': 'type',
+                  }),
+                  'oneOf': list([
+                    dict({
+                      '$ref': '#/$defs/TextNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/EmphasisNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/StrongNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/LiteralNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/ReferenceNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/FootnoteReferenceNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/ImageNode',
+                    }),
+                    dict({
+                      '$ref': '#/$defs/BadgeNode',
+                    }),
+                  ]),
+                }),
+                'type': 'array',
+              }),
+              dict({
+                'type': 'null',
+              }),
+            ]),
+            'default': None,
+            'title': 'Title',
           }),
           'type': dict({
             'const': 'admonition',

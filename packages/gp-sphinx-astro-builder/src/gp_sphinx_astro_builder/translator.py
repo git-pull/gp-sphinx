@@ -364,12 +364,23 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         self._stack.append({"kind": "title", "data": {"children": []}})
 
     def depart_title(self, node: nodes.Element) -> None:
-        """Attach the title's collected inline children to the parent section."""
+        """Attach the title's collected inline children to the parent section.
+
+        When the title is the first child of a generic admonition (the
+        custom label from ``:::{admonition} Foo``), the parent frame
+        is the admonition, not a section — assigning ``title`` there
+        keeps the admonition's custom label without leaking up to
+        the section's H1.
+        """
         frame = self._stack.pop()
         title_children: list[dict[str, t.Any]] = frame["data"]["children"]
         if self._stack:
             self._stack[-1]["data"]["title"] = title_children
-        if not self._doc_title:
+        # Document-level title only tracks section H1s, not admonition
+        # custom labels — skip the doc_title capture when the title
+        # belonged to an admonition.
+        parent_kind = self._stack[-1]["kind"] if self._stack else None
+        if parent_kind != "admonition" and not self._doc_title:
             self._doc_title = "".join(
                 child["value"]
                 for child in title_children
@@ -629,6 +640,20 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         frame = self._stack.pop()
         self._stack[-1]["data"]["children"].append(frame["data"])
 
+    _ADMONITION_VARIANT_CLASSES: t.ClassVar[frozenset[str]] = frozenset(
+        {
+            "note",
+            "warning",
+            "attention",
+            "caution",
+            "important",
+            "tip",
+            "hint",
+            "danger",
+            "error",
+        },
+    )
+
     def _open_admonition(self, variant: str) -> None:
         """Push an admonition frame with the given variant tag."""
         self._stack.append(
@@ -646,6 +671,32 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         """Pop the current admonition frame and attach to the parent."""
         frame = self._stack.pop()
         self._stack[-1]["data"]["children"].append(frame["data"])
+
+    def visit_admonition(self, node: nodes.Element) -> None:
+        """Open a generic admonition frame for ``:::{admonition} Title`` shapes.
+
+        MyST's ``:::{admonition} Foo :class: warning`` and docutils'
+        ``.. admonition:: Foo`` produce a generic ``nodes.admonition``
+        rather than a typed ``nodes.warning`` / ``nodes.note``. The
+        custom title comes through as a ``<title>`` first child;
+        without an explicit handler, ``visit_title`` would route the
+        title text upward and overwrite the parent section's H1.
+
+        We detect the variant from ``node["classes"]`` (the
+        ``:class: warning`` modifier writes ``"warning"`` into the
+        class list) and fall back to ``"note"`` when no recognised
+        variant class is present.
+        """
+        classes = node.get("classes") or []
+        variant = next(
+            (cls for cls in classes if cls in self._ADMONITION_VARIANT_CLASSES),
+            "note",
+        )
+        self._open_admonition(variant)
+
+    def depart_admonition(self, node: nodes.Element) -> None:
+        """Close the generic admonition frame."""
+        self._close_admonition()
 
     def visit_note(self, node: nodes.Element) -> None:
         """Open a note admonition frame."""
