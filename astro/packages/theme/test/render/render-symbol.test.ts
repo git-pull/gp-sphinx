@@ -69,6 +69,45 @@ describe('renderSymbol — header and identity', () => {
     expect(html).toContain('gp-sphinx-symbol--class')
     expect(html).not.toContain('gp-sphinx-symbol--function')
   })
+
+  test('header carries an inline kind badge mirroring the symbol kind', () => {
+    const html = renderSymbol(makeFunctionSymbol({ kind: 'class' }))
+    // Furo-style ``[ class ]`` badge sitting in the header alongside the
+    // signature so the reader sees the kind at a glance without scrolling.
+    expect(html).toContain('class="gp-sphinx-symbol__kind gp-sphinx-symbol__kind--class"')
+    expect(html).toContain('>class<')
+  })
+
+  test('header inline kind badge respects function symbols', () => {
+    const html = renderSymbol(makeFunctionSymbol({ kind: 'function' }))
+    expect(html).toContain('class="gp-sphinx-symbol__kind gp-sphinx-symbol__kind--function"')
+    expect(html).toContain('>function<')
+  })
+
+  test('header inline source link points at the source blob', () => {
+    const html = renderSymbol(
+      makeFunctionSymbol({
+        source: {
+          repo: 'https://github.com/git-pull/gp-sphinx',
+          path: 'src/gp_sphinx/config.py',
+          line: 42,
+        },
+      }),
+    )
+    // The ``[source]`` jump anchor in the header is structurally
+    // distinct from the bottom source attribution so CSS can hide
+    // either independently.
+    expect(html).toContain('class="gp-sphinx-symbol__source-link"')
+    expect(html).toContain(
+      'href="https://github.com/git-pull/gp-sphinx/blob/main/src/gp_sphinx/config.py#L42"',
+    )
+    expect(html).toContain('>[source]<')
+  })
+
+  test('header omits the inline source link when source is null', () => {
+    const html = renderSymbol(makeFunctionSymbol({ source: null }))
+    expect(html).not.toContain('gp-sphinx-symbol__source-link')
+  })
 })
 
 describe('renderSymbol — summary', () => {

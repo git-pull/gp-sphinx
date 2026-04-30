@@ -43,6 +43,36 @@ function renderSignature(symbol: ApiSymbol): string {
   return `<code class="gp-sphinx-symbol__signature">${parts.join('')}</code>`
 }
 
+/**
+ * Furo-style inline kind badge rendered alongside the signature.
+ *
+ * Sits to the right of the signature line so the reader sees
+ * "this is a class" / "this is a method" at a glance — matching
+ * Furo's ``<dl class="py class">`` chrome on its API pages. Each
+ * kind gets its own modifier class (``--function`` / ``--class``
+ * / ``--method`` / …) so per-kind palette tokens (cycle 64's
+ * ``--type-*`` family) can colour them differently.
+ */
+function renderKindBadge(symbol: ApiSymbol): string {
+  const kind = escapeHtml(symbol.kind)
+  return `<span class="gp-sphinx-symbol__kind gp-sphinx-symbol__kind--${kind}">${kind}</span>`
+}
+
+/**
+ * Inline ``[source]`` jump anchor rendered inside the signature
+ * header. Distinct from the ``__source`` footer link so CSS can
+ * style the header version as a small superscript-like badge while
+ * keeping the footer link as a long path-and-line breadcrumb.
+ */
+function renderSourceLink(source: SymbolSource | null): string {
+  if (source === null) {
+    return ''
+  }
+  const repo = source.repo.replace(/\/+$/, '')
+  const href = `${repo}/blob/main/${source.path}#L${source.line}`
+  return `<a class="gp-sphinx-symbol__source-link" href="${escapeHtml(href)}">[source]</a>`
+}
+
 function renderParameter(param: Parameter): string {
   const annotation = param.annotation === null ? '' : escapeHtml(param.annotation)
   const defaultPart =
@@ -110,7 +140,18 @@ export function renderSymbol(symbol: ApiSymbol, highlight?: CodeHighlight): stri
   const classAttr = `class="gp-sphinx-symbol gp-sphinx-symbol--${symbol.kind}"`
   const idAttr = `id="${escapeHtml(symbol.id)}"`
   const dataAttr = `data-symbol-id="${escapeHtml(symbol.id)}"`
-  const headerHtml = `<header class="gp-sphinx-symbol__header">${renderSignature(symbol)}</header>`
+  // Header layout: signature on the left, kind badge + source link
+  // grouped on the right via ``gp-sphinx-symbol__header-meta``. CSS
+  // uses flex with ``justify-content: space-between`` so the meta
+  // group right-aligns even when the signature wraps.
+  const headerMeta =
+    `<span class="gp-sphinx-symbol__header-meta">` +
+    `${renderKindBadge(symbol)}${renderSourceLink(symbol.source)}` +
+    `</span>`
+  const headerHtml =
+    `<header class="gp-sphinx-symbol__header">` +
+    `${renderSignature(symbol)}${headerMeta}` +
+    `</header>`
   const summaryHtml = renderSummary(symbol.docstring_summary)
   const paramsHtml = renderParameters(symbol.parameters)
   const returnsHtml = renderReturns(symbol.returns)
