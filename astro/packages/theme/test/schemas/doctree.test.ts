@@ -81,6 +81,16 @@ describe('doctree zod schemas — recursive inline shapes', () => {
       href: 'https://example.com',
       children: [{ type: 'text', value: 'Example' }],
     }
+    expect(referenceNodeSchema.parse(data)).toEqual({ ...data, classes: [] })
+  })
+
+  test('referenceNodeSchema preserves xref role classes', () => {
+    const data = {
+      type: 'reference',
+      href: '/api/foo/',
+      classes: ['xref', 'py', 'py-func'],
+      children: [{ type: 'literal', value: 'foo()' }],
+    }
     expect(referenceNodeSchema.parse(data)).toEqual(data)
   })
 })

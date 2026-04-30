@@ -84,6 +84,14 @@ class ReferenceNode(BaseModel):
     had ``refid``). The translator normalises both into the same field so the
     Astro renderer needs a single href branch.
 
+    The ``classes`` field carries Sphinx's xref-role markers
+    (``xref`` / ``py-func`` / ``std-term`` / …) when the source reference
+    came from a domain role like ``:py:func:`foo``` or ``:term:`foo```. The
+    Astro renderer emits them as ``class="..."`` on the ``<a>`` so CSS can
+    style each role distinctly (italic glossary terms, monospace type
+    references, etc.). External links and Sphinx-internal cross-doc links
+    typically carry no xref classes and the field is empty.
+
     Examples
     --------
     >>> from gp_sphinx_astro_builder.models import ReferenceNode
@@ -100,6 +108,7 @@ class ReferenceNode(BaseModel):
 
     type: t.Literal["reference"]
     href: str
+    classes: list[str] = []
     children: list[InlineNode]
 
 

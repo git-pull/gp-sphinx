@@ -1403,7 +1403,7 @@
       "type": "object"
     },
     "ReferenceNode": {
-      "description": "An inline cross-reference or external link.\n\nThe ``href`` field holds either an absolute URL (when the source had\n``refuri``) or an in-page anchor like ``\"#section-id\"`` (when the source\nhad ``refid``). The translator normalises both into the same field so the\nAstro renderer needs a single href branch.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import ReferenceNode\n>>> node = ReferenceNode.model_validate(\n...     {\n...         \"type\": \"reference\",\n...         \"href\": \"https://example.com\",\n...         \"children\": [{\"type\": \"text\", \"value\": \"Example\"}],\n...     },\n... )\n>>> node.href\n'https://example.com'",
+      "description": "An inline cross-reference or external link.\n\nThe ``href`` field holds either an absolute URL (when the source had\n``refuri``) or an in-page anchor like ``\"#section-id\"`` (when the source\nhad ``refid``). The translator normalises both into the same field so the\nAstro renderer needs a single href branch.\n\nThe ``classes`` field carries Sphinx's xref-role markers\n(``xref`` / ``py-func`` / ``std-term`` / \u2026) when the source reference\ncame from a domain role like ``:py:func:`foo``` or ``:term:`foo```. The\nAstro renderer emits them as ``class=\"...\"`` on the ``<a>`` so CSS can\nstyle each role distinctly (italic glossary terms, monospace type\nreferences, etc.). External links and Sphinx-internal cross-doc links\ntypically carry no xref classes and the field is empty.\n\nExamples\n--------\n>>> from gp_sphinx_astro_builder.models import ReferenceNode\n>>> node = ReferenceNode.model_validate(\n...     {\n...         \"type\": \"reference\",\n...         \"href\": \"https://example.com\",\n...         \"children\": [{\"type\": \"text\", \"value\": \"Example\"}],\n...     },\n... )\n>>> node.href\n'https://example.com'",
       "properties": {
         "children": {
           "items": {
@@ -1448,6 +1448,14 @@
             ]
           },
           "title": "Children",
+          "type": "array"
+        },
+        "classes": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Classes",
           "type": "array"
         },
         "href": {

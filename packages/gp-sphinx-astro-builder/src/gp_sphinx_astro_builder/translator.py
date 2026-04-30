@@ -170,6 +170,31 @@ _INLINE_TYPES: frozenset[str] = frozenset(
 """Wire-format ``type`` discriminators that count as inline."""
 
 
+_DOMAIN_MARKERS: frozenset[str] = frozenset(
+    {"py", "std", "c", "cpp", "js", "rst"},
+)
+"""Sphinx domain bare-name classes.
+
+Sphinx attaches three pieces of domain context to a resolved xref
+reference: ``xref`` (the cross-reference marker), the bare domain name
+(``py`` / ``std`` / …), and the role-specific class (``py-func`` /
+``std-term`` / …). All three are kept on the wire so CSS can match on
+either the bare or the compound selector.
+"""
+
+
+def _is_xref_class(value: str) -> bool:
+    """Return ``True`` if ``value`` is an xref / domain / role class.
+
+    Used to filter ``ReferenceNode.classes`` down to xref-role markers,
+    dropping bookkeeping classes (``internal``, ``external``,
+    ``reference``) that don't influence per-role styling.
+    """
+    if value == "xref" or value in _DOMAIN_MARKERS:
+        return True
+    return any(value.startswith(f"{domain}-") for domain in _DOMAIN_MARKERS)
+
+
 def _has_block_children(node: nodes.Element) -> bool:
     """Return ``True`` if ``node`` contains at least one block-level child.
 
@@ -424,6 +449,13 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
         rewrites these to the canonical site routes
         (``/packages/gp-sphinx/#api``) so clicking lands on the
         rendered HTML page instead of the JSON content payload.
+
+        Domain-role classes (``xref`` / ``py-func`` / ``std-term`` / …)
+        are filtered through to the wire-format ``classes`` field so the
+        renderer can mirror Furo's per-role styling on the rendered
+        ``<a>``. Bookkeeping classes like ``internal`` / ``external``
+        are dropped — they describe link semantics docutils already
+        captures elsewhere and would only add CSS-selector noise.
         """
         refuri = node.get("refuri")
         refid = node.get("refid")
@@ -433,12 +465,15 @@ class DocTreeJSONTranslator(nodes.SparseNodeVisitor):
             href = f"#{refid}"
         else:
             href = ""
+        raw_classes = node.get("classes") or []
+        xref_classes = [cls for cls in raw_classes if _is_xref_class(cls)]
         self._stack.append(
             {
                 "kind": "reference",
                 "data": {
                     "type": "reference",
                     "href": href,
+                    "classes": xref_classes,
                     "children": [],
                 },
             },
