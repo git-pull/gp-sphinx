@@ -29,7 +29,6 @@ PACKAGE_PAGES = sorted(
 LIVE_DEMO_MARKERS = (
     "```{eval-rst}",
     "```{gp-sphinx-badge-demo}",
-    "```{autofixture-index}",
     ":::{auto-pytest-plugin}",
     "```{argparse}",
     "{tool}`",

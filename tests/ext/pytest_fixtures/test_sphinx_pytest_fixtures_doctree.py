@@ -500,50 +500,6 @@ def test_warning_and_manual_option_snapshot(
 
 
 @pytest.mark.integration
-def test_autofixture_index_resolution_smoke(
-    spf_doctree_root: pathlib.Path,
-) -> None:
-    """Fixture index placeholder resolves into a linked table after transforms."""
-    index_rst = textwrap.dedent(
-        """\
-        Test fixtures
-        =============
-
-        .. py:module:: fixture_mod
-
-        .. autofixture-index:: fixture_mod
-
-        .. autofixture:: fixture_mod.my_server
-
-        .. py:fixture:: my_client
-           :deprecated: 1.5
-
-        .. autofixture:: fixture_mod.TestServer
-
-        .. autofixture:: fixture_mod.auto_cleanup
-
-        .. autofixture:: fixture_mod.plain_fixture
-        """,
-    )
-    result = build_fixture_result(
-        spf_doctree_root / "autofixture-index-table",
-        buildername="dummy",
-        fixture_source=_AUTOFIXTURE_INDEX_SMOKE_SOURCE,
-        index_rst=index_rst,
-        confoverrides={"pytest_fixture_lint_level": "none"},
-    )
-    doctree = get_doctree(result, "index", post_transforms=True)
-    table = _find_first_table(doctree)
-    table_text = table.pformat()
-
-    assert "autofixture_index_node" not in doctree.pformat()
-    assert "gp-sphinx-pytest-fixtures__fixture-index" in table.get("classes", [])
-    assert 'refid="fixture_mod.my_server"' in table_text
-    assert "plain_fixture" in table_text
-    assert ":fixture:" not in table_text
-
-
-@pytest.mark.integration
 def test_autofixtures_directive_smoke(
     autofixtures_usage_result: SharedSphinxResult,
 ) -> None:

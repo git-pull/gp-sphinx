@@ -11,8 +11,6 @@ from sphinx.util.nodes import make_refnode
 
 from sphinx_autodoc_pytest_fixtures._badges import _build_badge_group_node
 from sphinx_autodoc_pytest_fixtures._constants import _FIELD_LABELS
-from sphinx_autodoc_pytest_fixtures._index import _resolve_fixture_index
-from sphinx_autodoc_pytest_fixtures._models import autofixture_index_node
 from sphinx_autodoc_pytest_fixtures._store import FixtureStoreDict, _get_spf_store
 from sphinx_ux_autodoc_layout import (
     API,
@@ -298,7 +296,3 @@ def _on_doctree_resolved(
         _strip_rtype_fields(desc_node)
         _inject_metadata_fields(desc_node, store, py_domain, app, docname)
         _wrap_fixture_field_lists(desc_node)
-
-    # Resolve autofixture-index placeholders
-    for idx_node in list(doctree.findall(autofixture_index_node)):
-        _resolve_fixture_index(idx_node, store, py_domain, app, docname)

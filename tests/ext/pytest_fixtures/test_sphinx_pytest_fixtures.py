@@ -11,7 +11,6 @@ from docutils import nodes
 
 import sphinx_autodoc_pytest_fixtures
 import sphinx_autodoc_pytest_fixtures._directives as spf_directives
-import sphinx_autodoc_pytest_fixtures._index as spf_index
 import sphinx_autodoc_pytest_fixtures._store
 from sphinx_autodoc_pytest_fixtures._models import FixtureMeta
 from sphinx_ux_badges import SAB, BadgeNode
@@ -196,122 +195,6 @@ def test_compose_doc_pytest_plugin_nodes_preserves_display_order() -> None:
     )
 
     assert [node.astext() for node in composed] == ["intro", "body", "fixtures"]
-
-
-def test_select_fixture_index_fixtures_filters_module_and_exclude() -> None:
-    """Fixture-index row selection stays a pure metadata filter."""
-    store = sphinx_autodoc_pytest_fixtures._store._make_empty_store()
-    store["fixtures"] = {
-        "fixture_mod.alpha": _make_fixture_meta(canonical_name="fixture_mod.alpha"),
-        "fixture_mod.beta": _make_fixture_meta(canonical_name="fixture_mod.beta"),
-        "other_mod.gamma": _make_fixture_meta(canonical_name="other_mod.gamma"),
-    }
-
-    selected = spf_index._select_fixture_index_fixtures(
-        store,
-        "fixture_mod",
-        {"beta"},
-    )
-
-    assert [meta.canonical_name for meta in selected] == ["fixture_mod.alpha"]
-
-
-def test_build_fixture_index_table_structure_populates_plain_shell() -> None:
-    """Fixture-index shell building does not need a Sphinx app."""
-    fixtures = [
-        _make_fixture_meta(
-            canonical_name="fixture_mod.my_server",
-            return_display="Server",
-            summary="Session-scoped test server.",
-            scope="session",
-        ),
-        _make_fixture_meta(
-            canonical_name="fixture_mod.auto_cleanup",
-            summary="Runs automatically.",
-            autouse=True,
-        ),
-    ]
-
-    table, tbody = spf_index._build_fixture_index_table_structure(fixtures)
-
-    assert isinstance(table, nodes.table)
-    assert isinstance(tbody, nodes.tbody)
-    assert len(tbody.children) == 2
-    first_row = t.cast(nodes.row, tbody.children[0])
-    assert len(first_row.children) == 4
-    first_name_entry = t.cast(nodes.entry, first_row.children[0])
-    first_flags_entry = t.cast(nodes.entry, first_row.children[1])
-    first_return_entry = t.cast(nodes.entry, first_row.children[2])
-    first_desc_entry = t.cast(nodes.entry, first_row.children[3])
-    assert "my_server" in first_name_entry.astext()
-    assert "session" in first_flags_entry.astext()
-    assert "Server" in first_return_entry.astext()
-    assert "Session-scoped test server." in first_desc_entry.astext()
-
-
-def test_resolve_fixture_index_uses_shared_annotation_paragraph(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Fixture index resolution delegates return types to shared helpers."""
-    seen: dict[str, str] = {}
-    store = sphinx_autodoc_pytest_fixtures._store._make_empty_store()
-    store["fixtures"] = {
-        "fixture_mod.server": _make_fixture_meta(
-            canonical_name="fixture_mod.server",
-            return_display="fixture_mod.Server",
-            summary="Server fixture.",
-        )
-    }
-
-    def _fake_build_resolved_annotation_paragraph(
-        annotation: t.Any,
-        app: t.Any,
-        docname: str,
-        *,
-        strip_none: bool = False,
-        collapse_literal: bool = False,
-        module_name: str | None = None,
-        aliases: dict[str, str] | None = None,
-        qualify_unresolved: bool = False,
-    ) -> nodes.paragraph:
-        del (
-            app,
-            docname,
-            strip_none,
-            collapse_literal,
-            module_name,
-            aliases,
-            qualify_unresolved,
-        )
-        seen["annotation"] = t.cast(str, annotation)
-        return nodes.paragraph("", f"shared::{annotation}")
-
-    monkeypatch.setattr(
-        spf_index,
-        "build_resolved_annotation_paragraph",
-        _fake_build_resolved_annotation_paragraph,
-    )
-
-    placeholder = spf_directives.autofixture_index_node(
-        module="fixture_mod",
-        exclude=set(),
-    )
-    container = nodes.section("", placeholder)
-    app = types.SimpleNamespace(env=types.SimpleNamespace(), builder=object())
-    py_domain = types.SimpleNamespace(objects={})
-
-    spf_index._resolve_fixture_index(
-        placeholder,
-        store,
-        py_domain,
-        app,
-        "index",
-    )
-
-    assert seen["annotation"] == "fixture_mod.Server"
-    rendered_section = t.cast(nodes.Element, container.children[0])
-    assert rendered_section.get("name") == "gp-sphinx-api-summary"
-    assert "shared::fixture_mod.Server" in rendered_section.astext()
 
 
 # ---------------------------------------------------------------------------
@@ -1426,66 +1309,6 @@ def test_doc_pytest_plugin_get_module_fixture_entries_warns_when_no_fixtures(
             ("fixture_mod",),
         )
     ]
-
-
-def test_select_fixture_index_fixtures_respects_module_and_exclude() -> None:
-    """Fixture index selection is pure filtering before xref resolution."""
-    store: sphinx_autodoc_pytest_fixtures._store.FixtureStoreDict = {
-        "fixtures": {
-            "fixture_mod.server": _make_meta("fixture_mod.server", "server"),
-            "fixture_mod.client": _make_meta("fixture_mod.client", "client"),
-            "other_mod.server": _make_meta("other_mod.server", "server"),
-        },
-        "public_to_canon": {},
-        "reverse_deps": {},
-        "_store_version": sphinx_autodoc_pytest_fixtures._STORE_VERSION,
-    }
-
-    fixtures = spf_index._select_fixture_index_fixtures(
-        store,
-        "fixture_mod",
-        {"client"},
-    )
-
-    assert [meta.canonical_name for meta in fixtures] == ["fixture_mod.server"]
-
-
-def test_build_fixture_index_table_structure_contains_headers_badges_and_summary() -> (
-    None
-):
-    """Fixture index table shell is inspectable without a Sphinx app."""
-    meta = sphinx_autodoc_pytest_fixtures.FixtureMeta(
-        docname="api",
-        canonical_name="fixture_mod.old_server",
-        public_name="old_server",
-        source_name="old_server",
-        scope="session",
-        autouse=False,
-        kind="resource",
-        return_display="Server",
-        deps=(),
-        param_reprs=(),
-        has_teardown=False,
-        is_async=False,
-        summary="Deprecated server fixture.",
-        deprecated="2.0",
-    )
-
-    table, tbody = spf_index._build_fixture_index_table_structure([meta])
-
-    assert isinstance(table, nodes.table)
-    assert [entry.astext() for entry in table.findall(nodes.entry)][0:4] == [
-        "Fixture",
-        "Flags",
-        "Returns",
-        "Description",
-    ]
-    row = t.cast(nodes.row, tbody.children[0])
-    assert row.children[0].astext() == "old_server"
-    assert "fixture" in row.children[1].astext()
-    assert "deprecated" in row.children[1].astext()
-    assert row.children[2].astext() == "Server"
-    assert row.children[3].astext() == "Deprecated server fixture."
 
 
 # ---------------------------------------------------------------------------

@@ -5,8 +5,6 @@ from __future__ import annotations
 import typing as t
 from dataclasses import dataclass
 
-from docutils import nodes
-
 from sphinx_autodoc_pytest_fixtures._constants import _DEFAULTS
 
 
@@ -88,10 +86,6 @@ class FixtureMeta:
 
     teardown_summary: str | None = None
     """Short description of teardown/cleanup behavior, or ``None``."""
-
-
-class autofixture_index_node(nodes.General, nodes.Element):
-    """Placeholder replaced during ``doctree-resolved`` with a fixture index table."""
 
 
 # ---------------------------------------------------------------------------

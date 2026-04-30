@@ -36,7 +36,6 @@ from sphinx_autodoc_pytest_fixtures._metadata import (
 from sphinx_autodoc_pytest_fixtures._models import (
     FixtureDep,
     FixtureMeta,
-    autofixture_index_node,
 )
 from sphinx_autodoc_pytest_fixtures._store import _get_spf_store, _resolve_builtin_url
 from sphinx_ux_badges import SAB
@@ -879,33 +878,3 @@ class AutoPytestPluginDirective(SphinxDirective):
                 order="source",
             ),
         ]
-
-
-class AutofixtureIndexDirective(SphinxDirective):
-    """Generate a fixture index table from the :class:`FixtureStoreDict`.
-
-    Emits a :class:`autofixture_index_node` placeholder at parse time.
-    The placeholder is resolved into a ``nodes.table`` during
-    ``doctree-resolved``, when the store has been finalized by ``env-updated``.
-
-    Usage::
-
-        .. autofixture-index:: libtmux.pytest_plugin
-           :exclude: _internal_helper
-    """
-
-    required_arguments = 1
-    optional_arguments = 0
-    has_content = False
-    option_spec: t.ClassVar[dict[str, t.Any]] = {
-        "exclude": directives.unchanged,
-    }
-
-    def run(self) -> list[nodes.Node]:
-        """Return a placeholder node with module and exclude metadata."""
-        node = autofixture_index_node()
-        node["module"] = self.arguments[0].strip()
-        node["exclude"] = {
-            s.strip() for s in self.options.get("exclude", "").split(",") if s.strip()
-        }
-        return [node]
