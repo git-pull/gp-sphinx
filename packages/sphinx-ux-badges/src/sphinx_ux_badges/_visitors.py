@@ -79,6 +79,21 @@ def visit_badge_json(self: t.Any, node: BadgeNode) -> None:
     from docutils import nodes
 
     style = node.get("badge_style", "full") or "full"
+    # Forward modifier classes (``gp-sphinx-badge--type-*``,
+    # ``--state-*``, ``--scope-*``, ``--mod-*``, ``--meta-*``,
+    # ``--dense``, ``--underline-*``) so the Astro renderer can
+    # apply the matching palette / density CSS. The base
+    # ``gp-sphinx-badge`` class plus the size / style modifiers
+    # already live in their own JSON fields, so filter them out
+    # here to keep the wire payload free of redundancy.
+    raw_classes = node.get("classes") or []
+    classes: list[str] = [
+        cls
+        for cls in raw_classes
+        if cls.startswith("gp-sphinx-badge--")
+        and not cls.startswith("gp-sphinx-badge--size-")
+        and not cls.startswith("gp-sphinx-badge--style-")
+    ]
     payload: dict[str, t.Any] = {
         "type": "badge",
         "text": node.astext(),
@@ -86,6 +101,7 @@ def visit_badge_json(self: t.Any, node: BadgeNode) -> None:
         "icon": node.get("badge_icon") or None,
         "size": node.get("badge_size") or None,
         "style": style,
+        "classes": classes,
     }
     if hasattr(self, "append_node"):
         self.append_node(payload)

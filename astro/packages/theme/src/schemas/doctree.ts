@@ -60,6 +60,7 @@ export type InlineNode =
       icon: string | null
       size: BadgeSize | null
       style: BadgeStyle
+      classes: string[]
     }
 
 export type ListItemNode = { type: 'listItem'; children: BlockNode[] }
@@ -174,6 +175,7 @@ export const badgeNodeSchema = z.object({
   icon: z.string().nullable().default(null),
   size: badgeSizeSchema.nullable().default(null),
   style: badgeStyleSchema.default('full'),
+  classes: z.array(z.string()).default([]),
 })
 
 // ─── Inline shapes that recurse via z.lazy

@@ -184,6 +184,20 @@ class BadgeNode(BaseModel):
     icon: str | None = None
     size: BadgeSize | None = None
     style: BadgeStyle = "full"
+    classes: list[str] = []
+    """Modifier CSS classes attached to the badge.
+
+    The ``sphinx_ux_badges`` Sphinx extension lets directive authors
+    pass per-call ``classes=[...]`` such as
+    ``gp-sphinx-badge--type-function`` /
+    ``gp-sphinx-badge--state-deprecated`` /
+    ``gp-sphinx-badge--scope-class`` /
+    ``gp-sphinx-badge--mod-async``. The Astro renderer concatenates
+    these with the base ``gp-sphinx-badge`` + style + size classes
+    so per-domain CSS palettes can target each role distinctly. The
+    field defaults to an empty list so existing wire-format payloads
+    without it continue to validate.
+    """
 
 
 class ImageNode(BaseModel):

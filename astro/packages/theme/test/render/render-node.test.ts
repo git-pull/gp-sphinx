@@ -645,6 +645,7 @@ describe('renderInlineNode — badge', () => {
       icon: '🔒',
       size: 'sm',
       style: 'filled',
+      classes: [],
     })
     expect(html).toContain(
       'class="gp-sphinx-badge gp-sphinx-badge--style-filled gp-sphinx-badge--size-sm"',
@@ -663,11 +664,27 @@ describe('renderInlineNode — badge', () => {
       icon: null,
       size: null,
       style: 'full',
+      classes: [],
     })
     expect(html).toContain('class="gp-sphinx-badge gp-sphinx-badge--style-full"')
     expect(html).not.toContain('gp-sphinx-badge--size-')
     expect(html).not.toContain('title=')
     expect(html).not.toContain('data-icon=')
+  })
+
+  test('badge appends modifier classes from the wire format', () => {
+    const html = renderInlineNode({
+      type: 'badge',
+      text: 'function',
+      tooltip: null,
+      icon: null,
+      size: null,
+      style: 'full',
+      classes: ['gp-sphinx-badge--type-function', 'gp-sphinx-badge--dense'],
+    })
+    expect(html).toContain(
+      'class="gp-sphinx-badge gp-sphinx-badge--style-full gp-sphinx-badge--type-function gp-sphinx-badge--dense"',
+    )
   })
 })
 
@@ -743,6 +760,7 @@ describe('renderInlineNode — type-coverage', () => {
       icon: null,
       size: null,
       style: 'full',
+      classes: [],
     },
   ]
 
