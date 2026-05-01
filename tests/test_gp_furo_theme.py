@@ -72,18 +72,40 @@ def test_theme_conf_declares_furo_options() -> None:
 
 
 def test_setup_registers_theme() -> None:
-    """setup() calls add_html_theme with the theme name and path."""
+    """setup() registers the theme + hooks + post-transform with Sphinx."""
 
     class FakeApp:
         def __init__(self) -> None:
-            self.themes: list[tuple[str, pathlib.Path]] = []
+            self.themes: list[tuple[str, str]] = []
+            self.config_values: list[str] = []
+            self.post_transforms: list[type] = []
+            self.events: list[str] = []
 
-        def add_html_theme(self, name: str, theme_path: pathlib.Path) -> None:
+        def require_sphinx(self, version: str) -> None:
+            pass
+
+        def add_config_value(self, name: str, **_: object) -> None:
+            self.config_values.append(name)
+
+        def add_html_theme(self, name: str, theme_path: str) -> None:
             self.themes.append((name, theme_path))
+
+        def add_post_transform(self, transform: type) -> None:
+            self.post_transforms.append(transform)
+
+        def connect(self, event: str, _callback: object) -> None:
+            self.events.append(event)
 
     app = FakeApp()
     metadata = setup(app)  # type: ignore[arg-type]
-    assert app.themes == [(THEME_NAME, get_theme_path())]
+    assert app.themes == [(THEME_NAME, str(get_theme_path()))]
+    assert "pygments_dark_style" in app.config_values
+    assert sorted(app.events) == [
+        "build-finished",
+        "builder-inited",
+        "html-page-context",
+    ]
+    assert len(app.post_transforms) == 1
     assert metadata["parallel_read_safe"] is True
     assert metadata["parallel_write_safe"] is True
 
@@ -156,7 +178,6 @@ def test_ported_templates_carry_attribution_header() -> None:
 
 _GP_FURO_CONF = textwrap.dedent(
     """\
-    extensions = ["gp_furo_theme"]
     html_theme = "gp-furo"
     master_doc = "index"
     project = "gp-furo demo"
@@ -198,11 +219,6 @@ def gp_furo_html_result(
 
 
 @pytest.mark.integration
-@pytest.mark.xfail(
-    reason="Templates expect furo_pygments / nav-tree context variables; "
-    "_html_page_context port lands in step 4.",
-    strict=True,
-)
 def test_html_build_completes_with_gp_furo_theme(
     gp_furo_html_result: SharedSphinxResult,
 ) -> None:
@@ -213,13 +229,6 @@ def test_html_build_completes_with_gp_furo_theme(
 
 
 @pytest.mark.integration
-@pytest.mark.xfail(
-    reason=(
-        "Same template-context dependency as build-completes test; "
-        "lands in step 4."
-    ),
-    strict=True,
-)
 def test_html_build_emits_no_template_warnings(
     gp_furo_html_result: SharedSphinxResult,
 ) -> None:
