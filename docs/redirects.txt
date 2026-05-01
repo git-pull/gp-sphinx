@@ -12,6 +12,7 @@ extensions/sphinx-autodoc-fastmcp packages/sphinx-autodoc-fastmcp
 extensions/sphinx-ux-autodoc-layout packages/sphinx-ux-autodoc-layout
 extensions/sphinx-fonts packages/sphinx-fonts
 extensions/sphinx-gp-theme packages/sphinx-gp-theme
+extensions/gp-furo-theme packages/gp-furo-theme
 extensions/sphinx-autodoc-typehints-gp packages/sphinx-autodoc-typehints-gp
 extensions/sphinx-argparse-neo packages/sphinx-autodoc-argparse
 extensions/sphinx-gptheme packages/sphinx-gp-theme

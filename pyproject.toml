@@ -30,6 +30,7 @@ sphinx-ux-badges = { workspace = true }
 sphinx-ux-autodoc-layout = { workspace = true }
 sphinx-gp-opengraph = { workspace = true }
 sphinx-gp-sitemap = { workspace = true }
+gp-furo-theme = { workspace = true }
 gp-sphinx = { workspace = true }
 
 [dependency-groups]
@@ -45,6 +46,7 @@ dev = [
   "sphinx-ux-autodoc-layout",
   "sphinx-gp-opengraph",
   "sphinx-gp-sitemap",
+  "gp-furo-theme",
   # Docs
   "sphinx-autobuild",
   # Testing

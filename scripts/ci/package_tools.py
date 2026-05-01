@@ -491,6 +491,39 @@ def smoke_sphinx_gp_theme(dist_dir: pathlib.Path, version: str) -> None:
                 raise SystemExit(message)
 
 
+def smoke_gp_furo_theme(dist_dir: pathlib.Path, version: str) -> None:
+    """Build a minimal Sphinx project using the standalone gp-furo theme.
+
+    Skeleton-stage runner — only checks that the theme registers and a build
+    completes. Bundled-asset assertions land in step 4 once the Vite pipeline
+    populates ``static/``.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        tmpdir = pathlib.Path(tmp)
+        docs_dir = tmpdir / "docs"
+        docs_dir.mkdir()
+        (docs_dir / "conf.py").write_text(
+            "extensions = ['gp_furo_theme']\nhtml_theme = 'gp-furo'\n",
+        )
+        (docs_dir / "index.rst").write_text("Demo\n====\n")
+
+        python_path = _create_venv(tmpdir)
+        _install_into_venv(
+            python_path,
+            *_workspace_wheel_requirements(dist_dir),
+        )
+        _run_python(
+            python_path,
+            (
+                "import gp_furo_theme; "
+                f"assert gp_furo_theme.__version__ == {version!r}; "
+                "assert gp_furo_theme.THEME_NAME == 'gp-furo'; "
+                "assert callable(gp_furo_theme.setup)"
+            ),
+        )
+        _run_sphinx_build(python_path, docs_dir, tmpdir / "_build")
+
+
 def smoke_sphinx_fonts(dist_dir: pathlib.Path, version: str) -> None:
     """Verify the standalone extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
@@ -712,6 +745,7 @@ _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-fonts": smoke_sphinx_fonts,
     "sphinx-gp-theme": smoke_sphinx_gp_theme,
     "sphinx-autodoc-typehints-gp": smoke_sphinx_autodoc_typehints_gp,
+    "gp-furo-theme": smoke_gp_furo_theme,
 }
 
 
