@@ -23,7 +23,7 @@ import typing as t
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
-__version__ = "0.0.1a14"
+__version__ = "0.0.1a15"
 
 
 def get_theme_path() -> pathlib.Path:

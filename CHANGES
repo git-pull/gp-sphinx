@@ -18,6 +18,8 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+## gp-sphinx 0.0.1a15 (2026-05-02)
+
 ### What's new
 
 #### Theme: workspace-owned port of [Furo]
