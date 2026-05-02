@@ -1,31 +1,38 @@
-"""Equivalence assertions: gp-furo-theme vs upstream Furo.
+"""HTML byte-equivalence assertions: gp-furo-theme vs upstream Furo.
 
-These tests defend the byte-for-byte HTML claim and the
-AST-near-equivalent CSS claim from the porting plan. Two Sphinx
-scenarios build the same source tree against ``html_theme = "furo"`` and
-``html_theme = "gp-furo"`` (in different ``cache_root`` directories so
-both wheels' static assets land on disk at the same time). Diffs run
-against the materialised ``outdir`` of each.
+Two Sphinx scenarios build the same source tree against
+``html_theme = "furo"`` and ``html_theme = "gp-furo"`` (in different
+``cache_root`` directories so both wheels' static assets land on
+disk simultaneously). The rendered ``*.html`` files are diffed for
+byte-identity after normalising cache-busting query strings and
+build-version comments.
 
-Specifically asserted:
+CSS-equivalence assertions previously lived here too — they
+compared ``_static/styles/furo.css`` byte-by-byte at the AST level
+(custom-property declarations, selector sets per Furo surface,
+no-preflight-leak guard). They were dropped in step 9.15 of the
+2026-04-30 pivot:
 
-- Every rendered ``*.html`` is byte-identical across themes after
-  normalising the ``?digest=<sha1>`` cache-busting query string and the
-  ``<meta name="generator">`` content.
-- The bundled ``_static/styles/furo.css`` files declare the same set of
-  CSS custom property names at ``:root``, and Tailwind's preflight slots
-  (``--default-font-family``, ``--default-mono-font-family``,
-  ``--font-sans``, ``--font-mono``) do *not* leak into our output.
-- Both themes emit the same set of class selectors anchored on the
-  surfaces Furo's contract documents (``.sidebar-tree``, ``.toc-tree``,
-  ``.admonition``, ``.theme-toggle``, etc.).
+- gp-furo no longer emits ``furo.css`` (the SCSS pipeline was
+  removed in step 9.14; the new output is ``furo-tw.css``)
+- visual fidelity now goes through ``tests/visual/test_visual_regression.py``
+  (Playwright pixel-diff against captured baselines), not source
+  AST comparison
+- the new test cares about *rendered* surface, not source bytes —
+  Tailwind preflight + Lightning CSS minification produce
+  meaningfully different bytes than dart-sass output for the same
+  visual result
+
+The HTML half stays in tree because Furo's Jinja templates were
+ported verbatim — modulo a 1-line attribution header per file —
+so the rendered HTML structure remains directly comparable to
+upstream Furo.
 """
 
 from __future__ import annotations
 
 import re
 import textwrap
-import typing as t
 
 import pytest
 
@@ -44,13 +51,10 @@ from tests._sphinx_scenarios import (
     read_output,
 )
 
-if t.TYPE_CHECKING:
-    pass
-
 # A tiny scenario chosen to exercise: a heading, a paragraph, an
 # admonition (Furo-styled), an inline code span, a code block, a table.
 # Keeps the build cheap (~0.5s) while touching a representative slice of
-# the template + style surface.
+# the template surface.
 _SCENARIO_INDEX = textwrap.dedent(
     """\
     Equivalence Demo
@@ -140,10 +144,19 @@ _GENERATOR_META_RE = re.compile(
 _GENERATED_COMMENT_RE = re.compile(
     r"<!-- Generated with Sphinx [^>]+ and Furo [^>]+ -->",
 )
+# After step 9.14 dropped the SCSS pipeline, gp-furo emits
+# `styles/furo-tw.css` while upstream Furo still emits `styles/furo.css`.
+# The stylesheet path appears in every rendered page's <link rel> tag.
+# Normalize so HTML byte-equivalence still holds at the structural level.
+_FURO_STYLESHEET_RE = re.compile(r"/styles/furo(-tw)?\.css")
 
 
 def _normalize_html(raw: str) -> str:
-    """Strip cache-busting digests, version hashes, and version comments.
+    """Normalize cache-busting hashes, version markers, and stylesheet path.
+
+    Strip cache-busting digests, version hashes, version comments, and
+    the post-9.14 stylesheet rename so the HTML byte-equivalence
+    comparison still holds across the two themes.
 
     Sphinx applies two cache-busting schemes:
     - ``?digest=<sha1>`` on theme assets registered via
@@ -154,8 +167,10 @@ def _normalize_html(raw: str) -> str:
 
     Both are file-content-derived; different theme bundle bytes →
     different hashes. The generator meta names the active theme; the
-    layout-emitted comment names both themes' versions. None of these
-    affect functional equivalence.
+    layout-emitted comment names both themes' versions. The stylesheet
+    path differs because gp-furo's pure-Tailwind output is at
+    ``styles/furo-tw.css`` while upstream is at ``styles/furo.css``.
+    None of these affect functional equivalence.
     """
     s = _DIGEST_RE.sub("?digest=NORMALIZED", raw)
     s = _VERSION_RE.sub("?v=NORMALIZED", s)
@@ -167,6 +182,7 @@ def _normalize_html(raw: str) -> str:
         "<!-- Generated with Sphinx NORMALIZED and Furo NORMALIZED -->",
         s,
     )
+    s = _FURO_STYLESHEET_RE.sub("/styles/furo-NORMALIZED.css", s)
     return s
 
 
@@ -201,93 +217,3 @@ def test_genindex_html_byte_equivalent(
     furo_html = _normalize_html(read_output(furo_html_result, "genindex.html"))
     gp_html = _normalize_html(read_output(gp_furo_html_result, "genindex.html"))
     assert furo_html == gp_html
-
-
-# Lightweight CSS comparison: extract custom-property and class-selector
-# sets, compare. Both surfaces should match upstream Furo exactly.
-_CUSTOM_PROP_DECL_RE = re.compile(r"(?<![\w-])(--[a-z][a-z0-9-]*)(?=\s*:)")
-_CLASS_SELECTOR_RE = re.compile(r"\.([a-z][a-z0-9-]*)")
-
-_PREFLIGHT_TOKEN_NAMES = frozenset(
-    {
-        "--default-font-family",
-        "--default-mono-font-family",
-        "--font-sans",
-        "--font-mono",
-    },
-)
-
-
-def _read_static(result: SharedSphinxResult, relative: str) -> str:
-    return (result.outdir / relative).read_text()
-
-
-@pytest.mark.integration
-def test_css_custom_properties_match(
-    furo_html_result: SharedSphinxResult,
-    gp_furo_html_result: SharedSphinxResult,
-) -> None:
-    """gp-furo emits every Furo CSS custom property the upstream theme does."""
-    furo_props = set(
-        _CUSTOM_PROP_DECL_RE.findall(
-            _read_static(furo_html_result, "_static/styles/furo.css")
-        ),
-    )
-    gp_props = set(
-        _CUSTOM_PROP_DECL_RE.findall(
-            _read_static(gp_furo_html_result, "_static/styles/furo.css")
-        ),
-    )
-
-    missing = furo_props - gp_props
-    assert not missing, (
-        f"gp-furo is missing {len(missing)} Furo tokens: {sorted(missing)}"
-    )
-
-
-@pytest.mark.integration
-def test_css_no_tailwind_preflight_leak(
-    gp_furo_html_result: SharedSphinxResult,
-) -> None:
-    """gp-furo's furo.css must NOT contain Tailwind preflight slot names."""
-    gp_css = _read_static(gp_furo_html_result, "_static/styles/furo.css")
-    declared = set(_CUSTOM_PROP_DECL_RE.findall(gp_css))
-    leaked = declared & _PREFLIGHT_TOKEN_NAMES
-    assert not leaked, (
-        f"Tailwind preflight tokens leaked into emitted CSS: {sorted(leaked)}. "
-        'Likely cause: re-introduced `@import "tailwindcss"` in the entry CSS.'
-    )
-
-
-_FURO_CLASS_SURFACES = (
-    "sidebar-tree",
-    "toc-tree",
-    "admonition",
-    "highlight",
-    "theme-toggle",
-    "back-to-top",
-    "mobile-header",
-    "announcement",
-)
-
-
-@pytest.mark.integration
-@pytest.mark.parametrize("surface", _FURO_CLASS_SURFACES)
-def test_css_class_selector_set_matches_for_surface(
-    surface: str,
-    furo_html_result: SharedSphinxResult,
-    gp_furo_html_result: SharedSphinxResult,
-) -> None:
-    """Each Furo class surface emits the same set of selectors in both builds."""
-    furo_css = _read_static(furo_html_result, "_static/styles/furo.css")
-    gp_css = _read_static(gp_furo_html_result, "_static/styles/furo.css")
-
-    pattern = re.compile(rf"\.{re.escape(surface)}\b[^,{{]*")
-    furo_selectors = {sel.strip() for sel in pattern.findall(furo_css)}
-    gp_selectors = {sel.strip() for sel in pattern.findall(gp_css)}
-
-    missing = furo_selectors - gp_selectors
-    assert not missing, (
-        f"gp-furo is missing {len(missing)} `.{surface}`-anchored selectors: "
-        f"{sorted(missing)}"
-    )
