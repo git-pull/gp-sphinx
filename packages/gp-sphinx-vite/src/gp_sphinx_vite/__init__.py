@@ -35,7 +35,7 @@ import typing as t
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
-__version__ = "0.0.1a12"
+__version__ = "0.0.1a14"
 
 logger = logging.getLogger(__name__)
 
