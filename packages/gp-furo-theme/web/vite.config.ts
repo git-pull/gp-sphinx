@@ -31,6 +31,12 @@ export default defineConfig({
           import.meta.dirname,
           "src/styles/furo-extensions.scss",
         ),
+        // Step 9 pivot (2026-04-30): pure Tailwind v4 entry
+        // compiled alongside the SCSS pipeline during the migration
+        // window. Step 9.13 swaps the theme.conf stylesheet path
+        // from styles/furo.css to styles/furo-tw.css; step 9.14
+        // drops this entry's siblings (the SCSS inputs above).
+        "styles/furo-tw": resolve(import.meta.dirname, "src/styles/index.css"),
       },
       output: {
         entryFileNames: "[name].js",
