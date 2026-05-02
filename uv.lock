@@ -482,7 +482,7 @@ provides-extras = ["argparse"]
 
 [[package]]
 name = "gp-sphinx-astro-builder"
-version = "0.0.1a12"
+version = "0.0.1a16"
 source = { editable = "packages/gp-sphinx-astro-builder" }
 dependencies = [
     { name = "pydantic" },

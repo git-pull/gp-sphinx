@@ -6,4 +6,4 @@
  * `gp-sphinx-astro-builder` Sphinx extension.
  */
 
-export const VERSION = '0.0.1a12'
+export const VERSION = '0.0.1a16'
