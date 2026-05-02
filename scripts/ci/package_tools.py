@@ -542,19 +542,29 @@ def smoke_gp_sphinx_vite(dist_dir: pathlib.Path, version: str) -> None:
             python_path,
             *_workspace_wheel_requirements(dist_dir),
         )
+        # Statements live on their own logical lines: Python's grammar
+        # forbids compound statements (``class``, ``def``, ``if``, …) after
+        # ``;``, so the previous semicolon-joined form raised
+        # ``SyntaxError: invalid syntax`` on ``calls = []; class FakeApp:``.
         _run_python(
             python_path,
             (
-                "import gp_sphinx_vite; "
-                f"assert gp_sphinx_vite.__version__ == {version!r}; "
-                "assert callable(gp_sphinx_vite.setup); "
-                "calls = []; "
+                "import gp_sphinx_vite\n"
+                f"assert gp_sphinx_vite.__version__ == {version!r}\n"
+                "assert callable(gp_sphinx_vite.setup)\n"
+                "config_values = []\n"
+                "events = []\n"
                 "class FakeApp:\n"
-                "    def add_config_value(self, name, **kwargs): calls.append(name)\n"
-                "metadata = gp_sphinx_vite.setup(FakeApp()); "
-                "assert 'gp_sphinx_vite_mode' in calls; "
-                "assert 'gp_sphinx_vite_root' in calls; "
-                "assert metadata['parallel_read_safe'] is True"
+                "    def add_config_value(self, name, **kwargs):\n"
+                "        config_values.append(name)\n"
+                "    def connect(self, event, handler):\n"
+                "        events.append(event)\n"
+                "metadata = gp_sphinx_vite.setup(FakeApp())\n"
+                "assert 'gp_sphinx_vite_mode' in config_values\n"
+                "assert 'gp_sphinx_vite_root' in config_values\n"
+                "assert 'builder-inited' in events\n"
+                "assert 'build-finished' in events\n"
+                "assert metadata['parallel_read_safe'] is True\n"
             ),
         )
 
