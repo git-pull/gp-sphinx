@@ -1,0 +1,127 @@
+/*
+ * Ported from furo @ 752bf80c (components/_footer.sass), MIT (Pradyun
+ * Gedam). See LICENSE-FURO.
+ *
+ * Bottom-of-page metadata + next/prev page navigation. Sass uses
+ * `$content-width` (= 46em) as a breakpoint for stacking the footer
+ * vertically; resolved to a literal value here.
+ */
+
+@layer components {
+  footer {
+    font-size: var(--font-size--small);
+    display: flex;
+    flex-direction: column;
+    margin-top: 2rem;
+  }
+
+  /* Bottom-of-page metadata (copyright, build info). */
+  .bottom-of-page {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    color: var(--color-foreground-secondary);
+    border-top: 1px solid var(--color-background-border);
+    line-height: 1.5;
+  }
+
+  /* Stack vertically on narrow viewports. */
+  @media (max-width: 46em) {
+    .bottom-of-page {
+      text-align: center;
+      flex-direction: column-reverse;
+      gap: 0.25rem;
+    }
+  }
+
+  .bottom-of-page .left-details {
+    font-size: var(--font-size--small);
+  }
+
+  .bottom-of-page .right-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: right;
+  }
+
+  .bottom-of-page .icons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    font-size: 1rem;
+  }
+
+  .bottom-of-page .icons a {
+    text-decoration: none;
+  }
+
+  .bottom-of-page .icons svg,
+  .bottom-of-page .icons img {
+    font-size: 1.125rem;
+    height: 1em;
+    width: 1em;
+  }
+
+  /* Next/Prev page links */
+  .related-pages a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  .related-pages a:hover .page-info .title {
+    text-decoration: underline;
+    color: var(--color-link);
+    text-decoration-color: var(--color-link-underline);
+  }
+
+  .related-pages a svg.furo-related-icon,
+  .related-pages a svg.furo-related-icon > use {
+    flex-shrink: 0;
+    color: var(--color-foreground-border);
+    width: 0.75rem;
+    height: 0.75rem;
+    margin: 0 0.5rem;
+  }
+
+  .related-pages a.next-page {
+    max-width: 50%;
+    float: right;
+    clear: right;
+    text-align: right;
+  }
+
+  .related-pages a.prev-page {
+    max-width: 50%;
+    float: left;
+    clear: left;
+  }
+
+  .related-pages a.prev-page svg.furo-related-icon {
+    transform: rotate(180deg);
+  }
+
+  /* Page-info shell inside .next-page / .prev-page links. */
+  .page-info {
+    display: flex;
+    flex-direction: column;
+    overflow-wrap: anywhere;
+  }
+
+  .next-page .page-info {
+    align-items: flex-end;
+  }
+
+  .page-info .context {
+    display: flex;
+    align-items: center;
+    padding-bottom: 0.1rem;
+    color: var(--color-foreground-muted);
+    font-size: var(--font-size--small);
+    text-decoration: none;
+  }
+}
