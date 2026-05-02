@@ -58,6 +58,21 @@ def _patch_vite_command(monkeypatch: pytest.MonkeyPatch, script: pathlib.Path) -
     monkeypatch.setattr(hooks, "vite_watch_command", _fake_command)
 
 
+def _patch_install_command(
+    monkeypatch: pytest.MonkeyPatch, script: pathlib.Path
+) -> None:
+    """Replace ``pnpm_install_command()`` with one that runs ``script``.
+
+    Mirrors :func:`_patch_vite_command` — keeps the auto-install tests
+    fast (no real pnpm invocation) and deterministic across machines.
+    """
+
+    def _fake_command() -> tuple[str, ...]:
+        return (sys.executable, str(script))
+
+    monkeypatch.setattr(hooks, "pnpm_install_command", _fake_command)
+
+
 @pytest.fixture
 def long_running_fake_vite(
     tmp_path: pathlib.Path,
@@ -257,6 +272,150 @@ def test_on_build_finished_logs_exception(
 # expected attrs. A regression here means the hooks layer changed its
 # private-attr names (and other places — atexit handlers, downstream
 # tests — would silently break).
+def test_on_builder_inited_skips_install_when_node_modules_present(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Pre-existing node_modules/ → no install attempt; vite spawns directly.
+
+    Closes step-9 follow-up D's invariant: the auto-install path is only
+    invoked when node_modules is missing. Avoids re-running pnpm on every
+    builder-inited firing (sphinx-autobuild fires per rebuild).
+    """
+    # Pre-create node_modules so _ensure_node_modules sees it as present.
+    (tmp_path / "node_modules").mkdir()
+    vite_script = _write_fake_vite(
+        tmp_path,
+        body="""\
+        import time
+        print("vite watching", flush=True)
+        while True:
+            time.sleep(0.1)
+        """,
+    )
+    _patch_vite_command(monkeypatch, vite_script)
+
+    def _fail_install() -> tuple[str, ...]:
+        msg = "pnpm_install_command should not be called when node_modules/ exists"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(hooks, "pnpm_install_command", _fail_install)
+
+    app = _FakeApp(
+        config=_FakeConfig(
+            gp_sphinx_vite_mode="dev",
+            gp_sphinx_vite_root=str(tmp_path),
+        ),
+    )
+    try:
+        hooks.on_builder_inited(app)  # type: ignore[arg-type]
+        proc = getattr(app, hooks._PROC_ATTR, None)
+        assert proc is not None, "vite should have spawned"
+    finally:
+        hooks.teardown(app, terminate_timeout=2.0)  # type: ignore[arg-type]
+
+
+def test_on_builder_inited_runs_install_when_node_modules_missing(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Missing node_modules/ → install runs (and creates it), then vite spawns.
+
+    The install marker file (``installed.flag``) is the deterministic proof
+    the fake-pnpm script ran; ``node_modules/`` creation is the side-effect
+    that silences subsequent _ensure_node_modules calls on a re-fire.
+    """
+    # NO node_modules/ pre-created — install path must fire.
+    install_marker = tmp_path / "installed.flag"
+    install_script = tmp_path / "fake_pnpm.py"
+    install_script.write_text(
+        textwrap.dedent(
+            f"""\
+            import pathlib
+            (pathlib.Path({str(install_marker)!r})).write_text("ran")
+            (pathlib.Path({str(tmp_path / "node_modules")!r})).mkdir()
+            """,
+        ),
+    )
+    vite_script = _write_fake_vite(
+        tmp_path,
+        body="""\
+        import time
+        print("vite watching", flush=True)
+        while True:
+            time.sleep(0.1)
+        """,
+    )
+    _patch_vite_command(monkeypatch, vite_script)
+    _patch_install_command(monkeypatch, install_script)
+
+    app = _FakeApp(
+        config=_FakeConfig(
+            gp_sphinx_vite_mode="dev",
+            gp_sphinx_vite_root=str(tmp_path),
+        ),
+    )
+    try:
+        hooks.on_builder_inited(app)  # type: ignore[arg-type]
+        assert install_marker.exists(), "fake-pnpm install should have run"
+        assert (tmp_path / "node_modules").exists(), (
+            "install should have created node_modules"
+        )
+        proc = getattr(app, hooks._PROC_ATTR, None)
+        assert proc is not None, "vite should have spawned after successful install"
+    finally:
+        hooks.teardown(app, terminate_timeout=2.0)  # type: ignore[arg-type]
+
+
+def test_on_builder_inited_skips_vite_when_install_fails(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Install exits non-zero → vite is not spawned; warning is logged.
+
+    Mirrors the real-world failure mode where ``pnpm install`` fails (no
+    pnpm-lock.yaml, network error, registry timeout, etc.). The
+    orchestration must not burn cycles on a guaranteed-failed
+    ``pnpm exec vite`` and must surface the failure visibly.
+    """
+    install_script = tmp_path / "fake_pnpm.py"
+    install_script.write_text(
+        textwrap.dedent(
+            """\
+            import sys
+            print("simulated pnpm-install failure", flush=True)
+            sys.exit(1)
+            """,
+        ),
+    )
+
+    def _fail_vite() -> tuple[str, ...]:
+        msg = "vite_watch_command should not be called after install failure"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(hooks, "vite_watch_command", _fail_vite)
+    _patch_install_command(monkeypatch, install_script)
+
+    # We still need a package.json so config.should_spawn passes the
+    # vite_root resolution check.
+    (tmp_path / "package.json").write_text('{"name": "fake-vite-root"}\n')
+
+    app = _FakeApp(
+        config=_FakeConfig(
+            gp_sphinx_vite_mode="dev",
+            gp_sphinx_vite_root=str(tmp_path),
+        ),
+    )
+    hooks.on_builder_inited(app)  # type: ignore[arg-type]
+    # No vite process should have been set on the app.
+    assert getattr(app, hooks._PROC_ATTR, None) is None, (
+        "vite must not be spawned after a failed install"
+    )
+    # Bus is created during the install phase; it's fine if it's still
+    # around — teardown handles it cleanly.
+    hooks.teardown(app, terminate_timeout=2.0)  # type: ignore[arg-type]
+
+
 def test_private_attr_names_are_stable() -> None:
     """The private attribute names the hooks set on app are part of the contract."""
     assert hooks._BUS_ATTR == "_gp_sphinx_vite_bus"

@@ -220,3 +220,24 @@ def vite_watch_command(*, package_manager: str = "pnpm") -> tuple[str, ...]:
     ('npm', 'exec', 'vite', 'build', '--watch')
     """
     return (package_manager, "exec", "vite", "build", "--watch")
+
+
+def pnpm_install_command(*, package_manager: str = "pnpm") -> tuple[str, ...]:
+    """Build the canonical "install workspace deps" argv.
+
+    Used by the orchestration's auto-install at builder-inited when
+    ``<vite_root>/node_modules/`` is missing — i.e. the first
+    ``sphinx-autobuild`` run after a fresh checkout or ``git clean -fdx``.
+
+    ``--frozen-lockfile`` matches the workspace's pinned ``pnpm-lock.yaml``;
+    pnpm refuses to mutate the lockfile or auto-resolve unspecified deps,
+    so the install is reproducible across machines and CI.
+
+    Examples
+    --------
+    >>> pnpm_install_command()
+    ('pnpm', 'install', '--frozen-lockfile')
+    >>> pnpm_install_command(package_manager="npm")
+    ('npm', 'install', '--frozen-lockfile')
+    """
+    return (package_manager, "install", "--frozen-lockfile")

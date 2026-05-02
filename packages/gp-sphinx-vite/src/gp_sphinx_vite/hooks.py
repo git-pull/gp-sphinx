@@ -27,6 +27,7 @@ argv. Tests monkey-patch that symbol when they want a fake-vite invocation.
 from __future__ import annotations
 
 import atexit
+import pathlib
 import signal
 import typing as t
 import weakref
@@ -35,7 +36,7 @@ from sphinx.util import logging as sphinx_logging
 
 from .bus import AsyncioBus
 from .config import GpSphinxViteConfig, detect_mode, resolve_vite_root
-from .process import ViteProcess, vite_watch_command
+from .process import ViteProcess, pnpm_install_command, vite_watch_command
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -67,12 +68,55 @@ def _build_config(app: Sphinx) -> GpSphinxViteConfig:
     )
 
 
+def _ensure_node_modules(vite_root: pathlib.Path, bus: AsyncioBus) -> bool:
+    """Ensure ``<vite_root>/node_modules/`` exists; install if missing.
+
+    Closes the developer-workflow gap where ``git clean -fdx`` wipes
+    ``node_modules/`` and the next ``sphinx-autobuild`` would otherwise
+    spawn ``pnpm exec vite`` against a missing tree, exit immediately
+    with ``Command "vite" not found``, and silently leave the docs site
+    serving 404s for ``furo-tw.css`` + ``furo.js``.
+
+    Returns ``True`` if ``node_modules/`` exists (or was installed
+    successfully); ``False`` if the install ran but exited non-zero,
+    which signals to :func:`on_builder_inited` to skip the vite-watch
+    spawn rather than burn cycles on a guaranteed-failed
+    ``pnpm exec vite``.
+    """
+    if (vite_root / "node_modules").exists():
+        return True
+
+    install_cmd = pnpm_install_command()
+    logger.info(
+        "[vite] node_modules/ missing in %s; running `%s`",
+        vite_root,
+        " ".join(install_cmd),
+    )
+    install_proc = ViteProcess(label="pnpm-install", logger=logger)
+    bus.call_sync(install_proc.start(install_cmd, cwd=vite_root))
+    returncode = bus.call_sync(install_proc.wait())
+    if returncode != 0:
+        logger.warning(
+            "[vite] pnpm install failed (exit %d) in %s — skipping vite "
+            "spawn. Run the install manually and restart sphinx-autobuild.",
+            returncode,
+            vite_root,
+        )
+        return False
+    logger.info("[vite] pnpm install complete; proceeding to vite-watch spawn")
+    return True
+
+
 def on_builder_inited(app: Sphinx) -> None:
     """``builder-inited`` event handler.
 
     Spawns the Vite watch process when the resolved config asks for it.
     Idempotent across multiple builder-inited firings (sphinx-autobuild
     re-fires this on every rebuild).
+
+    If ``<vite_root>/node_modules/`` is missing (typical after
+    ``git clean -fdx``), runs ``pnpm install --frozen-lockfile``
+    synchronously first so ``pnpm exec vite`` resolves on first try.
     """
     config = _build_config(app)
     if not config.should_spawn:
@@ -91,13 +135,18 @@ def on_builder_inited(app: Sphinx) -> None:
         setattr(app, _BUS_ATTR, bus)
         _active_handles[id(app)] = bus
 
-    proc = ViteProcess(label="vite", logger=logger)
-    setattr(app, _PROC_ATTR, proc)
-
     if config.vite_root is None:
         # `should_spawn` already guards this, but tighten for type checkers.
         msg = "should_spawn was True but vite_root resolved to None"
         raise RuntimeError(msg)
+
+    if not _ensure_node_modules(config.vite_root, bus):
+        # Install failed; warning was already logged. Don't try to
+        # spawn vite — pnpm exec would fail the same way.
+        return
+
+    proc = ViteProcess(label="vite", logger=logger)
+    setattr(app, _PROC_ATTR, proc)
 
     command = vite_watch_command()
     logger.info("[vite] spawning %s in %s", " ".join(command), config.vite_root)
