@@ -246,6 +246,34 @@
     display: none;
   }
 
+  /*
+   * Theme-toggle SVG icon visibility — one icon per data-theme state.
+   * The four .theme-icon-when-* SVGs are stacked inside the toggle
+   * button; exactly one shows at any time. These rules MUST live in
+   * the same @layer as the `.theme-toggle svg { display: none }` hide
+   * rule above — otherwise layer cascade beats specificity and the
+   * activations get suppressed (icons stay hidden → button renders
+   * 0-width). The activations were originally authored in base.css's
+   * @layer base; that's why the toggle button had to be re-located.
+   */
+  body[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto-light {
+    display: block;
+  }
+  body[data-theme="dark"] .theme-toggle svg.theme-icon-when-dark {
+    display: block;
+  }
+  body[data-theme="light"] .theme-toggle svg.theme-icon-when-light {
+    display: block;
+  }
+  @media (prefers-color-scheme: dark) {
+    body[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto-dark {
+      display: block;
+    }
+    body[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto-light {
+      display: none;
+    }
+  }
+
   .theme-toggle-header {
     display: flex;
     align-items: center;

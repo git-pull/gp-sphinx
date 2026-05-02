@@ -222,27 +222,14 @@
   }
 
   /*
-   * Theme-toggle SVG icon visibility — one icon per data-theme state.
-   * The four .theme-icon-when-* SVGs are stacked inside the toggle button;
-   * exactly one shows at any time.
+   * The theme-toggle SVG icon visibility rules used to live here, but
+   * they belong in @layer components alongside the
+   * `.theme-toggle svg { display: none }` base hide rule (in
+   * scaffold.css). With the hide rule in components and the activation
+   * rules in base, layer cascade wins over specificity — every icon
+   * stayed hidden, leaving an empty 0-width button. Moved to
+   * `components/scaffold.css` for layer alignment.
    */
-  body[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto-light {
-    display: block;
-  }
-  body[data-theme="dark"] .theme-toggle svg.theme-icon-when-dark {
-    display: block;
-  }
-  body[data-theme="light"] .theme-toggle svg.theme-icon-when-light {
-    display: block;
-  }
-  @media (prefers-color-scheme: dark) {
-    body[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto-dark {
-      display: block;
-    }
-    body[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto-light {
-      display: none;
-    }
-  }
 
   /* Print media — _print.sass */
   @media print {

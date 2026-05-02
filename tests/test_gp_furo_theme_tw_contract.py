@@ -108,12 +108,21 @@ def test_base_has_only_light_only_dark_visibility(base_css_text: str) -> None:
     assert 'html body[data-theme="dark"] .only-light' in base_css_text
 
 
-def test_base_has_theme_toggle_svg_rules(base_css_text: str) -> None:
-    """Each data-theme state must drive a different .theme-toggle SVG icon."""
+def test_scaffold_has_theme_toggle_svg_rules(scaffold_css_text: str) -> None:
+    """Each data-theme state must drive a different .theme-toggle SVG icon.
+
+    Originally placed in base.css's `@layer base`, but layer cascade
+    (`@layer components` > `@layer base`) suppressed the activations
+    against the `.theme-toggle svg { display: none }` hide rule in
+    scaffold.css. Moved to scaffold.css's `@layer components` so
+    specificity decides the cascade, not layer order. See
+    `gp-furo-theme(styles[scaffold]): show theme-toggle SVG icons by
+    relocating activation rules into @layer components`.
+    """
     # Three explicit data-theme values: auto, dark, light.
-    assert 'body[data-theme="auto"] .theme-toggle' in base_css_text
-    assert 'body[data-theme="dark"] .theme-toggle' in base_css_text
-    assert 'body[data-theme="light"] .theme-toggle' in base_css_text
+    assert 'body[data-theme="auto"] .theme-toggle' in scaffold_css_text
+    assert 'body[data-theme="dark"] .theme-toggle' in scaffold_css_text
+    assert 'body[data-theme="light"] .theme-toggle' in scaffold_css_text
 
 
 # ---------------------------------------------------------------------
