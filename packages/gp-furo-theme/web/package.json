@@ -1,0 +1,21 @@
+{
+  "name": "@gp-sphinx/furo-theme-web",
+  "private": true,
+  "version": "0.0.1-alpha.12",
+  "description": "Vite + Tailwind v4 asset pipeline for gp-furo-theme",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@gp-sphinx/furo-tokens": "workspace:*",
+    "tailwindcss": "^4.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.0",
+    "typescript": "^5.7.0",
+    "vite": "^7.0.0"
+  }
+}

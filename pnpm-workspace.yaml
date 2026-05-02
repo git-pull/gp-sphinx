@@ -1,0 +1,3 @@
+packages:
+  - "packages/gp-furo-tokens"
+  - "packages/gp-furo-theme/web"

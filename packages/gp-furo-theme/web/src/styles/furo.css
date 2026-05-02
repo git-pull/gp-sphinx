@@ -1,0 +1,12 @@
+/*
+ * Ported from furo @ 752bf80c (furo.sass), MIT (Pradyun Gedam). See
+ * LICENSE-FURO at the package root.
+ *
+ * Step 4.2: emits Furo's public CSS-custom-property contract via the
+ * @gp-sphinx/furo-tokens Tailwind plugin. Component / layout / content
+ * styles port in step 4.4.
+ */
+
+@import "tailwindcss";
+
+@plugin "@gp-sphinx/furo-tokens/plugin";
