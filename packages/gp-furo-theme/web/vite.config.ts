@@ -6,14 +6,19 @@ import { defineConfig } from "vite";
 /**
  * Vite configuration for the gp-furo-theme asset pipeline.
  *
- * Three entries map onto upstream Furo's filename contract; output keys
- * carry the destination subdirectory inside the theme so the final layout
- * is `static/{scripts,styles}/...`.
+ * Two entries — the strict-typed TS bundle and the pure Tailwind v4
+ * CSS — map onto the filenames Sphinx loads via `theme.conf` and the
+ * Python `_html_page_context` hook in `gp_furo_theme.__init__`:
+ *   - `scripts/furo.js` is added by `app.add_js_file()`
+ *   - `styles/furo-tw.css` is set as `stylesheet = ...` in `theme.conf`
  *
  * Filenames are deliberately not hashed — gp-furo-theme keeps Furo's
- * Python-side `?digest=<sha1>` cache-busting in `_html_page_context`, and
- * the Sphinx build pipeline references `furo.css`, `furo-extensions.css`,
- * and `furo.js` by exact name.
+ * Python-side `?digest=<sha1>` cache-busting in `_html_page_context`,
+ * and the Sphinx build pipeline references those names exactly.
+ *
+ * The SCSS pipeline (vendored Furo styles + sass + normalize.css) was
+ * dropped in step 9.14 of the 2026-04-30 pivot — see plan section
+ * "Pivot — 2026-04-30 — pure Tailwind v4 (no SASS)".
  */
 export default defineConfig({
   plugins: [tailwindcss()],
@@ -26,16 +31,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         "scripts/furo": resolve(import.meta.dirname, "src/scripts/furo.ts"),
-        "styles/furo": resolve(import.meta.dirname, "src/styles/furo.scss"),
-        "styles/furo-extensions": resolve(
-          import.meta.dirname,
-          "src/styles/furo-extensions.scss",
-        ),
-        // Step 9 pivot (2026-04-30): pure Tailwind v4 entry
-        // compiled alongside the SCSS pipeline during the migration
-        // window. Step 9.13 swaps the theme.conf stylesheet path
-        // from styles/furo.css to styles/furo-tw.css; step 9.14
-        // drops this entry's siblings (the SCSS inputs above).
         "styles/furo-tw": resolve(import.meta.dirname, "src/styles/index.css"),
       },
       output: {

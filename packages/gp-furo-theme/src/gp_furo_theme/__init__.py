@@ -229,9 +229,14 @@ def _html_page_context(
     doctree: t.Any,
 ) -> None:
     if "css_files" in context:
+        # Sphinx 7.1+ handles cache-bust hashing natively, so this is a
+        # no-op call (see _add_asset_hashes early-return at line 181).
+        # Kept for the < 7.1 compatibility branch; the list reflects
+        # what we actually ship — only styles/furo-tw.css since the
+        # SCSS pipeline was dropped in step 9.14 of the 2026-04-30 pivot.
         _add_asset_hashes(
             context["css_files"],
-            ["styles/furo.css", "styles/furo-extensions.css"],
+            ["styles/furo-tw.css"],
         )
     if "scripts" in context:
         _add_asset_hashes(
@@ -294,8 +299,12 @@ def _builder_inited(app: sphinx.application.Sphinx) -> None:
     # Our JS file needs to be loaded as soon as possible.
     app.add_js_file("scripts/furo.js", priority=200)
 
-    # 500 is the default priority for extensions, we want this after this.
-    app.add_css_file("styles/furo-extensions.css", priority=600)
+    # NOTE: pre-pivot we also added "styles/furo-extensions.css" via
+    # add_css_file (priority=600) for sphinx-design / inline-tabs /
+    # copybutton / readthedocs styles.  Step 9.9 bundled all of those
+    # into the main entry (web/src/styles/components/extensions.css ->
+    # imported by index.css -> compiles into furo-tw.css), so the
+    # secondary stylesheet is no longer needed.
 
     builder = app.builder
     assert (
