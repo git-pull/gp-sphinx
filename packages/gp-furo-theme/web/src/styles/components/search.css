@@ -1,0 +1,26 @@
+/*
+ * Ported from furo @ 752bf80c (components/_search.sass), MIT (Pradyun Gedam).
+ * See LICENSE-FURO.
+ *
+ * Search results page only — sidebar search input lives in sidebar.css
+ * (lands in step 9.7).
+ */
+
+@layer components {
+  /* Search results listing */
+  ul.search {
+    padding-left: 0;
+    list-style: none;
+  }
+
+  ul.search li {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-background-border);
+  }
+
+  /* Highlighted matches when arriving from a search hit. */
+  [role="main"] .highlighted {
+    background-color: var(--color-highlighted-background);
+    color: var(--color-highlighted-text);
+  }
+}

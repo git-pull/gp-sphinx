@@ -1,0 +1,187 @@
+/*
+ * Ported from furo @ 752bf80c (content/_api.sass), MIT (Pradyun Gedam).
+ * See LICENSE-FURO.
+ *
+ * Styles autodoc-generated API HTML. The deeply nested selectors here
+ * reflect autodoc's HTML structure — many <dl class="..."> wrappers
+ * without enough discriminating classes to select directly.  The
+ * negation chain `dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple)`
+ * targets only API-doc <dl>s by excluding everything else.
+ */
+
+@layer components {
+  /* API doc <dl> shell — only the API-specific list types. */
+  dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple)
+    dd {
+    margin-left: 2rem;
+  }
+
+  dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple)
+    dd
+    > :first-child {
+    margin-top: 0.125rem;
+  }
+
+  dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple)
+    dd
+    > :last-child {
+    margin-bottom: 0.75rem;
+  }
+
+  /* "Arguments" field-list inside an API definition. */
+  dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple)
+    .field-list {
+    margin-bottom: 0.75rem;
+  }
+
+  /* "Headings" inside the field-list (Parameters, Return, Raises…). */
+  dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple)
+    .field-list
+    > dt {
+    text-transform: uppercase;
+    font-size: var(--font-size--small);
+  }
+
+  dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple)
+    .field-list
+    dd:empty {
+    margin-bottom: 0.5rem;
+  }
+
+  dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple)
+    .field-list
+    dd
+    > ul {
+    margin-left: -1.2rem;
+  }
+
+  dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple)
+    .field-list
+    dd
+    > ul
+    > li
+    > p:nth-child(2) {
+    margin-top: 0;
+  }
+
+  /* Trailing empty paragraph after a real one — collapse spacing. */
+  dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple)
+    .field-list
+    dd
+    > ul
+    > li
+    > p
+    + p:last-child:empty {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  /* Top-level <dt> colour. */
+  dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple)
+    > dt {
+    color: var(--color-api-overall);
+  }
+
+  /* Block-level signature container. */
+  .sig:not(.sig-inline) {
+    font-weight: bold;
+    font-size: var(--api-font-size);
+    font-family: var(--font-stack--monospace);
+    margin-left: -0.25rem;
+    margin-right: -0.25rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    padding-right: 0.5rem;
+    /* em values intentional — match the font size. */
+    padding-left: 3em;
+    text-indent: -2.5em;
+    border-radius: 0.25rem;
+    background: var(--color-api-background);
+    transition: background 100ms ease-out;
+  }
+
+  .sig:not(.sig-inline):hover {
+    background: var(--color-api-background-hover);
+  }
+
+  .sig:not(.sig-inline) a.reference .viewcode-link {
+    font-weight: normal;
+    width: 4.25rem;
+  }
+
+  /* Signature segment colours — keyword, name, prename, paren, param. */
+  em.property,
+  span.property {
+    font-style: normal;
+  }
+  em.property:first-child,
+  span.property:first-child {
+    color: var(--color-api-keyword);
+  }
+  .sig-name {
+    color: var(--color-api-name);
+  }
+  .sig-prename {
+    font-weight: normal;
+    color: var(--color-api-pre-name);
+  }
+  .sig-paren {
+    color: var(--color-api-paren);
+  }
+  .sig-param {
+    font-style: normal;
+  }
+
+  /* Version banners — added/changed/deprecated/removed. */
+  div.versionadded,
+  div.versionchanged,
+  div.deprecated,
+  div.versionremoved {
+    border-left: 0.1875rem solid;
+    border-radius: 0.125rem;
+    padding-left: 0.75rem;
+  }
+
+  div.versionadded p,
+  div.versionchanged p,
+  div.deprecated p,
+  div.versionremoved p {
+    margin-top: 0.125rem;
+    margin-bottom: 0.125rem;
+  }
+
+  div.versionadded {
+    border-color: var(--color-api-added-border);
+  }
+  div.versionadded .versionmodified {
+    color: var(--color-api-added);
+  }
+
+  div.versionchanged {
+    border-color: var(--color-api-changed-border);
+  }
+  div.versionchanged .versionmodified {
+    color: var(--color-api-changed);
+  }
+
+  div.deprecated {
+    border-color: var(--color-api-deprecated-border);
+  }
+  div.deprecated .versionmodified {
+    color: var(--color-api-deprecated);
+  }
+
+  div.versionremoved {
+    border-color: var(--color-api-removed-border);
+  }
+  div.versionremoved .versionmodified {
+    color: var(--color-api-removed);
+  }
+
+  /* [docs] / [source] link float. */
+  .viewcode-link,
+  .viewcode-back {
+    float: right;
+    text-align: right;
+  }
+}
