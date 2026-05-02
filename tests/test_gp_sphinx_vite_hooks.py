@@ -216,23 +216,40 @@ def test_teardown_no_op_when_never_spawned() -> None:
 
 def test_on_build_finished_logs_exception(
     long_running_fake_vite: _FakeApp,
-    caplog: pytest.LogCaptureFixture,
 ) -> None:
-    """An exception passed to build-finished surfaces at DEBUG (not WARNING)."""
+    """An exception passed to build-finished surfaces at DEBUG (not WARNING).
+
+    Sphinx's logger setup (memory handlers, namespace prefix) interacts
+    with pytest's ``caplog`` in test-order-dependent ways once any
+    Sphinx scenario fixture has initialized a real Sphinx app. Sidestep
+    by attaching our own handler directly to the underlying stdlib
+    Logger that ``sphinx.util.logging.getLogger`` wraps.
+    """
+    import logging
+
     app = long_running_fake_vite
+    captured: list[logging.LogRecord] = []
+
+    class _CaptureHandler(logging.Handler):
+        def emit(self, record: logging.LogRecord) -> None:
+            captured.append(record)
+
+    handler = _CaptureHandler(level=logging.DEBUG)
+    underlying = logging.getLogger("sphinx.gp_sphinx_vite.hooks")
+    underlying.addHandler(handler)
+    underlying.setLevel(logging.DEBUG)
+
     try:
         hooks.on_builder_inited(app)  # type: ignore[arg-type]
-        with caplog.at_level("DEBUG", logger="gp_sphinx_vite.hooks"):
-            hooks.on_build_finished(
-                app,  # type: ignore[arg-type]
-                exception=RuntimeError("sphinx fell over"),
-            )
-        assert any(
-            "sphinx fell over" in r.getMessage()
-            for r in caplog.records
-            if r.name == "gp_sphinx_vite.hooks"
+        hooks.on_build_finished(
+            app,  # type: ignore[arg-type]
+            exception=RuntimeError("sphinx fell over"),
         )
+        assert any(
+            "sphinx fell over" in r.getMessage() for r in captured
+        ), [r.getMessage() for r in captured]
     finally:
+        underlying.removeHandler(handler)
         hooks.teardown(app, terminate_timeout=2.0)  # type: ignore[arg-type]
 
 

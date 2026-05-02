@@ -27,10 +27,11 @@ argv. Tests monkey-patch that symbol when they want a fake-vite invocation.
 from __future__ import annotations
 
 import atexit
-import logging
 import signal
 import typing as t
 import weakref
+
+from sphinx.util import logging as sphinx_logging
 
 from .bus import AsyncioBus
 from .config import GpSphinxViteConfig, detect_mode, resolve_vite_root
@@ -39,7 +40,12 @@ from .process import ViteProcess, vite_watch_command
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
-logger = logging.getLogger(__name__)
+# `sphinx.util.logging.getLogger` returns a SphinxLoggerAdapter that
+# routes through Sphinx's status / warning streams — which means our
+# `[vite] …` lines actually surface in `sphinx-autobuild` output the
+# same way Sphinx's own messages do. The stdlib `logging.getLogger`
+# does not propagate by default in Sphinx contexts.
+logger = sphinx_logging.getLogger(__name__)
 
 _BUS_ATTR = "_gp_sphinx_vite_bus"
 _PROC_ATTR = "_gp_sphinx_vite_proc"

@@ -44,10 +44,15 @@ class ViteProcess:
         self,
         *,
         label: str = "vite",
-        logger: logging.Logger | None = None,
+        logger: logging.Logger | logging.LoggerAdapter[t.Any] | None = None,
     ) -> None:
+        # Accepts either a stdlib Logger or a LoggerAdapter (Sphinx's
+        # `sphinx.util.logging.SphinxLoggerAdapter` is a LoggerAdapter
+        # subclass). Both expose the .log() method the drainers use.
         self._label = label
-        self._logger = logger if logger is not None else _module_logger
+        self._logger: logging.Logger | logging.LoggerAdapter[t.Any] = (
+            logger if logger is not None else _module_logger
+        )
         self._process: asyncio.subprocess.Process | None = None
         self._drainers: list[asyncio.Task[None]] = []
 
