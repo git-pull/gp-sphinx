@@ -3,12 +3,11 @@
 ```{gp-sphinx-package-meta} gp-furo-theme
 ```
 
-Tailwind-v4-driven port of the [Furo](https://github.com/pradyunsg/furo)
-Sphinx theme. Templates, JavaScript, Python hooks, and theme options are
-ported verbatim from upstream Furo. The CSS pipeline is **pure Tailwind
-v4** — no SASS — authored as plain `.css` files under
-`web/src/styles/components/` and compiled by Vite with the
-`@tailwindcss/vite` plugin.
+Tailwind-v4-driven port of @pradyunsg's [Furo] Sphinx theme. Templates,
+JavaScript, Python hooks, and theme options are ported verbatim from
+upstream [Furo]. The CSS pipeline is **pure Tailwind v4** — no SASS —
+authored as plain `.css` files under `web/src/styles/components/` and
+compiled by [Vite] with the `@tailwindcss/vite` plugin.
 
 ```console
 $ pip install gp-furo-theme
@@ -88,3 +87,6 @@ replicate.
 ```
 
 [Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-furo-theme)
+
+[Furo]: https://github.com/pradyunsg/furo
+[Vite]: https://vitejs.dev
