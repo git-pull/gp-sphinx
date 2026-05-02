@@ -44,11 +44,11 @@ function expectedDarkKeys(): string[] {
 }
 
 describe("plugin", () => {
-  it("emits a :root rule covering every contract token with a non-empty value", () => {
+  it("emits a body rule covering every contract token with a non-empty value", () => {
     const rules = runPlugin();
     expect(rules).toHaveLength(1);
-    const root = rules[0]?.[":root"] as Declarations | undefined;
-    expect(root, ":root rule missing").toBeDefined();
+    const root = rules[0]?.["body"] as Declarations | undefined;
+    expect(root, "body rule missing").toBeDefined();
     if (!root) return;
 
     const expected = FURO_TOKEN_NAMES.filter((name) => FURO_LIGHT_TOKENS[name] !== "").sort();
@@ -82,7 +82,7 @@ describe("plugin", () => {
 
   it("preserves Furo's value verbatim — no normalization", () => {
     const rules = runPlugin();
-    const root = rules[0]?.[":root"] as Declarations | undefined;
+    const root = rules[0]?.["body"] as Declarations | undefined;
     expect(root?.["--color-brand-primary"]).toBe("#0a4bff");
     expect(root?.["--color-foreground-primary"]).toBe("black");
     expect(root?.["--color-link"]).toBe("var(--color-brand-content)");
@@ -91,7 +91,7 @@ describe("plugin", () => {
 
   it("skips the --color-background-muted slot (Furo uses but never declares)", () => {
     const rules = runPlugin();
-    const root = rules[0]?.[":root"] as Declarations | undefined;
+    const root = rules[0]?.["body"] as Declarations | undefined;
     expect(root?.["--color-background-muted"]).toBeUndefined();
   });
 });

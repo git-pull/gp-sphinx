@@ -28,7 +28,7 @@ function declarations(
  * Tailwind v4 plugin emitting Furo's light + dark CSS custom-property
  * contract under three matched selectors:
  *
- * - `:root` for the light defaults
+ * - `body` for the light defaults
  * - `body[data-theme="dark"]` for explicit dark mode (set by furo.ts's
  *   theme-toggle button)
  * - `@media (prefers-color-scheme: dark) body:not([data-theme="light"])`
@@ -36,8 +36,15 @@ function declarations(
  *
  * The selectors mirror upstream Furo's `_theme.sass`
  * (`/home/d/study/python/furo/src/furo/assets/styles/base/_theme.sass`)
- * so behavioral parity holds across the toggle's three states (auto /
- * light / dark) and the cascade rules Furo's docstring contracts depend on.
+ * which emits via `body { @include colors }` (NOT `:root { @include colors }`).
+ * The `body` choice is load-bearing for any token whose value is an alias —
+ * e.g. `--color-content-foreground: var(--color-foreground-primary)` — because
+ * CSS `var()` substitution is computed at the element where the custom property
+ * is declared.  If the alias is declared at `:root` and the underlying token
+ * is overridden at `body[data-theme="dark"]`, the alias's computed value stays
+ * frozen at the `:root`-scope substitution and never picks up the dark value.
+ * Co-locating both declarations at `body` lets every alias re-substitute when
+ * its dependency changes via a more-specific body selector.
  *
  * Apply via:
  *
@@ -48,14 +55,14 @@ function declarations(
  *
  * User overrides via Sphinx `html_theme_options["light_css_variables"]` /
  * `["dark_css_variables"]` are emitted by Furo's
- * `partials/_head_css_variables.html` template into a layer-less `:root` /
+ * `partials/_head_css_variables.html` template into a layer-less `body` /
  * `body[data-theme="dark"]` block in `<head>`, which always wins over
- * Tailwind's `@layer theme` ordering.
+ * Tailwind's `@layer base` ordering.
  */
 export default plugin((api) => {
   const darkDeclarations = declarations(FURO_DARK_TOKENS);
   api.addBase({
-    ":root": declarations(FURO_LIGHT_TOKENS),
+    body: declarations(FURO_LIGHT_TOKENS),
     'body[data-theme="dark"]': darkDeclarations,
     "@media (prefers-color-scheme: dark)": {
       'body:not([data-theme="light"])': darkDeclarations,
