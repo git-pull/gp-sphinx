@@ -4,7 +4,7 @@ import { VERSION } from '../src/index.ts'
 
 describe('@gp-sphinx-astro/theme toolchain smoke', () => {
   test('package exports VERSION constant', () => {
-    expect(VERSION).toBe('0.0.1a12')
+    expect(VERSION).toBe('0.0.1a16')
   })
 
   test('zod v4 is importable and validates a basic schema', () => {

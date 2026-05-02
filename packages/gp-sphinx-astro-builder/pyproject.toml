@@ -1,6 +1,6 @@
 [project]
 name = "gp-sphinx-astro-builder"
-version = "0.0.1a12"
+version = "0.0.1a16"
 description = "Sphinx builder that emits typed JSON for Astro static sites"
 requires-python = ">=3.10,<4.0"
 authors = [
