@@ -18,6 +18,29 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### What's new
+
+#### Theme: workspace-owned port of [Furo]
+
+`sphinx-gp-theme` now inherits from `gp-furo`, a workspace-owned port
+of @pradyunsg's [Furo] authored in pure Tailwind v4. [Furo] and its
+transitive dependencies (`accessible-pygments`, `sphinx-basic-ng`) no
+longer install with gp-sphinx. The CSS custom-property contract is
+preserved — existing `light_css_variables` / `dark_css_variables`
+overrides keep working and rendering is visually equivalent. (#25)
+
+#### New package: `gp-furo-theme`
+
+Standalone [Furo]-equivalent Sphinx theme. Available without the
+gp-sphinx project layer for users who want [Furo]-style rendering on
+its own. (#25)
+
+#### New package: `gp-sphinx-vite`
+
+Transparent Vite + pnpm orchestration for theme asset compilation.
+No-op in production builds; activates under `sphinx-autobuild` to
+provide live CSS/JS rebuilds during authoring. (#25)
+
 ## gp-sphinx 0.0.1a14 (2026-05-02)
 
 ### Bug fixes
@@ -310,4 +333,6 @@ Multi-page docs that embed `.. argparse::` via MyST `{eval-rst}`
 build cleanly. Section IDs are now namespaced per program so
 `usage`, `options`, and friends no longer collide across pages.
 (#16)
+
+[Furo]: https://github.com/pradyunsg/furo
 
