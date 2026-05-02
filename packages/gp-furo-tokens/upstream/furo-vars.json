@@ -1,6 +1,6 @@
 {
   "$comment": "Public CSS custom-property contract harvested from upstream Furo. Regenerate with `pnpm harvest` (requires FURO_SOURCE_DIR pointing at a Furo checkout). Do not edit by hand.",
-  "furoCommit": "752bf80c46293933aafe4901adee6b04ada4310d",
+  "furoCommit": "b788b8a41aea7323b541975590a284f9f9db8f8e",
   "harvestDate": "2026-04-30",
   "sources": [
     "src/furo/assets/styles/_scaffold.sass",

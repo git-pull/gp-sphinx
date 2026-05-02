@@ -174,7 +174,7 @@ def test_all_furo_templates_are_ported() -> None:
 def test_ported_templates_carry_attribution_header() -> None:
     """Every ported template begins with the upstream-attribution comment."""
     theme_root = get_theme_path()
-    expected_marker = "Ported from furo @ 752bf80c"
+    expected_marker = "Ported from furo 2025.12.19 (b788b8a)"
     missing_attribution = []
     for rel in _EXPECTED_TEMPLATE_PATHS:
         first_line = (theme_root / rel).read_text().splitlines()[0]

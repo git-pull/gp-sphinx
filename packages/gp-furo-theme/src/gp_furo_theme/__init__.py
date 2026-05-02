@@ -1,6 +1,6 @@
 """gp-furo-theme — Tailwind-v4-driven port of the Furo Sphinx theme.
 
-Ported from furo @ 752bf80c, MIT (Pradyun Gedam). See LICENSE-FURO at the
+Ported from furo 2025.12.19 (b788b8a), MIT (Pradyun Gedam). See LICENSE-FURO at the
 package root. Theme name registers as ``gp-furo`` (vs upstream's ``furo``);
 the ``__version__`` follows the gp-sphinx workspace lock-step. Jinja
 context variables retain their upstream ``furo_*`` names so the ported

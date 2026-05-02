@@ -1,4 +1,4 @@
-// Ported from furo @ 752bf80c (assets/scripts/furo.js), MIT (Pradyun
+// Ported from furo 2025.12.19 (b788b8a) (assets/scripts/furo.js), MIT (Pradyun
 // Gedam). See LICENSE-FURO at the package root. Behavioral parity with
 // upstream Furo is the byte-equivalence target; structure mirrors
 // upstream's section comments to keep diffs reviewable.

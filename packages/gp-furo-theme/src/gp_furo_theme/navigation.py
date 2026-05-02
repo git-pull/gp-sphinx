@@ -1,7 +1,7 @@
 # mypy: disable-error-code="arg-type, assignment, dict-item, misc, operator, union-attr"
 """Generate the navigation tree from Sphinx's toctree function's output.
 
-Ported from furo @ 752bf80c, MIT (Pradyun Gedam). See LICENSE-FURO.
+Ported from furo 2025.12.19 (b788b8a), MIT (Pradyun Gedam). See LICENSE-FURO.
 
 bs4's type stubs are imprecise for the dynamic attribute-bag manipulation
 (``element["class"]`` reads as ``str | list[str] | None`` depending on the
