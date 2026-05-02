@@ -502,9 +502,13 @@ def smoke_gp_furo_theme(dist_dir: pathlib.Path, version: str) -> None:
         tmpdir = pathlib.Path(tmp)
         docs_dir = tmpdir / "docs"
         docs_dir.mkdir()
-        (docs_dir / "conf.py").write_text(
-            "extensions = ['gp_furo_theme']\nhtml_theme = 'gp-furo'\n",
-        )
+        # gp-furo-theme is registered via the ``sphinx.html_themes`` entry
+        # point and runs its ``setup()`` automatically when Sphinx loads the
+        # parent theme — it must NOT be listed in ``extensions`` (the
+        # ``_builder_inited`` guard correctly rejects that combination as
+        # double-registration). Mirrors the ``smoke_sphinx_gp_theme`` shape
+        # a few defs above.
+        (docs_dir / "conf.py").write_text("html_theme = 'gp-furo'\n")
         (docs_dir / "index.rst").write_text("Demo\n====\n")
 
         python_path = _create_venv(tmpdir)
