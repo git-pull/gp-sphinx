@@ -121,8 +121,10 @@ class AsyncioBus:
         def _log_exception(fut: t.Any) -> None:
             exc = fut.exception()
             if exc is not None:
-                logger.exception(
-                    "background coroutine on %s raised", self._name, exc_info=exc
+                logger.error(
+                    "background coroutine on %s raised",
+                    self._name,
+                    exc_info=exc,
                 )
 
         future.add_done_callback(_log_exception)
