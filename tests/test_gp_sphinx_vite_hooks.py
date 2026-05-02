@@ -245,9 +245,9 @@ def test_on_build_finished_logs_exception(
             app,  # type: ignore[arg-type]
             exception=RuntimeError("sphinx fell over"),
         )
-        assert any(
-            "sphinx fell over" in r.getMessage() for r in captured
-        ), [r.getMessage() for r in captured]
+        assert any("sphinx fell over" in r.getMessage() for r in captured), [
+            r.getMessage() for r in captured
+        ]
     finally:
         underlying.removeHandler(handler)
         hooks.teardown(app, terminate_timeout=2.0)  # type: ignore[arg-type]
