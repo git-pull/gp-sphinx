@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 def setup(app: Sphinx) -> dict[str, bool | str]:
-    """Register ``gp-sphinx-vite``'s config values with Sphinx.
+    """Register ``gp-sphinx-vite``'s config values + event handlers with Sphinx.
 
     Parameters
     ----------
@@ -56,6 +56,8 @@ def setup(app: Sphinx) -> dict[str, bool | str]:
         a side effect of one specific event handler firing, and the
         rest of the extension is read-only state.
     """
+    from . import hooks
+
     app.add_config_value(
         "gp_sphinx_vite_mode",
         default="auto",
@@ -68,6 +70,9 @@ def setup(app: Sphinx) -> dict[str, bool | str]:
         rebuild="env",
         types=[str, type(None)],
     )
+
+    app.connect("builder-inited", hooks.on_builder_inited)
+    app.connect("build-finished", hooks.on_build_finished)
 
     return {
         "parallel_read_safe": True,

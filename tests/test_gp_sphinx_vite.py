@@ -27,41 +27,48 @@ def test_version_matches_workspace_lock() -> None:
     assert __version__ == "0.0.1a12"
 
 
+class _FakeApp:
+    """Minimal Sphinx-app stand-in for setup() smoke tests."""
+
+    def __init__(self) -> None:
+        self.config_values: list[tuple[str, dict[str, object]]] = []
+        self.events: list[tuple[str, object]] = []
+
+    def add_config_value(self, name: str, **kwargs: object) -> None:
+        self.config_values.append((name, kwargs))
+
+    def connect(self, event: str, callback: object) -> None:
+        self.events.append((event, callback))
+
+
 def test_setup_registers_mode_config_value() -> None:
     """setup() registers gp_sphinx_vite_mode."""
-    calls: list[tuple[str, dict[str, object]]] = []
-
-    class FakeApp:
-        def add_config_value(self, name: str, **kwargs: object) -> None:
-            calls.append((name, kwargs))
-
-    fake = FakeApp()
+    fake = _FakeApp()
     setup(fake)  # type: ignore[arg-type]
-    names = [name for name, _ in calls]
+    names = [name for name, _ in fake.config_values]
     assert "gp_sphinx_vite_mode" in names
 
 
 def test_setup_registers_root_config_value() -> None:
     """setup() registers gp_sphinx_vite_root."""
-    calls: list[str] = []
-
-    class FakeApp:
-        def add_config_value(self, name: str, **_: object) -> None:
-            calls.append(name)
-
-    fake = FakeApp()
+    fake = _FakeApp()
     setup(fake)  # type: ignore[arg-type]
-    assert "gp_sphinx_vite_root" in calls
+    names = [name for name, _ in fake.config_values]
+    assert "gp_sphinx_vite_root" in names
+
+
+def test_setup_connects_lifecycle_events() -> None:
+    """setup() connects to builder-inited and build-finished."""
+    fake = _FakeApp()
+    setup(fake)  # type: ignore[arg-type]
+    event_names = [name for name, _ in fake.events]
+    assert "builder-inited" in event_names
+    assert "build-finished" in event_names
 
 
 def test_setup_returns_parallel_safe_metadata() -> None:
     """Both parallel-safe flags are True (no shared mutable state)."""
-
-    class FakeApp:
-        def add_config_value(self, name: str, **_: object) -> None:
-            pass
-
-    metadata = setup(FakeApp())  # type: ignore[arg-type]
+    metadata = setup(_FakeApp())  # type: ignore[arg-type]
     assert metadata["parallel_read_safe"] is True
     assert metadata["parallel_write_safe"] is True
     assert metadata["version"] == __version__
