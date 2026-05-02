@@ -39,7 +39,9 @@ its own. (#25)
 
 Transparent Vite + pnpm orchestration for theme asset compilation.
 No-op in production builds; activates under `sphinx-autobuild` to
-provide live CSS/JS rebuilds during authoring. (#25)
+provide live CSS/JS rebuilds during authoring. The package page
+also documents justfile and Makefile recipes for wiring `just build`
+/ `make build` to run vite before plain `sphinx-build`. (#25, #26)
 
 ## gp-sphinx 0.0.1a14 (2026-05-02)
 
