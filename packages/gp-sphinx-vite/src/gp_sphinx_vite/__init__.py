@@ -38,6 +38,7 @@ if t.TYPE_CHECKING:
 __version__ = "0.0.1a14"
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 def setup(app: Sphinx) -> dict[str, bool | str]:
