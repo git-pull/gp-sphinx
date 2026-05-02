@@ -53,6 +53,7 @@ dev = [
   "sphinx-autobuild",
   # Testing
   "pytest",
+  "pytest-asyncio",
   "pytest-rerunfailures",
   "pytest-mock",
   "pytest-watcher",
