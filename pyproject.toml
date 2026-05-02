@@ -14,6 +14,7 @@ dependencies = [
 
 [tool.uv.workspace]
 members = ["packages/*"]
+exclude = ["packages/gp-furo-tokens"]
 
 [tool.uv.sources]
 sphinx-fonts = { workspace = true }
@@ -29,6 +30,8 @@ sphinx-ux-badges = { workspace = true }
 sphinx-ux-autodoc-layout = { workspace = true }
 sphinx-gp-opengraph = { workspace = true }
 sphinx-gp-sitemap = { workspace = true }
+gp-furo-theme = { workspace = true }
+gp-sphinx-vite = { workspace = true }
 gp-sphinx = { workspace = true }
 
 [dependency-groups]
@@ -44,13 +47,18 @@ dev = [
   "sphinx-ux-autodoc-layout",
   "sphinx-gp-opengraph",
   "sphinx-gp-sitemap",
+  "gp-furo-theme",
+  "gp-sphinx-vite",
   # Docs
   "sphinx-autobuild",
   # Testing
   "pytest",
+  "pytest-asyncio",
   "pytest-rerunfailures",
   "pytest-mock",
   "pytest-watcher",
+  "pytest-playwright",
+  "pillow",
   # Coverage
   "codecov",
   "coverage",

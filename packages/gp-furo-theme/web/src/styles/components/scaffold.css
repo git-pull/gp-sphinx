@@ -1,0 +1,572 @@
+/*
+ * Ported from furo 2025.12.19 (b788b8a) (_scaffold.sass), MIT (Pradyun Gedam).
+ * See LICENSE-FURO.
+ *
+ * Page-level layout: 3-column grid (sidebar | content | toc), sticky
+ * positioning, mobile drawer overlays driven by checkbox-toggle CSS,
+ * back-to-top, skip-to-content, announcement banner, header bar.
+ *
+ * SCSS layout variables resolved to literals (CSS custom properties
+ * can't be used in @media queries):
+ *   $sidebar-width        = 15em
+ *   $content-width        = 46em
+ *   $content-padding      = 3em      $content-padding--small = 1em
+ *   $content-padded-width = 52em     ...--small              = 48em
+ *   $full-width           = 82em
+ *
+ * Breakpoints (max-width):
+ *   97em = $full-width + $sidebar-width  (largest — bump font size up)
+ *   82em = $full-width                   (toc collapses into icon)
+ *   67em = $content-padded-width + $sidebar-width (center content)
+ *   63em = $content-padded-width--small + $sidebar-width (mobile header)
+ *   48em = $content-width + 2*$content-padding--small (content overflow)
+ *   46em = $content-width                (in-article sidebar floats reset)
+ */
+
+@layer components {
+  html {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar styling for sidebar/toc/content. */
+  .sidebar-scroll,
+  .toc-scroll,
+  article[role="main"] * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-foreground-border) transparent;
+  }
+
+  /* Page-fill foundation. */
+  html,
+  body {
+    height: 100%;
+    color: var(--color-foreground-primary);
+    background: var(--color-background-primary);
+  }
+
+  /* Skip-to-content link — slides down on focus-within. */
+  .skip-to-content {
+    position: fixed;
+    padding: 1rem;
+    border-radius: 1rem;
+    left: 0.25rem;
+    top: 0.25rem;
+    z-index: 40;
+    background: var(--color-background-primary);
+    color: var(--color-foreground-primary);
+    transform: translateY(-200%);
+    transition: transform 300ms ease-in-out;
+  }
+
+  .skip-to-content:focus-within {
+    transform: translateY(0%);
+  }
+
+  article {
+    color: var(--color-content-foreground);
+    background: var(--color-content-background);
+    overflow-wrap: break-word;
+  }
+
+  .page {
+    display: flex;
+    /* Fill the viewport for pages with little content. */
+    min-height: 100%;
+  }
+
+  /* Mobile header — only shown on small screens (display: none default). */
+  .mobile-header {
+    width: 100%;
+    height: var(--header-height);
+    background-color: var(--color-header-background);
+    color: var(--color-header-text);
+    border-bottom: 1px solid var(--color-header-border);
+    z-index: 10;
+    display: none;
+  }
+
+  .mobile-header.scrolled {
+    border-bottom: none;
+    box-shadow:
+      0 0 0.2rem rgba(0, 0, 0, 0.1),
+      0 0.2rem 0.4rem rgba(0, 0, 0, 0.2);
+  }
+
+  .mobile-header .header-center a {
+    color: var(--color-header-text);
+    text-decoration: none;
+  }
+
+  .main {
+    display: flex;
+    flex: 1;
+  }
+
+  /* Sidebar drawer covers full left portion. */
+  .sidebar-drawer {
+    box-sizing: border-box;
+    border-right: 1px solid var(--color-sidebar-background-border);
+    background: var(--color-sidebar-background);
+    display: flex;
+    justify-content: flex-end;
+    /* Centering math: this width keeps the sidebar contents aligned
+     * with the centered content column. */
+    width: calc((100% - 82em) / 2 + 15em);
+    min-width: 15em;
+  }
+
+  /* Scroll-along sidebars. */
+  .sidebar-container,
+  .toc-drawer {
+    box-sizing: border-box;
+    width: 15em;
+  }
+
+  .toc-drawer {
+    background: var(--color-toc-background);
+    /* HACK: padding compensates for scrollbar-not-counted in @media
+     * width queries on some browsers. */
+    padding-right: 1rem;
+  }
+
+  .sidebar-sticky,
+  .toc-sticky {
+    position: sticky;
+    top: 0;
+    height: min(100%, 100vh);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-scroll,
+  .toc-scroll {
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: auto;
+    scroll-behavior: smooth;
+  }
+
+  /* Central content column. */
+  .content {
+    /*
+     * Tailwind preflight applies `box-sizing: border-box` to every
+     * element. Upstream Furo's `_scaffold.sass` doesn't set
+     * box-sizing on .content explicitly, so it inherits the
+     * browser default `content-box` (preserved by normalize.css
+     * in the SCSS pipeline). The width/padding math here
+     * (`width: 46em` + `padding: 0 3em`) was authored against
+     * content-box semantics: the 46em is the *content* area,
+     * padding adds 6em outside; total border-box = 52em.  In a
+     * border-box world, the same `width: 46em` includes the
+     * padding, so the element is exactly 46em — and because flex
+     * basis equals the resolved width, flex-grow can't push it
+     * any wider.  The visible defect: the right TOC drawer sits
+     * 64px further left than upstream because .content fails to
+     * absorb the free space in .main.  Force content-box on
+     * just .content (the other layout containers — .sidebar-drawer,
+     * .sidebar-container, .toc-drawer — all set
+     * `box-sizing: border-box` explicitly upstream and want to
+     * keep that).
+     */
+    box-sizing: content-box;
+    padding: 0 3em;
+    width: 46em;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .icon {
+    display: inline-block;
+    height: 1rem;
+    width: 1rem;
+  }
+
+  .icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Announcement banner */
+  .announcement {
+    background-color: var(--color-announcement-background);
+    color: var(--color-announcement-text);
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+  }
+
+  .announcement + .page {
+    min-height: calc(100% - var(--header-height));
+  }
+
+  .announcement-content {
+    box-sizing: border-box;
+    padding: 0.5rem;
+    min-width: 100%;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .announcement-content a {
+    color: var(--color-announcement-text);
+    text-decoration-color: var(--color-announcement-text);
+  }
+
+  .announcement-content a:hover {
+    color: var(--color-announcement-text);
+    text-decoration-color: var(--color-link--hover);
+  }
+
+  /* Theme toggle */
+  .no-js .theme-toggle-container {
+    display: none;
+  }
+
+  .theme-toggle-container {
+    display: flex;
+  }
+
+  .theme-toggle {
+    display: flex;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    background: transparent;
+  }
+
+  .theme-toggle svg {
+    height: 1.25rem;
+    width: 1.25rem;
+    color: var(--color-foreground-primary);
+    display: none;
+  }
+
+  /*
+   * Theme-toggle SVG icon visibility — one icon per data-theme state.
+   * The four .theme-icon-when-* SVGs are stacked inside the toggle
+   * button; exactly one shows at any time. These rules MUST live in
+   * the same @layer as the `.theme-toggle svg { display: none }` hide
+   * rule above — otherwise layer cascade beats specificity and the
+   * activations get suppressed (icons stay hidden → button renders
+   * 0-width). The activations were originally authored in base.css's
+   * @layer base; that's why the toggle button had to be re-located.
+   */
+  body[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto-light {
+    display: block;
+  }
+  body[data-theme="dark"] .theme-toggle svg.theme-icon-when-dark {
+    display: block;
+  }
+  body[data-theme="light"] .theme-toggle svg.theme-icon-when-light {
+    display: block;
+  }
+  @media (prefers-color-scheme: dark) {
+    body[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto-dark {
+      display: block;
+    }
+    body[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto-light {
+      display: none;
+    }
+  }
+
+  /*
+   * Hover-state color match with sibling action icons in
+   * .content-icon-container. The eye/edit icons are anchors with
+   * class="muted-link" so they pick up
+   * `a.muted-link:hover { color: var(--color-link--hover) }` from
+   * base.css. The theme-toggle is a <button>, not an anchor, so it
+   * doesn't inherit that rule. Mirror the same target colour
+   * (`--color-link--hover`, brand-blue) here so the three icons
+   * hover-react identically.
+   *
+   * Targeting the SVG (not the button itself) overrides the
+   * `.theme-toggle svg { color: var(--color-foreground-primary) }`
+   * pin a few rules above; using the parent button's :hover state
+   * is what cascades through.
+   */
+  .theme-toggle:hover svg {
+    color: var(--color-link--hover);
+  }
+
+  .theme-toggle-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Toggles for nav/toc overlays */
+  .toc-overlay-icon,
+  .nav-overlay-icon {
+    display: none;
+    cursor: pointer;
+  }
+
+  .toc-overlay-icon .icon,
+  .nav-overlay-icon .icon {
+    color: var(--color-foreground-secondary);
+    height: 1.5rem;
+    width: 1.5rem;
+  }
+
+  .toc-header-icon,
+  .nav-overlay-icon {
+    /* When `display: flex` activates at small screens. */
+    justify-content: center;
+    align-items: center;
+  }
+
+  .toc-content-icon {
+    height: 1.5rem;
+    width: 1.5rem;
+  }
+
+  /* Edit-this-page / view-this-page action icons. */
+  .content-icon-container {
+    float: right;
+    display: flex;
+    margin-top: 1.5rem;
+    margin-left: 1rem;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+  }
+
+  .content-icon-container .edit-this-page svg,
+  .content-icon-container .view-this-page svg {
+    color: inherit;
+    height: 1.25rem;
+    width: 1.25rem;
+  }
+
+  /* Hidden checkbox-toggle inputs that drive sidebar/toc visibility. */
+  .sidebar-toggle {
+    position: absolute;
+    display: none;
+  }
+
+  /* Debug-only positioning (preserved verbatim from upstream). */
+  .sidebar-toggle[name="__toc"] {
+    left: 20px;
+  }
+  .sidebar-toggle:checked {
+    left: 40px;
+  }
+
+  /* Overlay for darkening behind drawers. */
+  .overlay {
+    position: fixed;
+    top: 0;
+    width: 0;
+    height: 0;
+    transition:
+      width 0ms,
+      height 0ms,
+      opacity 250ms ease-out;
+    opacity: 0;
+    background-color: rgba(0, 0, 0, 0.54);
+  }
+
+  .sidebar-overlay {
+    z-index: 20;
+  }
+
+  .toc-overlay {
+    z-index: 40;
+  }
+
+  /* Drawer slide-in transitions. */
+  .sidebar-drawer {
+    z-index: 30;
+    transition: left 250ms ease-in-out;
+  }
+
+  .toc-drawer {
+    z-index: 50;
+    transition: right 250ms ease-in-out;
+  }
+
+  /* CSS-only "open" toggles via :checked + sibling selector. */
+  #__navigation:checked ~ .sidebar-overlay {
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+  }
+
+  #__navigation:checked ~ .page .sidebar-drawer {
+    top: 0;
+    left: 0;
+  }
+
+  #__toc:checked ~ .toc-overlay {
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+  }
+
+  #__toc:checked ~ .page .toc-drawer {
+    top: 0;
+    right: 0;
+  }
+
+  /* Back-to-top button — visible only when html has .show-back-to-top
+   * (set by furo.ts after the user scrolls past the threshold). */
+  .back-to-top {
+    text-decoration: none;
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 1rem;
+    padding: 0.5rem;
+    padding-right: 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8125rem;
+    background: var(--color-background-primary);
+    box-shadow:
+      0 0.2rem 0.5rem rgba(0, 0, 0, 0.05),
+      #6b728080 0px 0px 1px 0px;
+    z-index: 10;
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .back-to-top svg {
+    height: 1rem;
+    width: 1rem;
+    fill: currentColor;
+    display: inline-block;
+  }
+
+  .back-to-top span {
+    margin-left: 0.25rem;
+  }
+
+  .show-back-to-top .back-to-top {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Responsive layouting — mobile-last per upstream comment. */
+  @media (min-width: 97em) {
+    html {
+      font-size: 110%;
+    }
+  }
+
+  @media (max-width: 82em) {
+    /* Collapse ToC into the icon. */
+    .toc-content-icon {
+      display: flex;
+    }
+    .toc-drawer {
+      position: fixed;
+      height: 100vh;
+      top: 0;
+      right: -15em;
+      border-left: 1px solid var(--color-background-muted);
+    }
+    .toc-tree {
+      border-left: none;
+      font-size: var(--toc-font-size--mobile);
+    }
+
+    .sidebar-drawer {
+      width: calc((100% - 67em) / 2 + 15em);
+    }
+  }
+
+  @media (max-width: 67em) {
+    /* Center the content column. */
+    .content {
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0 1em;
+    }
+  }
+
+  @media (max-width: 63em) {
+    /* Collapse navigation drawer. */
+    .nav-overlay-icon {
+      display: flex;
+    }
+    .sidebar-drawer {
+      position: fixed;
+      height: 100vh;
+      width: 15em;
+      top: 0;
+      left: -15em;
+    }
+
+    /* Swap which icon is visible (header-context vs content-context). */
+    .toc-header-icon,
+    .theme-toggle-header {
+      display: flex;
+    }
+    .toc-content-icon,
+    .theme-toggle-content {
+      display: none;
+    }
+
+    .mobile-header {
+      position: sticky;
+      top: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mobile-header .header-left,
+    .mobile-header .header-right {
+      display: flex;
+      height: var(--header-height);
+      padding: 0 var(--header-padding);
+    }
+
+    .mobile-header .header-left label,
+    .mobile-header .header-right label {
+      height: 100%;
+      width: 100%;
+      user-select: none;
+    }
+
+    .nav-overlay-icon .icon,
+    .theme-toggle svg {
+      height: 1.5rem;
+      width: 1.5rem;
+    }
+
+    /* Account for sticky header in scroll-margin. */
+    :target {
+      scroll-margin-top: calc(var(--header-height) + 2.5rem);
+    }
+
+    /* Push back-to-top below the header. */
+    .back-to-top {
+      top: calc(var(--header-height) + 0.5rem);
+    }
+
+    /* Stack page vertically on mobile. */
+    .page {
+      flex-direction: column;
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 48em) {
+    .content {
+      width: 100%;
+      overflow-x: auto;
+    }
+  }
+
+  @media (max-width: 46em) {
+    article[role="main"] aside.sidebar {
+      float: none;
+      width: 100%;
+      margin: 1rem 0;
+    }
+  }
+}

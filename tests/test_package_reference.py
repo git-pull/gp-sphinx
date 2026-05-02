@@ -19,6 +19,8 @@ def test_workspace_packages_lists_publishable_packages() -> None:
     """Workspace package discovery includes every published package."""
     names = {package["name"] for package in package_reference.workspace_packages()}
     assert names == {
+        "gp-furo-theme",
+        "gp-sphinx-vite",
         "sphinx-gp-opengraph",
         "sphinx-gp-sitemap",
         "gp-sphinx",

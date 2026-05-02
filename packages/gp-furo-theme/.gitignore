@@ -1,0 +1,4 @@
+# Vite-built assets land in src/gp_furo_theme/theme/gp-furo/static/ — built
+# locally by the web/ subproject (lands in step 4) and shipped pre-built in
+# the wheel via hatchling force-include. Do not commit.
+src/gp_furo_theme/theme/gp-furo/static/

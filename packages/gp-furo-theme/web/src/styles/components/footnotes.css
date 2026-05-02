@@ -1,0 +1,63 @@
+/*
+ * Ported from furo 2025.12.19 (b788b8a) (content/_footnotes.sass), MIT (Pradyun Gedam).
+ * See LICENSE-FURO.
+ */
+
+@layer components {
+  /* Inline footnote reference */
+  .footnote-reference {
+    font-size: var(--font-size--small--4);
+    vertical-align: super;
+  }
+
+  /* docutils <= 0.17 */
+  dl.footnote.brackets {
+    font-size: var(--font-size--small);
+    color: var(--color-foreground-secondary);
+    display: grid;
+    grid-template-columns: max-content auto;
+  }
+
+  dl.footnote.brackets dt {
+    margin: 0;
+  }
+
+  dl.footnote.brackets dt > .fn-backref {
+    margin-left: 0.25rem;
+  }
+
+  dl.footnote.brackets dt::after {
+    content: ":";
+  }
+
+  dl.footnote.brackets dt .brackets::before {
+    content: "[";
+  }
+
+  dl.footnote.brackets dt .brackets::after {
+    content: "]";
+  }
+
+  dl.footnote.brackets dd {
+    margin: 0;
+    padding: 0 1rem;
+  }
+
+  /* docutils >= 0.18 */
+  aside.footnote {
+    font-size: var(--font-size--small);
+    color: var(--color-foreground-secondary);
+  }
+
+  aside.footnote > span,
+  div.citation > span {
+    float: left;
+    font-weight: 500;
+    padding-right: 0.25rem;
+  }
+
+  aside.footnote > *:not(span),
+  div.citation > p {
+    margin-left: 2rem;
+  }
+}

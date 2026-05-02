@@ -1,0 +1,4 @@
+# Generated per-test artifacts. Only baseline-scss/ is committed
+# (the canonical visual reference captured at step 9.0).
+current-tw/
+diff-tw/

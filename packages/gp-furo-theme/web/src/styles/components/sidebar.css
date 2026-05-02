@@ -1,0 +1,241 @@
+/*
+ * Ported from furo 2025.12.19 (b788b8a) (components/_sidebar.sass), MIT (Pradyun Gedam).
+ * See LICENSE-FURO.
+ *
+ * Left sidebar — navigation tree, brand block, search input.  The
+ * nested toctree-checkbox toggle expand/collapse is pure CSS:
+ *   .toctree-checkbox          ~ ul              { display: none; }
+ *   .toctree-checkbox          ~ label .icon svg { rotate(90deg);  }
+ *   .toctree-checkbox:checked  ~ ul              { display: block; }
+ *   .toctree-checkbox:checked  ~ label .icon svg { rotate(-90deg); }
+ * No JS needed for tree expand/collapse.
+ */
+
+@layer components {
+  /* Brand block at the top of the scrollable tree. */
+  .sidebar-brand {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    padding: var(--sidebar-item-spacing-vertical)
+      var(--sidebar-item-spacing-horizontal);
+    text-decoration: none;
+  }
+
+  .sidebar-brand-text {
+    color: var(--color-sidebar-brand-text);
+    overflow-wrap: break-word;
+    margin: var(--sidebar-item-spacing-vertical) 0;
+    font-size: 1.5rem;
+  }
+
+  .sidebar-logo-container {
+    margin: var(--sidebar-item-spacing-vertical) 0;
+  }
+
+  .sidebar-logo {
+    margin: 0 auto;
+    display: block;
+    max-width: 100%;
+  }
+
+  /* Search input (sidebar-mounted) */
+  .sidebar-search-container {
+    display: flex;
+    align-items: center;
+    margin-top: var(--sidebar-search-space-above);
+    position: relative;
+    background: var(--color-sidebar-search-background);
+  }
+
+  .sidebar-search-container:hover,
+  .sidebar-search-container:focus-within {
+    background: var(--color-sidebar-search-background--focus);
+  }
+
+  /* Search icon — mask-image overlay, not <img>. */
+  .sidebar-search-container::before {
+    content: "";
+    position: absolute;
+    left: var(--sidebar-item-spacing-horizontal);
+    width: var(--sidebar-search-icon-size);
+    height: var(--sidebar-search-icon-size);
+    background-color: var(--color-sidebar-search-icon);
+    mask-image: var(--icon-search);
+  }
+
+  .sidebar-search {
+    box-sizing: border-box;
+    border: none;
+    border-top: 1px solid var(--color-sidebar-search-border);
+    border-bottom: 1px solid var(--color-sidebar-search-border);
+    padding-top: var(--sidebar-search-input-spacing-vertical);
+    padding-bottom: var(--sidebar-search-input-spacing-vertical);
+    padding-right: var(--sidebar-search-input-spacing-horizontal);
+    /* Padding-left makes room for the absolute-positioned ::before icon. */
+    padding-left: calc(
+      var(--sidebar-item-spacing-horizontal) +
+        var(--sidebar-search-input-spacing-horizontal) +
+        var(--sidebar-search-icon-size)
+    );
+    width: 100%;
+    color: var(--color-sidebar-search-foreground);
+    background: transparent;
+    z-index: 10;
+  }
+
+  .sidebar-search:focus {
+    outline: none;
+  }
+
+  .sidebar-search::placeholder {
+    font-size: var(--sidebar-search-input-font-size);
+  }
+
+  /* Hide-search-matches link in the sidebar-mounted searchbox. */
+  #searchbox .highlight-link {
+    padding: var(--sidebar-item-spacing-vertical)
+      var(--sidebar-item-spacing-horizontal) 0;
+    margin: 0;
+    text-align: center;
+  }
+
+  #searchbox .highlight-link a {
+    color: var(--color-sidebar-search-icon);
+    font-size: var(--font-size--small--2);
+  }
+
+  /* Navigation tree skeleton */
+  .sidebar-tree {
+    font-size: var(--sidebar-item-font-size);
+    margin-top: var(--sidebar-tree-space-above);
+    margin-bottom: var(--sidebar-item-spacing-vertical);
+  }
+
+  .sidebar-tree ul {
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+  }
+
+  .sidebar-tree li {
+    position: relative;
+    margin: 0;
+  }
+
+  .sidebar-tree li > ul {
+    margin-left: var(--sidebar-item-spacing-horizontal);
+  }
+
+  .sidebar-tree .icon {
+    color: var(--color-sidebar-link-text);
+  }
+
+  .sidebar-tree .reference {
+    box-sizing: border-box;
+    color: var(--color-sidebar-link-text);
+    display: inline-block;
+    line-height: var(--sidebar-item-line-height);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    height: 100%;
+    width: 100%;
+    padding: var(--sidebar-item-spacing-vertical)
+      var(--sidebar-item-spacing-horizontal);
+  }
+
+  .sidebar-tree .reference:hover {
+    color: var(--color-sidebar-link-text);
+    background: var(--color-sidebar-item-background--hover);
+  }
+
+  /* External-link arrow appended via ::after content. */
+  .sidebar-tree .reference.external::after {
+    content: url('data:image/svg+xml,<svg width="12" height="12" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="%23607D8B" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11 7h-5a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-5" /><line x1="10" y1="14" x2="20" y2="4" /><polyline points="15 4 20 4 20 9" /></svg>');
+    margin: 0 0.25rem;
+    vertical-align: middle;
+    color: var(--color-sidebar-link-text);
+  }
+
+  /* Current page bold. */
+  .sidebar-tree .current-page > .reference {
+    font-weight: bold;
+  }
+
+  /* Toggle label — the ▶ expander to the right of items with children. */
+  .sidebar-tree label {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: var(--sidebar-item-height);
+    width: var(--sidebar-expander-width);
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--color-sidebar-item-expander-background);
+  }
+
+  .sidebar-tree label:hover {
+    background: var(--color-sidebar-item-expander-background--hover);
+  }
+
+  .sidebar-tree .caption,
+  .sidebar-tree :not(.caption) > .caption-text {
+    font-size: var(--sidebar-caption-font-size);
+    color: var(--color-sidebar-caption-text);
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: var(--sidebar-caption-space-above) 0 0 0;
+    padding: var(--sidebar-item-spacing-vertical)
+      var(--sidebar-item-spacing-horizontal);
+  }
+
+  /* Items with children: extra right-padding so text doesn't overlap label. */
+  .sidebar-tree li.has-children > .reference {
+    padding-right: var(--sidebar-expander-width);
+  }
+
+  /* Top-level list items + icons get a different colour. */
+  .sidebar-tree .toctree-l1 > .reference,
+  .sidebar-tree .toctree-l1 > label .icon {
+    color: var(--color-sidebar-link-text--top-level);
+  }
+
+  /* Current item background. */
+  .sidebar-tree .current > .reference {
+    background: var(--color-sidebar-item-background--current);
+  }
+
+  .sidebar-tree .current > .reference:hover {
+    background: var(--color-sidebar-item-background--hover);
+  }
+
+  /* Hidden checkbox that drives the expand/collapse. */
+  .toctree-checkbox {
+    position: absolute;
+    display: none;
+  }
+
+  /* Default state: nested ul hidden, expander rotated 90deg. */
+  .toctree-checkbox ~ ul {
+    display: none;
+  }
+
+  .toctree-checkbox ~ label .icon svg {
+    transform: rotate(90deg);
+  }
+
+  /* Checked state: nested ul shown, expander rotated -90deg. */
+  .toctree-checkbox:checked ~ ul {
+    display: block;
+  }
+
+  .toctree-checkbox:checked ~ label .icon svg {
+    transform: rotate(-90deg);
+  }
+}

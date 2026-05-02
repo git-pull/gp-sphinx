@@ -1,0 +1,75 @@
+/*
+ * Pure Tailwind v4 entry for gp-furo-theme.
+ *
+ * Supersedes ./furo.scss as part of the 2026-04-30 step-9 pivot
+ * ("no SASS, only tailwind theming"). Both entries compile in
+ * parallel during the migration window — Vite emits this to
+ * ../src/.../static/styles/furo-tw.css alongside the SCSS-built
+ * styles/furo.css. Sphinx keeps loading the SCSS output until
+ * step 9.13 swaps the theme.conf stylesheet path.
+ *
+ * Layout (filled in by step 9.3-9.10):
+ *   - @import "tailwindcss" + @source for utility scanning
+ *   - @plugin "@gp-sphinx/furo-tokens/plugin" emits :root +
+ *     body[data-theme="dark"] CSS custom-property cascade
+ *   - @custom-variant dark binds Tailwind's dark: variant to
+ *     Furo's runtime body.dataset.theme contract
+ *   - @import "./components/<surface>.css" per surface (base,
+ *     typography, lists, scaffold, sidebar, toc, …)
+ *
+ * No @theme block — Furo's tokens are emitted by the plugin's
+ * addBase(); component CSS references them via var() so the
+ * dark-mode body-attribute swap works at runtime. A @theme inline
+ * block here would inline literal values into utility classes,
+ * defeating runtime CSS-variable theme swaps.
+ */
+
+@import "tailwindcss";
+
+/*
+ * Scan the theme's Jinja templates for utility class usage.  Path
+ * is relative to this file: web/src/styles/ → up two → src/ →
+ * gp_furo_theme/theme/gp-furo/**.html.
+ */
+@source "../../src/gp_furo_theme/theme/gp-furo/**/*.html";
+
+/*
+ * Furo's 153 CSS custom properties (light + dark tables) emitted
+ * via the plugin's addBase().  Step 9.2 will fix the plugin's
+ * dark-mode selector from html[data-theme="dark"] to
+ * body[data-theme="dark"] (the SCSS pipeline currently masks this
+ * mismatch with its own correctly-scoped rules).
+ */
+@plugin "@gp-sphinx/furo-tokens/plugin";
+
+/*
+ * Bind Tailwind's dark: variant to Furo's runtime contract.
+ * furo.ts toggles body.dataset.theme between "auto"/"light"/"dark".
+ */
+@custom-variant dark (&:where(body[data-theme="dark"], body[data-theme="dark"] *));
+
+/*
+ * Component layers land here in steps 9.3-9.10.  Each surface
+ * gets its own .css file under ./components/, imported in cascade
+ * order: base → typography/content → admonitions/code/api →
+ * scaffold/sidebar/toc → extensions.
+ */
+
+@import "./components/base.css";
+@import "./components/typography.css";
+@import "./components/lists.css";
+@import "./components/tables.css";
+@import "./components/footnotes.css";
+@import "./components/captions.css";
+@import "./components/images.css";
+@import "./components/math.css";
+@import "./components/blocks.css";
+@import "./components/admonitions.css";
+@import "./components/code.css";
+@import "./components/api.css";
+@import "./components/search.css";
+@import "./components/scaffold.css";
+@import "./components/sidebar.css";
+@import "./components/toc.css";
+@import "./components/footer.css";
+@import "./components/extensions.css";

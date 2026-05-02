@@ -124,6 +124,41 @@ def test_merge_sphinx_config_logos() -> None:
     assert opts["dark_logo"] == "img/logo-dark.svg"
 
 
+def test_merge_sphinx_config_vite_orchestration_off_by_default() -> None:
+    """Without vite_orchestration=True, gp_sphinx_vite is NOT in extensions."""
+    result = merge_sphinx_config(project="test", version="1.0", copyright="2026")
+    assert "gp_sphinx_vite" not in result["extensions"]
+    assert "gp_sphinx_vite_root" not in result
+
+
+def test_merge_sphinx_config_vite_orchestration_prepends_extension() -> None:
+    """vite_orchestration=True prepends gp_sphinx_vite as the first extension."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        vite_orchestration=True,
+    )
+    assert result["extensions"][0] == "gp_sphinx_vite"
+
+
+def test_merge_sphinx_config_vite_orchestration_sets_root_from_workspace() -> None:
+    """vite_orchestration=True resolves gp_sphinx_vite_root from gp_furo_theme."""
+    import gp_furo_theme
+
+    expected = gp_furo_theme.get_vite_root()
+    if expected is None:
+        # Installed-wheel mode — skip the path assertion.
+        return
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        vite_orchestration=True,
+    )
+    assert result["gp_sphinx_vite_root"] == str(expected)
+
+
 def test_merge_sphinx_config_intersphinx_mapping() -> None:
     """intersphinx_mapping passes through to config."""
     mapping = {

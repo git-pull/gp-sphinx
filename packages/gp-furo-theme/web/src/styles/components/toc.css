@@ -1,0 +1,95 @@
+/*
+ * Ported from furo 2025.12.19 (b788b8a) (components/_table_of_contents.sass),
+ * MIT (Pradyun Gedam). See LICENSE-FURO.
+ *
+ * Right sidebar — table of contents for the current page. Scroll-spy
+ * `.scroll-current` is set by Gumshoe (in furo.ts) when the matching
+ * section heading enters the viewport.
+ */
+
+@layer components {
+  .toc-title-container {
+    padding: var(--toc-title-padding);
+    padding-top: var(--toc-spacing-vertical);
+  }
+
+  .toc-title {
+    color: var(--color-toc-title-text);
+    font-size: var(--toc-title-font-size);
+    padding-left: var(--toc-spacing-horizontal);
+    text-transform: uppercase;
+  }
+
+  /* Hide ToC-related elements when there's no ToC. */
+  .no-toc {
+    display: none;
+  }
+
+  .toc-tree-container {
+    padding-bottom: var(--toc-spacing-vertical);
+  }
+
+  .toc-tree {
+    font-size: var(--toc-font-size);
+    line-height: 1.3;
+    border-left: 1px solid var(--color-background-border);
+    padding-left: calc(
+      var(--toc-spacing-horizontal) - var(--toc-item-spacing-horizontal)
+    );
+  }
+
+  /* Hide the first "top level" bullet — it's the page title itself. */
+  .toc-tree > ul > li:first-child {
+    padding-top: 0;
+  }
+
+  .toc-tree > ul > li:first-child > ul {
+    padding-left: 0;
+  }
+
+  .toc-tree > ul > li:first-child > a {
+    display: none;
+  }
+
+  .toc-tree ul {
+    list-style-type: none;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: var(--toc-item-spacing-horizontal);
+  }
+
+  .toc-tree li {
+    padding-top: var(--toc-item-spacing-vertical);
+  }
+
+  /* Active section (driven by Gumshoe scroll-spy in furo.ts). */
+  .toc-tree li.scroll-current > .reference {
+    color: var(--color-toc-item-text--active);
+    font-weight: bold;
+  }
+
+  .toc-tree a.reference {
+    color: var(--color-toc-item-text);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .toc-scroll {
+    max-height: 100vh;
+    overflow-y: scroll;
+  }
+
+  /*
+   * "Don't include a contents directive in Furo docs" — guard that
+   * surfaces aggressively if someone adds the docutils `.. contents::`
+   * directive without the explicit class opt-out.
+   */
+  .contents:not(.this-will-duplicate-information-and-it-is-still-useful-here) {
+    color: var(--color-problematic);
+    background: rgba(255, 0, 0, 0.25);
+  }
+
+  .contents:not(.this-will-duplicate-information-and-it-is-still-useful-here)::before {
+    content: "ERROR: Adding a table of contents in Furo-based documentation is unnecessary, and does not work well with existing styling. Add a 'this-will-duplicate-information-and-it-is-still-useful-here' class, if you want an escape hatch.";
+  }
+}
