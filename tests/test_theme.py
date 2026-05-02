@@ -20,10 +20,12 @@ def test_theme_conf_exists() -> None:
     assert (get_theme_path() / "theme.conf").is_file()
 
 
-def test_theme_inherits_furo() -> None:
-    """Theme inherits from furo."""
+def test_theme_inherits_gp_furo() -> None:
+    """Theme inherits from gp-furo (the workspace-owned port of vanilla Furo)."""
     conf = (get_theme_path() / "theme.conf").read_text()
-    assert "inherit = furo" in conf
+    assert "inherit = gp-furo" in conf
+    # Regression guard: never re-introduce a direct furo parent.
+    assert "inherit = furo\n" not in conf
 
 
 def test_theme_page_html_exists() -> None:

@@ -8,7 +8,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-04-29T13:55:18.601410077Z"
+exclude-newer = "2026-04-29T13:56:12.128306056Z"
 exclude-newer-span = "P3D"
 
 [manifest]
@@ -386,9 +386,9 @@ wheels = [
 ]
 
 [[package]]
-name = "furo"
-version = "2025.12.19"
-source = { registry = "https://pypi.org/simple" }
+name = "gp-furo-theme"
+version = "0.0.1a12"
+source = { editable = "packages/gp-furo-theme" }
 dependencies = [
     { name = "accessible-pygments" },
     { name = "beautifulsoup4" },
@@ -397,27 +397,14 @@ dependencies = [
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "sphinx-basic-ng" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ec/20/5f5ad4da6a5a27c80f2ed2ee9aee3f9e36c66e56e21c00fde467b2f8f88f/furo-2025.12.19.tar.gz", hash = "sha256:188d1f942037d8b37cd3985b955839fea62baa1730087dc29d157677c857e2a7", size = 1661473, upload-time = "2025-12-19T17:34:40.889Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f4/b2/50e9b292b5cac13e9e81272c7171301abc753a60460d21505b606e15cf21/furo-2025.12.19-py3-none-any.whl", hash = "sha256:bb0ead5309f9500130665a26bee87693c41ce4dbdff864dbfb6b0dae4673d24f", size = 339262, upload-time = "2025-12-19T17:34:38.905Z" },
-]
-
-[[package]]
-name = "gp-furo-theme"
-version = "0.0.1a12"
-source = { editable = "packages/gp-furo-theme" }
-dependencies = [
-    { name = "beautifulsoup4" },
-    { name = "pygments" },
-    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-]
 
 [package.metadata]
 requires-dist = [
+    { name = "accessible-pygments", specifier = ">=0.0.5" },
     { name = "beautifulsoup4" },
     { name = "pygments" },
     { name = "sphinx", specifier = ">=8.1" },
+    { name = "sphinx-basic-ng", specifier = ">=1.0.0b2" },
 ]
 
 [[package]]
@@ -1559,14 +1546,14 @@ name = "sphinx-gp-theme"
 version = "0.0.1a14"
 source = { editable = "packages/sphinx-gp-theme" }
 dependencies = [
-    { name = "furo" },
+    { name = "gp-furo-theme" },
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "furo" },
+    { name = "gp-furo-theme", editable = "packages/gp-furo-theme" },
     { name = "sphinx", specifier = ">=8.1" },
 ]
 

@@ -29,6 +29,13 @@ import typing as t
 
 import pytest
 
+# These tests build with `html_theme = "furo"` against upstream Furo for
+# the equivalence comparison. After step 7's cutover, Furo is no longer
+# a workspace dep — the tests stay in tree as a regression guard for
+# anyone who installs `furo` and re-runs them, but skip cleanly when
+# Furo isn't on `sys.path`.
+pytest.importorskip("furo")
+
 from tests._sphinx_scenarios import (
     ScenarioFile,
     SharedSphinxResult,
