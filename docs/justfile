@@ -20,26 +20,66 @@ allsphinxopts := "-d " + builddir + "/doctrees " + sphinxopts + " ."
 default:
     @just --list
 
+# Build vite-managed theme assets (CSS + JS) before any HTML-output
+# build. Prerequisite of every HTML-output builder below.
+#
+# Resolution chain:
+#   1. ``gp_furo_theme.get_vite_root()`` returns the absolute path of
+#      ``packages/gp-furo-theme/web/`` under a workspace checkout, or
+#      ``None`` when running from an installed wheel (the wheel ships
+#      pre-built assets — no vite step needed).
+#   2. If ``node_modules/`` is absent, a one-shot
+#      ``pnpm install --frozen-lockfile`` populates it. Mirrors
+#      ``gp_sphinx_vite.hooks._ensure_node_modules`` semantics so
+#      ``just clean; just html`` works without a separate install.
+#   3. ``pnpm exec vite build`` produces
+#      ``static/{scripts/furo.js,styles/furo-tw.css}`` in the theme
+#      tree, where sphinx-build later copies them into ``_static/``.
+#
+# Skip cleanly when gp-furo-theme is installed from a wheel, or when
+# the user genuinely lacks pnpm — the build proceeds without fresh
+# assets and any cached output remains in place. Non-HTML builders
+# (man, latex, gettext, etc.) don't depend on this recipe at all.
+[private]
+_assets-build:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    web_root=$(uv run python -c 'import gp_furo_theme; r = gp_furo_theme.get_vite_root(); print(r or "")' 2>/dev/null || true)
+    if [ -z "$web_root" ]; then
+        echo "[assets] gp_furo_theme.get_vite_root() returned None — assuming wheel install (pre-built assets in tree)"
+        exit 0
+    fi
+    if ! command -v pnpm >/dev/null 2>&1; then
+        echo "[assets] pnpm not on PATH; skipping vite build (any pre-existing output remains)"
+        exit 0
+    fi
+    if [ ! -d "$web_root/node_modules" ]; then
+        echo "[assets] node_modules missing in $web_root — running pnpm install --frozen-lockfile"
+        (cd "$web_root" && pnpm install --frozen-lockfile)
+    fi
+    echo "[assets] running pnpm exec vite build in $web_root"
+    (cd "$web_root" && pnpm exec vite build)
+
 # Build HTML documentation
-html:
+html: _assets-build
     {{ sphinxbuild }} -b dirhtml {{ allsphinxopts }} {{ builddir }}/html
     @echo ""
     @echo "Build finished. The HTML pages are in {{ builddir }}/html."
 
 # Build directory HTML files
-dirhtml:
+dirhtml: _assets-build
     {{ sphinxbuild }} -b dirhtml {{ allsphinxopts }} {{ builddir }}/dirhtml
     @echo ""
     @echo "Build finished. The HTML pages are in {{ builddir }}/dirhtml."
 
 # Build single HTML file
-singlehtml:
+singlehtml: _assets-build
     {{ sphinxbuild }} -b singlehtml {{ allsphinxopts }} {{ builddir }}/singlehtml
     @echo ""
     @echo "Build finished. The HTML page is in {{ builddir }}/singlehtml."
 
 # Build EPUB
-epub:
+epub: _assets-build
     {{ sphinxbuild }} -b epub {{ allsphinxopts }} {{ builddir }}/epub
     @echo ""
     @echo "Build finished. The epub file is in {{ builddir }}/epub."
@@ -75,25 +115,26 @@ json:
     @echo ""
     @echo "Build finished; now you can process the JSON files."
 
-# Clean build directory
+# Clean build directory and the vite-built theme assets
 [confirm]
 clean:
     rm -rf {{ builddir }}/*
+    rm -rf ../packages/gp-furo-theme/src/gp_furo_theme/theme/gp-furo/static/
 
 # Build HTML help files
-htmlhelp:
+htmlhelp: _assets-build
     {{ sphinxbuild }} -b htmlhelp {{ allsphinxopts }} {{ builddir }}/htmlhelp
     @echo ""
     @echo "Build finished; now you can run HTML Help Workshop with the .hhp project file in {{ builddir }}/htmlhelp."
 
 # Build Qt help files
-qthelp:
+qthelp: _assets-build
     {{ sphinxbuild }} -b qthelp {{ allsphinxopts }} {{ builddir }}/qthelp
     @echo ""
     @echo "Build finished; now you can run 'qcollectiongenerator' with the .qhcp project file in {{ builddir }}/qthelp."
 
 # Build Devhelp files
-devhelp:
+devhelp: _assets-build
     {{ sphinxbuild }} -b devhelp {{ allsphinxopts }} {{ builddir }}/devhelp
     @echo ""
     @echo "Build finished."
