@@ -77,6 +77,9 @@ def test_sphinx_build_spawns_via_extension(tmp_path: pathlib.Path) -> None:
     fake_vite_dir = tmp_path / "fake-vite-root"
     fake_vite_dir.mkdir()
     (fake_vite_dir / "package.json").write_text('{"name": "fake-vite-integration"}\n')
+    # Pre-create node_modules/ so _ensure_node_modules short-circuits the
+    # auto-install path (CI runners don't have pnpm on PATH).
+    (fake_vite_dir / "node_modules").mkdir()
     fake_script = fake_vite_dir / "fake_vite.py"
     fake_script.write_text(
         textwrap.dedent(

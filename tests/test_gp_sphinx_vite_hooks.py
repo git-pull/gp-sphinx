@@ -40,9 +40,19 @@ class _FakeApp:
     config: _FakeConfig = dataclasses.field(default_factory=_FakeConfig)
 
 
-def _write_fake_vite(tmp_path: pathlib.Path, *, body: str) -> pathlib.Path:
-    """Write a fake-vite script + a stub package.json at ``tmp_path``."""
+def _write_fake_vite(
+    tmp_path: pathlib.Path, *, body: str, with_node_modules: bool = True
+) -> pathlib.Path:
+    """Write a fake-vite script + a stub package.json at ``tmp_path``.
+
+    Creates ``node_modules/`` by default so :func:`hooks._ensure_node_modules`
+    short-circuits the auto-install path. Tests that exercise the install
+    path explicitly pass ``with_node_modules=False`` and arrange their own
+    ``pnpm_install_command`` patch.
+    """
     (tmp_path / "package.json").write_text('{"name": "fake-vite-root"}\n')
+    if with_node_modules:
+        (tmp_path / "node_modules").mkdir(exist_ok=True)
     script = tmp_path / "fake_vite.py"
     script.write_text(textwrap.dedent(body))
     return script
@@ -339,6 +349,7 @@ def test_on_builder_inited_runs_install_when_node_modules_missing(
     )
     vite_script = _write_fake_vite(
         tmp_path,
+        with_node_modules=False,
         body="""\
         import time
         print("vite watching", flush=True)
