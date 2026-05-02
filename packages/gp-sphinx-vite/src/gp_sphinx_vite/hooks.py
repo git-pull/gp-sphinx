@@ -16,7 +16,7 @@ Lifecycle:
   recompile on file changes. Teardown happens via :data:`atexit` and
   signal handlers installed at first spawn.
 
-Tear-down is the responsibility of :func:`_teardown`, which is wired
+Tear-down is the responsibility of :func:`teardown`, which is wired
 to ``atexit`` and to ``SIGINT`` / ``SIGTERM`` / ``SIGHUP``.
 
 The handlers are passive about command construction: they call
