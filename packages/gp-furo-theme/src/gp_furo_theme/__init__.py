@@ -45,6 +45,7 @@ THEME_NAME = "gp-furo"
 THEME_PATH = (pathlib.Path(__file__).parent / "theme" / THEME_NAME).resolve()
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 # GLOBAL STATE — populated by ``_builder_inited`` and consumed by
 # ``_html_page_context`` + ``_overwrite_pygments_css``. Values are Pygments
