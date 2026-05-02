@@ -171,10 +171,36 @@ def test_detect_mode(
 
     The ``test_id`` parameter is consumed by pytest's parametrize ``ids=``
     callback (see ``_MODE_FIXTURES`` above) and surfaces as the test name
-    suffix in pytest output.
+    suffix in pytest output. ``parent_check=lambda: False`` keeps these
+    pure-function tests independent of whatever process pytest is running
+    under.
     """
     del test_id
-    assert detect_mode(config_value=config_value, argv=argv, env=env) is expected
+    assert (
+        detect_mode(
+            config_value=config_value,
+            argv=argv,
+            env=env,
+            parent_check=lambda: False,
+        )
+        is expected
+    )
+
+
+def test_detect_mode_parent_is_sphinx_autobuild() -> None:
+    """When the parent process is sphinx-autobuild, mode resolves to DEV.
+
+    Closes the gap where sphinx-autobuild spawns sphinx-build as a
+    subprocess (so sys.argv[0] is the Python interpreter, not the
+    autobuild wrapper).
+    """
+    result = detect_mode(
+        config_value="auto",
+        argv=["python", "-m", "sphinx", "build"],
+        env={},
+        parent_check=lambda: True,
+    )
+    assert result is Mode.DEV
 
 
 def test_resolve_vite_root_none_returns_none() -> None:

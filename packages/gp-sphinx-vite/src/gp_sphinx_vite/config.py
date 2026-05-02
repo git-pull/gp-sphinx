@@ -30,11 +30,37 @@ class Mode(str, enum.Enum):
     PROD = "prod"
 
 
+def _parent_is_sphinx_autobuild() -> bool:
+    """Return True if our parent process's argv contains ``sphinx-autobuild``.
+
+    Why this exists: ``sphinx-autobuild`` runs the actual Sphinx build
+    in a *subprocess* via ``subprocess.run([sys.executable] + sphinx_args)``
+    (see ``sphinx_autobuild/build.py:50``). In that subprocess,
+    ``sys.argv[0]`` is the Python interpreter path, NOT
+    ``sphinx-autobuild``, so the argv-based mode-detection misses it.
+    Reading ``/proc/<ppid>/cmdline`` lets us see the parent's actual
+    command line.
+
+    Linux-only via ``/proc``. Returns ``False`` cleanly on macOS,
+    Windows, or any other platform without ``/proc`` (and on Linux if
+    the read fails for permission reasons). Test harnesses can disable
+    this check by passing a stub via ``detect_mode(parent_check=...)``.
+    """
+    try:
+        ppid = os.getppid()
+        cmdline_path = pathlib.Path(f"/proc/{ppid}/cmdline")
+        cmdline = cmdline_path.read_bytes().split(b"\0")
+    except OSError:
+        return False
+    return any(b"sphinx-autobuild" in arg for arg in cmdline)
+
+
 def detect_mode(
     *,
     config_value: str,
     argv: t.Sequence[str] | None = None,
     env: t.Mapping[str, str] | None = None,
+    parent_check: t.Callable[[], bool] | None = None,
 ) -> Mode:
     """Resolve a ``gp_sphinx_vite_mode`` config value to a concrete :class:`Mode`.
 
@@ -48,36 +74,59 @@ def detect_mode(
         Process argv. Defaults to :data:`sys.argv`.
     env
         Process environment. Defaults to :data:`os.environ`.
+    parent_check
+        Callable returning ``True`` when the parent process is
+        ``sphinx-autobuild``. Defaults to
+        :func:`_parent_is_sphinx_autobuild`. Tests pass ``lambda: False``
+        to disable platform-specific behavior.
 
     Returns
     -------
     Mode
-        The resolved mode. ``"auto"`` resolves to ``DEV`` if either
-        ``SPHINX_AUTOBUILD`` is set in ``env`` or ``argv[0]`` ends with
-        ``"sphinx-autobuild"``; ``PROD`` otherwise.
+        The resolved mode. ``"auto"`` resolves to ``DEV`` if any of:
+        - ``SPHINX_AUTOBUILD`` is set in ``env``
+        - ``argv[0]`` ends with ``"sphinx-autobuild"``
+        - the parent process is ``sphinx-autobuild`` (so the
+          subprocess sphinx-autobuild spawns inherits the dev mode)
+        ``PROD`` otherwise.
 
     Examples
     --------
-    >>> detect_mode(config_value="dev", argv=["sphinx-build"], env={})
+    >>> detect_mode(
+    ...     config_value="dev",
+    ...     argv=["sphinx-build"],
+    ...     env={},
+    ...     parent_check=lambda: False,
+    ... )
     <Mode.DEV: 'dev'>
     >>> detect_mode(
     ...     config_value="prod",
     ...     argv=["sphinx-autobuild"],
     ...     env={"SPHINX_AUTOBUILD": "1"},
+    ...     parent_check=lambda: True,
     ... )
     <Mode.PROD: 'prod'>
-    >>> detect_mode(config_value="auto", argv=["sphinx-build"], env={})
-    <Mode.PROD: 'prod'>
-    >>> detect_mode(config_value="auto", argv=["/p/sphinx-autobuild"], env={})
-    <Mode.DEV: 'dev'>
     >>> detect_mode(
     ...     config_value="auto",
     ...     argv=["sphinx-build"],
-    ...     env={"SPHINX_AUTOBUILD": "1"},
+    ...     env={},
+    ...     parent_check=lambda: False,
+    ... )
+    <Mode.PROD: 'prod'>
+    >>> detect_mode(
+    ...     config_value="auto",
+    ...     argv=["/p/sphinx-autobuild"],
+    ...     env={},
+    ...     parent_check=lambda: False,
     ... )
     <Mode.DEV: 'dev'>
-    >>> detect_mode(config_value="garbage", argv=[], env={})
-    <Mode.PROD: 'prod'>
+    >>> detect_mode(
+    ...     config_value="auto",
+    ...     argv=["python"],
+    ...     env={},
+    ...     parent_check=lambda: True,
+    ... )
+    <Mode.DEV: 'dev'>
     """
     if config_value == "dev":
         return Mode.DEV
@@ -86,10 +135,15 @@ def detect_mode(
     # "auto" or any unrecognised value falls through to detection.
     resolved_argv: t.Sequence[str] = argv if argv is not None else sys.argv
     resolved_env: t.Mapping[str, str] = env if env is not None else os.environ
+    resolved_parent_check = (
+        parent_check if parent_check is not None else _parent_is_sphinx_autobuild
+    )
 
     if resolved_env.get("SPHINX_AUTOBUILD"):
         return Mode.DEV
     if resolved_argv and resolved_argv[0].endswith("sphinx-autobuild"):
+        return Mode.DEV
+    if resolved_parent_check():
         return Mode.DEV
     return Mode.PROD
 
