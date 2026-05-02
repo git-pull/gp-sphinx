@@ -9,6 +9,21 @@
 
 import Gumshoe from "./gumshoe.js";
 
+// IIFE wrapper to isolate top-level declarations from the page's global
+// scope. The bundle is loaded as a classic <script> by Sphinx (no
+// type="module" attribute), so anything at module scope here would leak.
+// doctools.js:147 already declares `const _ = Documentation.gettext` at
+// global scope — without this wrapper, Rollup's minifier collapses our
+// `readTheme()` helper to `function _()` at the top level of the bundle,
+// triggering a `SyntaxError: Identifier '_' has already been declared`
+// on every page load and silently breaking the theme toggle, scroll-spy,
+// back-to-top, and mobile drawer behaviours.
+//
+// Matches upstream Furo's bundling approach: their `furo.js` is also
+// IIFE-wrapped at the source level. The `import` above stays at module
+// scope (ESM imports must be top-level) so Rollup can resolve Gumshoe;
+// `Gumshoe` is captured by closure inside the IIFE.
+(function (): void {
 type ThemeMode = "light" | "dark" | "auto";
 
 const GO_TO_TOP_OFFSET = 64;
@@ -195,3 +210,4 @@ function main(): void {
 }
 
 document.addEventListener("DOMContentLoaded", main);
+})();
