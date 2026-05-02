@@ -162,12 +162,10 @@
             {% trans %}<a href="https://www.sphinx-doc.org/">Sphinx</a> and {% endtrans -%}
             {% endif -%}
             <a href="https://github.com/git-pull/gp-sphinx">gp-sphinx</a>
-            <span class="muted-link" style="display:block;font-size:80%;opacity:0.75">
-              {% trans %}— ported from {% endtrans -%}
-              <a class="muted-link" href="https://github.com/pradyunsg/furo">Furo</a>
-              {% trans %} (MIT, {% endtrans -%}
-              <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>{% trans %}); see LICENSE-FURO{% endtrans %}
-            </span>
+            {% trans %} (fork of {% endtrans -%}
+            <a class="muted-link" href="https://github.com/pradyunsg/furo">Furo</a>
+            {% trans %} by {% endtrans -%}
+            <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>{% trans %}){% endtrans %}
             {%- if last_updated -%}
             <div class="last-updated">
               {% trans last_updated=last_updated|e -%}
