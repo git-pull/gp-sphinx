@@ -151,6 +151,27 @@
 
   /* Central content column. */
   .content {
+    /*
+     * Tailwind preflight applies `box-sizing: border-box` to every
+     * element. Upstream Furo's `_scaffold.sass` doesn't set
+     * box-sizing on .content explicitly, so it inherits the
+     * browser default `content-box` (preserved by normalize.css
+     * in the SCSS pipeline). The width/padding math here
+     * (`width: 46em` + `padding: 0 3em`) was authored against
+     * content-box semantics: the 46em is the *content* area,
+     * padding adds 6em outside; total border-box = 52em.  In a
+     * border-box world, the same `width: 46em` includes the
+     * padding, so the element is exactly 46em — and because flex
+     * basis equals the resolved width, flex-grow can't push it
+     * any wider.  The visible defect: the right TOC drawer sits
+     * 64px further left than upstream because .content fails to
+     * absorb the free space in .main.  Force content-box on
+     * just .content (the other layout containers — .sidebar-drawer,
+     * .sidebar-container, .toc-drawer — all set
+     * `box-sizing: border-box` explicitly upstream and want to
+     * keep that).
+     */
+    box-sizing: content-box;
     padding: 0 3em;
     width: 46em;
     display: flex;
