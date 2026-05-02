@@ -54,3 +54,5 @@
  * order: base → typography/content → admonitions/code/api →
  * scaffold/sidebar/toc → extensions.
  */
+
+@import "./components/base.css";

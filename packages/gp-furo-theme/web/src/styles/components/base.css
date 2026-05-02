@@ -1,0 +1,251 @@
+/*
+ * Ported from furo @ 752bf80c, MIT (Pradyun Gedam). See LICENSE-FURO.
+ *
+ * Maps to upstream:
+ *   src/furo/assets/styles/base/_typography.sass    (HTML element defaults)
+ *   src/furo/assets/styles/base/_screen-readers.sass (.visually-hidden)
+ *   src/furo/assets/styles/base/_print.sass         (@media print)
+ *   src/furo/assets/styles/base/_theme.sass         (.only-light/.only-dark
+ *                                                    + theme-toggle SVG hooks)
+ *
+ * The token values themselves (var(--font-stack) etc.) are emitted by
+ * @gp-sphinx/furo-tokens/plugin via addBase() — see the entry index.css
+ * @plugin directive.  This file is purely the structural CSS that
+ * references those tokens.
+ *
+ * Reset (box-sizing/margin/padding/border) is handled by Tailwind v4
+ * preflight (loaded via @import "tailwindcss" in index.css).  We do NOT
+ * re-emit normalize.css here — preflight covers it.
+ */
+
+@layer base {
+  body {
+    font-family: var(--font-stack);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  pre,
+  code,
+  kbd,
+  samp {
+    font-family: var(--font-stack--monospace);
+  }
+
+  article {
+    line-height: 1.5;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    line-height: 1.25;
+    font-family: var(--font-stack--headings);
+    font-weight: bold;
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  h1 + p,
+  h2 + p,
+  h3 + p,
+  h4 + p,
+  h5 + p,
+  h6 + p {
+    margin-top: 0;
+  }
+
+  h1 {
+    font-size: 2.5em;
+    margin-top: 1.75rem;
+    margin-bottom: 1rem;
+  }
+  h2 {
+    font-size: 2em;
+    margin-top: 1.75rem;
+  }
+  h3 {
+    font-size: 1.5em;
+  }
+  h4 {
+    font-size: 1.25em;
+  }
+  h5 {
+    font-size: 1.125em;
+  }
+  h6 {
+    font-size: 1em;
+  }
+
+  small {
+    opacity: 75%;
+    font-size: 80%;
+  }
+
+  p {
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  hr.docutils {
+    height: 1px;
+    padding: 0;
+    margin: 2rem 0;
+    background-color: var(--color-background-border);
+    border: 0;
+  }
+
+  .centered {
+    text-align: center;
+  }
+
+  /* Links — verbatim port of _typography.sass `a` block. */
+  a {
+    text-decoration: underline;
+    color: var(--color-link);
+    text-decoration-color: var(--color-link-underline);
+  }
+  a:visited {
+    color: var(--color-link--visited);
+    text-decoration-color: var(--color-link-underline--visited);
+  }
+  a:visited:hover {
+    color: var(--color-link--visited--hover);
+    text-decoration-color: var(--color-link-underline--visited--hover);
+  }
+  a:hover {
+    color: var(--color-link--hover);
+    text-decoration-color: var(--color-link-underline--hover);
+  }
+  a.muted-link {
+    color: inherit;
+  }
+  a.muted-link:hover {
+    color: var(--color-link--hover);
+    text-decoration-color: var(--color-link-underline--hover);
+  }
+  a.muted-link:hover:visited {
+    color: var(--color-link--visited--hover);
+    text-decoration-color: var(--color-link-underline--visited--hover);
+  }
+
+  /* Screen reader utility — _screen-readers.sass */
+  .visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+    color: var(--color-foreground-primary);
+    background: var(--color-background-primary);
+  }
+
+  :-moz-focusring {
+    outline: auto;
+  }
+
+  /*
+   * Theme-toggle content visibility hooks — _theme.sass.
+   * Default state: .only-light visible, .only-dark hidden.
+   * Dark mode (explicit or OS-pref auto) inverts.
+   */
+  .only-light {
+    display: block !important;
+  }
+  html body .only-dark {
+    display: none !important;
+  }
+
+  @media not print {
+    html body[data-theme="dark"] .only-light {
+      display: none !important;
+    }
+    body[data-theme="dark"] .only-dark {
+      display: block !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      html body:not([data-theme="light"]) .only-light {
+        display: none !important;
+      }
+      body:not([data-theme="light"]) .only-dark {
+        display: block !important;
+      }
+    }
+  }
+
+  /*
+   * Theme-toggle SVG icon visibility — one icon per data-theme state.
+   * The four .theme-icon-when-* SVGs are stacked inside the toggle button;
+   * exactly one shows at any time.
+   */
+  body[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto-light {
+    display: block;
+  }
+  body[data-theme="dark"] .theme-toggle svg.theme-icon-when-dark {
+    display: block;
+  }
+  body[data-theme="light"] .theme-toggle svg.theme-icon-when-light {
+    display: block;
+  }
+  @media (prefers-color-scheme: dark) {
+    body[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto-dark {
+      display: block;
+    }
+    body[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto-light {
+      display: none;
+    }
+  }
+
+  /* Print media — _print.sass */
+  @media print {
+    .content-icon-container,
+    .headerlink,
+    .mobile-header,
+    .related-pages {
+      display: none !important;
+    }
+    .highlight {
+      border: 0.1pt solid var(--color-foreground-border);
+    }
+    ul,
+    ol,
+    dl,
+    a,
+    table,
+    pre,
+    blockquote,
+    p {
+      page-break-inside: avoid;
+    }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    img,
+    figure,
+    caption {
+      page-break-inside: avoid;
+      page-break-after: avoid;
+    }
+    ul,
+    ol,
+    dl {
+      page-break-before: avoid;
+    }
+  }
+}
