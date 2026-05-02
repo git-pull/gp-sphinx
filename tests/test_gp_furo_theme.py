@@ -15,7 +15,7 @@ import textwrap
 import typing as t
 
 import pytest
-from gp_furo_theme import THEME_NAME, get_theme_path, setup
+from gp_furo_theme import THEME_NAME, get_theme_path, get_vite_root, setup
 
 from tests._sphinx_scenarios import (
     ScenarioFile,
@@ -127,6 +127,15 @@ def test_license_furo_present() -> None:
     """LICENSE-FURO file is checked in at the package root."""
     package_root = pathlib.Path(__file__).parents[1] / "packages" / "gp-furo-theme"
     assert (package_root / "LICENSE-FURO").is_file()
+
+
+def test_get_vite_root_returns_workspace_web_dir() -> None:
+    """get_vite_root() resolves to gp-furo-theme/web/ from a workspace checkout."""
+    root = get_vite_root()
+    assert root is not None
+    assert root.is_dir()
+    assert (root / "package.json").is_file()
+    assert (root / "vite.config.ts").is_file()
 
 
 _EXPECTED_TEMPLATE_PATHS = (

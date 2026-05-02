@@ -399,6 +399,35 @@ def _overwrite_pygments_css(
     pygments_css.write_text(get_pygments_stylesheet(), encoding="utf-8")
 
 
+def get_vite_root() -> pathlib.Path | None:
+    """Locate the ``web/`` directory containing ``package.json`` + ``vite.config.ts``.
+
+    Returns the path when running from a workspace checkout (where the
+    Vite source files live alongside the Python package), or ``None``
+    when running from an installed wheel (the wheel ships pre-built
+    static assets but not the SCSS/TS sources).
+
+    Intended for use by ``gp-sphinx-vite`` consumers — set
+    ``gp_sphinx_vite_root = gp_furo_theme.get_vite_root()`` in
+    ``conf.py`` (or wire it through :func:`gp_sphinx.config.merge_sphinx_config`)
+    so the orchestration finds the right ``cwd`` to spawn ``vite`` in.
+
+    Returns
+    -------
+    pathlib.Path | None
+        Absolute path to the ``web/`` directory, or ``None`` if it is
+        not present (typical for installed wheels).
+
+    Examples
+    --------
+    >>> root = get_vite_root()
+    >>> root is None or root.is_dir()
+    True
+    """
+    candidate = pathlib.Path(__file__).resolve().parents[2] / "web"
+    return candidate if candidate.is_dir() else None
+
+
 def get_theme_path() -> pathlib.Path:
     """Return the absolute path to the bundled ``gp-furo`` theme directory.
 

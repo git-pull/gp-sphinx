@@ -73,5 +73,11 @@ conf = merge_sphinx_config(
     pytest_fixture_lint_level="none",
     rediraffe_redirects="redirects.txt",
     intersphinx_mapping=intersphinx_mapping,
+    # Enable Vite orchestration: under `sphinx-autobuild`, gp-sphinx-vite
+    # spawns `pnpm exec vite build --watch` so contributors editing
+    # gp-furo-theme/web/src see fresh CSS/JS on disk without remembering
+    # a separate command. No-op for `sphinx-build` (mode resolves to
+    # "prod"), so wheel publishes carry no Node runtime requirement.
+    vite_orchestration=True,
 )
 globals().update(conf)
