@@ -110,10 +110,13 @@ Tool documentation with safety badges and parameter tables.
 
 ```{eval-rst}
 .. fastmcp-tool:: fastmcp_demo_tools.list_sessions
+   :no-index:
 
 .. fastmcp-tool:: fastmcp_demo_tools.create_session
+   :no-index:
 
 .. fastmcp-tool:: fastmcp_demo_tools.delete_session
+   :no-index:
 ```
 
 ### Parameter table

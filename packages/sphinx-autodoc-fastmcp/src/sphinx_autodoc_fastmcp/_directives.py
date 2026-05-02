@@ -6,6 +6,7 @@ import logging
 import typing as t
 
 from docutils import nodes
+from docutils.parsers.rst import directives
 from sphinx.util.docutils import SphinxDirective
 
 if t.TYPE_CHECKING:
@@ -152,12 +153,25 @@ def _register_alias_if_free(
 
 
 class FastMCPToolDirective(SphinxDirective):
-    """Autodocument one MCP tool: section (ToC/labels) + card body."""
+    """Autodocument one MCP tool: section (ToC/labels) + card body.
+
+    Supports the standard Sphinx ``:no-index:`` flag (mirrors
+    :func:`autofunction`/:func:`autoclass` semantics): when set, the card
+    still renders in full but its canonical section ID and bare-slug alias
+    are not registered in :class:`StandardDomain` ``labels`` /
+    ``anonlabels``. Use it when a tool needs to appear visually on more
+    than one page (e.g. a gallery demo + a reference page) — exactly one
+    invocation per tool should omit ``:no-index:`` so cross-references
+    have a single canonical home.
+    """
 
     required_arguments = 1
     optional_arguments = 0
     has_content = True
     final_argument_whitespace = False
+    option_spec: t.ClassVar[dict[str, t.Callable[[str], t.Any]]] = {
+        "no-index": directives.flag,
+    }
 
     def run(self) -> list[nodes.Node]:
         """Build section with title row + docstring/returns for one tool."""
@@ -182,20 +196,26 @@ class FastMCPToolDirective(SphinxDirective):
         """Build section card with shared API layout regions."""
         document = self.state.document
         section_id, aliases = _component_ids("tool", tool.name)
+        no_index = "no-index" in self.options
 
         section = nodes.section()
         section["ids"].append(section_id)
         section["ids"].extend(aliases)
         section["classes"].extend((_CSS.TOOL_SECTION, API.CARD_SHELL))
-        _register_section_label(self.env, section_id, tool.name)
-        for alias in aliases:
-            _register_alias_if_free(
-                self.env,
-                alias=alias,
-                display_name=tool.name,
-                kind="tool",
-            )
-        document.note_explicit_target(section)
+        if no_index:
+            # Marker consumed by ``register_tool_labels`` in _transforms.py
+            # so the doctree-read pass mirrors the directive's skip.
+            section["fastmcp_no_index"] = True
+        else:
+            _register_section_label(self.env, section_id, tool.name)
+            for alias in aliases:
+                _register_alias_if_free(
+                    self.env,
+                    alias=alias,
+                    display_name=tool.name,
+                    kind="tool",
+                )
+            document.note_explicit_target(section)
 
         title_node = nodes.title("", "")
         title_node["classes"].append(f"{_CSS.PREFIX}-tool-title")

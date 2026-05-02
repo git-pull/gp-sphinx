@@ -77,6 +77,11 @@ def register_tool_labels(app: Sphinx, doctree: nodes.document) -> None:
     domain = app.env.domains.standard_domain
     docname = app.env.docname
     for section in doctree.findall(nodes.section):
+        if section.get("fastmcp_no_index"):
+            # Directive opted out of cross-doc registration; the section
+            # still renders and keeps its per-document HTML anchor, but
+            # the cross-reference graph stays bound to the canonical page.
+            continue
         if not section["ids"]:
             continue
         if not (section.children and isinstance(section[0], nodes.title)):
