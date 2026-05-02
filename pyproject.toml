@@ -57,6 +57,7 @@ dev = [
   "pytest-rerunfailures",
   "pytest-mock",
   "pytest-watcher",
+  "pytest-playwright",
   # Coverage
   "codecov",
   "coverage",
