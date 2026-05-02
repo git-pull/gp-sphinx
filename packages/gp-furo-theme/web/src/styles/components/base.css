@@ -19,6 +19,32 @@
  */
 
 @layer base {
+  /*
+   * Tailwind preflight zeros margins/padding on every element
+   * (`*, ::before, ::after { margin: 0; padding: 0; border: 0 solid }`).
+   * Furo's vendored SCSS pipeline used `normalize.css` instead, which
+   * preserves browser-default margins on flow content like dl/dd.
+   * Restore the specific defaults Furo's CSS implicitly relied on —
+   * without these, content in extension-styled wrappers (e.g.
+   * sphinx-ux-autodoc-layout's `.gp-sphinx-api-*` containers) compresses
+   * by 1em per nested level vs. the SCSS-built reference.
+   *
+   * Note: only the elements Furo's SCSS leaves un-overridden land here.
+   * `pre`, `p`, `h1`-`h6`, lists, blockquotes, etc. all have explicit
+   * margins set in their respective component files.
+   */
+  dl {
+    margin-top: 1em;
+    margin-bottom: 1em;
+  }
+  dd {
+    margin-inline-start: 40px;
+  }
+  figure {
+    margin-block: 1em;
+    margin-inline: 40px;
+  }
+
   body {
     font-family: var(--font-stack);
     -webkit-font-smoothing: antialiased;
