@@ -18,6 +18,18 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+## gp-sphinx 0.0.1a14 (2026-05-02)
+
+### Bug fixes
+
+#### `sphinx-gp-theme`: Light-mode shell prompts and command output now visually distinct
+
+The `gp-sphinx-light` Pygments style now colors `Generic.Prompt` purple
+and `Generic.Output` cyan so they stand out from surrounding text.
+Previously both fell through to a generic slate, leaving prompts and
+command output indistinguishable from section sub-headings — mirrors
+the dark-mode (monokai) pink + cyan pairing.
+
 ## gp-sphinx 0.0.1a13 (2026-04-30)
 
 ### What's new
