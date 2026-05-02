@@ -58,6 +58,7 @@ dev = [
   "pytest-mock",
   "pytest-watcher",
   "pytest-playwright",
+  "pillow",
   # Coverage
   "codecov",
   "coverage",
