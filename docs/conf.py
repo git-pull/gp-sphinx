@@ -4,6 +4,29 @@ from __future__ import annotations
 
 import pathlib
 import sys
+import typing as t
+
+from pygments.lexer import RegexLexer, bygroups as _bygroups, include
+from pygments.token import (
+    Comment,
+    Keyword,
+    Name,
+    Number,
+    Operator,
+    Punctuation,
+    String,
+    Text,
+)
+from sphinx.highlighting import lexers
+
+# ``pygments.lexer.bygroups`` ships untyped, which trips
+# ``[no-untyped-call]`` under our strict mypy config when the
+# function is invoked inside a typed module like this conf.py.
+# Aliasing through a ``t.Callable[..., t.Any]`` re-binding keeps the
+# call sites readable and satisfies mypy without disabling the rule
+# globally. Pattern taken from
+# ``~/work/cihai/unihan-etl/docs/conf.py``.
+bygroups: t.Callable[..., t.Any] = _bygroups
 
 # Bootstrap: allow importing workspace packages during development
 cwd = pathlib.Path(__file__).parent
@@ -81,3 +104,117 @@ conf = merge_sphinx_config(
     vite_orchestration=True,
 )
 globals().update(conf)
+
+
+class JustfileLexer(RegexLexer):
+    """Pygments lexer for ``justfile`` (https://just.systems/) syntax.
+
+    Pygments has no built-in justfile lexer at the time of writing,
+    so docs that show justfile snippets either fall back to plain
+    ``text`` (no highlighting) or pick a near-relative like ``make``
+    that mistokenises just-specific syntax (``[private]`` recipe
+    attributes, ``{{ … }}`` interpolations, ``set`` / ``import``
+    keywords). This lexer covers the syntax we actually use in
+    gp-sphinx docs:
+
+    - ``# ...`` comments
+    - ``[private]`` / ``[no-exit-message]`` / etc. recipe attributes
+    - ``set shell := [...]`` / ``import "path"`` / ``mod name`` /
+      ``alias x := y`` top-level statements
+    - ``var := "value"`` variable assignments
+    - ``recipe-name dep1 dep2: prereq`` recipe headers
+    - ``{{ expression }}`` interpolations
+    - String literals (``"..."``, ``'...'``, ```backticks```)
+
+    Recipe bodies are not parsed deeply — they're treated as Text
+    until the next non-indented line. Most justfiles delegate the
+    body to a shell, and accurate sub-shell highlighting is more
+    work than the docs need.
+
+    Pattern follows the ``CsvLexer`` / ``TsvLexer`` shape in
+    ~/work/cihai/unihan-etl/docs/conf.py.
+    """
+
+    name = "Justfile"
+    aliases: t.ClassVar[list[str]] = ["just", "justfile"]
+    filenames: t.ClassVar[list[str]] = ["justfile", "Justfile", "*.just"]
+    mimetypes: t.ClassVar[list[str]] = ["text/x-justfile"]
+
+    tokens: t.ClassVar = {
+        "root": [
+            (r"#.*$", Comment.Single),
+            (r"\s+", Text),
+            # Recipe attributes: [private], [no-exit-message], [confirm], etc.
+            (
+                r"^(\[)([a-zA-Z_-]+)((?:\s*\([^)]*\))?)(\])",
+                bygroups(
+                    Punctuation,
+                    Name.Decorator,
+                    Text,
+                    Punctuation,
+                ),
+            ),
+            # Settings: set shell := [...]
+            (
+                r"^(set)(\s+)([a-zA-Z_-]+)",
+                bygroups(Keyword.Reserved, Text, Name.Variable),
+                "assignment",
+            ),
+            # Module / alias / export / import / unexport at line start.
+            (
+                r"^(import|mod|alias|export|unexport)\b",
+                Keyword.Reserved,
+            ),
+            # Variable assignment at line start.
+            (
+                r"^([a-zA-Z_][a-zA-Z0-9_-]*)(\s*)(:=)",
+                bygroups(Name.Variable, Text, Operator),
+                "assignment",
+            ),
+            # Recipe header: name [params]: [prereqs]
+            (
+                r"^([a-zA-Z_][a-zA-Z0-9_-]*)((?:\s+[a-zA-Z0-9_+*=\"'-]+)*)(\s*:)",
+                bygroups(Name.Function, Text, Punctuation),
+                "recipe-body",
+            ),
+            include("strings"),
+        ],
+        "assignment": [
+            (r"\n", Text, "#pop"),
+            include("strings"),
+            (r"\{\{", String.Interpol, "interpol"),
+            (r"[+\-*/%]", Operator),
+            (r"[a-zA-Z_][a-zA-Z0-9_-]*", Name),
+            (r"[0-9]+", Number),
+            (r"[\[\](),]", Punctuation),
+            (r"\s+", Text),
+            (r":=", Operator),
+            (r".", Text),
+        ],
+        "recipe-body": [
+            # End of body: a line that doesn't start with whitespace.
+            (r"\n(?=\S)", Text, "#pop"),
+            (r"\n", Text),
+            (r"#.*$", Comment.Single),
+            (r"\{\{", String.Interpol, "interpol"),
+            include("strings"),
+            (r".", Text),
+        ],
+        "interpol": [
+            (r"\}\}", String.Interpol, "#pop"),
+            (r"[a-zA-Z_][a-zA-Z0-9_]*", Name.Variable),
+            (r"\(", Punctuation),
+            (r"\)", Punctuation),
+            include("strings"),
+            (r"\s+", Text),
+            (r".", Text),
+        ],
+        "strings": [
+            (r'"[^"\n]*"', String.Double),
+            (r"'[^'\n]*'", String.Single),
+            (r"`[^`\n]*`", String.Backtick),
+        ],
+    }
+
+
+lexers["just"] = JustfileLexer()
