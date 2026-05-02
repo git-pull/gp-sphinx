@@ -98,7 +98,7 @@ def _ensure_node_modules(vite_root: pathlib.Path, bus: AsyncioBus) -> bool:
     if returncode != 0:
         logger.warning(
             "[vite] pnpm install failed (exit %d) in %s — skipping vite "
-            "spawn. Run the install manually and restart sphinx-autobuild.",
+            "spawn; run the install manually and restart sphinx-autobuild",
             returncode,
             vite_root,
         )
