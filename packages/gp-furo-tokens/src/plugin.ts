@@ -26,7 +26,18 @@ function declarations(
 
 /**
  * Tailwind v4 plugin emitting Furo's light + dark CSS custom-property
- * contract under `:root` and `html[data-theme="dark"]`.
+ * contract under three matched selectors:
+ *
+ * - `:root` for the light defaults
+ * - `body[data-theme="dark"]` for explicit dark mode (set by furo.ts's
+ *   theme-toggle button)
+ * - `@media (prefers-color-scheme: dark) body:not([data-theme="light"])`
+ *   for OS-preference dark mode that respects an explicit `light` opt-out
+ *
+ * The selectors mirror upstream Furo's `_theme.sass`
+ * (`/home/d/study/python/furo/src/furo/assets/styles/base/_theme.sass`)
+ * so behavioral parity holds across the toggle's three states (auto /
+ * light / dark) and the cascade rules Furo's docstring contracts depend on.
  *
  * Apply via:
  *
@@ -38,12 +49,16 @@ function declarations(
  * User overrides via Sphinx `html_theme_options["light_css_variables"]` /
  * `["dark_css_variables"]` are emitted by Furo's
  * `partials/_head_css_variables.html` template into a layer-less `:root` /
- * `html[data-theme="dark"]` block in `<head>`, which always wins over
+ * `body[data-theme="dark"]` block in `<head>`, which always wins over
  * Tailwind's `@layer theme` ordering.
  */
 export default plugin((api) => {
+  const darkDeclarations = declarations(FURO_DARK_TOKENS);
   api.addBase({
     ":root": declarations(FURO_LIGHT_TOKENS),
-    'html[data-theme="dark"]': declarations(FURO_DARK_TOKENS),
+    'body[data-theme="dark"]': darkDeclarations,
+    "@media (prefers-color-scheme: dark)": {
+      'body:not([data-theme="light"])': darkDeclarations,
+    },
   });
 });
