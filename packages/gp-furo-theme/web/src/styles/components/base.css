@@ -49,6 +49,15 @@
     font-family: var(--font-stack);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /*
+     * Tailwind preflight sets `html, :host { line-height: 1.5 }`.
+     * Furo's pipeline used normalize.css, which preserves the
+     * browser-default ~1.15. Article inner content overrides to 1.5
+     * (article.css) so reading prose stays comfortable, but header
+     * brand, sidebar nav, and footer copyright should sit at the
+     * tighter density to match upstream Furo.
+     */
+    line-height: 1.15;
   }
 
   pre,
