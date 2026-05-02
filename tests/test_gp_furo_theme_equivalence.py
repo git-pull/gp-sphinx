@@ -149,6 +149,22 @@ _GENERATED_COMMENT_RE = re.compile(
 # The stylesheet path appears in every rendered page's <link rel> tag.
 # Normalize so HTML byte-equivalence still holds at the structural level.
 _FURO_STYLESHEET_RE = re.compile(r"/styles/furo(-tw)?\.css")
+# Step 9.16 rewrote the page.html footer credit. Upstream Furo's footer
+# reads "Made with [Sphinx] and @pradyunsg's [Furo]"; gp-furo's reads
+# "Made with [Sphinx] and [gp-sphinx]" with a discrete "— ported from
+# Furo (MIT, @pradyunsg); see LICENSE-FURO" subtext. The structural
+# divergence is intentional (license attribution preserved via
+# LICENSE-FURO at package root + per-template Jinja attribution
+# headers + the <!-- Generated with Sphinx ... and Furo ... --> comment
+# in base.html). Normalize the entire footer credit block so the
+# test passes when someone with furo installed runs it.
+_FOOTER_CREDIT_RE = re.compile(
+    r"Made with[^<]*<a[^>]*>Sphinx</a>[^<]*"
+    r"(?:<a[^>]*>@pradyunsg</a>[^<]*)?"
+    r"<a[^>]*>(?:Furo|gp-sphinx)</a>"
+    r"(?:\s*<span[^>]*muted-link[^>]*>[\s\S]*?</span>)?",
+    re.MULTILINE,
+)
 
 
 def _normalize_html(raw: str) -> str:
@@ -183,6 +199,7 @@ def _normalize_html(raw: str) -> str:
         s,
     )
     s = _FURO_STYLESHEET_RE.sub("/styles/furo-NORMALIZED.css", s)
+    s = _FOOTER_CREDIT_RE.sub("FOOTER_CREDIT_NORMALIZED", s)
     return s
 
 
