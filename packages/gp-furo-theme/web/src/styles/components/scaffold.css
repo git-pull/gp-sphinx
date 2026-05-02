@@ -274,6 +274,25 @@
     }
   }
 
+  /*
+   * Hover-state color match with sibling action icons in
+   * .content-icon-container. The eye/edit icons are anchors with
+   * class="muted-link" so they pick up
+   * `a.muted-link:hover { color: var(--color-link--hover) }` from
+   * base.css. The theme-toggle is a <button>, not an anchor, so it
+   * doesn't inherit that rule. Mirror the same target colour
+   * (`--color-link--hover`, brand-blue) here so the three icons
+   * hover-react identically.
+   *
+   * Targeting the SVG (not the button itself) overrides the
+   * `.theme-toggle svg { color: var(--color-foreground-primary) }`
+   * pin a few rules above; using the parent button's :hover state
+   * is what cascades through.
+   */
+  .theme-toggle:hover svg {
+    color: var(--color-link--hover);
+  }
+
   .theme-toggle-header {
     display: flex;
     align-items: center;
