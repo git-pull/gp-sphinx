@@ -1,0 +1,49 @@
+/*
+ * Ported from furo @ 752bf80c (content/_images.sass), MIT (Pradyun Gedam).
+ * See LICENSE-FURO.
+ */
+
+@layer components {
+  img {
+    box-sizing: border-box;
+    max-width: 100%;
+    height: auto;
+  }
+
+  article figure,
+  article .figure {
+    border-radius: 0.2rem;
+    margin: 0;
+  }
+
+  article figure :last-child,
+  article .figure :last-child {
+    margin-bottom: 0;
+  }
+
+  article .align-left {
+    float: left;
+    clear: left;
+    margin: 0 1rem 1rem;
+  }
+
+  article .align-right {
+    float: right;
+    clear: right;
+    margin: 0 1rem 1rem;
+  }
+
+  article .align-default,
+  article .align-center {
+    display: block;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Tables override the default align- block treatment. */
+  article table.align-default {
+    display: table;
+    text-align: initial;
+  }
+}

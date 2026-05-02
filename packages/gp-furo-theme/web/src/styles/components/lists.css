@@ -1,0 +1,112 @@
+/*
+ * Ported from furo @ 752bf80c (content/_lists.sass), MIT (Pradyun Gedam).
+ * See LICENSE-FURO.
+ */
+
+@layer components {
+  ul,
+  ol {
+    padding-left: 1.2rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  ul li > p:first-child,
+  ol li > p:first-child {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  ul li > p:last-child,
+  ol li > p:last-child {
+    margin-top: 0.25rem;
+  }
+
+  ul li > ul,
+  ul li > ol,
+  ol li > ul,
+  ol li > ol {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  ol.arabic {
+    list-style: decimal;
+  }
+  ol.loweralpha {
+    list-style: lower-alpha;
+  }
+  ol.upperalpha {
+    list-style: upper-alpha;
+  }
+  ol.lowerroman {
+    list-style: lower-roman;
+  }
+  ol.upperroman {
+    list-style: upper-roman;
+  }
+
+  /* Tight nesting for "simple" lists and toctree-wrapper. */
+  .simple li > ul,
+  .simple li > ol,
+  .toctree-wrapper li > ul,
+  .toctree-wrapper li > ol {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  /* Definition lists */
+  .field-list dt,
+  .option-list dt,
+  dl:not([class]) dt,
+  dl.simple dt,
+  dl.footnote dt,
+  dl.glossary dt {
+    font-weight: 500;
+    margin-top: 0.25rem;
+  }
+
+  .field-list dt + dt,
+  .option-list dt + dt,
+  dl:not([class]) dt + dt,
+  dl.simple dt + dt,
+  dl.footnote dt + dt,
+  dl.glossary dt + dt {
+    margin-top: 0;
+  }
+
+  .field-list dt .classifier::before,
+  .option-list dt .classifier::before,
+  dl:not([class]) dt .classifier::before,
+  dl.simple dt .classifier::before,
+  dl.footnote dt .classifier::before,
+  dl.glossary dt .classifier::before {
+    content: ":";
+    margin-left: 0.2rem;
+    margin-right: 0.2rem;
+  }
+
+  .field-list dd > p:first-child,
+  .field-list dd ul,
+  .option-list dd > p:first-child,
+  .option-list dd ul,
+  dl:not([class]) dd > p:first-child,
+  dl:not([class]) dd ul,
+  dl.simple dd > p:first-child,
+  dl.simple dd ul,
+  dl.footnote dd > p:first-child,
+  dl.footnote dd ul,
+  dl.glossary dd > p:first-child,
+  dl.glossary dd ul {
+    margin-top: 0.125rem;
+  }
+
+  .field-list dd ul,
+  .option-list dd ul,
+  dl:not([class]) dd ul,
+  dl.simple dd ul,
+  dl.footnote dd ul,
+  dl.glossary dd ul {
+    margin-bottom: 0.125rem;
+  }
+}

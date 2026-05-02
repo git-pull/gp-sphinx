@@ -1,0 +1,52 @@
+/*
+ * Ported from furo @ 752bf80c (content/_blocks.sass + _gui-labels.sass +
+ * _indexes.sass), MIT (Pradyun Gedam). See LICENSE-FURO.
+ *
+ * Three small upstream files combined since each is <30 LOC and they
+ * cover unrelated rare-use surfaces — easier to keep one file than to
+ * proliferate near-empty files.
+ */
+
+@layer components {
+  /* Line blocks (RST `|` line-block directive). */
+  .line-block {
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .line-block .line-block {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 1rem;
+  }
+
+  /* GUI labels — _gui-labels.sass */
+  .guilabel {
+    background-color: var(--color-guilabel-background);
+    border: 1px solid var(--color-guilabel-border);
+    color: var(--color-guilabel-text);
+    padding: 0 0.3em;
+    border-radius: 0.5em;
+    font-size: 0.9em;
+  }
+
+  /* Index pages — _indexes.sass */
+  .genindex-jumpbox,
+  .domainindex-jumpbox {
+    border-top: 1px solid var(--color-background-border);
+    border-bottom: 1px solid var(--color-background-border);
+    padding: 0.25rem;
+  }
+
+  .genindex-section h2,
+  .domainindex-section h2 {
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .genindex-section ul,
+  .domainindex-section ul {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}

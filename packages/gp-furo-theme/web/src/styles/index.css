@@ -56,3 +56,11 @@
  */
 
 @import "./components/base.css";
+@import "./components/typography.css";
+@import "./components/lists.css";
+@import "./components/tables.css";
+@import "./components/footnotes.css";
+@import "./components/captions.css";
+@import "./components/images.css";
+@import "./components/math.css";
+@import "./components/blocks.css";
