@@ -1,0 +1,30 @@
+/*
+ * Ported from furo @ 752bf80c (furo.sass), MIT (Pradyun Gedam). See
+ * LICENSE-FURO at the package root.
+ *
+ * Deliberately *not* `@import "tailwindcss"`. We don't want Tailwind's
+ * preflight reset (Furo uses normalize.css semantics + its own
+ * `_typography.sass`) and we don't want Tailwind's default `@theme`
+ * tokens — those would pollute the `@layer theme` surface and leak
+ * --default-font-family / --default-mono-font-family / --font-sans /
+ * --font-mono into our output. The CSS AST-equivalence test in step
+ * 4.5 asserts those four names are absent.
+ *
+ * Tailwind's @plugin / @theme inline / @custom-variant directives still
+ * resolve at build time because @tailwindcss/vite runs over this file
+ * regardless of whether `@import "tailwindcss"` is present. The plugin
+ * below emits the full 153-token Furo contract under :root + the dark
+ * variant via `addBase()`.
+ *
+ * Component / layout / content rules come from Furo's own SCSS tree,
+ * vendored verbatim into ./sass/ and compiled via Vite's native Sass
+ * support. Same dart-sass version Furo uses upstream (^1.77).
+ */
+
+// Sass requires `@use` to precede every other rule, so the vendored
+// Furo SCSS tree gets imported first. The `@plugin` directive below is
+// passed through Sass as an unknown at-rule, then `@tailwindcss/vite`
+// expands it into the emitted token block.
+@use "sass/furo";
+
+@plugin "@gp-sphinx/furo-tokens/plugin";

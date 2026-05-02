@@ -1,0 +1,12 @@
+// Ported from furo @ 752bf80c, MIT (Pradyun Gedam). See LICENSE-FURO.
+@use "variables"
+@use "base"
+@use "scaffold"
+@use "content"
+@use "components"
+@use "shame"
+
+// Webpack `~` prefix → Vite/Sass doesn't understand it; rewrite to a
+// straight package path. normalize.css is declared in web/package.json
+// at ^8.0.1 (same major Furo pins upstream).
+@import "normalize.css/normalize.css"

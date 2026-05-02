@@ -26,10 +26,10 @@ export default defineConfig({
     rollupOptions: {
       input: {
         "scripts/furo": resolve(import.meta.dirname, "src/scripts/furo.ts"),
-        "styles/furo": resolve(import.meta.dirname, "src/styles/furo.css"),
+        "styles/furo": resolve(import.meta.dirname, "src/styles/furo.scss"),
         "styles/furo-extensions": resolve(
           import.meta.dirname,
-          "src/styles/furo-extensions.css",
+          "src/styles/furo-extensions.scss",
         ),
       },
       output: {
