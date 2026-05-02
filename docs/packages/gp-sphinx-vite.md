@@ -59,7 +59,7 @@ degradation; any pre-existing output remains in place).
 
 ### justfile
 
-```just
+```text
 # Build vite-managed theme assets before any HTML-output build.
 [private]
 _assets-build:
