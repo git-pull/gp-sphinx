@@ -132,8 +132,17 @@ class GpSphinxLightStyle(style.Style):
         token.Generic.Error: "#dc2626",
         token.Generic.Heading: "bold #0f172a",
         token.Generic.Inserted: "#16a34a",
-        token.Generic.Output: "#475569",
-        token.Generic.Prompt: "bold #475569",
+        # Light-mode override for `Generic.Output` and `Generic.Prompt`
+        # so they read as distinctively as their dark-mode (monokai)
+        # counterparts (cyan #66D9EF and pink #FF4689 respectively).
+        # Without these, both tokens fall through to the same `#475569`
+        # slate-600 the palette uses for `Name.Label` + `Generic.Subheading`,
+        # leaving shell prompts (`$`, `>>>`, etc.) and command output
+        # visually indistinguishable from the surrounding `bold #475569`
+        # subheadings — losing the same "this is a prompt vs. its output"
+        # cue dark mode delivers via pink-vs-cyan contrast.
+        token.Generic.Output: "#0891b2",
+        token.Generic.Prompt: "bold #a855f7",
         token.Generic.Strong: "bold",
         token.Generic.EmphStrong: "bold italic",
         token.Generic.Subheading: "bold #475569",

@@ -107,6 +107,21 @@ _TOKEN_COLOR_FIXTURES: list[TokenColorCase] = [
         token=token.Generic.Deleted,
         expected_substring="#dc2626",
     ),
+    # Distinctive purple + cyan for Generic.Prompt and Generic.Output —
+    # mirrors the dark-mode (monokai) treatment which uses pink + cyan
+    # for these tokens. Pre-2026-05-01 both fell through to a generic
+    # slate-600, leaving shell prompts and command output visually
+    # indistinguishable from `Generic.Subheading`.
+    TokenColorCase(
+        test_id="generic-prompt-purple",
+        token=token.Generic.Prompt,
+        expected_substring="#a855f7",
+    ),
+    TokenColorCase(
+        test_id="generic-output-cyan",
+        token=token.Generic.Output,
+        expected_substring="#0891b2",
+    ),
 ]
 
 

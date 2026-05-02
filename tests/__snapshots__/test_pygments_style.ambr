@@ -29,8 +29,8 @@
   .highlight .gr { color: #DC2626 } /* Generic.Error */
   .highlight .gh { color: #0F172A; font-weight: bold } /* Generic.Heading */
   .highlight .gi { color: #16A34A } /* Generic.Inserted */
-  .highlight .go { color: #475569 } /* Generic.Output */
-  .highlight .gp { color: #475569; font-weight: bold } /* Generic.Prompt */
+  .highlight .go { color: #0891B2 } /* Generic.Output */
+  .highlight .gp { color: #A855F7; font-weight: bold } /* Generic.Prompt */
   .highlight .gs { color: #0F172A; font-weight: bold } /* Generic.Strong */
   .highlight .gu { color: #475569; font-weight: bold } /* Generic.Subheading */
   .highlight .gt { color: #DC2626 } /* Generic.Traceback */
