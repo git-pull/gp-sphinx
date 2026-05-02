@@ -182,3 +182,39 @@ def test_can_construct_a_new_bus_after_stop() -> None:
         assert second.call_sync(_ping()) == "pong"
     finally:
         second.stop()
+
+
+def test_start_after_stop_raises_runtime_error() -> None:
+    """start() on a previously stopped instance enforces "single-use".
+
+    The class docstring promises "After ``stop()`` it is not safe to
+    start again — construct a new instance." Without enforcement,
+    ``stop()`` resets ``_thread`` / ``_loop`` to ``None``, which makes
+    the idempotency guard in ``start()`` pass through and silently
+    spawn a fresh thread + loop — silently violating the contract.
+
+    The ``_stopped`` flag enforces the documented behaviour: a raise
+    on misuse rather than a confusing zombie restart.
+    """
+    bus = AsyncioBus()
+    bus.start()
+    bus.stop()
+    with pytest.raises(RuntimeError, match=r"single-use"):
+        bus.start()
+
+
+def test_stop_before_start_does_not_lock_out_subsequent_start() -> None:
+    """A no-op stop() (no prior start()) leaves the bus startable.
+
+    Stop-before-start is documented as idempotent. Marking the bus
+    "stopped" in that case would conflate "never lived" with
+    "lifecycle complete" — a fresh-from-the-constructor bus would
+    refuse to start after a defensive ``stop()`` in a finally block.
+    """
+    bus = AsyncioBus()
+    bus.stop()  # no-op
+    try:
+        bus.start()
+        assert bus.is_running
+    finally:
+        bus.stop()

@@ -56,6 +56,11 @@ class AsyncioBus:
         self._loop: asyncio.AbstractEventLoop | None = None
         self._thread: threading.Thread | None = None
         self._ready = threading.Event()
+        # ``_stopped`` is set once a started bus has actually been torn
+        # down. It enforces the class-level "single-use" contract from
+        # ``start()``; a stop-before-start is a no-op and leaves this
+        # ``False`` (the bus was never really live).
+        self._stopped = False
 
     @property
     def is_running(self) -> bool:
@@ -63,7 +68,15 @@ class AsyncioBus:
         return self._thread is not None and self._thread.is_alive()
 
     def start(self) -> None:
-        """Start the background event loop. Idempotent."""
+        """Start the background event loop.
+
+        Idempotent if the bus is already running; raises
+        :class:`RuntimeError` if the bus has previously been stopped
+        (the class is single-use, per the class docstring).
+        """
+        if self._stopped:
+            msg = "AsyncioBus is single-use; construct a new instance after stop()"
+            raise RuntimeError(msg)
         if self._thread is not None and self._thread.is_alive():
             return
         self._ready.clear()
@@ -130,12 +143,19 @@ class AsyncioBus:
         future.add_done_callback(_log_exception)
 
     def stop(self, *, timeout: float = 5.0) -> None:
-        """Stop the loop and join the thread. Idempotent."""
+        """Stop the loop and join the thread. Idempotent.
+
+        Once a started bus has been stopped, ``_stopped`` is set so a
+        subsequent ``start()`` on the same instance raises rather than
+        silently re-spawning. A stop-before-start is a no-op and leaves
+        ``_stopped`` unchanged.
+        """
         if self._loop is None or self._thread is None:
             return
         if not self._thread.is_alive():
             self._thread = None
             self._loop = None
+            self._stopped = True
             return
 
         self._loop.call_soon_threadsafe(self._loop.stop)
@@ -148,6 +168,7 @@ class AsyncioBus:
             )
         self._thread = None
         self._loop = None
+        self._stopped = True
 
     def _run(self) -> None:
         """Thread target: own and run the loop."""
