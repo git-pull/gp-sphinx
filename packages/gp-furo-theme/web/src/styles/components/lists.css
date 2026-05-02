@@ -4,6 +4,28 @@
  */
 
 @layer components {
+  /*
+   * Restore browser-default list markers. Tailwind preflight has
+   * `ol, ul, menu { list-style: none }` in its reset; Furo's
+   * pipeline used normalize.css which preserves the browser's
+   * `disc`/`decimal` defaults. The component-specific
+   * `list-style: none` overrides on .sidebar-tree (sidebar.css),
+   * .toc-tree (toc.css), and ul.search (search.css) still win
+   * via their own @layer components rules + selector specificity.
+   */
+  /* Explicit longhand: Lightning CSS minifies `list-style: disc`
+   * to `list-style: outside` because `disc` is the spec default
+   * for `ul`. The optimized output doesn't reset list-style-type,
+   * so Tailwind preflight's `list-style: none` keeps winning.
+   * The longhand declaration survives minification.
+   */
+  ul {
+    list-style-type: disc;
+  }
+  ol {
+    list-style-type: decimal;
+  }
+
   ul,
   ol {
     padding-left: 1.2rem;
