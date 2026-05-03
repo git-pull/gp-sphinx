@@ -133,6 +133,12 @@ packages/sphinx-autodoc-typehints-gp
 packages/gp-sphinx
 packages/sphinx-gp-theme
 packages/gp-furo-theme
+```
+
+```{toctree}
+:caption: Build utils
+:hidden:
+
 packages/sphinx-vite-builder
 ```
 
