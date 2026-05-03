@@ -43,23 +43,69 @@ Replaces `sphinx-autodoc-typehints` + `sphinx.ext.napoleon`.
 
 ::::
 
-## Tier 2: Domain packages
+## Tier 2: Autodoc extensions
 
-Domain-specific autodoc extensions that consume Tier 1 and add
-project-specific rendering logic:
+Domain-specific [autodoc extensions](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html)
+that consume Tier 1 and add project-specific rendering logic. Each
+ships directives that generate documentation from a particular
+source-construct family:
 
-| Package | Domain | Directives |
-|---------|--------|------------|
-| {doc}`sphinx-autodoc-api-style <packages/sphinx-autodoc-api-style>` | Standard Python | `autofunction`, `autoclass`, `automodule` |
-| {doc}`sphinx-autodoc-argparse <packages/sphinx-autodoc-argparse>` | Custom `argparse` domain — programs, options, subcommands, positionals | `argparse` |
-| {doc}`sphinx-autodoc-docutils <packages/sphinx-autodoc-docutils>` | docutils | `autodirective`, `autorole` |
-| {doc}`sphinx-autodoc-fastmcp <packages/sphinx-autodoc-fastmcp>` | FastMCP tools | `fastmcp-tool`, `fastmcp-tool-summary` |
-| {doc}`sphinx-autodoc-pytest-fixtures <packages/sphinx-autodoc-pytest-fixtures>` | pytest fixtures (extends `py` domain) | `autofixture`, `autofixtures`, `auto-pytest-plugin` |
-| {doc}`sphinx-autodoc-sphinx <packages/sphinx-autodoc-sphinx>` | Sphinx config | `autoconfigvalue`, `autoconfigvalues` |
+::::{grid} 1 1 2 3
+:gutter: 2
 
-Each domain package calls `app.setup_extension()` to auto-register its
+:::{grid-item-card} sphinx-autodoc-api-style
+:link: packages/sphinx-autodoc-api-style
+:link-type: doc
+
+**Subject**: standard Python.
+**Directives**: `autofunction`, `autoclass`, `automodule`.
+:::
+
+:::{grid-item-card} sphinx-autodoc-argparse
+:link: packages/sphinx-autodoc-argparse
+:link-type: doc
+
+**Subject**: argparse parsers — programs, options, subcommands, positionals.
+**Directives**: `argparse` (custom `argparse` domain).
+:::
+
+:::{grid-item-card} sphinx-autodoc-docutils
+:link: packages/sphinx-autodoc-docutils
+:link-type: doc
+
+**Subject**: docutils directives and roles.
+**Directives**: `autodirective`, `autorole`.
+:::
+
+:::{grid-item-card} sphinx-autodoc-fastmcp
+:link: packages/sphinx-autodoc-fastmcp
+:link-type: doc
+
+**Subject**: FastMCP tools, prompts, resources.
+**Directives**: `fastmcp-tool`, `fastmcp-tool-summary`.
+:::
+
+:::{grid-item-card} sphinx-autodoc-pytest-fixtures
+:link: packages/sphinx-autodoc-pytest-fixtures
+:link-type: doc
+
+**Subject**: pytest fixtures (extends the `py` domain).
+**Directives**: `autofixture`, `autofixtures`, `auto-pytest-plugin`.
+:::
+
+:::{grid-item-card} sphinx-autodoc-sphinx
+:link: packages/sphinx-autodoc-sphinx
+:link-type: doc
+
+**Subject**: Sphinx config values.
+**Directives**: `autoconfigvalue`, `autoconfigvalues`.
+:::
+
+::::
+
+Each autodoc extension calls `app.setup_extension()` to auto-register its
 infrastructure dependencies — downstream projects only need to add the
-domain package to their `extensions` list.
+package to their `extensions` list.
 
 ## Tier 3: Theme and coordinator
 
