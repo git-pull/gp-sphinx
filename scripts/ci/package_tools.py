@@ -776,7 +776,16 @@ def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
 
 
 def smoke_sphinx_vite_builder(dist_dir: pathlib.Path, version: str) -> None:
-    """Verify the sphinx-vite-builder backend + extension imports cleanly."""
+    """Verify the sphinx-vite-builder runtime surface imports cleanly.
+
+    Asserts the package and the Sphinx-extension entry point load
+    without hatchling: hatchling is build-time-only (consumers list it
+    in ``[build-system].requires``) so the wheel must not pull it in
+    as a runtime dependency. The PEP 517 ``build`` module deliberately
+    requires hatchling and is exercised in
+    ``tests/test_sphinx_vite_builder_build.py`` where the dev
+    environment supplies it.
+    """
     with tempfile.TemporaryDirectory() as tmp:
         python_path = _create_venv(pathlib.Path(tmp))
         _install_into_venv(
@@ -788,11 +797,8 @@ def smoke_sphinx_vite_builder(dist_dir: pathlib.Path, version: str) -> None:
             python_path,
             (
                 "import sphinx_vite_builder; "
-                "from sphinx_vite_builder import build, setup; "
+                "from sphinx_vite_builder import setup; "
                 f"assert sphinx_vite_builder.__version__ == {version!r}; "
-                "assert callable(build.build_wheel); "
-                "assert callable(build.build_sdist); "
-                "assert callable(build.build_editable); "
                 "assert callable(setup)"
             ),
         )
