@@ -91,7 +91,7 @@ Net: **sdist install also requires zero toolchain**. The
 
 ## The four QA permutations — keep them green
 
-Verified end-to-end as of v0.0.1a16.dev0:
+Verified end-to-end as of v0.0.1a16.dev1:
 
 | # | Path | Toolchain | Expected |
 |---|---|---|---|
