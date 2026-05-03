@@ -95,9 +95,9 @@ runs the wheel-from-sdist chain:
 Net: **sdist install also requires zero toolchain**. The
 `web/`-absent short-circuit is the load-bearing primitive.
 
-## The four QA permutations — keep them green
+## QA permutations — keep them green
 
-The four QA permutations every change must keep green:
+The install-path permutations every change must keep green:
 
 | # | Path | Toolchain | Expected |
 |---|---|---|---|
