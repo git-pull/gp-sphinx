@@ -36,9 +36,9 @@ import weakref
 from sphinx.util import logging as sphinx_logging
 
 from .bus import AsyncioBus
-from .config import SphinxViteBuilderConfig, detect_mode, resolve_vite_root
+from .config import Mode, SphinxViteBuilderConfig, detect_mode, resolve_vite_root
 from .process import AsyncProcess
-from .vite import pnpm_install_command, vite_watch_command
+from .vite import pnpm_install_command, run_vite_build, vite_watch_command
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -112,16 +112,31 @@ def _ensure_node_modules(vite_root: pathlib.Path, bus: AsyncioBus) -> bool:
 def on_builder_inited(app: Sphinx) -> None:
     """``builder-inited`` event handler.
 
-    Spawns the Vite watch process when the resolved config asks for it.
-    Idempotent across multiple builder-inited firings (sphinx-autobuild
-    re-fires this on every rebuild).
+    DEV mode (``sphinx-autobuild``) spawns the long-running Vite watch
+    process; PROD mode (plain ``sphinx-build``) runs a one-shot
+    ``pnpm exec vite build`` and blocks until it finishes so the
+    subsequent Sphinx build sees fresh CSS/JS in ``static/``. Idempotent
+    across multiple builder-inited firings (sphinx-autobuild re-fires
+    this on every rebuild).
 
     If ``<vite_root>/node_modules/`` is missing (typical after
     ``git clean -fdx``), runs ``pnpm install --frozen-lockfile``
     synchronously first so ``pnpm exec vite`` resolves on first try.
     """
     config = _build_config(app)
-    if not config.should_spawn:
+    if config.vite_root is None:
+        # No vite_root configured → nothing to orchestrate. Both modes
+        # treat this as "the consumer doesn't have a vite project to
+        # build" (typical when running off an installed wheel).
+        return
+
+    if config.mode is Mode.PROD:
+        # One-shot build via the shared backend orchestration. Same
+        # short-circuits (SPHINX_VITE_BUILDER_SKIP, web/-absent) and
+        # same fast-fail diagnostics as the PEP 517 backend uses.
+        # ``run_vite_build`` resolves ``web/`` relative to its
+        # ``project_root`` argument, so pass the parent of vite_root.
+        run_vite_build(project_root=config.vite_root.parent)
         return
 
     existing_proc: AsyncProcess | None = getattr(app, _PROC_ATTR, None)

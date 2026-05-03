@@ -417,8 +417,8 @@ def get_vite_root() -> pathlib.Path | None:
     when running from an installed wheel (the wheel ships pre-built
     static assets but not the SCSS/TS sources).
 
-    Intended for use by ``gp-sphinx-vite`` consumers — set
-    ``gp_sphinx_vite_root = gp_furo_theme.get_vite_root()`` in
+    Intended for use by ``sphinx-vite-builder`` consumers — set
+    ``sphinx_vite_builder_root = gp_furo_theme.get_vite_root()`` in
     ``conf.py`` (or wire it through :func:`gp_sphinx.config.merge_sphinx_config`)
     so the orchestration finds the right ``cwd`` to spawn ``vite`` in.
 

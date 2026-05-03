@@ -273,9 +273,9 @@ def merge_sphinx_config(
     intersphinx_mapping : dict | None
         Intersphinx targets.
     vite_orchestration : bool
-        When ``True`` (default ``False``), prepends ``"gp_sphinx_vite"`` to
-        the active extension list and sets ``gp_sphinx_vite_root`` from
-        :func:`gp_furo_theme.get_vite_root` so contributors running
+        When ``True`` (default ``False``), prepends ``"sphinx_vite_builder"``
+        to the active extension list and sets ``sphinx_vite_builder_root``
+        from :func:`gp_furo_theme.get_vite_root` so contributors running
         ``sphinx-autobuild`` get the Vite watch fired automatically. The
         orchestration is a no-op for ``sphinx-build`` (mode resolves to
         ``"prod"``), so wheels published to PyPI carry no Node runtime
@@ -373,12 +373,12 @@ def merge_sphinx_config(
         remove_set = set(remove_extensions)
         ext_list = [e for e in ext_list if e not in remove_set]
 
-    # Vite orchestration: prepend gp_sphinx_vite so its hooks register
+    # Vite orchestration: prepend sphinx_vite_builder so its hooks register
     # before any extension that might also touch builder-inited.
     vite_root_setting: str | None = None
     if vite_orchestration:
-        if "gp_sphinx_vite" not in ext_list:
-            ext_list.insert(0, "gp_sphinx_vite")
+        if "sphinx_vite_builder" not in ext_list:
+            ext_list.insert(0, "sphinx_vite_builder")
         try:
             import gp_furo_theme
         except ImportError:
@@ -492,9 +492,9 @@ def merge_sphinx_config(
         # ``sitemap_url_scheme`` via ``**overrides``.
         conf["sitemap_url_scheme"] = "{link}"
 
-    # Wire gp-sphinx-vite's orchestration root if it was resolved above.
+    # Wire sphinx-vite-builder's orchestration root if it was resolved above.
     if vite_root_setting is not None:
-        conf["gp_sphinx_vite_root"] = vite_root_setting
+        conf["sphinx_vite_builder_root"] = vite_root_setting
 
     # Apply overrides last (can override auto-computed values)
     conf.update(overrides)
