@@ -125,6 +125,47 @@ def test_on_builder_inited_no_op_in_prod_mode(
     assert getattr(app, hooks._BUS_ATTR, None) is None
 
 
+def test_on_builder_inited_runs_one_shot_in_prod_mode(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`mode="prod"` with a vite_root → one-shot run_vite_build, no spawn.
+
+    Covers the PROD branch added alongside the placeholder rewrite: under
+    plain ``sphinx-build`` the extension delegates to the same orchestration
+    primitive the PEP 517 backend uses, blocking the build until vite
+    finishes and never spawning the long-running watch.
+    """
+    captured: list[pathlib.Path | None] = []
+
+    def _capture(
+        project_root: pathlib.Path | None = None,
+        *,
+        package_manager: str = "pnpm",
+    ) -> None:
+        del package_manager
+        captured.append(project_root)
+
+    monkeypatch.setattr(hooks, "run_vite_build", _capture)
+
+    vite_root = tmp_path / "web"
+    vite_root.mkdir()
+    app = _FakeApp(
+        config=_FakeConfig(
+            sphinx_vite_builder_mode="prod",
+            sphinx_vite_builder_root=str(vite_root),
+        ),
+    )
+
+    hooks.on_builder_inited(app)  # type: ignore[arg-type]
+
+    # `run_vite_build` resolves `web/` relative to its `project_root`
+    # arg, so the hook passes the parent of vite_root.
+    assert captured == [vite_root.parent.resolve()]
+    # PROD path is one-shot: no watch process, no bus.
+    assert getattr(app, hooks._PROC_ATTR, None) is None
+    assert getattr(app, hooks._BUS_ATTR, None) is None
+
+
 def test_on_builder_inited_no_op_when_root_is_none(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
