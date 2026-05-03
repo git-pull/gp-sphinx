@@ -135,6 +135,7 @@ jobs:
           - sphinx-autodoc-typehints-gp
           - sphinx-ux-badges
           - sphinx-ux-autodoc-layout
+          - sphinx-vite-builder
     steps:
       - uses: actions/checkout@v6
 
