@@ -27,7 +27,7 @@ light/dark theming.
 
 ## Shared layout stack
 
-The six domain packages
+The autodoc extensions
 ({doc}`api-style <packages/sphinx-autodoc-api-style>`,
 {doc}`argparse <packages/sphinx-autodoc-argparse>`,
 {doc}`docutils <packages/sphinx-autodoc-docutils>`,
