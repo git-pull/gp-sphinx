@@ -31,7 +31,6 @@ keywords = ["sphinx", "extension", "vite", "pnpm", "pep517", "build", "backend"]
 # required at build time of consumer packages but not at runtime, so it
 # stays in [build-system].requires of *consumers* rather than here.
 dependencies = [
-  "hatchling>=1.0",
   "sphinx>=8.1",
 ]
 
