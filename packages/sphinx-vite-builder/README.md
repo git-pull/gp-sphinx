@@ -98,12 +98,17 @@ The asymmetry is the whole product: the same backend is strict
 silent (skipping cleanly) when there's no `web/` to begin with. The
 two shapes match the two consumer worlds.
 
-## Two heads, one subprocess core
+## Quick start — two activation variants
 
-### PEP 517 build backend
+`sphinx-vite-builder` ships two orthogonal ways to wire vite into a
+hatchling-built Python package. Pick whichever fits the consumer's
+existing build setup; they are mutually exclusive at the
+`[build-system].build-backend` level.
 
-Drop-in replacement for `hatchling.build`. Runs `pnpm exec vite build`
-before delegating wheel/sdist construction to hatchling.
+### Variant 1 — PEP 517 backend (drop-in replacement)
+
+The simplest activation. Replace `hatchling.build` with
+`sphinx_vite_builder.build` and you're done.
 
 ```toml
 # packages/your-theme/pyproject.toml
@@ -118,25 +123,86 @@ exclude = ["web/"]    # so the sdist→wheel chain hits the short-circuit
 artifacts = ["src/<your-theme>/theme/<theme-name>/static/"]
 ```
 
-### Sphinx extension (Phase 1: placeholder)
+### Variant 2 — Hatchling build hook (composable)
 
-The extension entry point is currently a placeholder registered in
-`conf.py` to prevent import errors. Full lifecycle integration —
-running Vite before the docs build and spawning a watched Vite
-process during `sphinx-autobuild` — lands in a follow-up release.
+For projects that want to keep `build-backend = "hatchling.build"` and
+layer vite on top of an existing hatchling hook stack
+(`version`, custom build scripts, etc.):
 
-For now, the [PEP 517](https://peps.python.org/pep-0517/) backend
-handles all Vite orchestration during source builds and wheel
-generation; that path is fully implemented and tested.
+```toml
+# packages/your-theme/pyproject.toml
+[build-system]
+requires = ["hatchling>=1.0", "sphinx-vite-builder"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.hooks.vite]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["web/"]
+
+[tool.hatch.build]
+artifacts = ["src/<your-theme>/theme/<theme-name>/static/"]
+```
+
+Both variants share the same orchestration core — same SKIP env var,
+same `web/`-absent short-circuit, same fast-fail diagnostics. Pick
+variant 1 for simplicity, variant 2 for composability.
+
+### Sphinx extension (orthogonal to either build variant)
+
+The Sphinx-extension head is independent of the backend / hook
+choice. Wire it into a docs build to get vite running automatically
+during `sphinx-build` (one-shot) and `sphinx-autobuild` (watched).
 
 ```python
 # docs/conf.py
 extensions = ["sphinx_vite_builder"]
+sphinx_vite_builder_mode = "auto"        # "auto" | "dev" | "prod"
+sphinx_vite_builder_root = "/abs/path/to/web"
 ```
 
-## Fast-fail diagnostics — error type reference
+`"auto"` resolves to `"dev"` when the build is running under
+`sphinx-autobuild` (detected via `SPHINX_AUTOBUILD` env var, `argv[0]`,
+or parent-process inspection on Linux), `"prod"` otherwise. Setting
+`sphinx_vite_builder_root` to `None` (the default) makes the extension
+a complete no-op — useful when the consumer is installed from a wheel
+where the static tree is already pre-baked.
 
-| Error | When | Hint surface |
+## Comparison with similar tools
+
+| Tool | Toolchain owned | Activation strategy | Bootstrap |
+|---|---|---|---|
+| [`maturin`](https://github.com/PyO3/maturin) | Rust (Cargo) | self-hosting via `bootstrap` shim | `puccinialin` auto-installs Rust |
+| [`sphinx-theme-builder`](https://github.com/pradyunsg/sphinx-theme-builder) | Node (webpack) | rolls own ZIP packing | `nodeenv` (isolated Node env) |
+| [`hatch-jupyter-builder`](https://github.com/jupyterlab/hatch-jupyter-builder) | Node (npm/yarn) | hatchling build hook | user-managed Node |
+| `sphinx-vite-builder` | Node (vite) | PEP 517 backend **or** hatchling hook | user-managed pnpm (corepack) |
+
+`sphinx-vite-builder` deliberately diverges from `sphinx-theme-builder`'s
+`nodeenv` approach: pnpm via corepack is the modern Node convention, and
+auto-installing Node into the project tree pulls in significant friction
+for editable workflows. Compared to `maturin`, the Rust analog,
+sphinx-vite-builder doesn't auto-install pnpm — pnpm isn't pip-installable,
+so the failure mode is "user runs `corepack enable`" rather than "backend
+bootstraps a Node env."
+
+## Migrating from manual orchestration
+
+If your project currently runs `pnpm exec vite build` from a CI step,
+a justfile recipe, or a Makefile target, you can drop those:
+
+| Was | Now |
+|---|---|
+| `tests.yml` step: `pnpm install && pnpm exec vite build` | The backend / hook handles it; only keep pnpm/Node setup |
+| `release.yml` step: `pnpm install && pnpm exec vite build` | Same — keep pnpm/Node setup, drop the manual build call |
+| `justfile` recipe `_assets-build` as prerequisite of `html` | Drop the recipe; the Sphinx extension's PROD-mode hook runs vite |
+| Hatchling `[tool.hatch.build] force-include` for `static/` | Drop; the backend produces the static tree before hatchling packs |
+
+Keep your CI's pnpm + Node setup steps — the backend needs them at
+build time even though the wheel installation doesn't.
+
+## Fast-fail diagnostics — error reference
+
+| Error | When | Hint includes |
 |---|---|---|
 | `PnpmMissingError` | `pnpm` not on `PATH` during a source build | `corepack enable`, [pnpm.io/installation](https://pnpm.io/installation), per-CI YAML recipe, `SPHINX_VITE_BUILDER_SKIP=1` |
 | `NodeModulesInstallError` | `pnpm install` exited non-zero | `cd <vite-root> && pnpm install --frozen-lockfile` rerun command, captured stderr |
@@ -145,21 +211,99 @@ extensions = ["sphinx_vite_builder"]
 All three inherit from `SphinxViteBuilderError`, so consumers can
 `except SphinxViteBuilderError` for a single catch surface.
 
-## CI detection
+## CI recipe gallery
 
 The `PnpmMissingError` hint is **self-healing** when the backend
-detects a CI environment. Detection precedence (most-specific wins):
+detects a CI environment — it embeds the platform-specific setup
+recipe in the error message. They are also reproduced here for
+search-discoverability.
 
-| CI provider | Env var | Recipe shape |
-|---|---|---|
-| GitHub Actions | `GITHUB_ACTIONS=true` | `pnpm/action-setup@v6` + `actions/setup-node@v6` |
-| CircleCI | `CIRCLECI=true` | `corepack enable && corepack prepare pnpm@latest-10 --activate` step |
-| Azure Pipelines | `TF_BUILD=True` | `NodeTool@0` + corepack script |
-| GitLab CI | `GITLAB_CI=true` | `before_script` corepack invocations |
-| Generic | `CI=true` | "Use your CI's package-manager setup mechanism" |
+### GitHub Actions (`GITHUB_ACTIONS=true`)
 
-Source: each provider's own canonical detection variable per the pnpm
-[Continuous Integration docs](https://pnpm.io/continuous-integration).
+```yaml
+- uses: pnpm/action-setup@v6
+  with:
+    version: 10
+- uses: actions/setup-node@v6
+  with:
+    node-version: 22
+    cache: pnpm
+```
+
+### CircleCI (`CIRCLECI=true`)
+
+```yaml
+- run:
+    name: Install pnpm via corepack
+    command: |
+      corepack enable
+      corepack prepare pnpm@latest-10 --activate
+```
+
+### Azure Pipelines (`TF_BUILD=True`)
+
+```yaml
+- task: NodeTool@0
+  inputs:
+    versionSpec: '22.x'
+- script: |
+    corepack enable
+    corepack prepare pnpm@latest-10 --activate
+```
+
+### GitLab CI (`GITLAB_CI=true`)
+
+```yaml
+before_script:
+  - corepack enable
+  - corepack prepare pnpm@latest-10 --activate
+```
+
+### Generic CI (any other `CI=true`)
+
+Use your CI's package-manager setup mechanism to put `pnpm` (>=10)
+and `node` (>=22) on PATH before the Python build step runs.
+
+Detection precedence (most-specific wins): each provider's canonical
+env var per the pnpm
+[Continuous Integration docs](https://pnpm.io/continuous-integration)
+is checked first; the generic `CI=true` is the fallback for "we know
+we're in CI but don't recognise the provider."
+
+## Troubleshooting
+
+**`PnpmMissingError: pnpm is not on PATH`** — install pnpm via
+`corepack enable` (Node 16.10+) or follow the per-CI recipe in the
+error message. If you're in an environment that genuinely doesn't
+need vite to run (e.g. building from a pre-baked sdist), set
+`SPHINX_VITE_BUILDER_SKIP=1` in the environment.
+
+**`NodeModulesInstallError`** — `pnpm install --frozen-lockfile`
+exited non-zero. The error surfaces the captured stderr. Common
+causes: stale `pnpm-lock.yaml` (run `pnpm install` interactively to
+refresh), network/registry timeout (retry), or `engines` mismatch
+(check the project's `package.json` `engines` field against the
+installed Node/pnpm versions).
+
+**`ViteFailedError`** — `pnpm exec vite build` exited non-zero.
+Captured stderr is included in the hint. This is usually a
+project-side compile error (TypeScript type check, SCSS syntax,
+missing import) rather than a tooling problem. Reproduce with
+`(cd <vite-root> && pnpm exec vite build)` to see vite's full output.
+
+**Wheel ships without `static/` content** — the backend ran but the
+artefacts didn't make it into the wheel. Verify your `pyproject.toml`
+has the `[tool.hatch.build] artifacts = ["src/.../static/"]`
+declaration. Hatchling's documented "VCS-ignored include" mechanism
+requires this even when the path is on disk; `force-include` does
+not work for editable builds.
+
+**`just html` (or any plain `sphinx-build`) doesn't rebuild assets** —
+make sure `sphinx_vite_builder` is loaded in `extensions` and that
+`sphinx_vite_builder_root` points at your `web/` directory. The
+extension's PROD-mode hook runs `pnpm exec vite build` once before
+the build proceeds; without it, you'd need a manual orchestration
+step.
 
 ## License
 
