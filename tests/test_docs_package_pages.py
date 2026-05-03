@@ -202,11 +202,51 @@ def test_homepage_has_six_cards() -> None:
     assert "whats-new" in text
 
 
-def test_homepage_says_twelve_packages() -> None:
-    """Homepage references the correct package count."""
+def test_homepage_packages_card_uses_drift_proof_phrasing() -> None:
+    """Homepage Packages card references the package families, not a raw count.
+
+    Workspace package counts drift every time a new package lands. The
+    homepage card SHOULD describe the *families* (autodoc extensions,
+    build utils, UX, theme, …) so it stays accurate as the workspace
+    grows. This test guards against re-introducing a hardcoded count
+    like "Twelve workspace packages …".
+    """
     text = (DOCS_ROOT / "index.md").read_text()
 
-    assert "Twelve" in text or "twelve" in text or "12" in text
+    forbidden_count_words = (
+        "Two ",
+        "Three ",
+        "Four ",
+        "Five ",
+        "Six ",
+        "Seven ",
+        "Eight ",
+        "Nine ",
+        "Ten ",
+        "Eleven ",
+        "Twelve ",
+        "Thirteen ",
+        "Fourteen ",
+        "Fifteen ",
+        "Sixteen ",
+        "Seventeen ",
+        "Eighteen ",
+        "Nineteen ",
+        "Twenty ",
+    )
+    for word in forbidden_count_words:
+        assert f"{word}workspace" not in text, (
+            f"homepage uses hardcoded count {word.strip()!r} — drift-prone; "
+            "describe package families instead"
+        )
+        assert f"{word}package" not in text, (
+            f"homepage uses hardcoded count {word.strip()!r} — drift-prone; "
+            "describe package families instead"
+        )
+
+    # The card itself must still exist and link to the packages index.
+    assert "packages/index" in text
+    assert "grid-item-card} Packages" in text
 
 
 def test_quickstart_has_autodoc_demo() -> None:
