@@ -73,6 +73,12 @@ dev = [
   "types-docutils",
   "types-Pygments",
   "syrupy>=5.1.0",
+  # Build-backend tooling: sphinx-vite-builder.build delegates to
+  # hatchling.build, so hatchling must be importable for static analysis
+  # and for the backend's own tests; consumer packages declare it
+  # themselves via [build-system].requires, so this is a workspace-only
+  # dev dep, not a runtime one.
+  "hatchling>=1.0",
 ]
 
 [build-system]
