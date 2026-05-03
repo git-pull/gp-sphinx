@@ -2,13 +2,13 @@
 
 # Architecture
 
-Twelve workspace packages in three tiers.  Lower layers never depend on
-higher ones — domain packages consume shared infrastructure, and the
+Workspace packages organized in tiers.  Lower layers never depend on
+higher ones — autodoc extensions consume shared infrastructure, and the
 presentation layer wires everything together for downstream projects.
 
-The sidebar groups these twelve packages into four navigation buckets
-(Domain Packages, UX, Utils, Internal) — a reader-facing grouping that
-is orthogonal to the dependency-ordered tier map below.
+The sidebar groups these packages into navigation buckets (Domain Packages,
+UX, Utils, Internal) — a reader-facing grouping that is orthogonal to the
+dependency-ordered tier map below.
 
 ## Tier 1: Shared infrastructure
 
@@ -77,5 +77,5 @@ APIs, pytest fixtures, Sphinx config values, docutils directives, and
 FastMCP tools all look like they belong together.
 
 This is the **one autodoc design system** principle: a change to the shared
-infrastructure propagates instantly and consistently across all six
-domain packages.
+infrastructure propagates instantly and consistently across every autodoc
+extension in the workspace.
