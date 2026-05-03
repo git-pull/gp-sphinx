@@ -42,8 +42,9 @@ backend at release time. The PEP 517 chain doesn't run on the
 consumer side. No backend invocation. No `pnpm`. No Node. The end
 user sees Python and only Python.
 
+No pnpm, no Node — just Python:
+
 ```console
-$ # No pnpm, no Node, no problem
 $ pip install gp-furo-theme
 ```
 
