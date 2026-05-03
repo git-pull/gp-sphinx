@@ -41,13 +41,35 @@ def build_wheel(
 
     Examples
     --------
-    The hook's signature is the canonical PEP 517 shape consumers
-    expect:
+    With ``SPHINX_VITE_BUILDER_SKIP=1`` set, the hook short-circuits
+    vite and delegates straight to :mod:`hatchling.build` against a
+    minimal synthetic project, producing a real ``.whl``:
 
-    >>> import inspect
-    >>> sorted(inspect.signature(build_wheel).parameters)
-    ['config_settings', 'metadata_directory', 'wheel_directory']
-    >>> callable(build_wheel)
+    >>> import os, pathlib, tempfile, textwrap
+    >>> os.environ["SPHINX_VITE_BUILDER_SKIP"] = "1"
+    >>> cwd = os.getcwd()
+    >>> with tempfile.TemporaryDirectory() as tmp:
+    ...     project = pathlib.Path(tmp)
+    ...     _ = (project / "pyproject.toml").write_text(textwrap.dedent('''
+    ...         [build-system]
+    ...         requires = ["hatchling"]
+    ...         build-backend = "hatchling.build"
+    ...         [project]
+    ...         name = "doctest-pkg"
+    ...         version = "0.0.0"
+    ...     ''').lstrip())
+    ...     pkg = project / "doctest_pkg"
+    ...     pkg.mkdir()
+    ...     _ = (pkg / "__init__.py").write_text("")
+    ...     dist = project / "dist"
+    ...     dist.mkdir()
+    ...     os.chdir(project)
+    ...     try:
+    ...         name = build_wheel(str(dist))
+    ...     finally:
+    ...         os.chdir(cwd)
+    ...         del os.environ["SPHINX_VITE_BUILDER_SKIP"]
+    >>> name.endswith(".whl")
     True
     """
     run_vite_build()
@@ -61,13 +83,15 @@ def build_editable(
 ) -> str:
     """PEP 660 ``build_editable``: vite-build, then hatchling-pack-editable.
 
+    The delegation pattern matches :func:`build_wheel`; see that
+    function's docstring for an end-to-end example exercising the
+    ``SPHINX_VITE_BUILDER_SKIP=1`` short-circuit.
+
     Examples
     --------
     >>> import inspect
     >>> sorted(inspect.signature(build_editable).parameters)
     ['config_settings', 'metadata_directory', 'wheel_directory']
-    >>> callable(build_editable)
-    True
     """
     run_vite_build()
     return _hatchling.build_editable(
@@ -88,13 +112,15 @@ def build_sdist(
     skip vite (no ``web/`` in the unpacked tree) and ship the
     pre-baked assets via hatchling's normal file selection.
 
+    The delegation pattern matches :func:`build_wheel`; see that
+    function's docstring for an end-to-end example exercising the
+    ``SPHINX_VITE_BUILDER_SKIP=1`` short-circuit.
+
     Examples
     --------
     >>> import inspect
     >>> sorted(inspect.signature(build_sdist).parameters)
     ['config_settings', 'sdist_directory']
-    >>> callable(build_sdist)
-    True
     """
     run_vite_build()
     return _hatchling.build_sdist(sdist_directory, config_settings)
