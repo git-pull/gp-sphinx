@@ -33,6 +33,7 @@ sphinx-gp-sitemap = { workspace = true }
 gp-furo-theme = { workspace = true }
 gp-sphinx-vite = { workspace = true }
 gp-sphinx = { workspace = true }
+sphinx-vite-builder = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -49,6 +50,7 @@ dev = [
   "sphinx-gp-sitemap",
   "gp-furo-theme",
   "gp-sphinx-vite",
+  "sphinx-vite-builder",
   # Docs
   "sphinx-autobuild",
   # Testing

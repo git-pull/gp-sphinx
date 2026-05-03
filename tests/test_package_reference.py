@@ -35,6 +35,7 @@ def test_workspace_packages_lists_publishable_packages() -> None:
         "sphinx-autodoc-sphinx",
         "sphinx-fonts",
         "sphinx-gp-theme",
+        "sphinx-vite-builder",
     }
 
 

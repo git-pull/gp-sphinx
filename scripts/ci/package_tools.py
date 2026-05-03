@@ -775,6 +775,29 @@ def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
         )
 
 
+def smoke_sphinx_vite_builder(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the sphinx-vite-builder backend + extension imports cleanly."""
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(
+            python_path,
+            _target_wheel_path(dist_dir, "sphinx-vite-builder"),
+            find_links=dist_dir,
+        )
+        _run_python(
+            python_path,
+            (
+                "import sphinx_vite_builder; "
+                "from sphinx_vite_builder import build, setup; "
+                f"assert sphinx_vite_builder.__version__ == {version!r}; "
+                "assert callable(build.build_wheel); "
+                "assert callable(build.build_sdist); "
+                "assert callable(build.build_editable); "
+                "assert callable(setup)"
+            ),
+        )
+
+
 _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-gp-opengraph": smoke_sphinx_gp_opengraph,
     "sphinx-gp-sitemap": smoke_sphinx_gp_sitemap,
@@ -792,6 +815,7 @@ _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-autodoc-typehints-gp": smoke_sphinx_autodoc_typehints_gp,
     "gp-furo-theme": smoke_gp_furo_theme,
     "gp-sphinx-vite": smoke_gp_sphinx_vite,
+    "sphinx-vite-builder": smoke_sphinx_vite_builder,
 }
 
 
