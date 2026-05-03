@@ -117,14 +117,16 @@ exclude = ["web/"]    # so the sdist→wheel chain hits the short-circuit
 artifacts = ["src/<your-theme>/theme/<theme-name>/static/"]
 ```
 
-### Sphinx extension
+### Sphinx extension (Phase 1: placeholder)
 
-Loaded from `conf.py`. Runs Vite as part of the docs lifecycle:
+The extension entry point is currently a placeholder registered in
+`conf.py` to prevent import errors. Full lifecycle integration —
+running Vite before the docs build and spawning a watched Vite
+process during `sphinx-autobuild` — lands in a follow-up release.
 
-- `sphinx-build` → `pnpm exec vite build` once before the docs build
-- `sphinx-autobuild` → `pnpm exec vite build --watch` as a child process
-  for the lifetime of the autobuild server, with idempotent re-fire on
-  rebuilds and graceful teardown on signal / `atexit`
+For now, the [PEP 517](https://peps.python.org/pep-0517/) backend
+handles all Vite orchestration during source builds and wheel
+generation; that path is fully implemented and tested.
 
 ```python
 # docs/conf.py

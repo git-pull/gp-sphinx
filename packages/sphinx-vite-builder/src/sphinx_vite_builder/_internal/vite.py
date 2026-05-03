@@ -1,13 +1,14 @@
-"""Vite + pnpm orchestration: detection, install, one-shot build, watch.
+"""Vite + pnpm orchestration: detection, install, one-shot build.
 
 This module is the shared orchestration core consumed by both heads:
 
 - The PEP 517 backend (:mod:`sphinx_vite_builder.build`) calls
   :func:`run_vite_build` from each of its hooks, before delegating to
   hatchling.
-- The Sphinx extension (:mod:`sphinx_vite_builder`) calls
-  :func:`run_vite_build` (one-shot) or its watch sibling from
-  ``builder-inited``.
+- The Sphinx extension (:mod:`sphinx_vite_builder`) — Phase 1
+  placeholder — will call :func:`run_vite_build` from
+  ``builder-inited`` once the extension head lands in a follow-up
+  release.
 
 Fast-fail discipline: every prerequisite is checked up front so the
 caller gets an actionable diagnostic instead of a generic spawn-failure
