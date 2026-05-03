@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import typing as t
 
-__version__ = "0.0.1a15"
+__version__ = "0.0.1a16.dev0"
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx

@@ -593,7 +593,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     # are skipped by the built-in handler.
     app.connect("object-description-transform", merge_typehints, priority=499)
     return {
-        "version": "0.0.1a15",
+        "version": "0.0.1a16.dev0",
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }
