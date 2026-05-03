@@ -15,9 +15,13 @@ under :mod:`sphinx_vite_builder._internal`.
 
 from __future__ import annotations
 
+import logging
 import typing as t
 
 __version__ = "0.0.1a16.dev1"
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
