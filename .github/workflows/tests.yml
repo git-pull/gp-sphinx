@@ -203,6 +203,12 @@ jobs:
 
       - name: Smoke test root bootstrap install
         if: matrix.target == 'root-install'
+        # The root install transitively builds `gp-furo-theme`, which
+        # routes through `sphinx_vite_builder.build`. The smoke target
+        # only verifies that imports resolve — it doesn't exercise the
+        # rendered theme — so we skip the vite invocation.
+        env:
+          SPHINX_VITE_BUILDER_SKIP: "1"
         run: python scripts/ci/package_tools.py smoke root-install
 
       - name: Smoke test built package artifact

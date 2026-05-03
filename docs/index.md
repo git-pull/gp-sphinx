@@ -134,6 +134,7 @@ packages/gp-sphinx
 packages/sphinx-gp-theme
 packages/gp-furo-theme
 packages/gp-sphinx-vite
+packages/sphinx-vite-builder
 ```
 
 ```{toctree}
