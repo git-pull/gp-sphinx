@@ -10,7 +10,7 @@ signals to its target.
 The unit tests monkeypatch ``os.killpg`` so they are deterministic and
 don't depend on real process trees; an end-to-end behavioural test
 exercises the integrated terminate path with a fake child that traps
-SIGTERM (mirrors the gp-sphinx-vite suite).
+SIGTERM.
 """
 
 from __future__ import annotations
