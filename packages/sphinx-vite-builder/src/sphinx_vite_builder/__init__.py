@@ -18,7 +18,7 @@ from __future__ import annotations
 import logging
 import typing as t
 
-__version__ = "0.0.1a16.dev1"
+__version__ = "0.0.1a16.dev2"
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())

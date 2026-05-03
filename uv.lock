@@ -388,7 +388,7 @@ wheels = [
 
 [[package]]
 name = "gp-furo-theme"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/gp-furo-theme" }
 dependencies = [
     { name = "accessible-pygments" },
@@ -424,7 +424,7 @@ wheels = [
 
 [[package]]
 name = "gp-sphinx"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/gp-sphinx" }
 dependencies = [
     { name = "docutils" },
@@ -473,7 +473,7 @@ provides-extras = ["argparse"]
 
 [[package]]
 name = "gp-sphinx-vite"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/gp-sphinx-vite" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -485,7 +485,7 @@ requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
 
 [[package]]
 name = "gp-sphinx-workspace"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "." }
 dependencies = [
     { name = "gp-sphinx" },
@@ -1580,7 +1580,7 @@ wheels = [
 
 [[package]]
 name = "sphinx-autodoc-api-style"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-autodoc-api-style" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1598,7 +1598,7 @@ requires-dist = [
 
 [[package]]
 name = "sphinx-autodoc-argparse"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-autodoc-argparse" }
 dependencies = [
     { name = "docutils" },
@@ -1616,7 +1616,7 @@ requires-dist = [
 
 [[package]]
 name = "sphinx-autodoc-docutils"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-autodoc-docutils" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1636,7 +1636,7 @@ requires-dist = [
 
 [[package]]
 name = "sphinx-autodoc-fastmcp"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-autodoc-fastmcp" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1656,7 +1656,7 @@ requires-dist = [
 
 [[package]]
 name = "sphinx-autodoc-pytest-fixtures"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-autodoc-pytest-fixtures" }
 dependencies = [
     { name = "pytest" },
@@ -1678,7 +1678,7 @@ requires-dist = [
 
 [[package]]
 name = "sphinx-autodoc-sphinx"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-autodoc-sphinx" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1698,7 +1698,7 @@ requires-dist = [
 
 [[package]]
 name = "sphinx-autodoc-typehints-gp"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-autodoc-typehints-gp" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1767,7 +1767,7 @@ wheels = [
 
 [[package]]
 name = "sphinx-fonts"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-fonts" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1779,7 +1779,7 @@ requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
 
 [[package]]
 name = "sphinx-gp-opengraph"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-gp-opengraph" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1791,7 +1791,7 @@ requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
 
 [[package]]
 name = "sphinx-gp-sitemap"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-gp-sitemap" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1803,7 +1803,7 @@ requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
 
 [[package]]
 name = "sphinx-gp-theme"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-gp-theme" }
 dependencies = [
     { name = "gp-furo-theme" },
@@ -1832,7 +1832,7 @@ wheels = [
 
 [[package]]
 name = "sphinx-ux-autodoc-layout"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-ux-autodoc-layout" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1844,7 +1844,7 @@ requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
 
 [[package]]
 name = "sphinx-ux-badges"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-ux-badges" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1856,7 +1856,7 @@ requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
 
 [[package]]
 name = "sphinx-vite-builder"
-version = "0.0.1a16.dev1"
+version = "0.0.1a16.dev2"
 source = { editable = "packages/sphinx-vite-builder" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
