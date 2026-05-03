@@ -97,7 +97,7 @@ Net: **sdist install also requires zero toolchain**. The
 
 ## The four QA permutations — keep them green
 
-Verified end-to-end as of v0.0.1a16.dev1:
+The four QA permutations every change must keep green:
 
 | # | Path | Toolchain | Expected |
 |---|---|---|---|
@@ -158,7 +158,7 @@ resolution or distribution metadata, so wrapping them would be wrong.
 
 The workspace's `release.yml` MUST keep the pnpm + Node setup steps
 that run before `uv build`, otherwise the wheels published to PyPI
-would be empty of static (the v0.0.1a15 broken-release pattern that
+would be empty of static (the prior broken-release pattern that
 motivated this whole package). The required steps are:
 
 ```yaml
