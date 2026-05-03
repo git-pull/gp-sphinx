@@ -1,16 +1,19 @@
-"""sphinx-vite-builder: PEP 517 backend + Sphinx extension.
+"""sphinx-vite-builder — vite + pnpm orchestration for Sphinx-theme packages.
 
-Two orthogonal entry points share one subprocess core:
+Two orthogonal entry points sharing one subprocess core:
 
-- :mod:`sphinx_vite_builder.build` — the PEP 517 backend module that
-  consumer packages reference via
-  ``[build-system].build-backend = "sphinx_vite_builder.build"``.
-- :func:`sphinx_vite_builder.setup` — the Sphinx extension entry point
-  that ``conf.py`` references via
-  ``extensions = ["sphinx_vite_builder"]``.
+1. **PEP 517 build backend** at :mod:`sphinx_vite_builder.build`. Runs
+   ``pnpm exec vite build`` before delegating wheel/sdist construction
+   to :mod:`hatchling.build`. Consumer packages declare it via
+   ``[build-system].build-backend = "sphinx_vite_builder.build"``.
+2. **Sphinx extension** registered by :func:`setup`. Hooks
+   ``builder-inited`` and ``build-finished`` so ``sphinx-build`` /
+   ``sphinx-autobuild`` automatically run vite — one-shot for prod, a
+   long-lived ``vite build --watch`` child process for autobuild —
+   with graceful teardown on signal / :data:`atexit`.
 
-Neither head calls the other; they share the implementation modules
-under :mod:`sphinx_vite_builder._internal`.
+Both heads consume the smart-subprocess core under
+:mod:`sphinx_vite_builder._internal`.
 """
 
 from __future__ import annotations
@@ -18,38 +21,68 @@ from __future__ import annotations
 import logging
 import typing as t
 
+if t.TYPE_CHECKING:
+    from sphinx.application import Sphinx
+
 __version__ = "0.0.1a16.dev2"
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-if t.TYPE_CHECKING:
-    from sphinx.application import Sphinx
-
 
 def setup(app: Sphinx) -> dict[str, t.Any]:
     """Register the Sphinx-extension head.
 
-    Phase 1 ships the PEP 517 backend; the extension head's full
-    implementation (vite watch on ``sphinx-autobuild``, one-shot build
-    on ``sphinx-build``) lands in a follow-up commit. For now this
-    stub registers the extension so consumers can declare it without
-    a no-such-module error, and returns the safety metadata.
+    Wires two config values (``sphinx_vite_builder_mode``,
+    ``sphinx_vite_builder_root``) and connects the ``builder-inited`` /
+    ``build-finished`` lifecycle hooks. Under ``sphinx-autobuild`` (or
+    when ``sphinx_vite_builder_mode = "dev"``) the ``builder-inited``
+    handler spawns ``pnpm exec vite build --watch`` against
+    ``sphinx_vite_builder_root``; under plain ``sphinx-build`` (or
+    ``mode = "prod"``) the handler is a no-op so production wheels
+    carry no Node runtime requirement.
 
     Examples
     --------
-    The Phase-1 stub returns the parallel-safety metadata Sphinx
-    expects, regardless of the application object passed in:
-
     >>> class FakeApp:
-    ...     pass
-    >>> metadata = setup(FakeApp())  # type: ignore[arg-type]
+    ...     def __init__(self) -> None:
+    ...         self.config_values: list[str] = []
+    ...         self.events: list[str] = []
+    ...     def add_config_value(self, name: str, **kwargs: object) -> None:
+    ...         self.config_values.append(name)
+    ...     def connect(self, event: str, handler: object) -> None:
+    ...         self.events.append(event)
+    >>> fake = FakeApp()
+    >>> metadata = setup(fake)  # type: ignore[arg-type]
+    >>> "sphinx_vite_builder_mode" in fake.config_values
+    True
+    >>> "sphinx_vite_builder_root" in fake.config_values
+    True
+    >>> "builder-inited" in fake.events
+    True
+    >>> "build-finished" in fake.events
+    True
     >>> metadata["parallel_read_safe"]
     True
-    >>> metadata["parallel_write_safe"]
-    True
     """
-    del app
+    from ._internal import hooks
+
+    app.add_config_value(
+        "sphinx_vite_builder_mode",
+        default="auto",
+        rebuild="env",
+        types=[str],
+    )
+    app.add_config_value(
+        "sphinx_vite_builder_root",
+        default=None,
+        rebuild="env",
+        types=[str, type(None)],
+    )
+
+    app.connect("builder-inited", hooks.on_builder_inited)
+    app.connect("build-finished", hooks.on_build_finished)
+
     return {
         "parallel_read_safe": True,
         "parallel_write_safe": True,
@@ -57,4 +90,4 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     }
 
 
-__all__ = ("__version__", "setup")
+__all__: tuple[str, ...] = ("__version__", "setup")

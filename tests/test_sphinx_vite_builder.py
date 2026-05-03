@@ -18,16 +18,57 @@ def test_version_matches_workspace_lock() -> None:
     assert __version__ == "0.0.1a16.dev2"
 
 
+class _FakeApp:
+    """Minimal Sphinx-app stand-in for setup() smoke tests.
+
+    Carries the slice of ``sphinx.application.Sphinx`` that
+    :func:`sphinx_vite_builder.setup` touches: ``add_config_value`` for
+    the two extension config keys, and ``connect`` for the lifecycle
+    handlers.
+    """
+
+    def __init__(self) -> None:
+        self.config_values: list[tuple[str, dict[str, object]]] = []
+        self.events: list[tuple[str, object]] = []
+
+    def add_config_value(self, name: str, **kwargs: object) -> None:
+        self.config_values.append((name, kwargs))
+
+    def connect(self, event: str, callback: object) -> None:
+        self.events.append((event, callback))
+
+
 def test_setup_returns_safety_metadata() -> None:
     """``setup`` registers the extension and returns parallel-safety flags."""
-
-    class _FakeApp:
-        pass
-
     metadata = setup(_FakeApp())  # type: ignore[arg-type]
     assert metadata["parallel_read_safe"] is True
     assert metadata["parallel_write_safe"] is True
     assert metadata["version"] == __version__
+
+
+def test_setup_registers_mode_config_value() -> None:
+    """setup() registers sphinx_vite_builder_mode."""
+    fake = _FakeApp()
+    setup(fake)  # type: ignore[arg-type]
+    names = [name for name, _ in fake.config_values]
+    assert "sphinx_vite_builder_mode" in names
+
+
+def test_setup_registers_root_config_value() -> None:
+    """setup() registers sphinx_vite_builder_root."""
+    fake = _FakeApp()
+    setup(fake)  # type: ignore[arg-type]
+    names = [name for name, _ in fake.config_values]
+    assert "sphinx_vite_builder_root" in names
+
+
+def test_setup_connects_lifecycle_events() -> None:
+    """setup() connects to builder-inited and build-finished."""
+    fake = _FakeApp()
+    setup(fake)  # type: ignore[arg-type]
+    event_names = [name for name, _ in fake.events]
+    assert "builder-inited" in event_names
+    assert "build-finished" in event_names
 
 
 def test_extension_entry_point_is_discoverable() -> None:
