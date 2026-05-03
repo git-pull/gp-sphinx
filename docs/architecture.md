@@ -67,7 +67,44 @@ domain package to their `extensions` list.
 |---------|------|
 | {doc}`gp-sphinx <packages/gp-sphinx>` | Coordinator.  `merge_sphinx_config()` wires up the full stack. |
 | {doc}`sphinx-gp-theme <packages/sphinx-gp-theme>` | Furo-based theme with CSS variables and SPA navigation. |
+| {doc}`gp-furo-theme <packages/gp-furo-theme>` | Tailwind v4 port of upstream Furo for git-pull projects. |
 | {doc}`sphinx-fonts <packages/sphinx-fonts>` | IBM Plex via Fontsource — preloaded web fonts. |
+
+## Build tooling
+
+Cross-cutting build utilities that operate outside the docs-build
+runtime — one is a [PEP 517](https://peps.python.org/pep-0517/) build
+backend invoked when wheels are produced; the other is an opt-in
+extension that drives the Vite watcher during `sphinx-autobuild`.
+Both let theme authors keep build artefacts (`static/styles/*.css`,
+`static/scripts/*.js`) out of VCS while still shipping working wheels
+and seamless live-reload during authoring.
+
+::::{grid} 1 1 2 2
+:gutter: 2
+
+:::{grid-item-card} sphinx-vite-builder
+:link: packages/sphinx-vite-builder
+:link-type: doc
+
+[PEP 517](https://peps.python.org/pep-0517/) build backend that runs
+`pnpm exec vite build` before delegating wheel/sdist construction to
+hatchling. Also a Sphinx extension that auto-orchestrates
+`vite build --watch` during `sphinx-autobuild`.
+Source builds error loudly without pnpm/Node; wheels ship turn-key.
+:::
+
+:::{grid-item-card} gp-sphinx-vite
+:link: packages/gp-sphinx-vite
+:link-type: doc
+
+Autobuild-time Vite orchestrator opted into via
+`merge_sphinx_config(vite_orchestration=True)`. Spawns the watcher as
+a child process for the lifetime of `sphinx-autobuild`, with graceful
+SIGTERM teardown on exit.
+:::
+
+::::
 
 ## How the tiers connect
 
