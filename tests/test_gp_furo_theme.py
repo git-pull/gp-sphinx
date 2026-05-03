@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import importlib.metadata
 import pathlib
+import shutil
 import textwrap
 import typing as t
 
@@ -249,3 +250,86 @@ def test_html_build_emits_no_template_warnings(
         if "template" in line.lower() or "no theme" in line.lower()
     ]
     assert not template_warnings, f"unexpected template warnings: {template_warnings}"
+
+
+# ---------------------------------------------------------------------------
+# Asset-presence assertion (gp-furo-theme/__init__.py:_builder_inited)
+# ---------------------------------------------------------------------------
+
+
+def test_format_missing_assets_hint_workspace_with_pnpm(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path
+) -> None:
+    """Workspace + pnpm + node_modules → hint shows the vite-build command."""
+    import gp_furo_theme
+
+    fake_web = tmp_path / "web"
+    fake_web.mkdir()
+    (fake_web / "node_modules").mkdir()
+    monkeypatch.setattr(gp_furo_theme, "get_vite_root", lambda: fake_web)
+    monkeypatch.setattr(shutil, "which", lambda _name: "/usr/bin/pnpm")
+
+    missing = [pathlib.Path("/x/styles/furo-tw.css")]
+    msg = gp_furo_theme._format_missing_assets_hint(missing, version="0.0.1a99")
+
+    assert "workspace checkout" in msg
+    assert "pnpm exec vite build" in msg
+    assert "pnpm install" not in msg  # node_modules already present
+    assert "corepack enable" not in msg  # pnpm already present
+    assert "wheel" not in msg.lower()
+
+
+def test_format_missing_assets_hint_workspace_without_pnpm(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path
+) -> None:
+    """Workspace but no pnpm → hint includes both install paths."""
+    import gp_furo_theme
+
+    monkeypatch.setattr(gp_furo_theme, "get_vite_root", lambda: tmp_path)
+    monkeypatch.setattr(shutil, "which", lambda _name: None)
+
+    msg = gp_furo_theme._format_missing_assets_hint(
+        [pathlib.Path("/x/scripts/furo.js")], version="0.0.1a99"
+    )
+
+    assert "corepack enable" in msg
+    assert "https://pnpm.io/installation" in msg
+    assert "pnpm exec vite build" in msg
+
+
+def test_format_missing_assets_hint_wheel_install(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """No web/ source tree → hint identifies a broken upstream wheel."""
+    import gp_furo_theme
+
+    monkeypatch.setattr(gp_furo_theme, "get_vite_root", lambda: None)
+
+    msg = gp_furo_theme._format_missing_assets_hint(
+        [pathlib.Path("/x/styles/furo-tw.css")], version="0.0.1a99"
+    )
+
+    assert "wheel install" in msg.lower()
+    assert "0.0.1a99" in msg
+    assert "https://github.com/git-pull/gp-sphinx/issues" in msg
+    assert "pnpm exec vite build" not in msg  # no actionable rebuild path
+
+
+def test_missing_vite_assets_returns_empty_when_present() -> None:
+    """When the static dir is fully populated, no missing files are reported.
+
+    Smoke check against the live workspace: if ``just build-docs`` (or
+    ``pnpm exec vite build``) has run before this test, both assets are
+    on disk and ``_missing_vite_assets()`` returns an empty list.
+    Otherwise the test is informative-only — it confirms the helper
+    detects what's actually missing.
+    """
+    import gp_furo_theme
+
+    static_root = gp_furo_theme.THEME_PATH / "static"
+    if not (
+        (static_root / "scripts" / "furo.js").is_file()
+        and (static_root / "styles" / "furo-tw.css").is_file()
+    ):
+        pytest.skip("vite-built assets not present; run `just build-docs`")
+    assert gp_furo_theme._missing_vite_assets() == []
