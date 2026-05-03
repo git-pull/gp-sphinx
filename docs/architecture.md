@@ -140,16 +140,6 @@ hatchling. Also a Sphinx extension that auto-orchestrates
 Source builds error loudly without pnpm/Node; wheels ship turn-key.
 :::
 
-:::{grid-item-card} gp-sphinx-vite
-:link: packages/gp-sphinx-vite
-:link-type: doc
-
-Autobuild-time Vite orchestrator opted into via
-`merge_sphinx_config(vite_orchestration=True)`. Spawns the watcher as
-a child process for the lifetime of `sphinx-autobuild`, with graceful
-SIGTERM teardown on exit.
-:::
-
 ::::
 
 ## How the tiers connect

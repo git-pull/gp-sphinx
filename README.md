@@ -62,7 +62,7 @@ Lower layers never depend on higher ones:
 
 - **Common libraries** — `sphinx-ux-badges`, `sphinx-ux-autodoc-layout`, `sphinx-autodoc-typehints-gp`, `sphinx-fonts`
 - **Autodoc extensions** — `sphinx-autodoc-api-style`, `sphinx-autodoc-argparse`, `sphinx-autodoc-docutils`, `sphinx-autodoc-fastmcp`, `sphinx-autodoc-pytest-fixtures`, `sphinx-autodoc-sphinx`
-- **Build utils** — `sphinx-vite-builder` ([PEP 517](https://peps.python.org/pep-0517/) backend that runs Vite via pnpm), `gp-sphinx-vite` (autobuild orchestrator)
+- **Build utils** — `sphinx-vite-builder` ([PEP 517](https://peps.python.org/pep-0517/) backend + Sphinx extension that runs Vite via pnpm)
 - **Theme and coordinator** — `gp-sphinx`, `sphinx-gp-theme`, `gp-furo-theme`
 - **SEO** — `sphinx-gp-opengraph`, `sphinx-gp-sitemap` (auto-loaded by `gp-sphinx` when `docs_url` is set)
 

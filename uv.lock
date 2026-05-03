@@ -15,7 +15,6 @@ exclude-newer-span = "P3D"
 members = [
     "gp-furo-theme",
     "gp-sphinx",
-    "gp-sphinx-vite",
     "gp-sphinx-workspace",
     "sphinx-autodoc-api-style",
     "sphinx-autodoc-argparse",
@@ -472,18 +471,6 @@ requires-dist = [
 provides-extras = ["argparse"]
 
 [[package]]
-name = "gp-sphinx-vite"
-version = "0.0.1a16.dev2"
-source = { editable = "packages/gp-sphinx-vite" }
-dependencies = [
-    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
-
-[[package]]
 name = "gp-sphinx-workspace"
 version = "0.0.1a16.dev2"
 source = { editable = "." }
@@ -497,7 +484,6 @@ dev = [
     { name = "coverage" },
     { name = "gp-furo-theme" },
     { name = "gp-sphinx" },
-    { name = "gp-sphinx-vite" },
     { name = "hatchling" },
     { name = "mypy" },
     { name = "pillow" },
@@ -538,7 +524,6 @@ dev = [
     { name = "coverage" },
     { name = "gp-furo-theme", editable = "packages/gp-furo-theme" },
     { name = "gp-sphinx", editable = "packages/gp-sphinx" },
-    { name = "gp-sphinx-vite", editable = "packages/gp-sphinx-vite" },
     { name = "hatchling", specifier = ">=1.0" },
     { name = "mypy" },
     { name = "pillow" },

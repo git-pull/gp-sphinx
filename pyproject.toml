@@ -31,7 +31,6 @@ sphinx-ux-autodoc-layout = { workspace = true }
 sphinx-gp-opengraph = { workspace = true }
 sphinx-gp-sitemap = { workspace = true }
 gp-furo-theme = { workspace = true }
-gp-sphinx-vite = { workspace = true }
 gp-sphinx = { workspace = true }
 sphinx-vite-builder = { workspace = true }
 
@@ -49,7 +48,6 @@ dev = [
   "sphinx-gp-opengraph",
   "sphinx-gp-sitemap",
   "gp-furo-theme",
-  "gp-sphinx-vite",
   "sphinx-vite-builder",
   # Docs
   "sphinx-autobuild",

@@ -35,7 +35,6 @@ Domain-specific [autodoc extensions](https://www.sphinx-doc.org/en/master/usage/
 [PEP 517](https://peps.python.org/pep-0517/) backends and orchestration helpers for theme asset pipelines:
 
 - [`sphinx-vite-builder`](sphinx-vite-builder.md) — [PEP 517](https://peps.python.org/pep-0517/) backend + Sphinx extension that runs Vite via pnpm
-- [`gp-sphinx-vite`](gp-sphinx-vite.md) — autobuild orchestrator opt-in via `vite_orchestration=True`
 
 ## Theme and coordinator
 

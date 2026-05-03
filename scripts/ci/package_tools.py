@@ -528,47 +528,6 @@ def smoke_gp_furo_theme(dist_dir: pathlib.Path, version: str) -> None:
         _run_sphinx_build(python_path, docs_dir, tmpdir / "_build")
 
 
-def smoke_gp_sphinx_vite(dist_dir: pathlib.Path, version: str) -> None:
-    """Verify the orchestration package installs cleanly, registers config values.
-
-    Skeleton-stage: subprocess orchestration is not yet wired, so the smoke
-    test imports the module, calls ``setup()`` against a fake app, and
-    asserts the two config values are registered. Full orchestration tests
-    live alongside the implementation in ``tests/test_gp_sphinx_vite.py``.
-    """
-    with tempfile.TemporaryDirectory() as tmp:
-        python_path = _create_venv(pathlib.Path(tmp))
-        _install_into_venv(
-            python_path,
-            *_workspace_wheel_requirements(dist_dir),
-        )
-        # Statements live on their own logical lines: Python's grammar
-        # forbids compound statements (``class``, ``def``, ``if``, …) after
-        # ``;``, so the previous semicolon-joined form raised
-        # ``SyntaxError: invalid syntax`` on ``calls = []; class FakeApp:``.
-        _run_python(
-            python_path,
-            (
-                "import gp_sphinx_vite\n"
-                f"assert gp_sphinx_vite.__version__ == {version!r}\n"
-                "assert callable(gp_sphinx_vite.setup)\n"
-                "config_values = []\n"
-                "events = []\n"
-                "class FakeApp:\n"
-                "    def add_config_value(self, name, **kwargs):\n"
-                "        config_values.append(name)\n"
-                "    def connect(self, event, handler):\n"
-                "        events.append(event)\n"
-                "metadata = gp_sphinx_vite.setup(FakeApp())\n"
-                "assert 'gp_sphinx_vite_mode' in config_values\n"
-                "assert 'gp_sphinx_vite_root' in config_values\n"
-                "assert 'builder-inited' in events\n"
-                "assert 'build-finished' in events\n"
-                "assert metadata['parallel_read_safe'] is True\n"
-            ),
-        )
-
-
 def smoke_sphinx_fonts(dist_dir: pathlib.Path, version: str) -> None:
     """Verify the standalone extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
@@ -859,7 +818,6 @@ _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-gp-theme": smoke_sphinx_gp_theme,
     "sphinx-autodoc-typehints-gp": smoke_sphinx_autodoc_typehints_gp,
     "gp-furo-theme": smoke_gp_furo_theme,
-    "gp-sphinx-vite": smoke_gp_sphinx_vite,
     "sphinx-vite-builder": smoke_sphinx_vite_builder,
 }
 
