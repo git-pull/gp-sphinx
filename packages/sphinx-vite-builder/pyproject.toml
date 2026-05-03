@@ -37,6 +37,13 @@ dependencies = [
 [project.entry-points."sphinx.extensions"]
 "sphinx-vite-builder" = "sphinx_vite_builder"
 
+# Hatchling build-hook variant — consumers can pick this OR the
+# `build-backend = "sphinx_vite_builder.build"` PEP 517 backend
+# variant, never both. See packages/sphinx-vite-builder/AGENTS.md
+# for the trade-off.
+[project.entry-points.hatch]
+vite = "sphinx_vite_builder.hatch_plugin"
+
 [project.urls]
 Repository = "https://github.com/git-pull/gp-sphinx"
 
