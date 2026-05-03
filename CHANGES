@@ -18,6 +18,30 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### What's new
+
+#### New package: `sphinx-vite-builder`
+
+PEP 517 backend, hatchling build hook (`[tool.hatch.build.hooks.vite]`),
+and Sphinx extension that orchestrate Vite via pnpm. Wheels ship with
+the static tree pre-baked; source builds error loudly when pnpm or
+Node isn't on PATH, with copy-pasteable CI setup recipes for GitHub
+Actions, CircleCI, Azure Pipelines, and GitLab CI inlined into the
+error. `SPHINX_VITE_BUILDER_SKIP=1` short-circuits the orchestration
+when an external pipeline owns Vite. Replaces and supersedes
+`gp-sphinx-vite`; `merge_sphinx_config(vite_orchestration=True)`
+auto-injects the new extension. (#29)
+
+### Bug fixes
+
+#### `gp-furo-theme`: Wheels now ship with vite-built CSS and JS
+
+`0.0.1a15` published wheels with an empty `static/` tree, leaving
+docs sites across every consumer unstyled. The new
+`sphinx-vite-builder.build` backend runs Vite at release time and
+hatchling packs the resulting assets, so a `pip install` from PyPI
+gets styled docs without the consumer rebuilding assets locally. (#29)
+
 ## gp-sphinx 0.0.1a15 (2026-05-02)
 
 ### What's new

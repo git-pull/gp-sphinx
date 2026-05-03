@@ -1,25 +1,30 @@
-"""Async subprocess wrapper for the Vite watch command.
+"""Async subprocess wrapper used by the Vite/pnpm orchestration.
 
 Wraps :func:`asyncio.create_subprocess_exec` with the conventions the
-orchestration layer needs:
+backend and extension heads need:
 
-- ``stdout``/``stderr`` are piped through line-buffered drainers that
-  prefix each line with a label (``[vite]`` by default) and route them
-  to a :class:`logging.Logger` — info for stdout, warning for stderr.
-  Mirrors the pattern in ``/home/d/scripts/py/image360/dev_server.py``.
+- ``stdout`` / ``stderr`` are piped through line-buffered drainers that
+  prefix each line with a label and route it to a
+  :class:`logging.Logger` — info for stdout, warning for stderr.
 - ``PYTHONUNBUFFERED=1`` is forced into the child env so Python tools
   invoked via the package-manager bridge don't withhold their output.
-- :meth:`ViteProcess.terminate` is graceful-then-forceful: SIGTERM,
+- On POSIX, the child runs in a new session (``start_new_session=True``)
+  and :meth:`AsyncProcess.terminate` signals the whole process group
+  via :func:`os.killpg` so ``pnpm exec`` plus every descendant exits
+  together. ``asyncio.subprocess.Process.terminate`` would only signal
+  the leader's PID, leaving the vite child orphaned (pnpm does not
+  forward signals to its ``exec`` target).
+- :meth:`AsyncProcess.terminate` is graceful-then-forceful: SIGTERM,
   await up to ``timeout`` seconds, escalate to SIGKILL if the child is
   still alive. Idempotent: calling on an already-exited process is a
   no-op.
 
-Argument lists are passed directly to ``create_subprocess_exec``; no
-shell, no string interpolation, no command injection surface.
+Argument lists are passed directly to the asyncio subprocess primitive;
+no shell, no string interpolation, no command-injection surface.
 
-The class is generic over "what command to run" so the same wrapper
-covers the production watch command and the fake-Vite shell scripts
-used in tests.
+The class is intentionally generic over "what command to run" so the
+same wrapper covers the production vite / pnpm calls and the fake
+shell scripts used in tests.
 """
 
 from __future__ import annotations
@@ -29,6 +34,8 @@ import contextlib
 import logging
 import os
 import pathlib
+import signal
+import sys
 import typing as t
 
 if t.TYPE_CHECKING:
@@ -37,17 +44,22 @@ if t.TYPE_CHECKING:
 _module_logger = logging.getLogger(__name__)
 
 
-class ViteProcess:
-    """Async wrapper around a long-running Vite child process."""
+class AsyncProcess:
+    """Async wrapper around a subprocess (one-shot or long-running).
+
+    Used for both ``pnpm install`` (one-shot, awaited) and
+    ``pnpm exec vite build --watch`` (long-running, terminated on
+    teardown).
+    """
 
     def __init__(
         self,
         *,
-        label: str = "vite",
+        label: str = "subprocess",
         logger: logging.Logger | logging.LoggerAdapter[t.Any] | None = None,
     ) -> None:
         # Accepts either a stdlib Logger or a LoggerAdapter (Sphinx's
-        # `sphinx.util.logging.SphinxLoggerAdapter` is a LoggerAdapter
+        # ``sphinx.util.logging.SphinxLoggerAdapter`` is a LoggerAdapter
         # subclass). Both expose the .log() method the drainers use.
         self._label = label
         self._logger: logging.Logger | logging.LoggerAdapter[t.Any] = (
@@ -55,6 +67,7 @@ class ViteProcess:
         )
         self._process: asyncio.subprocess.Process | None = None
         self._drainers: list[asyncio.Task[None]] = []
+        self._stderr_buffer: list[str] = []
 
     @property
     def is_running(self) -> bool:
@@ -71,6 +84,15 @@ class ViteProcess:
         """Child process ID, or ``None`` if not started."""
         return self._process.pid if self._process is not None else None
 
+    @property
+    def captured_stderr(self) -> str:
+        """Joined stderr lines captured by the drainer.
+
+        Useful for surfacing the underlying tool's diagnostic in error
+        messages when a build fails.
+        """
+        return "\n".join(self._stderr_buffer)
+
     async def start(
         self,
         command: t.Sequence[str],
@@ -78,7 +100,7 @@ class ViteProcess:
         cwd: pathlib.Path,
         env: t.Mapping[str, str] | None = None,
     ) -> None:
-        """Spawn ``command`` and start draining its stdout/stderr.
+        """Spawn ``command`` and start draining its stdout / stderr.
 
         Parameters
         ----------
@@ -86,25 +108,32 @@ class ViteProcess:
             Argument list. Passed straight to the asyncio subprocess
             primitive; no shell.
         cwd
-            Working directory for the child. Must contain ``package.json``
-            for a real package-manager invocation.
+            Working directory for the child.
         env
-            Optional environment override. ``PYTHONUNBUFFERED=1`` is always
-            injected on top of whatever this provides (or, if ``None``,
-            on top of :data:`os.environ`).
+            Optional environment override. ``PYTHONUNBUFFERED=1`` is
+            always injected on top of whatever this provides (or, if
+            ``None``, on top of :data:`os.environ`).
 
         Raises
         ------
         RuntimeError
-            If :meth:`start` is called twice on the same instance without
-            an intervening :meth:`terminate`.
+            If :meth:`start` is called twice on the same instance
+            without an intervening :meth:`terminate`.
         """
         if self._process is not None:
-            msg = "ViteProcess.start() called twice; spawn a new instance instead"
+            msg = "AsyncProcess.start() called twice; spawn a new instance instead"
             raise RuntimeError(msg)
 
         merged_env = dict(env) if env is not None else dict(os.environ)
         merged_env["PYTHONUNBUFFERED"] = "1"
+
+        # POSIX-only: ``start_new_session`` puts the child in its own
+        # session/process group so SIGTERM to that group takes down
+        # ``pnpm exec`` plus all its descendants. On Windows there's no
+        # equivalent; the asyncio default is fine.
+        spawn_kwargs: dict[str, t.Any] = {}
+        if sys.platform != "win32":
+            spawn_kwargs["start_new_session"] = True
 
         self._process = await asyncio.create_subprocess_exec(
             *command,
@@ -112,10 +141,11 @@ class ViteProcess:
             env=merged_env,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
+            **spawn_kwargs,
         )
 
-        # Pipe drainers — capture-and-log line by line so the parent
-        # process gets immediate visibility into Vite's progress.
+        # Pipe drainers — capture-and-log line by line so callers get
+        # immediate visibility into the tool's progress.
         assert self._process.stdout is not None
         assert self._process.stderr is not None
         self._drainers = [
@@ -124,7 +154,11 @@ class ViteProcess:
                 name=f"{self._label}-stdout-drainer",
             ),
             asyncio.create_task(
-                self._drain(self._process.stderr, level=logging.WARNING),
+                self._drain(
+                    self._process.stderr,
+                    level=logging.WARNING,
+                    capture=self._stderr_buffer,
+                ),
                 name=f"{self._label}-stderr-drainer",
             ),
         ]
@@ -132,13 +166,14 @@ class ViteProcess:
     async def wait(self) -> int:
         """Wait for the child to exit; return its exit code.
 
-        Drains the stdout/stderr pipes to completion before returning.
+        Drains the stdout / stderr pipes to completion before returning.
         """
         if self._process is None:
-            msg = "ViteProcess.wait() called before start()"
+            msg = "AsyncProcess.wait() called before start()"
             raise RuntimeError(msg)
         returncode = await self._process.wait()
-        # Let the drainers consume any final buffered lines before returning.
+        # Let the drainers consume any final buffered lines before
+        # returning to the caller.
         await asyncio.gather(*self._drainers, return_exceptions=True)
         return returncode
 
@@ -151,9 +186,7 @@ class ViteProcess:
         Parameters
         ----------
         timeout
-            Seconds to wait for graceful exit after SIGTERM. ``5.0`` is
-            the same default the plan calls for; matches the cleanup
-            pattern in ``/home/d/scripts/py/image360/dev_server.py``.
+            Seconds to wait for graceful exit after SIGTERM.
 
         Returns
         -------
@@ -166,7 +199,19 @@ class ViteProcess:
         if self._process.returncode is not None:
             return self._process.returncode
 
-        self._process.terminate()
+        # POSIX: the child was spawned with ``start_new_session=True``,
+        # so ``self._process.pid`` is the leader of its own session and
+        # equals its process-group ID. SIGTERM the whole group so
+        # ``pnpm exec`` plus all its descendants (including the vite
+        # process pnpm doesn't forward signals to) exit. asyncio's
+        # ``Process.terminate()`` is PID-only — it would leave vite
+        # orphaned. Windows has no ``killpg``; the asyncio default is
+        # the right primitive there.
+        with contextlib.suppress(ProcessLookupError):
+            if sys.platform != "win32":
+                os.killpg(self._process.pid, signal.SIGTERM)
+            else:
+                self._process.terminate()
         try:
             await asyncio.wait_for(self._process.wait(), timeout=timeout)
         except asyncio.TimeoutError:
@@ -175,10 +220,13 @@ class ViteProcess:
                 self._label,
                 timeout,
             )
-            # ProcessLookupError race: child can exit between
+            # ProcessLookupError race: the child can exit between
             # TimeoutError and kill().
             with contextlib.suppress(ProcessLookupError):
-                self._process.kill()
+                if sys.platform != "win32":
+                    os.killpg(self._process.pid, signal.SIGKILL)
+                else:
+                    self._process.kill()
             await self._process.wait()
 
         # Wait for drainers to consume their last buffered line before
@@ -191,8 +239,13 @@ class ViteProcess:
         stream: asyncio.StreamReader,
         *,
         level: int,
+        capture: list[str] | None = None,
     ) -> None:
-        """Consume ``stream`` line by line; log each line through ``self._logger``."""
+        """Consume ``stream`` line by line; log each line.
+
+        Optionally append every (non-empty) line to ``capture`` so callers
+        can surface it in error messages.
+        """
         while True:
             try:
                 line = await stream.readline()
@@ -203,41 +256,5 @@ class ViteProcess:
             text = line.decode("utf-8", errors="replace").rstrip("\n")
             if text:
                 self._logger.log(level, "[%s] %s", self._label, text)
-
-
-def vite_watch_command(*, package_manager: str = "pnpm") -> tuple[str, ...]:
-    """Build the canonical Vite-watch argv.
-
-    The output is a tuple suitable for passing straight into
-    :meth:`ViteProcess.start`. No shell metacharacters, no
-    interpolation: each token is a separate argv entry.
-
-    Examples
-    --------
-    >>> vite_watch_command()
-    ('pnpm', 'exec', 'vite', 'build', '--watch')
-    >>> vite_watch_command(package_manager="npm")
-    ('npm', 'exec', 'vite', 'build', '--watch')
-    """
-    return (package_manager, "exec", "vite", "build", "--watch")
-
-
-def pnpm_install_command(*, package_manager: str = "pnpm") -> tuple[str, ...]:
-    """Build the canonical "install workspace deps" argv.
-
-    Used by the orchestration's auto-install at builder-inited when
-    ``<vite_root>/node_modules/`` is missing — i.e. the first
-    ``sphinx-autobuild`` run after a fresh checkout or ``git clean -fdx``.
-
-    ``--frozen-lockfile`` matches the workspace's pinned ``pnpm-lock.yaml``;
-    pnpm refuses to mutate the lockfile or auto-resolve unspecified deps,
-    so the install is reproducible across machines and CI.
-
-    Examples
-    --------
-    >>> pnpm_install_command()
-    ('pnpm', 'install', '--frozen-lockfile')
-    >>> pnpm_install_command(package_manager="npm")
-    ('npm', 'install', '--frozen-lockfile')
-    """
-    return (package_manager, "install", "--frozen-lockfile")
+                if capture is not None:
+                    capture.append(text)

@@ -27,7 +27,7 @@ light/dark theming.
 
 ## Shared layout stack
 
-The six domain packages
+The autodoc extensions
 ({doc}`api-style <packages/sphinx-autodoc-api-style>`,
 {doc}`argparse <packages/sphinx-autodoc-argparse>`,
 {doc}`docutils <packages/sphinx-autodoc-docutils>`,
@@ -76,3 +76,40 @@ snapshots stay stable across environments.
 The majority of tests now operate directly on the docutils doctree —
 constructing `nodes.*` objects in Python — instead of running full Sphinx
 builds.  This makes tests faster, more precise, and easier to debug.
+
+## sphinx-vite-builder: Vite + pnpm orchestration end-to-end
+
+{doc}`sphinx-vite-builder <packages/sphinx-vite-builder>` consolidates
+the workspace's Vite story into a single package with three orthogonal
+activation paths sharing one async-subprocess core:
+
+- **PEP 517 build backend** — `build-backend =
+  "sphinx_vite_builder.build"` runs `pnpm exec vite build` before
+  delegating wheel/sdist construction to `hatchling.build`. End users
+  who `pip install` from PyPI get a wheel with the static tree
+  pre-baked at release time and never need pnpm or Node.
+- **Hatchling build hook** — `[tool.hatch.build.hooks.vite]`
+  composes with any other hatchling hook stack, so projects already
+  using `build-backend = "hatchling.build"` can adopt Vite without
+  swapping the backend.
+- **Sphinx extension** — `extensions = ["sphinx_vite_builder"]` in
+  `conf.py` auto-orchestrates Vite during docs builds: a one-shot
+  `pnpm exec vite build` for plain `sphinx-build`, a long-running
+  `pnpm exec vite build --watch` child process under
+  `sphinx-autobuild`, with graceful SIGTERM → SIGKILL teardown on
+  signal / `atexit`.
+
+The whole product is the **wheel-vs-source asymmetry**: a `web/`
+directory triggers strict orchestration with fast-fail diagnostics
+(`PnpmMissingError`, `NodeModulesInstallError`, `ViteFailedError`,
+each carrying a copy-pasteable hint), while an absent `web/` (the
+unpacked-sdist case) short-circuits cleanly so wheels published to
+PyPI need zero toolchain on the consumer side. Errors are
+self-healing in CI: detected providers (GitHub Actions, CircleCI,
+Azure Pipelines, GitLab CI) get the right setup recipe inlined into
+the error message.
+
+The legacy `gp-sphinx-vite` extension has been retired in favour of
+`sphinx-vite-builder`; consumers using
+`merge_sphinx_config(vite_orchestration=True)` continue to work
+without code changes.

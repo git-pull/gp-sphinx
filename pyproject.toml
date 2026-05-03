@@ -1,6 +1,6 @@
 [project]
 name = "gp-sphinx-workspace"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 description = "Workspace root for gp-sphinx packages"
 requires-python = ">=3.10,<4.0"
 authors = [
@@ -9,7 +9,7 @@ authors = [
 license = { text = "MIT" }
 readme = "README.md"
 dependencies = [
-  "gp-sphinx==0.0.1a15",
+  "gp-sphinx==0.0.1a16.dev4",
 ]
 
 [tool.uv.workspace]
@@ -31,8 +31,8 @@ sphinx-ux-autodoc-layout = { workspace = true }
 sphinx-gp-opengraph = { workspace = true }
 sphinx-gp-sitemap = { workspace = true }
 gp-furo-theme = { workspace = true }
-gp-sphinx-vite = { workspace = true }
 gp-sphinx = { workspace = true }
+sphinx-vite-builder = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -48,7 +48,7 @@ dev = [
   "sphinx-gp-opengraph",
   "sphinx-gp-sitemap",
   "gp-furo-theme",
-  "gp-sphinx-vite",
+  "sphinx-vite-builder",
   # Docs
   "sphinx-autobuild",
   # Testing
@@ -71,6 +71,12 @@ dev = [
   "types-docutils",
   "types-Pygments",
   "syrupy>=5.1.0",
+  # Build-backend tooling: sphinx-vite-builder.build delegates to
+  # hatchling.build, so hatchling must be importable for static analysis
+  # and for the backend's own tests; consumer packages declare it
+  # themselves via [build-system].requires, so this is a workspace-only
+  # dev dep, not a runtime one.
+  "hatchling>=1.0",
 ]
 
 [build-system]
@@ -213,6 +219,7 @@ testpaths = [
   "packages/sphinx-ux-badges/src",
   "packages/sphinx-gp-opengraph/src",
   "packages/sphinx-gp-sitemap/src",
+  "packages/sphinx-vite-builder/src",
 ]
 filterwarnings = [
   "ignore:distutils Version classes are deprecated. Use packaging.version instead.",

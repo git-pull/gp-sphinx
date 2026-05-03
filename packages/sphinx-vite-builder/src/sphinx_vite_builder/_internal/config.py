@@ -1,11 +1,10 @@
-"""Mode detection + config dataclass for gp-sphinx-vite.
+"""Mode detection + config dataclass for the Sphinx-extension head.
 
 Pure functions where possible — keeps the unit tests cheap (no Sphinx
 fixture, no subprocess). The Sphinx-aware glue lives in :mod:`hooks`.
 
-The mode detection mirrors what Furo's `_builder_inited` does indirectly
-(check builder name + extensions list); we additionally inspect ``argv``
-and ``SPHINX_AUTOBUILD`` so the orchestration becomes a no-op for
+Mode detection inspects ``argv``, ``SPHINX_AUTOBUILD``, and the parent
+process's command line so the orchestration becomes a no-op for
 ``sphinx-build`` invocations and turns on for ``sphinx-autobuild``.
 """
 
@@ -62,7 +61,7 @@ def detect_mode(
     env: t.Mapping[str, str] | None = None,
     parent_check: t.Callable[[], bool] | None = None,
 ) -> Mode:
-    """Resolve a ``gp_sphinx_vite_mode`` config value to a concrete :class:`Mode`.
+    """Resolve a ``sphinx_vite_builder_mode`` config value to a concrete :class:`Mode`.
 
     Parameters
     ----------
@@ -149,14 +148,14 @@ def detect_mode(
 
 
 def resolve_vite_root(explicit: str | os.PathLike[str] | None) -> pathlib.Path | None:
-    """Resolve the ``gp_sphinx_vite_root`` config value to an absolute path.
+    """Resolve the ``sphinx_vite_builder_root`` config value to an absolute path.
 
     Returns ``None`` if no explicit root is set; the hook layer treats
     that as "no Vite project to spawn" and logs a debug message. We
     intentionally do not auto-detect the active theme's ``web/``
     directory here — auto-detection is brittle (depends on theme
     layout, which is theme-specific) and would couple this package to
-    gp-furo-theme. Themes that want auto-wiring can set the config
+    any one theme. Themes that want auto-wiring can set the config
     value themselves from their own ``setup()`` callback.
 
     Examples
@@ -174,8 +173,8 @@ def resolve_vite_root(explicit: str | os.PathLike[str] | None) -> pathlib.Path |
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-class GpSphinxViteConfig:
-    """Frozen snapshot of the resolved gp-sphinx-vite configuration.
+class SphinxViteBuilderConfig:
+    """Frozen snapshot of the resolved sphinx-vite-builder configuration.
 
     Built once per Sphinx app at ``builder-inited`` time from
     ``app.config``; passed by value to the orchestration layer so the

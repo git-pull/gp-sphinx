@@ -7,6 +7,17 @@ on:
 jobs:
   qa:
     runs-on: ubuntu-latest
+    # `gp-furo-theme`'s build backend (`sphinx_vite_builder.build`) runs
+    # `pnpm exec vite build` during editable installs, which the qa
+    # runners can't satisfy (no pnpm/Node). qa's purpose is lint/types/
+    # tests against Python sources — the rendered theme isn't exercised
+    # here — so we set the documented escape-hatch env var on the whole
+    # job. The backend then short-circuits and the install succeeds.
+    # Test suites that build a Sphinx project with html_theme="gp-furo"
+    # behave the same as they do on a stock checkout without vite —
+    # Sphinx silently skips the missing static entries (no -W in qa).
+    env:
+      SPHINX_VITE_BUILDER_SKIP: "1"
     strategy:
       fail-fast: false
       matrix:
@@ -75,6 +86,21 @@ jobs:
         with:
           enable-cache: true
 
+      # `gp-furo-theme`'s build backend (`sphinx_vite_builder.build`)
+      # runs vite during editable install, populating the gitignored
+      # `static/` tree so the docs build below picks up real CSS / JS.
+      # The pnpm/Node steps below give the backend a working toolchain.
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
       - name: Install workspace dependencies
         run: uv sync --all-packages --all-extras --group dev
 
@@ -96,6 +122,25 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+
+      # `gp-furo-theme`'s sdist + wheel both go through
+      # `sphinx_vite_builder.build`, which runs vite. The wheels
+      # produced here are consumed by the smoke matrix below — they
+      # MUST contain populated `static/`, otherwise downstream smoke
+      # installs render unstyled. pnpm + Node satisfy that toolchain
+      # requirement; the backend's wheel-from-sdist short-circuit
+      # (no `web/` in unpacked sdist → assume pre-baked) means smoke
+      # jobs themselves don't need this setup.
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
 
       - name: Install workspace dependencies
         run: uv sync --all-packages --all-extras --group dev
@@ -135,6 +180,7 @@ jobs:
           - sphinx-autodoc-typehints-gp
           - sphinx-ux-badges
           - sphinx-ux-autodoc-layout
+          - sphinx-vite-builder
     steps:
       - uses: actions/checkout@v6
 
@@ -157,6 +203,12 @@ jobs:
 
       - name: Smoke test root bootstrap install
         if: matrix.target == 'root-install'
+        # The root install transitively builds `gp-furo-theme`, which
+        # routes through `sphinx_vite_builder.build`. The smoke target
+        # only verifies that imports resolve — it doesn't exercise the
+        # rendered theme — so we skip the vite invocation.
+        env:
+          SPHINX_VITE_BUILDER_SKIP: "1"
         run: python scripts/ci/package_tools.py smoke root-install
 
       - name: Smoke test built package artifact

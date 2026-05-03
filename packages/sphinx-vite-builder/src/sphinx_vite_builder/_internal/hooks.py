@@ -3,7 +3,7 @@
 The handlers live here (not in ``__init__.py``) so they're easy to unit
 test in isolation: tests mock a Sphinx-like app, call the handler
 directly, and assert against the process / bus instances stashed on
-``app._gp_sphinx_vite_*``.
+``app._sphinx_vite_builder_*``.
 
 Lifecycle:
 
@@ -12,16 +12,17 @@ Lifecycle:
   both on ``app``. Idempotent: re-firing (sphinx-autobuild fires this
   on every rebuild) finds the running process and returns.
 - ``build-finished`` (:func:`on_build_finished`) — no-op by default.
-  The watch process keeps running across rebuilds so Vite can incrementally
-  recompile on file changes. Teardown happens via :data:`atexit` and
-  signal handlers installed at first spawn.
+  The watch process keeps running across rebuilds so Vite can
+  incrementally recompile on file changes. Teardown happens via
+  :data:`atexit` and signal handlers installed at first spawn.
 
 Tear-down is the responsibility of :func:`teardown`, which is wired
 to ``atexit`` and to ``SIGINT`` / ``SIGTERM`` / ``SIGHUP``.
 
 The handlers are passive about command construction: they call
-:func:`gp_sphinx_vite.process.vite_watch_command` for the default Vite
-argv. Tests monkey-patch that symbol when they want a fake-vite invocation.
+:func:`sphinx_vite_builder._internal.process.vite_watch_command` for
+the default Vite argv. Tests monkey-patch that symbol when they want a
+fake-vite invocation.
 """
 
 from __future__ import annotations
@@ -32,11 +33,14 @@ import signal
 import typing as t
 import weakref
 
+from sphinx.errors import ExtensionError
 from sphinx.util import logging as sphinx_logging
 
 from .bus import AsyncioBus
-from .config import GpSphinxViteConfig, detect_mode, resolve_vite_root
-from .process import ViteProcess, pnpm_install_command, vite_watch_command
+from .config import Mode, SphinxViteBuilderConfig, detect_mode, resolve_vite_root
+from .errors import SphinxViteBuilderError
+from .process import AsyncProcess
+from .vite import pnpm_install_command, run_vite_build, vite_watch_command
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -48,9 +52,9 @@ if t.TYPE_CHECKING:
 # does not propagate by default in Sphinx contexts.
 logger = sphinx_logging.getLogger(__name__)
 
-_BUS_ATTR = "_gp_sphinx_vite_bus"
-_PROC_ATTR = "_gp_sphinx_vite_proc"
-_TEARDOWN_REGISTERED_ATTR = "_gp_sphinx_vite_teardown_registered"
+_BUS_ATTR = "_sphinx_vite_builder_bus"
+_PROC_ATTR = "_sphinx_vite_builder_proc"
+_TEARDOWN_REGISTERED_ATTR = "_sphinx_vite_builder_teardown_registered"
 
 # Live (bus, proc) pairs that the global teardown handler should clean
 # up. Held weakly so a Sphinx app being garbage-collected doesn't keep
@@ -60,11 +64,32 @@ _active_handles: weakref.WeakValueDictionary[int, AsyncioBus] = (
 )
 
 
-def _build_config(app: Sphinx) -> GpSphinxViteConfig:
+def _raise_as_extension_error(exc: Exception) -> t.NoReturn:
+    """Re-raise ``exc`` as :class:`sphinx.errors.ExtensionError`.
+
+    Sphinx's ``EventManager.emit()`` (``sphinx/events.py:405-456``)
+    auto-wraps non-``SphinxError`` exceptions raised from event handlers
+    using ``safe_getattr(listener.handler, '__module__', None)`` for the
+    ``modname`` kwarg — which for our hooks resolves to
+    ``'sphinx_vite_builder._internal.hooks'``. Wrapping explicitly with
+    ``modname='sphinx_vite_builder'`` keeps the user-facing
+    ``Extension error (sphinx_vite_builder)`` category clean and points
+    consumers at the published package, not the internal module path.
+    Because :class:`ExtensionError` IS a :class:`SphinxError`, the
+    auto-wrap path skips it: no double-wrap risk.
+    """
+    raise ExtensionError(
+        str(exc),
+        orig_exc=exc,
+        modname="sphinx_vite_builder",
+    ) from exc
+
+
+def _build_config(app: Sphinx) -> SphinxViteBuilderConfig:
     """Snapshot the live config values into a frozen dataclass."""
-    return GpSphinxViteConfig(
-        mode=detect_mode(config_value=app.config.gp_sphinx_vite_mode),
-        vite_root=resolve_vite_root(app.config.gp_sphinx_vite_root),
+    return SphinxViteBuilderConfig(
+        mode=detect_mode(config_value=app.config.sphinx_vite_builder_mode),
+        vite_root=resolve_vite_root(app.config.sphinx_vite_builder_root),
     )
 
 
@@ -75,7 +100,7 @@ def _ensure_node_modules(vite_root: pathlib.Path, bus: AsyncioBus) -> bool:
     ``node_modules/`` and the next ``sphinx-autobuild`` would otherwise
     spawn ``pnpm exec vite`` against a missing tree, exit immediately
     with ``Command "vite" not found``, and silently leave the docs site
-    serving 404s for ``furo-tw.css`` + ``furo.js``.
+    serving 404s for the theme's CSS + JS.
 
     Returns ``True`` if ``node_modules/`` exists (or was installed
     successfully); ``False`` if the install ran but exited non-zero,
@@ -92,7 +117,7 @@ def _ensure_node_modules(vite_root: pathlib.Path, bus: AsyncioBus) -> bool:
         vite_root,
         " ".join(install_cmd),
     )
-    install_proc = ViteProcess(label="pnpm-install", logger=logger)
+    install_proc = AsyncProcess(label="pnpm-install", logger=logger)
     bus.call_sync(install_proc.start(install_cmd, cwd=vite_root))
     returncode = bus.call_sync(install_proc.wait())
     if returncode != 0:
@@ -110,19 +135,37 @@ def _ensure_node_modules(vite_root: pathlib.Path, bus: AsyncioBus) -> bool:
 def on_builder_inited(app: Sphinx) -> None:
     """``builder-inited`` event handler.
 
-    Spawns the Vite watch process when the resolved config asks for it.
-    Idempotent across multiple builder-inited firings (sphinx-autobuild
-    re-fires this on every rebuild).
+    DEV mode (``sphinx-autobuild``) spawns the long-running Vite watch
+    process; PROD mode (plain ``sphinx-build``) runs a one-shot
+    ``pnpm exec vite build`` and blocks until it finishes so the
+    subsequent Sphinx build sees fresh CSS/JS in ``static/``. Idempotent
+    across multiple builder-inited firings (sphinx-autobuild re-fires
+    this on every rebuild).
 
     If ``<vite_root>/node_modules/`` is missing (typical after
     ``git clean -fdx``), runs ``pnpm install --frozen-lockfile``
     synchronously first so ``pnpm exec vite`` resolves on first try.
     """
     config = _build_config(app)
-    if not config.should_spawn:
+    if config.vite_root is None:
+        # No vite_root configured → nothing to orchestrate. Both modes
+        # treat this as "the consumer doesn't have a vite project to
+        # build" (typical when running off an installed wheel).
         return
 
-    existing_proc: ViteProcess | None = getattr(app, _PROC_ATTR, None)
+    if config.mode is Mode.PROD:
+        # One-shot build via the shared backend orchestration. Same
+        # short-circuits (SPHINX_VITE_BUILDER_SKIP, web/-absent) and
+        # same fast-fail diagnostics as the PEP 517 backend uses.
+        # ``run_vite_build`` resolves ``web/`` relative to its
+        # ``project_root`` argument, so pass the parent of vite_root.
+        try:
+            run_vite_build(project_root=config.vite_root.parent)
+        except SphinxViteBuilderError as exc:
+            _raise_as_extension_error(exc)
+        return
+
+    existing_proc: AsyncProcess | None = getattr(app, _PROC_ATTR, None)
     if existing_proc is not None and existing_proc.is_running:
         # sphinx-autobuild's repeated builder-inited; the watch is
         # already running, leave it alone.
@@ -145,12 +188,22 @@ def on_builder_inited(app: Sphinx) -> None:
         # spawn vite — pnpm exec would fail the same way.
         return
 
-    proc = ViteProcess(label="vite", logger=logger)
+    proc = AsyncProcess(label="vite", logger=logger)
     setattr(app, _PROC_ATTR, proc)
 
     command = vite_watch_command()
     logger.info("[vite] spawning %s in %s", " ".join(command), config.vite_root)
-    bus.call_sync(proc.start(command, cwd=config.vite_root))
+    try:
+        bus.call_sync(proc.start(command, cwd=config.vite_root))
+    except (SphinxViteBuilderError, OSError) as exc:
+        # OSError covers the FileNotFoundError that
+        # ``asyncio.create_subprocess_exec`` raises when the package
+        # manager (pnpm) is not on PATH. SphinxViteBuilderError covers
+        # any typed diagnostic raised through the bus from inside
+        # AsyncProcess.start. Both get the same modname-attributed
+        # ExtensionError treatment so users see "Extension error
+        # (sphinx_vite_builder)" instead of the internal module path.
+        _raise_as_extension_error(exc)
 
     if not getattr(app, _TEARDOWN_REGISTERED_ATTR, False):
         _install_teardown_handlers(app)
@@ -181,7 +234,7 @@ def teardown(app: Sphinx, *, terminate_timeout: float = 5.0) -> None:
     Idempotent: safe to call from multiple signal sources (atexit +
     SIGINT) without double-stop errors.
     """
-    proc: ViteProcess | None = getattr(app, _PROC_ATTR, None)
+    proc: AsyncProcess | None = getattr(app, _PROC_ATTR, None)
     bus: AsyncioBus | None = getattr(app, _BUS_ATTR, None)
     if proc is None and bus is None:
         return

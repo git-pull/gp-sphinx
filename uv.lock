@@ -8,14 +8,13 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-04-29T21:00:18.180438279Z"
+exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for backwards compatibility when using relative exclude-newer values.
 exclude-newer-span = "P3D"
 
 [manifest]
 members = [
     "gp-furo-theme",
     "gp-sphinx",
-    "gp-sphinx-vite",
     "gp-sphinx-workspace",
     "sphinx-autodoc-api-style",
     "sphinx-autodoc-argparse",
@@ -30,6 +29,7 @@ members = [
     "sphinx-gp-theme",
     "sphinx-ux-autodoc-layout",
     "sphinx-ux-badges",
+    "sphinx-vite-builder",
 ]
 
 [[package]]
@@ -387,7 +387,7 @@ wheels = [
 
 [[package]]
 name = "gp-furo-theme"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/gp-furo-theme" }
 dependencies = [
     { name = "accessible-pygments" },
@@ -423,7 +423,7 @@ wheels = [
 
 [[package]]
 name = "gp-sphinx"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/gp-sphinx" }
 dependencies = [
     { name = "docutils" },
@@ -471,20 +471,8 @@ requires-dist = [
 provides-extras = ["argparse"]
 
 [[package]]
-name = "gp-sphinx-vite"
-version = "0.0.1a15"
-source = { editable = "packages/gp-sphinx-vite" }
-dependencies = [
-    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
-
-[[package]]
 name = "gp-sphinx-workspace"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "." }
 dependencies = [
     { name = "gp-sphinx" },
@@ -496,7 +484,7 @@ dev = [
     { name = "coverage" },
     { name = "gp-furo-theme" },
     { name = "gp-sphinx" },
-    { name = "gp-sphinx-vite" },
+    { name = "hatchling" },
     { name = "mypy" },
     { name = "pillow" },
     { name = "pytest" },
@@ -519,6 +507,7 @@ dev = [
     { name = "sphinx-gp-sitemap" },
     { name = "sphinx-ux-autodoc-layout" },
     { name = "sphinx-ux-badges" },
+    { name = "sphinx-vite-builder" },
     { name = "syrupy" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
     { name = "types-docutils" },
@@ -535,7 +524,7 @@ dev = [
     { name = "coverage" },
     { name = "gp-furo-theme", editable = "packages/gp-furo-theme" },
     { name = "gp-sphinx", editable = "packages/gp-sphinx" },
-    { name = "gp-sphinx-vite", editable = "packages/gp-sphinx-vite" },
+    { name = "hatchling", specifier = ">=1.0" },
     { name = "mypy" },
     { name = "pillow" },
     { name = "pytest" },
@@ -557,6 +546,7 @@ dev = [
     { name = "sphinx-gp-sitemap", editable = "packages/sphinx-gp-sitemap" },
     { name = "sphinx-ux-autodoc-layout", editable = "packages/sphinx-ux-autodoc-layout" },
     { name = "sphinx-ux-badges", editable = "packages/sphinx-ux-badges" },
+    { name = "sphinx-vite-builder", editable = "packages/sphinx-vite-builder" },
     { name = "syrupy", specifier = ">=5.1.0" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
     { name = "types-docutils" },
@@ -637,6 +627,22 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/01/ee/02a2c011bdab74c6fb3c75474d40b3052059d95df7e73351460c8588d963/h11-0.16.0.tar.gz", hash = "sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1", size = 101250, upload-time = "2025-04-24T03:35:25.427Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl", hash = "sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86", size = 37515, upload-time = "2025-04-24T03:35:24.344Z" },
+]
+
+[[package]]
+name = "hatchling"
+version = "1.29.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+    { name = "pathspec" },
+    { name = "pluggy" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "trove-classifiers" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cf/9c/b4cfe330cd4f49cff17fd771154730555fa4123beb7f292cf0098b4e6c20/hatchling-1.29.0.tar.gz", hash = "sha256:793c31816d952cee405b83488ce001c719f325d9cda69f1fc4cd750527640ea6", size = 55656, upload-time = "2026-02-23T19:42:06.539Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d3/8a/44032265776062a89171285ede55a0bdaadc8ac00f27f0512a71a9e3e1c8/hatchling-1.29.0-py3-none-any.whl", hash = "sha256:50af9343281f34785fab12da82e445ed987a6efb34fd8c2fc0f6e6630dbcc1b0", size = 76356, upload-time = "2026-02-23T19:42:05.197Z" },
 ]
 
 [[package]]
@@ -1559,7 +1565,7 @@ wheels = [
 
 [[package]]
 name = "sphinx-autodoc-api-style"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/sphinx-autodoc-api-style" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1577,7 +1583,7 @@ requires-dist = [
 
 [[package]]
 name = "sphinx-autodoc-argparse"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/sphinx-autodoc-argparse" }
 dependencies = [
     { name = "docutils" },
@@ -1595,7 +1601,7 @@ requires-dist = [
 
 [[package]]
 name = "sphinx-autodoc-docutils"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/sphinx-autodoc-docutils" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1615,7 +1621,7 @@ requires-dist = [
 
 [[package]]
 name = "sphinx-autodoc-fastmcp"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/sphinx-autodoc-fastmcp" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1635,7 +1641,7 @@ requires-dist = [
 
 [[package]]
 name = "sphinx-autodoc-pytest-fixtures"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/sphinx-autodoc-pytest-fixtures" }
 dependencies = [
     { name = "pytest" },
@@ -1657,7 +1663,7 @@ requires-dist = [
 
 [[package]]
 name = "sphinx-autodoc-sphinx"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/sphinx-autodoc-sphinx" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1677,7 +1683,7 @@ requires-dist = [
 
 [[package]]
 name = "sphinx-autodoc-typehints-gp"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/sphinx-autodoc-typehints-gp" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1746,7 +1752,7 @@ wheels = [
 
 [[package]]
 name = "sphinx-fonts"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/sphinx-fonts" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1758,7 +1764,7 @@ requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
 
 [[package]]
 name = "sphinx-gp-opengraph"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/sphinx-gp-opengraph" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1770,7 +1776,7 @@ requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
 
 [[package]]
 name = "sphinx-gp-sitemap"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/sphinx-gp-sitemap" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1782,7 +1788,7 @@ requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
 
 [[package]]
 name = "sphinx-gp-theme"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/sphinx-gp-theme" }
 dependencies = [
     { name = "gp-furo-theme" },
@@ -1811,7 +1817,7 @@ wheels = [
 
 [[package]]
 name = "sphinx-ux-autodoc-layout"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/sphinx-ux-autodoc-layout" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1823,8 +1829,20 @@ requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
 
 [[package]]
 name = "sphinx-ux-badges"
-version = "0.0.1a15"
+version = "0.0.1a16.dev4"
 source = { editable = "packages/sphinx-ux-badges" }
+dependencies = [
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
+
+[[package]]
+name = "sphinx-vite-builder"
+version = "0.0.1a16.dev4"
+source = { editable = "packages/sphinx-vite-builder" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -1986,6 +2004,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/12/64/da524626d3b9cc40c168a13da8335fe1c51be12c0a63685cc6db7308daae/tomli-2.4.1-cp314-cp314t-win_amd64.whl", hash = "sha256:2c1c351919aca02858f740c6d33adea0c5deea37f9ecca1cc1ef9e884a619d26", size = 121196, upload-time = "2026-03-25T20:22:01.169Z" },
     { url = "https://files.pythonhosted.org/packages/5a/cd/e80b62269fc78fc36c9af5a6b89c835baa8af28ff5ad28c7028d60860320/tomli-2.4.1-cp314-cp314t-win_arm64.whl", hash = "sha256:eab21f45c7f66c13f2a9e0e1535309cee140182a9cdae1e041d02e47291e8396", size = 100393, upload-time = "2026-03-25T20:22:02.137Z" },
     { url = "https://files.pythonhosted.org/packages/7b/61/cceae43728b7de99d9b847560c262873a1f6c98202171fd5ed62640b494b/tomli-2.4.1-py3-none-any.whl", hash = "sha256:0d85819802132122da43cb86656f8d1f8c6587d54ae7dcaf30e90533028b49fe", size = 14583, upload-time = "2026-03-25T20:22:03.012Z" },
+]
+
+[[package]]
+name = "trove-classifiers"
+version = "2026.4.28.13"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/04/af/88fdebf242bc7bc4957c96c5358a2b2b0f07e5001401906783a521ea9f54/trove_classifiers-2026.4.28.13.tar.gz", hash = "sha256:c85bb8a53c3de7330d1699b844ed9fb809a602a09ac15dc79ad6d1a509be0676", size = 17035, upload-time = "2026-04-28T13:45:41.495Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d6/bb/fbdc4e57731efb86b4209ffdd2519520782bf27b3c961beac3e5c20d2b87/trove_classifiers-2026.4.28.13-py3-none-any.whl", hash = "sha256:8f4b1eb4e16296b57d612965444f87a83861cc989a0451ac97fe4265ddef03b8", size = 14216, upload-time = "2026-04-28T13:45:39.943Z" },
 ]
 
 [[package]]

@@ -2,13 +2,11 @@
 
 Sphinx's event hooks (``builder-inited``, ``build-finished``, …) are
 synchronous callables. The orchestration logic that they drive is
-asyncio-based (:class:`gp_sphinx_vite.process.ViteProcess` uses
-``asyncio.create_subprocess_exec``, pipe drainers, etc.). The bridge
+asyncio-based (:class:`sphinx_vite_builder._internal.process.AsyncProcess`
+uses ``asyncio.create_subprocess_exec``, pipe drainers, etc.). The bridge
 between them is a *single* event loop running in a single daemon
 thread, kept alive across ``builder-inited`` re-fires for
 ``sphinx-autobuild``.
-
-Pattern is the same as ``/home/d/work/cv/py/latex/dev.py:390-418``.
 
 Usage from a Sphinx hook:
 
@@ -51,7 +49,7 @@ class AsyncioBus:
     again — construct a new instance.
     """
 
-    def __init__(self, *, name: str = "gp-sphinx-vite-bus") -> None:
+    def __init__(self, *, name: str = "sphinx-vite-builder-bus") -> None:
         self._name = name
         self._loop: asyncio.AbstractEventLoop | None = None
         self._thread: threading.Thread | None = None

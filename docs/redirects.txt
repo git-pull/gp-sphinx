@@ -13,7 +13,9 @@ extensions/sphinx-ux-autodoc-layout packages/sphinx-ux-autodoc-layout
 extensions/sphinx-fonts packages/sphinx-fonts
 extensions/sphinx-gp-theme packages/sphinx-gp-theme
 extensions/gp-furo-theme packages/gp-furo-theme
-extensions/gp-sphinx-vite packages/gp-sphinx-vite
+extensions/gp-sphinx-vite packages/sphinx-vite-builder
+extensions/sphinx-vite-builder packages/sphinx-vite-builder
+packages/gp-sphinx-vite packages/sphinx-vite-builder
 extensions/sphinx-autodoc-typehints-gp packages/sphinx-autodoc-typehints-gp
 extensions/sphinx-argparse-neo packages/sphinx-autodoc-argparse
 extensions/sphinx-gptheme packages/sphinx-gp-theme

@@ -1,7 +1,7 @@
-"""Tests for :class:`gp_sphinx_vite.bus.AsyncioBus`.
+"""Tests for :class:`sphinx_vite_builder._internal.bus.AsyncioBus`.
 
 Bus is the thread + event-loop bridge that lets Sphinx's sync hooks
-drive ``ViteProcess``. Tests cover the lifecycle (start/stop/restart),
+drive ``AsyncProcess``. Tests cover the lifecycle (start/stop/restart),
 the two scheduling primitives (``call_sync`` / ``call_soon``), and a
 few edge cases (call before start, double start, exceptions in
 fire-and-forget coroutines).
@@ -18,7 +18,7 @@ import threading
 import time
 
 import pytest
-from gp_sphinx_vite.bus import AsyncioBus
+from sphinx_vite_builder._internal.bus import AsyncioBus
 
 
 def test_start_makes_bus_running() -> None:
@@ -124,7 +124,7 @@ def test_call_soon_logs_exception_without_raising(
 
     bus = AsyncioBus()
     try:
-        with caplog.at_level(logging.ERROR, logger="gp_sphinx_vite.bus"):
+        with caplog.at_level(logging.ERROR, logger="sphinx_vite_builder._internal.bus"):
             bus.start()
             bus.call_soon(_boom())
             # Schedule a follow-up so we know the bus is still alive.

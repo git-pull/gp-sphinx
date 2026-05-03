@@ -528,47 +528,6 @@ def smoke_gp_furo_theme(dist_dir: pathlib.Path, version: str) -> None:
         _run_sphinx_build(python_path, docs_dir, tmpdir / "_build")
 
 
-def smoke_gp_sphinx_vite(dist_dir: pathlib.Path, version: str) -> None:
-    """Verify the orchestration package installs cleanly, registers config values.
-
-    Skeleton-stage: subprocess orchestration is not yet wired, so the smoke
-    test imports the module, calls ``setup()`` against a fake app, and
-    asserts the two config values are registered. Full orchestration tests
-    live alongside the implementation in ``tests/test_gp_sphinx_vite.py``.
-    """
-    with tempfile.TemporaryDirectory() as tmp:
-        python_path = _create_venv(pathlib.Path(tmp))
-        _install_into_venv(
-            python_path,
-            *_workspace_wheel_requirements(dist_dir),
-        )
-        # Statements live on their own logical lines: Python's grammar
-        # forbids compound statements (``class``, ``def``, ``if``, …) after
-        # ``;``, so the previous semicolon-joined form raised
-        # ``SyntaxError: invalid syntax`` on ``calls = []; class FakeApp:``.
-        _run_python(
-            python_path,
-            (
-                "import gp_sphinx_vite\n"
-                f"assert gp_sphinx_vite.__version__ == {version!r}\n"
-                "assert callable(gp_sphinx_vite.setup)\n"
-                "config_values = []\n"
-                "events = []\n"
-                "class FakeApp:\n"
-                "    def add_config_value(self, name, **kwargs):\n"
-                "        config_values.append(name)\n"
-                "    def connect(self, event, handler):\n"
-                "        events.append(event)\n"
-                "metadata = gp_sphinx_vite.setup(FakeApp())\n"
-                "assert 'gp_sphinx_vite_mode' in config_values\n"
-                "assert 'gp_sphinx_vite_root' in config_values\n"
-                "assert 'builder-inited' in events\n"
-                "assert 'build-finished' in events\n"
-                "assert metadata['parallel_read_safe'] is True\n"
-            ),
-        )
-
-
 def smoke_sphinx_fonts(dist_dir: pathlib.Path, version: str) -> None:
     """Verify the standalone extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
@@ -775,6 +734,113 @@ def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
         )
 
 
+def smoke_sphinx_vite_builder(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the three activation paths of sphinx-vite-builder against the wheel.
+
+    Three scenarios, each in its own venv so they cannot mask each
+    other:
+
+    1. **Runtime install (no hatchling).** The wheel must import and
+       expose the Sphinx-extension entry point, AND ``hatchling`` MUST
+       NOT be present in the venv's installed-distribution set. If a
+       regression re-listed hatchling under ``[project].dependencies``,
+       ``uv pip install <wheel>`` would resolve and auto-install it
+       from the wheel's ``Requires-Dist`` metadata; the active
+       ``importlib.metadata.distribution('hatchling')`` check fires
+       ``AssertionError`` to catch that.
+    2. **Build-system install (hatchling alongside).** A consumer
+       using sphinx-vite-builder as a PEP 517 backend gets hatchling
+       resolved by the build frontend via
+       ``[build-system].requires``. Simulating that here verifies
+       the wheel's ``build`` module exposes the documented PEP 517
+       hooks (``build_wheel``, ``build_sdist``, ``build_editable``)
+       and they are callable.
+    3. **Hatchling build-hook discovery.** The Phase 3 Milestone A
+       variant registers ``[project.entry-points.hatch] vite =
+       "sphinx_vite_builder.hatch_plugin"``. From a fresh venv with
+       hatchling installed, ``importlib.metadata.entry_points
+       (group='hatch')`` must surface the ``vite`` entry pointing at
+       the right module. Catches a regression that drops the entry
+       point from the wheel's metadata.
+    """
+    wheel = _target_wheel_path(dist_dir, "sphinx-vite-builder")
+    # Scenario 1: runtime venv, no hatchling.
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(python_path, wheel, find_links=dist_dir)
+        _run_python(
+            python_path,
+            "\n".join(
+                (
+                    "from importlib.metadata import (",
+                    "    PackageNotFoundError,",
+                    "    distribution,",
+                    ")",
+                    "try:",
+                    "    distribution('hatchling')",
+                    "except PackageNotFoundError:",
+                    "    pass",
+                    "else:",
+                    "    raise AssertionError(",
+                    "        'hatchling must NOT be installed in the runtime venv; '",
+                    "        'a regression re-listed it under [project].dependencies'",
+                    "    )",
+                    "import sphinx_vite_builder",
+                    "from sphinx_vite_builder import setup",
+                    f"assert sphinx_vite_builder.__version__ == {version!r}",
+                    "assert callable(setup)",
+                ),
+            ),
+        )
+    # Scenario 2: build-system venv with hatchling alongside.
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(python_path, wheel, "hatchling>=1.0", find_links=dist_dir)
+        _run_python(
+            python_path,
+            (
+                "from sphinx_vite_builder import build; "
+                "assert callable(build.build_wheel); "
+                "assert callable(build.build_sdist); "
+                "assert callable(build.build_editable); "
+                "assert callable(build.get_requires_for_build_wheel); "
+                "assert callable(build.prepare_metadata_for_build_wheel)"
+            ),
+        )
+    # Scenario 3: hatchling build-hook entry-point discovery.
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(python_path, wheel, "hatchling>=1.0", find_links=dist_dir)
+        _run_python(
+            python_path,
+            "\n".join(
+                (
+                    "from importlib.metadata import entry_points",
+                    "eps = entry_points(group='hatch')",
+                    "matched = [ep for ep in eps if ep.name == 'vite']",
+                    "assert matched, (",
+                    "    'vite hook not registered in hatch entry-point group; '",
+                    "    'check [project.entry-points.hatch] in pyproject.toml'",
+                    ")",
+                    "assert matched[0].value == 'sphinx_vite_builder.hatch_plugin', (",
+                    "    f'wrong entry-point target: {matched[0].value!r}'",
+                    ")",
+                    "module = matched[0].load()",
+                    "assert hasattr(module, 'hatch_register_build_hook'), (",
+                    "    'loaded entry point lacks hatch_register_build_hook hookimpl'",
+                    ")",
+                    "hooks = module.hatch_register_build_hook()",
+                    "assert hooks, (",
+                    "    'hatch_register_build_hook returned no hook classes'",
+                    ")",
+                    "assert any(h.PLUGIN_NAME == 'vite' for h in hooks), (",
+                    "    f'no hook class with PLUGIN_NAME=vite: {hooks!r}'",
+                    ")",
+                ),
+            ),
+        )
+
+
 _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-gp-opengraph": smoke_sphinx_gp_opengraph,
     "sphinx-gp-sitemap": smoke_sphinx_gp_sitemap,
@@ -791,7 +857,7 @@ _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-gp-theme": smoke_sphinx_gp_theme,
     "sphinx-autodoc-typehints-gp": smoke_sphinx_autodoc_typehints_gp,
     "gp-furo-theme": smoke_gp_furo_theme,
-    "gp-sphinx-vite": smoke_gp_sphinx_vite,
+    "sphinx-vite-builder": smoke_sphinx_vite_builder,
 }
 
 

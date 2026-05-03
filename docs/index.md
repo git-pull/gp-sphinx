@@ -22,7 +22,7 @@ Visual showcase of the autodoc design system in action.
 :::{grid-item-card} Architecture
 :link: architecture
 :link-type: doc
-Three-tier package organization — infrastructure, domain, and presentation.
+Split into common libraries, build utils, autodoc extensions, and UX.
 :::
 
 :::{grid-item-card} Quickstart
@@ -34,7 +34,7 @@ Install and get started in minutes.
 :::{grid-item-card} Packages
 :link: packages/index
 :link-type: doc
-Twelve workspace packages — coordinator, extensions, and theme.
+Coordinator, autodoc extensions, build utils, UX components, and theme.
 :::
 
 :::{grid-item-card} Configuration
@@ -78,7 +78,7 @@ Out of the box, {py:func}`~gp_sphinx.config.merge_sphinx_config` activates:
 - **Unified badge system** — type and modifier badges for functions, classes, fixtures, tools
 - **Componentized layout** — card containers, parameter folding, managed signatures
 - **Clean type hints** — simplified annotations with cross-referenced links
-- **Five domain autodocumenters** — Python API, pytest fixtures, FastMCP tools, docutils, Sphinx config
+- **Autodoc extensions** — Python API, pytest fixtures, FastMCP tools, docutils, Sphinx config
 - **IBM Plex fonts** — professional typography with preloaded web fonts
 - **Dark mode** — full light/dark theming via CSS custom properties
 
@@ -133,7 +133,13 @@ packages/sphinx-autodoc-typehints-gp
 packages/gp-sphinx
 packages/sphinx-gp-theme
 packages/gp-furo-theme
-packages/gp-sphinx-vite
+```
+
+```{toctree}
+:caption: Build utils
+:hidden:
+
+packages/sphinx-vite-builder
 ```
 
 ```{toctree}

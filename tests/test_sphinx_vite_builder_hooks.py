@@ -1,10 +1,10 @@
-"""Tests for :mod:`gp_sphinx_vite.hooks`.
+"""Tests for :mod:`sphinx_vite_builder._internal.hooks`.
 
-The hooks layer wires a ``ViteProcess`` to Sphinx's lifecycle events.
-Tests use a thin Sphinx-app stand-in (with `.config` and the four
-attributes the hooks set) and a fake-vite Python script in
+The hooks layer wires an :class:`AsyncProcess` to Sphinx's lifecycle
+events. Tests use a thin Sphinx-app stand-in (with ``.config`` and the
+four attributes the hooks set) and a fake-vite Python script in
 ``tmp_path`` so each test can exercise the real subprocess +
-``AsyncioBus`` + ``ViteProcess`` chain end-to-end without booting a
+``AsyncioBus`` + ``AsyncProcess`` chain end-to-end without booting a
 full Sphinx build.
 """
 
@@ -17,15 +17,20 @@ import textwrap
 import time
 
 import pytest
-from gp_sphinx_vite import hooks
+from sphinx.errors import ExtensionError
+from sphinx_vite_builder._internal import hooks
+from sphinx_vite_builder._internal.errors import (
+    PnpmMissingError,
+    SphinxViteBuilderError,
+)
 
 
 @dataclasses.dataclass
 class _FakeConfig:
     """The slice of ``app.config`` the hooks read."""
 
-    gp_sphinx_vite_mode: str = "auto"
-    gp_sphinx_vite_root: str | None = None
+    sphinx_vite_builder_mode: str = "auto"
+    sphinx_vite_builder_root: str | None = None
 
 
 @dataclasses.dataclass
@@ -71,11 +76,7 @@ def _patch_vite_command(monkeypatch: pytest.MonkeyPatch, script: pathlib.Path) -
 def _patch_install_command(
     monkeypatch: pytest.MonkeyPatch, script: pathlib.Path
 ) -> None:
-    """Replace ``pnpm_install_command()`` with one that runs ``script``.
-
-    Mirrors :func:`_patch_vite_command` — keeps the auto-install tests
-    fast (no real pnpm invocation) and deterministic across machines.
-    """
+    """Replace ``pnpm_install_command()`` with one that runs ``script``."""
 
     def _fake_command() -> tuple[str, ...]:
         return (sys.executable, str(script))
@@ -102,8 +103,8 @@ def long_running_fake_vite(
     _patch_vite_command(monkeypatch, script)
     return _FakeApp(
         config=_FakeConfig(
-            gp_sphinx_vite_mode="dev",
-            gp_sphinx_vite_root=str(tmp_path),
+            sphinx_vite_builder_mode="dev",
+            sphinx_vite_builder_root=str(tmp_path),
         ),
     )
 
@@ -114,8 +115,8 @@ def test_on_builder_inited_no_op_in_prod_mode(
     """`mode="prod"` → no process spawned, no bus started."""
     app = _FakeApp(
         config=_FakeConfig(
-            gp_sphinx_vite_mode="prod",
-            gp_sphinx_vite_root=str(tmp_path),
+            sphinx_vite_builder_mode="prod",
+            sphinx_vite_builder_root=str(tmp_path),
         ),
     )
 
@@ -129,14 +130,55 @@ def test_on_builder_inited_no_op_in_prod_mode(
     assert getattr(app, hooks._BUS_ATTR, None) is None
 
 
+def test_on_builder_inited_runs_one_shot_in_prod_mode(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`mode="prod"` with a vite_root → one-shot run_vite_build, no spawn.
+
+    Covers the PROD branch added alongside the placeholder rewrite: under
+    plain ``sphinx-build`` the extension delegates to the same orchestration
+    primitive the PEP 517 backend uses, blocking the build until vite
+    finishes and never spawning the long-running watch.
+    """
+    captured: list[pathlib.Path | None] = []
+
+    def _capture(
+        project_root: pathlib.Path | None = None,
+        *,
+        package_manager: str = "pnpm",
+    ) -> None:
+        del package_manager
+        captured.append(project_root)
+
+    monkeypatch.setattr(hooks, "run_vite_build", _capture)
+
+    vite_root = tmp_path / "web"
+    vite_root.mkdir()
+    app = _FakeApp(
+        config=_FakeConfig(
+            sphinx_vite_builder_mode="prod",
+            sphinx_vite_builder_root=str(vite_root),
+        ),
+    )
+
+    hooks.on_builder_inited(app)  # type: ignore[arg-type]
+
+    # `run_vite_build` resolves `web/` relative to its `project_root`
+    # arg, so the hook passes the parent of vite_root.
+    assert captured == [vite_root.parent.resolve()]
+    # PROD path is one-shot: no watch process, no bus.
+    assert getattr(app, hooks._PROC_ATTR, None) is None
+    assert getattr(app, hooks._BUS_ATTR, None) is None
+
+
 def test_on_builder_inited_no_op_when_root_is_none(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """`mode="dev"` but no root → still no spawn (config.should_spawn is False)."""
     app = _FakeApp(
         config=_FakeConfig(
-            gp_sphinx_vite_mode="dev",
-            gp_sphinx_vite_root=None,
+            sphinx_vite_builder_mode="dev",
+            sphinx_vite_builder_root=None,
         ),
     )
 
@@ -260,7 +302,7 @@ def test_on_build_finished_logs_exception(
             captured.append(record)
 
     handler = _CaptureHandler(level=logging.DEBUG)
-    underlying = logging.getLogger("sphinx.gp_sphinx_vite.hooks")
+    underlying = logging.getLogger("sphinx.sphinx_vite_builder._internal.hooks")
     underlying.addHandler(handler)
     underlying.setLevel(logging.DEBUG)
 
@@ -278,20 +320,11 @@ def test_on_build_finished_logs_exception(
         hooks.teardown(app, terminate_timeout=2.0)  # type: ignore[arg-type]
 
 
-# Config-attribute happy-path coverage: t.cast asserts test reads the
-# expected attrs. A regression here means the hooks layer changed its
-# private-attr names (and other places — atexit handlers, downstream
-# tests — would silently break).
 def test_on_builder_inited_skips_install_when_node_modules_present(
     tmp_path: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Pre-existing node_modules/ → no install attempt; vite spawns directly.
-
-    Closes step-9 follow-up D's invariant: the auto-install path is only
-    invoked when node_modules is missing. Avoids re-running pnpm on every
-    builder-inited firing (sphinx-autobuild fires per rebuild).
-    """
+    """Pre-existing node_modules/ → no install attempt; vite spawns directly."""
     # Pre-create node_modules so _ensure_node_modules sees it as present.
     (tmp_path / "node_modules").mkdir()
     vite_script = _write_fake_vite(
@@ -313,8 +346,8 @@ def test_on_builder_inited_skips_install_when_node_modules_present(
 
     app = _FakeApp(
         config=_FakeConfig(
-            gp_sphinx_vite_mode="dev",
-            gp_sphinx_vite_root=str(tmp_path),
+            sphinx_vite_builder_mode="dev",
+            sphinx_vite_builder_root=str(tmp_path),
         ),
     )
     try:
@@ -335,7 +368,6 @@ def test_on_builder_inited_runs_install_when_node_modules_missing(
     the fake-pnpm script ran; ``node_modules/`` creation is the side-effect
     that silences subsequent _ensure_node_modules calls on a re-fire.
     """
-    # NO node_modules/ pre-created — install path must fire.
     install_marker = tmp_path / "installed.flag"
     install_script = tmp_path / "fake_pnpm.py"
     install_script.write_text(
@@ -362,8 +394,8 @@ def test_on_builder_inited_runs_install_when_node_modules_missing(
 
     app = _FakeApp(
         config=_FakeConfig(
-            gp_sphinx_vite_mode="dev",
-            gp_sphinx_vite_root=str(tmp_path),
+            sphinx_vite_builder_mode="dev",
+            sphinx_vite_builder_root=str(tmp_path),
         ),
     )
     try:
@@ -382,13 +414,7 @@ def test_on_builder_inited_skips_vite_when_install_fails(
     tmp_path: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Install exits non-zero → vite is not spawned; warning is logged.
-
-    Mirrors the real-world failure mode where ``pnpm install`` fails (no
-    pnpm-lock.yaml, network error, registry timeout, etc.). The
-    orchestration must not burn cycles on a guaranteed-failed
-    ``pnpm exec vite`` and must surface the failure visibly.
-    """
+    """Install exits non-zero → vite is not spawned; warning is logged."""
     install_script = tmp_path / "fake_pnpm.py"
     install_script.write_text(
         textwrap.dedent(
@@ -413,8 +439,8 @@ def test_on_builder_inited_skips_vite_when_install_fails(
 
     app = _FakeApp(
         config=_FakeConfig(
-            gp_sphinx_vite_mode="dev",
-            gp_sphinx_vite_root=str(tmp_path),
+            sphinx_vite_builder_mode="dev",
+            sphinx_vite_builder_root=str(tmp_path),
         ),
     )
     hooks.on_builder_inited(app)  # type: ignore[arg-type]
@@ -422,15 +448,13 @@ def test_on_builder_inited_skips_vite_when_install_fails(
     assert getattr(app, hooks._PROC_ATTR, None) is None, (
         "vite must not be spawned after a failed install"
     )
-    # Bus is created during the install phase; it's fine if it's still
-    # around — teardown handles it cleanly.
     hooks.teardown(app, terminate_timeout=2.0)  # type: ignore[arg-type]
 
 
 def test_private_attr_names_are_stable() -> None:
     """The private attribute names the hooks set on app are part of the contract."""
-    assert hooks._BUS_ATTR == "_gp_sphinx_vite_bus"
-    assert hooks._PROC_ATTR == "_gp_sphinx_vite_proc"
+    assert hooks._BUS_ATTR == "_sphinx_vite_builder_bus"
+    assert hooks._PROC_ATTR == "_sphinx_vite_builder_proc"
 
 
 _PRIVATE_ATTRS_TYPED: tuple[str, str, str] = (
@@ -441,6 +465,141 @@ _PRIVATE_ATTRS_TYPED: tuple[str, str, str] = (
 
 
 def test_all_private_attrs_share_prefix() -> None:
-    """Every private attribute starts with `_gp_sphinx_vite_`."""
+    """Every private attribute starts with `_sphinx_vite_builder_`."""
     for attr in _PRIVATE_ATTRS_TYPED:
-        assert attr.startswith("_gp_sphinx_vite_"), attr
+        assert attr.startswith("_sphinx_vite_builder_"), attr
+
+
+def test_prod_mode_failure_raises_extension_error_with_modname(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A typed diagnostic from PROD-mode run_vite_build → ExtensionError.
+
+    Sphinx's EventManager.emit() auto-wraps non-SphinxError exceptions
+    raised from event handlers using the handler's __module__ as the
+    modname — which would surface to users as "Extension error
+    (sphinx_vite_builder._internal.hooks)". The wrap-with-modname in
+    on_builder_inited keeps the user-facing attribution clean
+    ("Extension error (sphinx_vite_builder)") and preserves the original
+    diagnostic via orig_exc.
+    """
+
+    def _raise_pnpm_missing(
+        project_root: pathlib.Path | None = None,
+        *,
+        package_manager: str = "pnpm",
+    ) -> None:
+        del project_root, package_manager
+        msg = "pnpm is not on PATH"
+        raise PnpmMissingError(msg)
+
+    monkeypatch.setattr(hooks, "run_vite_build", _raise_pnpm_missing)
+
+    vite_root = tmp_path / "web"
+    vite_root.mkdir()
+    app = _FakeApp(
+        config=_FakeConfig(
+            sphinx_vite_builder_mode="prod",
+            sphinx_vite_builder_root=str(vite_root),
+        ),
+    )
+
+    with pytest.raises(ExtensionError) as excinfo:
+        hooks.on_builder_inited(app)  # type: ignore[arg-type]
+
+    assert excinfo.value.modname == "sphinx_vite_builder"
+    assert isinstance(excinfo.value.orig_exc, PnpmMissingError)
+    assert isinstance(excinfo.value.__cause__, PnpmMissingError)
+    assert "pnpm is not on PATH" in str(excinfo.value)
+
+
+def test_dev_mode_spawn_failure_raises_extension_error_with_modname(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A typed diagnostic from DEV-mode bus.call_sync → ExtensionError.
+
+    The DEV-mode path doesn't go through run_vite_build; it spawns the
+    long-running watch via bus.call_sync(proc.start(...)) directly. Any
+    SphinxViteBuilderError surfacing through the bus should still get
+    the same ExtensionError(modname='sphinx_vite_builder') treatment.
+    """
+
+    class _ExplodingProc:
+        async def start(self, command: tuple[str, ...], *, cwd: pathlib.Path) -> None:
+            del command, cwd
+            msg = "simulated vite spawn failure"
+            raise SphinxViteBuilderError(msg)
+
+    def _proc_factory(*, label: str = "", logger: object = None) -> _ExplodingProc:
+        del label, logger
+        return _ExplodingProc()
+
+    # Pre-create node_modules so _ensure_node_modules short-circuits.
+    (tmp_path / "node_modules").mkdir()
+    monkeypatch.setattr(hooks, "AsyncProcess", _proc_factory)
+
+    app = _FakeApp(
+        config=_FakeConfig(
+            sphinx_vite_builder_mode="dev",
+            sphinx_vite_builder_root=str(tmp_path),
+        ),
+    )
+
+    try:
+        with pytest.raises(ExtensionError) as excinfo:
+            hooks.on_builder_inited(app)  # type: ignore[arg-type]
+    finally:
+        # The bus was started before the spawn raised — clean up so the
+        # daemon thread doesn't outlive the test.
+        bus = getattr(app, hooks._BUS_ATTR, None)
+        if bus is not None:
+            bus.stop(timeout=1.0)
+        setattr(app, hooks._BUS_ATTR, None)
+
+    assert excinfo.value.modname == "sphinx_vite_builder"
+    assert isinstance(excinfo.value.orig_exc, SphinxViteBuilderError)
+    assert "simulated vite spawn failure" in str(excinfo.value)
+
+
+def test_dev_mode_oserror_from_missing_pnpm_raises_extension_error(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An ``OSError`` (typical: pnpm missing) → ExtensionError, not bare bubble.
+
+    ``asyncio.create_subprocess_exec`` raises ``FileNotFoundError`` (an
+    ``OSError`` subclass) when the executable isn't on PATH. Without
+    explicit handling, that bubbles to Sphinx's auto-wrap path with the
+    wrong modname; the catch in on_builder_inited surfaces it under
+    ``sphinx_vite_builder``.
+    """
+
+    class _OsErrorProc:
+        async def start(self, command: tuple[str, ...], *, cwd: pathlib.Path) -> None:
+            del command, cwd
+            raise FileNotFoundError(2, "No such file or directory: 'pnpm'")
+
+    def _proc_factory(*, label: str = "", logger: object = None) -> _OsErrorProc:
+        del label, logger
+        return _OsErrorProc()
+
+    (tmp_path / "node_modules").mkdir()
+    monkeypatch.setattr(hooks, "AsyncProcess", _proc_factory)
+
+    app = _FakeApp(
+        config=_FakeConfig(
+            sphinx_vite_builder_mode="dev",
+            sphinx_vite_builder_root=str(tmp_path),
+        ),
+    )
+
+    try:
+        with pytest.raises(ExtensionError) as excinfo:
+            hooks.on_builder_inited(app)  # type: ignore[arg-type]
+    finally:
+        bus = getattr(app, hooks._BUS_ATTR, None)
+        if bus is not None:
+            bus.stop(timeout=1.0)
+        setattr(app, hooks._BUS_ATTR, None)
+
+    assert excinfo.value.modname == "sphinx_vite_builder"
+    assert isinstance(excinfo.value.orig_exc, OSError)

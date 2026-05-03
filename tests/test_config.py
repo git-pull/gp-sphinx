@@ -125,25 +125,25 @@ def test_merge_sphinx_config_logos() -> None:
 
 
 def test_merge_sphinx_config_vite_orchestration_off_by_default() -> None:
-    """Without vite_orchestration=True, gp_sphinx_vite is NOT in extensions."""
+    """Without vite_orchestration=True, sphinx_vite_builder is NOT in extensions."""
     result = merge_sphinx_config(project="test", version="1.0", copyright="2026")
-    assert "gp_sphinx_vite" not in result["extensions"]
-    assert "gp_sphinx_vite_root" not in result
+    assert "sphinx_vite_builder" not in result["extensions"]
+    assert "sphinx_vite_builder_root" not in result
 
 
 def test_merge_sphinx_config_vite_orchestration_prepends_extension() -> None:
-    """vite_orchestration=True prepends gp_sphinx_vite as the first extension."""
+    """vite_orchestration=True prepends sphinx_vite_builder as the first extension."""
     result = merge_sphinx_config(
         project="test",
         version="1.0",
         copyright="2026",
         vite_orchestration=True,
     )
-    assert result["extensions"][0] == "gp_sphinx_vite"
+    assert result["extensions"][0] == "sphinx_vite_builder"
 
 
 def test_merge_sphinx_config_vite_orchestration_sets_root_from_workspace() -> None:
-    """vite_orchestration=True resolves gp_sphinx_vite_root from gp_furo_theme."""
+    """vite_orchestration=True resolves sphinx_vite_builder_root from gp_furo_theme."""
     import gp_furo_theme
 
     expected = gp_furo_theme.get_vite_root()
@@ -156,7 +156,7 @@ def test_merge_sphinx_config_vite_orchestration_sets_root_from_workspace() -> No
         copyright="2026",
         vite_orchestration=True,
     )
-    assert result["gp_sphinx_vite_root"] == str(expected)
+    assert result["sphinx_vite_builder_root"] == str(expected)
 
 
 def test_merge_sphinx_config_intersphinx_mapping() -> None:

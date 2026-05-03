@@ -42,6 +42,25 @@ jobs:
               print(f"{key}={value}")
           PY
 
+      # `gp-furo-theme`'s build backend (`sphinx_vite_builder.build`)
+      # runs `pnpm exec vite build` during sdist + wheel construction.
+      # Without pnpm + Node the backend fast-fails with PnpmMissingError
+      # and the release pipeline aborts before publish — exactly the
+      # invariant we want, but it requires the toolchain to be set up
+      # first. The backend short-circuits cleanly inside the unpacked
+      # sdist (no `web/` → assume pre-baked) so end users `pip install`
+      # without pnpm/Node.
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
       - name: Install workspace dependencies
         run: uv sync --all-packages --all-extras --group dev
 
