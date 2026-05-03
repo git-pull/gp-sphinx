@@ -77,10 +77,124 @@ def vite_watch_command(*, package_manager: str = "pnpm") -> tuple[str, ...]:
     return (package_manager, "exec", "vite", "build", "--watch")
 
 
-def _format_pnpm_missing_hint(vite_root: pathlib.Path) -> str:
-    """Multi-line, copy-pasteable hint when pnpm is not on PATH."""
+def _detect_ci_provider() -> str | None:
+    """Return a canonical CI-provider name, or ``None`` if not in CI.
+
+    Detection precedence: most-specific provider wins. Each provider's
+    canonical env var (per their docs) is checked first; the generic
+    ``CI=true`` is the fallback for "we know we're in CI but don't
+    recognise the provider".
+
+    Provider env vars (canonical, per upstream docs):
+
+    - GitHub Actions: ``GITHUB_ACTIONS=true``
+    - CircleCI: ``CIRCLECI=true``
+    - Azure Pipelines: ``TF_BUILD=True`` (Team Foundation Build)
+    - GitLab CI: ``GITLAB_CI=true``
+    - Generic: ``CI=true``
+    """
+    env = os.environ
+    # Map of "canonical name" → "env var to check (truthy)". Order
+    # matters: more-specific entries first.
+    providers: tuple[tuple[str, str], ...] = (
+        ("github-actions", "GITHUB_ACTIONS"),
+        ("circleci", "CIRCLECI"),
+        ("azure-pipelines", "TF_BUILD"),
+        ("gitlab", "GITLAB_CI"),
+        ("ci", "CI"),
+    )
+    for name, var in providers:
+        value = env.get(var, "").strip().lower()
+        if value in {"1", "true"}:
+            return name
+    return None
+
+
+# Each per-provider snippet is a *copy-pasteable* config fragment that
+# adds pnpm + Node to the platform's pipeline before the Python build
+# step runs. Versions follow the upstream pnpm CI guide
+# (https://pnpm.io/continuous-integration); update in lockstep with
+# the workspace's pnpm-lock.yaml's `packageManager` if it pins
+# something different.
+_CI_SETUP_RECIPES: dict[str, str] = {
+    "github-actions": textwrap.dedent(
+        """\
+        - uses: pnpm/action-setup@v6
+          with:
+            version: 10
+        - uses: actions/setup-node@v6
+          with:
+            node-version: 22
+            cache: pnpm""",
+    ),
+    "circleci": textwrap.dedent(
+        """\
+        - run:
+            name: Set up pnpm
+            command: |
+              npm install --global corepack@latest
+              corepack enable
+              corepack prepare pnpm@latest-10 --activate""",
+    ),
+    "azure-pipelines": textwrap.dedent(
+        """\
+        - task: NodeTool@0
+          inputs:
+            versionSpec: '22.x'
+          displayName: 'Set up Node'
+        - script: |
+            npm install --global corepack@latest
+            corepack enable
+            corepack prepare pnpm@latest-10 --activate
+          displayName: 'Set up pnpm'""",
+    ),
+    "gitlab": textwrap.dedent(
+        """\
+        before_script:
+          - npm install --global corepack@latest
+          - corepack enable
+          - corepack prepare pnpm@latest-10 --activate""",
+    ),
+    "ci": "  # Use your CI's package-manager setup mechanism to install pnpm",
+}
+
+
+def _format_ci_recipe_block(provider: str | None) -> str:
+    """Return a multi-line CI-specific setup snippet, or an empty string.
+
+    Called by :func:`_format_pnpm_missing_hint` when CI is detected so
+    the user's error message includes a copy-pasteable config fragment
+    for their platform.
+    """
+    if provider is None:
+        return ""
+
+    pretty: dict[str, str] = {
+        "github-actions": "GitHub Actions",
+        "circleci": "CircleCI",
+        "azure-pipelines": "Azure Pipelines",
+        "gitlab": "GitLab CI",
+        "ci": "this CI environment",
+    }
+    label = pretty.get(provider, provider)
+    recipe = _CI_SETUP_RECIPES.get(provider, "")
     return textwrap.dedent(
         f"""\
+
+        Detected CI provider: {label}. Add the following to your pipeline
+        config (before the Python build step that triggers this backend):
+
+{textwrap.indent(recipe, "          ")}
+        """,
+    ).rstrip()
+
+
+def _format_pnpm_missing_hint(vite_root: pathlib.Path) -> str:
+    """Multi-line, copy-pasteable hint when pnpm is not on PATH."""
+    ci_recipe = _format_ci_recipe_block(_detect_ci_provider())
+    return (
+        textwrap.dedent(
+            f"""\
         sphinx-vite-builder: cannot bootstrap the vite toolchain.
         `pnpm` is not on PATH. Install it via one of:
 
@@ -95,7 +209,9 @@ def _format_pnpm_missing_hint(vite_root: pathlib.Path) -> str:
 
         Vite project root resolved to: {vite_root}
         """,
-    ).rstrip()
+        ).rstrip()
+        + ci_recipe
+    )
 
 
 def _format_install_failed_hint(

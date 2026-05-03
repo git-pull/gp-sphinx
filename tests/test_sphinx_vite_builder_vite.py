@@ -10,6 +10,7 @@ from __future__ import annotations
 import pathlib
 import shutil
 import textwrap
+import typing as t
 
 import pytest
 from sphinx_vite_builder._internal import vite as vite_module
@@ -145,6 +146,227 @@ def test_pnpm_missing_error_inherits_from_base() -> None:
     assert issubclass(PnpmMissingError, SphinxViteBuilderError)
     assert issubclass(NodeModulesInstallError, SphinxViteBuilderError)
     assert issubclass(ViteFailedError, SphinxViteBuilderError)
+
+
+# ---------------------------------------------------------------------------
+# CI detection — pnpm-missing hint includes platform-specific setup recipes
+# ---------------------------------------------------------------------------
+
+
+def _clear_ci_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Strip every CI-detection env var so detection starts from a clean slate."""
+    for var in ("GITHUB_ACTIONS", "CIRCLECI", "TF_BUILD", "GITLAB_CI", "CI"):
+        monkeypatch.delenv(var, raising=False)
+
+
+def test_detect_ci_provider_returns_none_when_not_in_ci(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """No truthy CI env var → no provider detected."""
+    _clear_ci_env(monkeypatch)
+    assert vite_module._detect_ci_provider() is None
+
+
+class CIProviderCase(t.NamedTuple):
+    """Test case for :func:`_detect_ci_provider`."""
+
+    test_id: str
+    env_var: str
+    env_value: str
+    expected: str | None
+
+
+_CI_PROVIDER_FIXTURES: list[CIProviderCase] = [
+    CIProviderCase(
+        test_id="github-actions",
+        env_var="GITHUB_ACTIONS",
+        env_value="true",
+        expected="github-actions",
+    ),
+    CIProviderCase(
+        test_id="circleci",
+        env_var="CIRCLECI",
+        env_value="true",
+        expected="circleci",
+    ),
+    CIProviderCase(
+        test_id="azure-pipelines-mixed-case",
+        # Azure sets TF_BUILD=True (capital T). Detection is case-insensitive.
+        env_var="TF_BUILD",
+        env_value="True",
+        expected="azure-pipelines",
+    ),
+    CIProviderCase(
+        test_id="gitlab",
+        env_var="GITLAB_CI",
+        env_value="true",
+        expected="gitlab",
+    ),
+    CIProviderCase(
+        test_id="generic-ci-fallback",
+        env_var="CI",
+        env_value="true",
+        expected="ci",
+    ),
+    CIProviderCase(
+        test_id="numeric-truthy",
+        env_var="GITHUB_ACTIONS",
+        env_value="1",
+        expected="github-actions",
+    ),
+    CIProviderCase(
+        test_id="explicit-false-skips",
+        # Some platforms set the var to ``false`` rather than unsetting it.
+        env_var="GITHUB_ACTIONS",
+        env_value="false",
+        expected=None,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(CIProviderCase._fields),
+    _CI_PROVIDER_FIXTURES,
+    ids=[c.test_id for c in _CI_PROVIDER_FIXTURES],
+)
+def test_detect_ci_provider(
+    test_id: str,
+    env_var: str,
+    env_value: str,
+    expected: str | None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Each canonical CI env var resolves to its provider name."""
+    del test_id  # Used by pytest IDs.
+    _clear_ci_env(monkeypatch)
+    monkeypatch.setenv(env_var, env_value)
+    assert vite_module._detect_ci_provider() == expected
+
+
+def test_detect_ci_provider_specific_beats_generic(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """When both GITHUB_ACTIONS and CI are truthy, specific wins.
+
+    GitHub Actions sets both ``GITHUB_ACTIONS=true`` AND ``CI=true``;
+    detection MUST surface the specific provider so the recipe block
+    is GitHub-flavoured rather than the generic fallback.
+    """
+    _clear_ci_env(monkeypatch)
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setenv("CI", "true")
+    assert vite_module._detect_ci_provider() == "github-actions"
+
+
+def test_pnpm_missing_hint_omits_ci_block_outside_ci(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Local-dev failure → no CI recipe section."""
+    monkeypatch.delenv("SPHINX_VITE_BUILDER_SKIP", raising=False)
+    _clear_ci_env(monkeypatch)
+    project = _make_vite_project(tmp_path)
+    monkeypatch.setattr(shutil, "which", lambda _name: None)
+
+    with pytest.raises(PnpmMissingError) as exc_info:
+        run_vite_build(project)
+    msg = str(exc_info.value)
+    assert "Detected CI provider" not in msg
+    assert "Add the following to your pipeline" not in msg
+
+
+def test_pnpm_missing_hint_includes_github_actions_recipe(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """GitHub Actions failure → hint includes pnpm/action-setup snippet."""
+    monkeypatch.delenv("SPHINX_VITE_BUILDER_SKIP", raising=False)
+    _clear_ci_env(monkeypatch)
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    project = _make_vite_project(tmp_path)
+    monkeypatch.setattr(shutil, "which", lambda _name: None)
+
+    with pytest.raises(PnpmMissingError) as exc_info:
+        run_vite_build(project)
+    msg = str(exc_info.value)
+    assert "Detected CI provider: GitHub Actions" in msg
+    assert "pnpm/action-setup@v6" in msg
+    assert "actions/setup-node@v6" in msg
+
+
+def test_pnpm_missing_hint_includes_circleci_recipe(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """CircleCI failure → hint includes corepack-based pnpm install snippet."""
+    monkeypatch.delenv("SPHINX_VITE_BUILDER_SKIP", raising=False)
+    _clear_ci_env(monkeypatch)
+    monkeypatch.setenv("CIRCLECI", "true")
+    project = _make_vite_project(tmp_path)
+    monkeypatch.setattr(shutil, "which", lambda _name: None)
+
+    with pytest.raises(PnpmMissingError) as exc_info:
+        run_vite_build(project)
+    msg = str(exc_info.value)
+    assert "Detected CI provider: CircleCI" in msg
+    assert "corepack enable" in msg
+    assert "corepack prepare pnpm" in msg
+
+
+def test_pnpm_missing_hint_includes_azure_pipelines_recipe(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Azure Pipelines failure → hint includes NodeTool@0 + corepack snippet."""
+    monkeypatch.delenv("SPHINX_VITE_BUILDER_SKIP", raising=False)
+    _clear_ci_env(monkeypatch)
+    monkeypatch.setenv("TF_BUILD", "True")
+    project = _make_vite_project(tmp_path)
+    monkeypatch.setattr(shutil, "which", lambda _name: None)
+
+    with pytest.raises(PnpmMissingError) as exc_info:
+        run_vite_build(project)
+    msg = str(exc_info.value)
+    assert "Detected CI provider: Azure Pipelines" in msg
+    assert "NodeTool@0" in msg
+    assert "corepack enable" in msg
+
+
+def test_pnpm_missing_hint_includes_gitlab_recipe(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """GitLab CI failure → hint includes before_script corepack snippet."""
+    monkeypatch.delenv("SPHINX_VITE_BUILDER_SKIP", raising=False)
+    _clear_ci_env(monkeypatch)
+    monkeypatch.setenv("GITLAB_CI", "true")
+    project = _make_vite_project(tmp_path)
+    monkeypatch.setattr(shutil, "which", lambda _name: None)
+
+    with pytest.raises(PnpmMissingError) as exc_info:
+        run_vite_build(project)
+    msg = str(exc_info.value)
+    assert "Detected CI provider: GitLab CI" in msg
+    assert "before_script:" in msg
+    assert "corepack prepare pnpm" in msg
+
+
+def test_pnpm_missing_hint_generic_ci_fallback(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Unrecognised CI (only ``CI=true``) → generic fallback message."""
+    monkeypatch.delenv("SPHINX_VITE_BUILDER_SKIP", raising=False)
+    _clear_ci_env(monkeypatch)
+    monkeypatch.setenv("CI", "true")
+    project = _make_vite_project(tmp_path)
+    monkeypatch.setattr(shutil, "which", lambda _name: None)
+
+    with pytest.raises(PnpmMissingError) as exc_info:
+        run_vite_build(project)
+    msg = str(exc_info.value)
+    assert "Detected CI provider: this CI environment" in msg
+    assert "Use your CI's package-manager setup mechanism" in msg
 
 
 # ---------------------------------------------------------------------------
