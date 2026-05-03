@@ -37,7 +37,19 @@ def build_wheel(
     config_settings: dict[str, t.Any] | None = None,
     metadata_directory: str | None = None,
 ) -> str:
-    """PEP 517 ``build_wheel``: vite-build, then hatchling-pack."""
+    """PEP 517 ``build_wheel``: vite-build, then hatchling-pack.
+
+    Examples
+    --------
+    The hook's signature is the canonical PEP 517 shape consumers
+    expect:
+
+    >>> import inspect
+    >>> sorted(inspect.signature(build_wheel).parameters)
+    ['config_settings', 'metadata_directory', 'wheel_directory']
+    >>> callable(build_wheel)
+    True
+    """
     run_vite_build()
     return _hatchling.build_wheel(wheel_directory, config_settings, metadata_directory)
 
@@ -47,7 +59,16 @@ def build_editable(
     config_settings: dict[str, t.Any] | None = None,
     metadata_directory: str | None = None,
 ) -> str:
-    """PEP 660 ``build_editable``: vite-build, then hatchling-pack-editable."""
+    """PEP 660 ``build_editable``: vite-build, then hatchling-pack-editable.
+
+    Examples
+    --------
+    >>> import inspect
+    >>> sorted(inspect.signature(build_editable).parameters)
+    ['config_settings', 'metadata_directory', 'wheel_directory']
+    >>> callable(build_editable)
+    True
+    """
     run_vite_build()
     return _hatchling.build_editable(
         wheel_directory, config_settings, metadata_directory
@@ -66,6 +87,14 @@ def build_sdist(
     the sdist without pnpm or Node — the wheel-from-sdist build will
     skip vite (no ``web/`` in the unpacked tree) and ship the
     pre-baked assets via hatchling's normal file selection.
+
+    Examples
+    --------
+    >>> import inspect
+    >>> sorted(inspect.signature(build_sdist).parameters)
+    ['config_settings', 'sdist_directory']
+    >>> callable(build_sdist)
+    True
     """
     run_vite_build()
     return _hatchling.build_sdist(sdist_directory, config_settings)

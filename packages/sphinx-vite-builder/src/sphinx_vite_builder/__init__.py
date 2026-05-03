@@ -35,6 +35,19 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     on ``sphinx-build``) lands in a follow-up commit. For now this
     stub registers the extension so consumers can declare it without
     a no-such-module error, and returns the safety metadata.
+
+    Examples
+    --------
+    The Phase-1 stub returns the parallel-safety metadata Sphinx
+    expects, regardless of the application object passed in:
+
+    >>> class FakeApp:
+    ...     pass
+    >>> metadata = setup(FakeApp())  # type: ignore[arg-type]
+    >>> metadata["parallel_read_safe"]
+    True
+    >>> metadata["parallel_write_safe"]
+    True
     """
     del app
     return {

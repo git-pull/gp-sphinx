@@ -340,6 +340,22 @@ def run_vite_build(
       non-zero.
     - :class:`ViteFailedError` if ``pnpm exec vite build`` exits
       non-zero.
+
+    Examples
+    --------
+    The ``SPHINX_VITE_BUILDER_SKIP`` environment variable
+    short-circuits the whole orchestration before any subprocess is
+    spawned — exercising it from a doctest verifies the escape hatch
+    keeps working without touching pnpm, Node, or the filesystem
+    tree:
+
+    >>> import os, pathlib, tempfile
+    >>> os.environ["SPHINX_VITE_BUILDER_SKIP"] = "1"
+    >>> try:
+    ...     with tempfile.TemporaryDirectory() as tmp:
+    ...         run_vite_build(pathlib.Path(tmp))
+    ... finally:
+    ...     del os.environ["SPHINX_VITE_BUILDER_SKIP"]
     """
     if os.environ.get("SPHINX_VITE_BUILDER_SKIP"):
         logger.info("SPHINX_VITE_BUILDER_SKIP set; skipping vite build")
