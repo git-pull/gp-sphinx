@@ -1,6 +1,6 @@
 {
   "name": "@gp-sphinx-astro/theme",
-  "version": "0.0.1-alpha.12",
+  "version": "0.0.1-alpha.16",
   "description": "Astro theme components and Zod schemas for the gp-sphinx static site.",
   "private": true,
   "type": "module",
