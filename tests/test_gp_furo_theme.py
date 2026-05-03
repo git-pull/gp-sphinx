@@ -25,6 +25,7 @@ from tests._sphinx_scenarios import (
     build_shared_sphinx_result,
     read_output,
 )
+from tests.conftest import skip_if_gp_furo_assets_missing
 
 if t.TYPE_CHECKING:
     pass
@@ -214,6 +215,7 @@ def gp_furo_html_result(
     populates the ``furo_pygments`` / navigation / hide-toc Jinja context
     variables the ported templates expect.
     """
+    skip_if_gp_furo_assets_missing()
     cache_root = tmp_path_factory.mktemp("gp-furo-theme-html")
     scenario = SphinxScenario(
         files=(

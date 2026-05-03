@@ -337,6 +337,10 @@ def test_on_builder_inited_runs_install_when_node_modules_missing(
     the fake-pnpm script ran; ``node_modules/`` creation is the side-effect
     that silences subsequent _ensure_node_modules calls on a re-fire.
     """
+    # _ensure_node_modules calls shutil.which("pnpm") before the patched
+    # pnpm_install_command — pretend pnpm is on PATH so we exercise the
+    # install code path even on machines (CI, fresh containers) that lack it.
+    monkeypatch.setattr(shutil, "which", lambda _name: "/fake/pnpm")
     # NO node_modules/ pre-created — install path must fire.
     install_marker = tmp_path / "installed.flag"
     install_script = tmp_path / "fake_pnpm.py"
@@ -395,6 +399,9 @@ def test_on_builder_inited_raises_when_install_fails(
     render unstyled. ConfigError aborts the build at builder-inited
     time with an actionable hint.
     """
+    # Pretend pnpm is on PATH so we reach the install-failure branch
+    # rather than the pnpm-missing branch (covered by the sibling test).
+    monkeypatch.setattr(shutil, "which", lambda _name: "/fake/pnpm")
     install_script = tmp_path / "fake_pnpm.py"
     install_script.write_text(
         textwrap.dedent(
