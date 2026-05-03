@@ -782,12 +782,13 @@ def smoke_sphinx_vite_builder(dist_dir: pathlib.Path, version: str) -> None:
     other:
 
     1. **Runtime install (no hatchling).** The wheel must import and
-       expose the Sphinx-extension entry point without hatchling on
-       ``sys.path``. This is the load-bearing assertion that
-       hatchling truly isn't a runtime dependency — a regression
-       (e.g. accidentally re-listing hatchling under
-       ``[project].dependencies``) would let the build module import
-       eagerly and silently restore the old contract.
+       expose the Sphinx-extension entry point, AND ``hatchling`` MUST
+       NOT be present in the venv's installed-distribution set. If a
+       regression re-listed hatchling under ``[project].dependencies``,
+       ``uv pip install <wheel>`` would resolve and auto-install it
+       from the wheel's ``Requires-Dist`` metadata; the active
+       ``importlib.metadata.distribution('hatchling')`` check fires
+       ``AssertionError`` to catch that.
     2. **Build-system install (hatchling alongside).** A consumer
        using sphinx-vite-builder as a PEP 517 backend gets hatchling
        resolved by the build frontend via
@@ -803,11 +804,26 @@ def smoke_sphinx_vite_builder(dist_dir: pathlib.Path, version: str) -> None:
         _install_into_venv(python_path, wheel, find_links=dist_dir)
         _run_python(
             python_path,
-            (
-                "import sphinx_vite_builder; "
-                "from sphinx_vite_builder import setup; "
-                f"assert sphinx_vite_builder.__version__ == {version!r}; "
-                "assert callable(setup)"
+            "\n".join(
+                (
+                    "from importlib.metadata import (",
+                    "    PackageNotFoundError,",
+                    "    distribution,",
+                    ")",
+                    "try:",
+                    "    distribution('hatchling')",
+                    "except PackageNotFoundError:",
+                    "    pass",
+                    "else:",
+                    "    raise AssertionError(",
+                    "        'hatchling must NOT be installed in the runtime venv; '",
+                    "        'a regression re-listed it under [project].dependencies'",
+                    "    )",
+                    "import sphinx_vite_builder",
+                    "from sphinx_vite_builder import setup",
+                    f"assert sphinx_vite_builder.__version__ == {version!r}",
+                    "assert callable(setup)",
+                ),
             ),
         )
     # Scenario 2: build-system venv with hatchling alongside.
