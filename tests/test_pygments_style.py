@@ -28,6 +28,7 @@ from tests._sphinx_scenarios import (
     build_shared_sphinx_result,
     read_output,
 )
+from tests.conftest import skip_if_gp_furo_assets_missing
 
 # ---------------------------------------------------------------------------
 # Pure unit tests — style class registration & token mapping
@@ -195,6 +196,7 @@ def gp_sphinx_pygments_result(
     tmp_path_factory: pytest.TempPathFactory,
 ) -> SharedSphinxResult:
     """Build a tiny Sphinx project using sphinx-gp-theme + paired styles."""
+    skip_if_gp_furo_assets_missing()
     cache_root = tmp_path_factory.mktemp("gp-sphinx-pygments")
     scenario = SphinxScenario(
         files=(

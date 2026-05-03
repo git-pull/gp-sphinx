@@ -22,6 +22,8 @@ import hashlib
 import logging
 import os
 import pathlib
+import shutil
+import sys
 import typing as t
 from functools import cache, lru_cache
 
@@ -46,6 +48,129 @@ THEME_PATH = (pathlib.Path(__file__).parent / "theme" / THEME_NAME).resolve()
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+# Vite-built theme assets the rendered HTML references. Both must be on
+# disk under ``THEME_PATH/static/`` for sphinx-build to copy them into the
+# output's ``_static/`` tree. Missing assets ship the docs unstyled — the
+# failure mode that took down https://gp-sphinx.git-pull.com/ on the
+# v0.0.1a15 attempt and https://libtmux.git-pull.com/ on the downstream
+# install of that broken wheel.
+_REQUIRED_VITE_ASSETS: tuple[str, ...] = (
+    "scripts/furo.js",
+    "styles/furo-tw.css",
+)
+
+
+def _missing_vite_assets() -> list[pathlib.Path]:
+    """Return absolute paths of any required vite assets not on disk."""
+    static_root = THEME_PATH / "static"
+    return [
+        static_root / asset
+        for asset in _REQUIRED_VITE_ASSETS
+        if not (static_root / asset).is_file()
+    ]
+
+
+def _gp_sphinx_vite_owns_lifecycle(app: sphinx.application.Sphinx) -> bool:
+    """Detect whether ``gp-sphinx-vite`` is actively managing assets.
+
+    When the orchestration extension is registered AND mode resolves to
+    ``dev`` (sphinx-autobuild), it spawns ``pnpm exec vite build --watch``
+    from its own ``builder-inited`` handler; assets land asynchronously.
+    Hard-failing during the first ``builder-inited`` would defeat the
+    autobuild UX. ``prod`` mode is a no-op (extension intentionally idle),
+    so the assertion still applies there.
+    """
+    if "gp_sphinx_vite" not in app.config.extensions:
+        return False
+    try:
+        from gp_sphinx_vite.config import Mode, detect_mode
+    except ImportError:  # pragma: no cover - defensive; declared dep
+        return False
+    cfg_value = getattr(app.config, "gp_sphinx_vite_mode", "auto")
+    return (
+        detect_mode(
+            config_value=str(cfg_value),
+            argv=sys.argv,
+            env=os.environ,
+        )
+        is Mode.DEV
+    )
+
+
+def _format_missing_assets_hint(missing: list[pathlib.Path], *, version: str) -> str:
+    """Build the ConfigError message for missing vite assets.
+
+    The hint adapts to the runtime context so the action is copy-pasteable:
+    workspace contributors get a ``pnpm install`` / ``vite build`` recipe;
+    wheel-install consumers learn that the upstream wheel is broken and
+    where to file the issue.
+    """
+    web_root = get_vite_root()
+    pnpm_present = shutil.which("pnpm") is not None
+    bullets = [f"  - {p}" for p in missing]
+    lines = [
+        "gp-furo-theme: required theme assets are missing on disk:",
+        *bullets,
+        "",
+    ]
+    if web_root is None:
+        # Wheel install: the source ``web/`` tree is not present, so the
+        # only fix is upstream — either the published wheel was built
+        # without its assets (gp-sphinx <= 0.0.1a15 bug) or the install
+        # is corrupted. Don't surface contributor-only commands (e.g.
+        # ``pnpm exec vite build``) since there's no ``web/`` to run them
+        # against — the user can't act on those locally.
+        lines.extend(
+            [
+                f"Running from a wheel install of gp-furo-theme=={version}.",
+                "The wheel was published without its built theme assets — an",
+                "upstream packaging bug.",
+                "",
+                "Workarounds while waiting for a fixed release:",
+                "  1. Pin to an earlier working release of gp-sphinx (the",
+                "     pre-Furo-port a14 line shipped vendored Furo CSS).",
+                "  2. Install gp-furo-theme from a git checkout or sdist, and",
+                "     populate the package's static/ directory by hand.",
+                "",
+                "Track the fix at https://github.com/git-pull/gp-sphinx/issues",
+            ]
+        )
+    else:
+        # Workspace checkout: actionable recipe for the contributor.
+        lines.append(
+            "Running from a workspace checkout. Rebuild the assets with:",
+        )
+        lines.append("")
+        if not pnpm_present:
+            lines.extend(
+                [
+                    "  # pnpm is not on PATH. Install it via one of:",
+                    "  corepack enable        # Node 16.10+ ships corepack",
+                    "  curl -fsSL https://get.pnpm.io/install.sh | sh -",
+                    "  # See https://pnpm.io/installation",
+                    "",
+                ]
+            )
+        if not (web_root / "node_modules").is_dir():
+            lines.append(
+                f"  cd {web_root} && pnpm install --frozen-lockfile",
+            )
+        lines.append(f"  cd {web_root} && pnpm exec vite build")
+        lines.extend(
+            [
+                "",
+                "Or, for live-rebuild during authoring, run sphinx-autobuild",
+                "with gp-sphinx-vite enabled:",
+                "  extensions = ['gp_sphinx_vite']  # in conf.py",
+                "  uv run sphinx-autobuild docs _build/html",
+                "",
+                "gp-sphinx-vite auto-installs node_modules/ and spawns",
+                "``pnpm exec vite build --watch`` for you.",
+            ]
+        )
+    return "\n".join(lines)
+
 
 # GLOBAL STATE — populated by ``_builder_inited`` and consumed by
 # ``_html_page_context`` + ``_overwrite_pygments_css``. Values are Pygments
@@ -296,6 +421,19 @@ def _builder_inited(app: sphinx.application.Sphinx) -> None:
             "This should not happen."
         )
         raise ConfigError(msg)
+
+    # Hard-fail when the vite-built theme assets aren't on disk. Without
+    # this check sphinx-build silently skipped missing static files (no
+    # ``-W`` warning fires for stylesheets declared in ``theme.conf`` that
+    # aren't on disk), the deployed HTML referenced 404'd assets, and the
+    # site rendered unstyled. We fail loudly with an actionable hint
+    # instead. Skipped under ``gp-sphinx-vite``'s dev mode, which spawns
+    # vite-watch from its own ``builder-inited`` handler — the assets land
+    # asynchronously and would race a strict assertion here.
+    if not _gp_sphinx_vite_owns_lifecycle(app):
+        missing = _missing_vite_assets()
+        if missing:
+            raise ConfigError(_format_missing_assets_hint(missing, version=__version__))
 
     # Our JS file needs to be loaded as soon as possible.
     app.add_js_file("scripts/furo.js", priority=200)

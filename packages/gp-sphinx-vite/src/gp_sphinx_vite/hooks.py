@@ -28,10 +28,12 @@ from __future__ import annotations
 
 import atexit
 import pathlib
+import shutil
 import signal
 import typing as t
 import weakref
 
+from sphinx.errors import ConfigError
 from sphinx.util import logging as sphinx_logging
 
 from .bus import AsyncioBus
@@ -78,13 +80,33 @@ def _ensure_node_modules(vite_root: pathlib.Path, bus: AsyncioBus) -> bool:
     serving 404s for ``furo-tw.css`` + ``furo.js``.
 
     Returns ``True`` if ``node_modules/`` exists (or was installed
-    successfully); ``False`` if the install ran but exited non-zero,
-    which signals to :func:`on_builder_inited` to skip the vite-watch
-    spawn rather than burn cycles on a guaranteed-failed
-    ``pnpm exec vite``.
+    successfully). Raises :class:`sphinx.errors.ConfigError` with an
+    actionable hint when ``pnpm`` is missing on PATH, when
+    ``pnpm install`` exits non-zero, or when the resolved
+    ``node_modules/`` would still be empty after the install — in any of
+    those cases the subsequent ``pnpm exec vite`` would silently
+    produce no theme assets and the docs would render unstyled. We fail
+    loudly with a copy-pasteable bootstrap recipe so the error is
+    fixable from the message itself.
     """
     if (vite_root / "node_modules").exists():
         return True
+
+    if shutil.which("pnpm") is None:
+        msg = (
+            "gp-sphinx-vite: cannot bootstrap node_modules/ — pnpm is not on "
+            f"PATH, but it is required to build the vite-managed theme assets "
+            f"in {vite_root}. Install it via one of:\n"
+            "  corepack enable        # Node 16.10+ ships corepack\n"
+            "  curl -fsSL https://get.pnpm.io/install.sh | sh -\n"
+            "See https://pnpm.io/installation\n"
+            "\n"
+            "Or, if this environment is not supposed to build assets "
+            "(e.g. a wheel-only install), remove `gp_sphinx_vite` from "
+            "extensions in conf.py and rely on the published gp-furo-theme "
+            "wheel's pre-built static/ tree instead."
+        )
+        raise ConfigError(msg)
 
     install_cmd = pnpm_install_command()
     logger.info(
@@ -96,13 +118,20 @@ def _ensure_node_modules(vite_root: pathlib.Path, bus: AsyncioBus) -> bool:
     bus.call_sync(install_proc.start(install_cmd, cwd=vite_root))
     returncode = bus.call_sync(install_proc.wait())
     if returncode != 0:
-        logger.warning(
-            "[vite] pnpm install failed (exit %d) in %s — skipping vite "
-            "spawn; run the install manually and restart sphinx-autobuild",
-            returncode,
-            vite_root,
+        msg = (
+            f"gp-sphinx-vite: `{' '.join(install_cmd)}` exited with "
+            f"code {returncode} in {vite_root}. The vite-managed theme "
+            "assets cannot be produced; aborting the build rather than "
+            "shipping unstyled docs.\n"
+            "\n"
+            "Fix:\n"
+            f"  cd {vite_root}\n"
+            f"  {' '.join(install_cmd)}\n"
+            "\n"
+            "Inspect the install logs for the underlying pnpm error, then "
+            "re-run sphinx-autobuild / sphinx-build."
         )
-        return False
+        raise ConfigError(msg)
     logger.info("[vite] pnpm install complete; proceeding to vite-watch spawn")
     return True
 

@@ -12,12 +12,14 @@ from __future__ import annotations
 
 import dataclasses
 import pathlib
+import shutil
 import sys
 import textwrap
 import time
 
 import pytest
 from gp_sphinx_vite import hooks
+from sphinx.errors import ConfigError
 
 
 @dataclasses.dataclass
@@ -335,6 +337,10 @@ def test_on_builder_inited_runs_install_when_node_modules_missing(
     the fake-pnpm script ran; ``node_modules/`` creation is the side-effect
     that silences subsequent _ensure_node_modules calls on a re-fire.
     """
+    # _ensure_node_modules calls shutil.which("pnpm") before the patched
+    # pnpm_install_command — pretend pnpm is on PATH so we exercise the
+    # install code path even on machines (CI, fresh containers) that lack it.
+    monkeypatch.setattr(shutil, "which", lambda _name: "/fake/pnpm")
     # NO node_modules/ pre-created — install path must fire.
     install_marker = tmp_path / "installed.flag"
     install_script = tmp_path / "fake_pnpm.py"
@@ -378,17 +384,24 @@ def test_on_builder_inited_runs_install_when_node_modules_missing(
         hooks.teardown(app, terminate_timeout=2.0)  # type: ignore[arg-type]
 
 
-def test_on_builder_inited_skips_vite_when_install_fails(
+def test_on_builder_inited_raises_when_install_fails(
     tmp_path: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Install exits non-zero → vite is not spawned; warning is logged.
+    """Install exits non-zero → ConfigError; vite never spawned.
 
     Mirrors the real-world failure mode where ``pnpm install`` fails (no
     pnpm-lock.yaml, network error, registry timeout, etc.). The
     orchestration must not burn cycles on a guaranteed-failed
-    ``pnpm exec vite`` and must surface the failure visibly.
+    ``pnpm exec vite`` and must surface the failure loudly: a silent
+    skip would let the docs build proceed, sphinx-build would copy
+    nothing into ``_static/styles/``, and the deployed site would
+    render unstyled. ConfigError aborts the build at builder-inited
+    time with an actionable hint.
     """
+    # Pretend pnpm is on PATH so we reach the install-failure branch
+    # rather than the pnpm-missing branch (covered by the sibling test).
+    monkeypatch.setattr(shutil, "which", lambda _name: "/fake/pnpm")
     install_script = tmp_path / "fake_pnpm.py"
     install_script.write_text(
         textwrap.dedent(
@@ -417,14 +430,48 @@ def test_on_builder_inited_skips_vite_when_install_fails(
             gp_sphinx_vite_root=str(tmp_path),
         ),
     )
-    hooks.on_builder_inited(app)  # type: ignore[arg-type]
+    with pytest.raises(ConfigError, match=r"exited with code 1"):
+        hooks.on_builder_inited(app)  # type: ignore[arg-type]
     # No vite process should have been set on the app.
     assert getattr(app, hooks._PROC_ATTR, None) is None, (
         "vite must not be spawned after a failed install"
     )
-    # Bus is created during the install phase; it's fine if it's still
-    # around — teardown handles it cleanly.
+    # Bus is created during the install phase; teardown still cleans it.
     hooks.teardown(app, terminate_timeout=2.0)  # type: ignore[arg-type]
+
+
+def test_on_builder_inited_raises_when_pnpm_missing(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """No pnpm on PATH → ConfigError with bootstrap hint; no spawn attempt.
+
+    Without pnpm, ``pnpm install`` would fail with ``command not found``
+    inside the install subprocess. We pre-empt that by checking
+    ``shutil.which('pnpm')`` and raising a ConfigError that names the
+    canonical install paths (``corepack enable`` / get.pnpm.io). Hint
+    must mention both options so the user has an actionable next step.
+    """
+    monkeypatch.setattr(shutil, "which", lambda _name: None)
+
+    def _fail_install() -> tuple[str, ...]:
+        msg = "pnpm_install_command should not run when pnpm is missing"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(hooks, "pnpm_install_command", _fail_install)
+    (tmp_path / "package.json").write_text('{"name": "fake-vite-root"}\n')
+
+    app = _FakeApp(
+        config=_FakeConfig(
+            gp_sphinx_vite_mode="dev",
+            gp_sphinx_vite_root=str(tmp_path),
+        ),
+    )
+    with pytest.raises(ConfigError, match=r"pnpm is not on PATH") as exc_info:
+        hooks.on_builder_inited(app)  # type: ignore[arg-type]
+    msg = str(exc_info.value)
+    assert "corepack enable" in msg
+    assert "https://pnpm.io/installation" in msg
 
 
 def test_private_attr_names_are_stable() -> None:
