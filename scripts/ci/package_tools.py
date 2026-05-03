@@ -776,23 +776,31 @@ def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
 
 
 def smoke_sphinx_vite_builder(dist_dir: pathlib.Path, version: str) -> None:
-    """Verify the sphinx-vite-builder runtime surface imports cleanly.
+    """Verify both heads of sphinx-vite-builder against the built wheel.
 
-    Asserts the package and the Sphinx-extension entry point load
-    without hatchling: hatchling is build-time-only (consumers list it
-    in ``[build-system].requires``) so the wheel must not pull it in
-    as a runtime dependency. The PEP 517 ``build`` module deliberately
-    requires hatchling and is exercised in
-    ``tests/test_sphinx_vite_builder_build.py`` where the dev
-    environment supplies it.
+    Two scenarios, each in its own venv so they cannot mask each
+    other:
+
+    1. **Runtime install (no hatchling).** The wheel must import and
+       expose the Sphinx-extension entry point without hatchling on
+       ``sys.path``. This is the load-bearing assertion that
+       hatchling truly isn't a runtime dependency — a regression
+       (e.g. accidentally re-listing hatchling under
+       ``[project].dependencies``) would let the build module import
+       eagerly and silently restore the old contract.
+    2. **Build-system install (hatchling alongside).** A consumer
+       using sphinx-vite-builder as a PEP 517 backend gets hatchling
+       resolved by the build frontend via
+       ``[build-system].requires``. Simulating that here verifies
+       the wheel's ``build`` module exposes the documented PEP 517
+       hooks (``build_wheel``, ``build_sdist``, ``build_editable``)
+       and they are callable.
     """
+    wheel = _target_wheel_path(dist_dir, "sphinx-vite-builder")
+    # Scenario 1: runtime venv, no hatchling.
     with tempfile.TemporaryDirectory() as tmp:
         python_path = _create_venv(pathlib.Path(tmp))
-        _install_into_venv(
-            python_path,
-            _target_wheel_path(dist_dir, "sphinx-vite-builder"),
-            find_links=dist_dir,
-        )
+        _install_into_venv(python_path, wheel, find_links=dist_dir)
         _run_python(
             python_path,
             (
@@ -800,6 +808,21 @@ def smoke_sphinx_vite_builder(dist_dir: pathlib.Path, version: str) -> None:
                 "from sphinx_vite_builder import setup; "
                 f"assert sphinx_vite_builder.__version__ == {version!r}; "
                 "assert callable(setup)"
+            ),
+        )
+    # Scenario 2: build-system venv with hatchling alongside.
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(python_path, wheel, "hatchling>=1.0", find_links=dist_dir)
+        _run_python(
+            python_path,
+            (
+                "from sphinx_vite_builder import build; "
+                "assert callable(build.build_wheel); "
+                "assert callable(build.build_sdist); "
+                "assert callable(build.build_editable); "
+                "assert callable(build.get_requires_for_build_wheel); "
+                "assert callable(build.prepare_metadata_for_build_wheel)"
             ),
         )
 
