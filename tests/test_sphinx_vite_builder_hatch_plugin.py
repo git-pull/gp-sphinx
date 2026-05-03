@@ -64,7 +64,7 @@ def test_initialize_invokes_run_vite_build(
     hook = ViteBuildHook(
         root=str(tmp_path),
         config={},
-        build_config=None,  # type: ignore[arg-type]
+        build_config=None,
         metadata=None,  # type: ignore[arg-type]
         directory="",
         target_name="wheel",
