@@ -735,9 +735,9 @@ def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
 
 
 def smoke_sphinx_vite_builder(dist_dir: pathlib.Path, version: str) -> None:
-    """Verify both heads of sphinx-vite-builder against the built wheel.
+    """Verify the three activation paths of sphinx-vite-builder against the wheel.
 
-    Two scenarios, each in its own venv so they cannot mask each
+    Three scenarios, each in its own venv so they cannot mask each
     other:
 
     1. **Runtime install (no hatchling).** The wheel must import and
@@ -755,6 +755,13 @@ def smoke_sphinx_vite_builder(dist_dir: pathlib.Path, version: str) -> None:
        the wheel's ``build`` module exposes the documented PEP 517
        hooks (``build_wheel``, ``build_sdist``, ``build_editable``)
        and they are callable.
+    3. **Hatchling build-hook discovery.** The Phase 3 Milestone A
+       variant registers ``[project.entry-points.hatch] vite =
+       "sphinx_vite_builder.hatch_plugin"``. From a fresh venv with
+       hatchling installed, ``importlib.metadata.entry_points
+       (group='hatch')`` must surface the ``vite`` entry pointing at
+       the right module. Catches a regression that drops the entry
+       point from the wheel's metadata.
     """
     wheel = _target_wheel_path(dist_dir, "sphinx-vite-builder")
     # Scenario 1: runtime venv, no hatchling.
@@ -798,6 +805,38 @@ def smoke_sphinx_vite_builder(dist_dir: pathlib.Path, version: str) -> None:
                 "assert callable(build.build_editable); "
                 "assert callable(build.get_requires_for_build_wheel); "
                 "assert callable(build.prepare_metadata_for_build_wheel)"
+            ),
+        )
+    # Scenario 3: hatchling build-hook entry-point discovery.
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(python_path, wheel, "hatchling>=1.0", find_links=dist_dir)
+        _run_python(
+            python_path,
+            "\n".join(
+                (
+                    "from importlib.metadata import entry_points",
+                    "eps = entry_points(group='hatch')",
+                    "matched = [ep for ep in eps if ep.name == 'vite']",
+                    "assert matched, (",
+                    "    'vite hook not registered in hatch entry-point group; '",
+                    "    'check [project.entry-points.hatch] in pyproject.toml'",
+                    ")",
+                    "assert matched[0].value == 'sphinx_vite_builder.hatch_plugin', (",
+                    "    f'wrong entry-point target: {matched[0].value!r}'",
+                    ")",
+                    "module = matched[0].load()",
+                    "assert hasattr(module, 'hatch_register_build_hook'), (",
+                    "    'loaded entry point lacks hatch_register_build_hook hookimpl'",
+                    ")",
+                    "hooks = module.hatch_register_build_hook()",
+                    "assert hooks, (",
+                    "    'hatch_register_build_hook returned no hook classes'",
+                    ")",
+                    "assert any(h.PLUGIN_NAME == 'vite' for h in hooks), (",
+                    "    f'no hook class with PLUGIN_NAME=vite: {hooks!r}'",
+                    ")",
+                ),
             ),
         )
 
