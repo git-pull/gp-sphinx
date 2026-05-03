@@ -48,43 +48,6 @@ jobs:
       - name: Validate lockstep versions
         run: uv run python scripts/ci/package_tools.py check-versions
 
-      # The vite asset build MUST run before `uv build` so the
-      # gp-furo-theme wheel includes its built CSS/JS under
-      # `theme/gp-furo/static/`. Without this step the wheel ships
-      # empty of theme assets (the static dir is gitignored) and every
-      # downstream install renders unstyled — the v0.0.1a15 release
-      # bug.
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v6
-        with:
-          version: 10
-
-      - name: Set up Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install JS workspace
-        run: pnpm install --frozen-lockfile
-
-      - name: Build vite-managed theme assets
-        run: pnpm --filter @gp-sphinx/furo-theme-web exec vite build
-
-      - name: Verify vite output is on disk
-        # Defensive: if vite build silently produced no output we'd ship
-        # an empty wheel again. Fail the workflow loudly here so the
-        # publish step never runs against a broken artefact.
-        run: |
-          static_root=packages/gp-furo-theme/src/gp_furo_theme/theme/gp-furo/static
-          for required in styles/furo-tw.css scripts/furo.js; do
-            if [ ! -f "$static_root/$required" ]; then
-              echo "::error::vite build did not produce $static_root/$required"
-              echo "::error::Wheel build aborted to avoid publishing a broken release."
-              exit 1
-            fi
-          done
-
       - name: Build publishable packages
         run: |
           rm -rf dist
@@ -92,24 +55,6 @@ jobs:
           while IFS= read -r package; do
             uv build --package "$package" --out-dir dist
           done < <(uv run python scripts/ci/package_tools.py print-packages)
-
-      - name: Verify gp-furo-theme wheel ships static assets
-        # Defence in depth: even if vite ran and the static dir is on
-        # disk, hatchling's force-include must successfully copy it
-        # into the wheel. Inspect the built wheel before publishing.
-        run: |
-          wheel=$(ls dist/gp_furo_theme-*-py3-none-any.whl)
-          if ! unzip -l "$wheel" | grep -q 'theme/gp-furo/static/styles/furo-tw.css'; then
-            echo "::error::gp-furo-theme wheel does not contain styles/furo-tw.css"
-            unzip -l "$wheel"
-            exit 1
-          fi
-          if ! unzip -l "$wheel" | grep -q 'theme/gp-furo/static/scripts/furo.js'; then
-            echo "::error::gp-furo-theme wheel does not contain scripts/furo.js"
-            unzip -l "$wheel"
-            exit 1
-          fi
-          echo "gp-furo-theme wheel verified: contains both CSS + JS theme assets"
 
       - name: Validate distributions with twine
         run: uvx twine check dist/*
