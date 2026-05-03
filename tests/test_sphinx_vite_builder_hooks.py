@@ -17,7 +17,12 @@ import textwrap
 import time
 
 import pytest
+from sphinx.errors import ExtensionError
 from sphinx_vite_builder._internal import hooks
+from sphinx_vite_builder._internal.errors import (
+    PnpmMissingError,
+    SphinxViteBuilderError,
+)
 
 
 @dataclasses.dataclass
@@ -463,3 +468,138 @@ def test_all_private_attrs_share_prefix() -> None:
     """Every private attribute starts with `_sphinx_vite_builder_`."""
     for attr in _PRIVATE_ATTRS_TYPED:
         assert attr.startswith("_sphinx_vite_builder_"), attr
+
+
+def test_prod_mode_failure_raises_extension_error_with_modname(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A typed diagnostic from PROD-mode run_vite_build → ExtensionError.
+
+    Sphinx's EventManager.emit() auto-wraps non-SphinxError exceptions
+    raised from event handlers using the handler's __module__ as the
+    modname — which would surface to users as "Extension error
+    (sphinx_vite_builder._internal.hooks)". The wrap-with-modname in
+    on_builder_inited keeps the user-facing attribution clean
+    ("Extension error (sphinx_vite_builder)") and preserves the original
+    diagnostic via orig_exc.
+    """
+
+    def _raise_pnpm_missing(
+        project_root: pathlib.Path | None = None,
+        *,
+        package_manager: str = "pnpm",
+    ) -> None:
+        del project_root, package_manager
+        msg = "pnpm is not on PATH"
+        raise PnpmMissingError(msg)
+
+    monkeypatch.setattr(hooks, "run_vite_build", _raise_pnpm_missing)
+
+    vite_root = tmp_path / "web"
+    vite_root.mkdir()
+    app = _FakeApp(
+        config=_FakeConfig(
+            sphinx_vite_builder_mode="prod",
+            sphinx_vite_builder_root=str(vite_root),
+        ),
+    )
+
+    with pytest.raises(ExtensionError) as excinfo:
+        hooks.on_builder_inited(app)  # type: ignore[arg-type]
+
+    assert excinfo.value.modname == "sphinx_vite_builder"
+    assert isinstance(excinfo.value.orig_exc, PnpmMissingError)
+    assert isinstance(excinfo.value.__cause__, PnpmMissingError)
+    assert "pnpm is not on PATH" in str(excinfo.value)
+
+
+def test_dev_mode_spawn_failure_raises_extension_error_with_modname(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A typed diagnostic from DEV-mode bus.call_sync → ExtensionError.
+
+    The DEV-mode path doesn't go through run_vite_build; it spawns the
+    long-running watch via bus.call_sync(proc.start(...)) directly. Any
+    SphinxViteBuilderError surfacing through the bus should still get
+    the same ExtensionError(modname='sphinx_vite_builder') treatment.
+    """
+
+    class _ExplodingProc:
+        async def start(self, command: tuple[str, ...], *, cwd: pathlib.Path) -> None:
+            del command, cwd
+            msg = "simulated vite spawn failure"
+            raise SphinxViteBuilderError(msg)
+
+    def _proc_factory(*, label: str = "", logger: object = None) -> _ExplodingProc:
+        del label, logger
+        return _ExplodingProc()
+
+    # Pre-create node_modules so _ensure_node_modules short-circuits.
+    (tmp_path / "node_modules").mkdir()
+    monkeypatch.setattr(hooks, "AsyncProcess", _proc_factory)
+
+    app = _FakeApp(
+        config=_FakeConfig(
+            sphinx_vite_builder_mode="dev",
+            sphinx_vite_builder_root=str(tmp_path),
+        ),
+    )
+
+    try:
+        with pytest.raises(ExtensionError) as excinfo:
+            hooks.on_builder_inited(app)  # type: ignore[arg-type]
+    finally:
+        # The bus was started before the spawn raised — clean up so the
+        # daemon thread doesn't outlive the test.
+        bus = getattr(app, hooks._BUS_ATTR, None)
+        if bus is not None:
+            bus.stop(timeout=1.0)
+        setattr(app, hooks._BUS_ATTR, None)
+
+    assert excinfo.value.modname == "sphinx_vite_builder"
+    assert isinstance(excinfo.value.orig_exc, SphinxViteBuilderError)
+    assert "simulated vite spawn failure" in str(excinfo.value)
+
+
+def test_dev_mode_oserror_from_missing_pnpm_raises_extension_error(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An ``OSError`` (typical: pnpm missing) → ExtensionError, not bare bubble.
+
+    ``asyncio.create_subprocess_exec`` raises ``FileNotFoundError`` (an
+    ``OSError`` subclass) when the executable isn't on PATH. Without
+    explicit handling, that bubbles to Sphinx's auto-wrap path with the
+    wrong modname; the catch in on_builder_inited surfaces it under
+    ``sphinx_vite_builder``.
+    """
+
+    class _OsErrorProc:
+        async def start(self, command: tuple[str, ...], *, cwd: pathlib.Path) -> None:
+            del command, cwd
+            raise FileNotFoundError(2, "No such file or directory: 'pnpm'")
+
+    def _proc_factory(*, label: str = "", logger: object = None) -> _OsErrorProc:
+        del label, logger
+        return _OsErrorProc()
+
+    (tmp_path / "node_modules").mkdir()
+    monkeypatch.setattr(hooks, "AsyncProcess", _proc_factory)
+
+    app = _FakeApp(
+        config=_FakeConfig(
+            sphinx_vite_builder_mode="dev",
+            sphinx_vite_builder_root=str(tmp_path),
+        ),
+    )
+
+    try:
+        with pytest.raises(ExtensionError) as excinfo:
+            hooks.on_builder_inited(app)  # type: ignore[arg-type]
+    finally:
+        bus = getattr(app, hooks._BUS_ATTR, None)
+        if bus is not None:
+            bus.stop(timeout=1.0)
+        setattr(app, hooks._BUS_ATTR, None)
+
+    assert excinfo.value.modname == "sphinx_vite_builder"
+    assert isinstance(excinfo.value.orig_exc, OSError)

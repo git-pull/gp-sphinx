@@ -33,10 +33,12 @@ import signal
 import typing as t
 import weakref
 
+from sphinx.errors import ExtensionError
 from sphinx.util import logging as sphinx_logging
 
 from .bus import AsyncioBus
 from .config import Mode, SphinxViteBuilderConfig, detect_mode, resolve_vite_root
+from .errors import SphinxViteBuilderError
 from .process import AsyncProcess
 from .vite import pnpm_install_command, run_vite_build, vite_watch_command
 
@@ -60,6 +62,27 @@ _TEARDOWN_REGISTERED_ATTR = "_sphinx_vite_builder_teardown_registered"
 _active_handles: weakref.WeakValueDictionary[int, AsyncioBus] = (
     weakref.WeakValueDictionary()
 )
+
+
+def _raise_as_extension_error(exc: Exception) -> t.NoReturn:
+    """Re-raise ``exc`` as :class:`sphinx.errors.ExtensionError`.
+
+    Sphinx's ``EventManager.emit()`` (``sphinx/events.py:405-456``)
+    auto-wraps non-``SphinxError`` exceptions raised from event handlers
+    using ``safe_getattr(listener.handler, '__module__', None)`` for the
+    ``modname`` kwarg — which for our hooks resolves to
+    ``'sphinx_vite_builder._internal.hooks'``. Wrapping explicitly with
+    ``modname='sphinx_vite_builder'`` keeps the user-facing
+    ``Extension error (sphinx_vite_builder)`` category clean and points
+    consumers at the published package, not the internal module path.
+    Because :class:`ExtensionError` IS a :class:`SphinxError`, the
+    auto-wrap path skips it: no double-wrap risk.
+    """
+    raise ExtensionError(
+        str(exc),
+        orig_exc=exc,
+        modname="sphinx_vite_builder",
+    ) from exc
 
 
 def _build_config(app: Sphinx) -> SphinxViteBuilderConfig:
@@ -136,7 +159,10 @@ def on_builder_inited(app: Sphinx) -> None:
         # same fast-fail diagnostics as the PEP 517 backend uses.
         # ``run_vite_build`` resolves ``web/`` relative to its
         # ``project_root`` argument, so pass the parent of vite_root.
-        run_vite_build(project_root=config.vite_root.parent)
+        try:
+            run_vite_build(project_root=config.vite_root.parent)
+        except SphinxViteBuilderError as exc:
+            _raise_as_extension_error(exc)
         return
 
     existing_proc: AsyncProcess | None = getattr(app, _PROC_ATTR, None)
@@ -167,7 +193,17 @@ def on_builder_inited(app: Sphinx) -> None:
 
     command = vite_watch_command()
     logger.info("[vite] spawning %s in %s", " ".join(command), config.vite_root)
-    bus.call_sync(proc.start(command, cwd=config.vite_root))
+    try:
+        bus.call_sync(proc.start(command, cwd=config.vite_root))
+    except (SphinxViteBuilderError, OSError) as exc:
+        # OSError covers the FileNotFoundError that
+        # ``asyncio.create_subprocess_exec`` raises when the package
+        # manager (pnpm) is not on PATH. SphinxViteBuilderError covers
+        # any typed diagnostic raised through the bus from inside
+        # AsyncProcess.start. Both get the same modname-attributed
+        # ExtensionError treatment so users see "Extension error
+        # (sphinx_vite_builder)" instead of the internal module path.
+        _raise_as_extension_error(exc)
 
     if not getattr(app, _TEARDOWN_REGISTERED_ATTR, False):
         _install_teardown_handlers(app)
