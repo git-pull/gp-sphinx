@@ -12,7 +12,7 @@ dependency-ordered tier map below.
 
 ## Tier 1: Shared infrastructure
 
-The rendering pipeline that all domain packages consume:
+The rendering pipeline that every autodoc extension consumes:
 
 ::::{grid} 1 1 3 3
 :gutter: 2
@@ -154,10 +154,14 @@ SIGTERM teardown on exit.
 
 ## How the tiers connect
 
-Every domain package shares the same badge palette, the same componentized
-HTML output structure, and the same type annotation pipeline — so Python
-APIs, pytest fixtures, Sphinx config values, docutils directives, and
-FastMCP tools all look like they belong together.
+Every autodoc extension shares the same badge palette, the same
+componentized HTML output structure, and the same type annotation
+pipeline — so [Python APIs](packages/sphinx-autodoc-api-style.md),
+[pytest fixtures](packages/sphinx-autodoc-pytest-fixtures.md),
+[Sphinx config values](packages/sphinx-autodoc-sphinx.md),
+[docutils directives](packages/sphinx-autodoc-docutils.md), and
+[FastMCP tools](packages/sphinx-autodoc-fastmcp.md) all look like
+they belong together.
 
 This is the **one autodoc design system** principle: a change to the shared
 infrastructure propagates instantly and consistently across every autodoc
