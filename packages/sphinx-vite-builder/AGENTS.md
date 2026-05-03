@@ -29,6 +29,12 @@ asyncio loop in a daemon thread for sync↔async bridging),
 spawn install/build), and `errors.py` (`PnpmMissingError`,
 `NodeModulesInstallError`, `ViteFailedError`).
 
+**Phase 1 status:** The PEP 517 backend is fully implemented and
+tested. The Sphinx extension `setup()` is a placeholder — it
+registers cleanly in `conf.py` but doesn't yet hook the docs build
+lifecycle. The full extension implementation (event handlers, vite
+watch, teardown) lands in a follow-up release.
+
 ## The design contract — keep this invariant
 
 > **Sources should check for node, pnpm, etc and error if it's not
