@@ -47,3 +47,37 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/gp_furo_theme"]
+
+# ``theme/gp-furo/static/`` is gitignored (vite-built artefacts) but
+# MUST ship in the wheel — sphinx-build copies it into the consumer's
+# ``_static/`` tree at docs-build time. Without ``force-include`` here
+# the published wheel was empty of CSS/JS, every downstream install
+# rendered unstyled, and gp-furo-theme's own ``_builder_inited`` raised
+# the loud-fail ``ConfigError`` for every consumer. The release pipeline
+# (.github/workflows/release.yml) is responsible for actually populating
+# ``static/`` via ``pnpm exec vite build`` before ``uv build`` runs;
+# the entries below ensure the populated directory makes it into the
+# sdist AND the wheel rather than being silently dropped by hatchling's
+# default gitignore-aware file selection.
+#
+# Both targets are required because ``uv build`` produces the wheel by
+# first creating an sdist, unpacking it in a temp dir, and running
+# hatchling on the unpacked tree. If only the wheel target lists
+# ``force-include``, the static dir is missing from the temp tree at
+# wheel-build time and hatchling raises
+# ``FileNotFoundError: Forced include not found`` — see the explicit
+# raise in
+# https://github.com/pypa/hatch/blob/master/backend/src/hatchling/builders/plugin/interface.py#L237-L239
+# (``recurse_forced_files`` walks the inclusion map at build time and
+# requires every source path to exist as a file or directory).
+#
+# Reference: https://hatch.pypa.io/latest/config/build/#forced-inclusion
+# uv's native build backend (``uv_build``) does NOT yet have a
+# force-include equivalent — see https://github.com/astral-sh/uv/issues/11502
+# — so hatchling remains the canonical choice for packages that ship
+# gitignored build artefacts inside the module tree.
+[tool.hatch.build.targets.sdist.force-include]
+"src/gp_furo_theme/theme/gp-furo/static" = "src/gp_furo_theme/theme/gp-furo/static"
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/gp_furo_theme/theme/gp-furo/static" = "gp_furo_theme/theme/gp-furo/static"
