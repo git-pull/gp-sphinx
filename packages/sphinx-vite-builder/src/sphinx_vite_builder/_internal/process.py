@@ -9,9 +9,11 @@ backend and extension heads need:
 - ``PYTHONUNBUFFERED=1`` is forced into the child env so Python tools
   invoked via the package-manager bridge don't withhold their output.
 - On POSIX, the child runs in a new session (``start_new_session=True``)
-  so ``SIGTERM`` cleanly takes down the entire process tree (``pnpm exec``
-  shells out to multiple intermediate processes — without session
-  isolation, only the top-level pnpm wrapper would exit).
+  and :meth:`AsyncProcess.terminate` signals the whole process group
+  via :func:`os.killpg` so ``pnpm exec`` plus every descendant exits
+  together. ``asyncio.subprocess.Process.terminate`` would only signal
+  the leader's PID, leaving the vite child orphaned (pnpm does not
+  forward signals to its ``exec`` target).
 - :meth:`AsyncProcess.terminate` is graceful-then-forceful: SIGTERM,
   await up to ``timeout`` seconds, escalate to SIGKILL if the child is
   still alive. Idempotent: calling on an already-exited process is a
@@ -32,6 +34,7 @@ import contextlib
 import logging
 import os
 import pathlib
+import signal
 import sys
 import typing as t
 
@@ -196,7 +199,19 @@ class AsyncProcess:
         if self._process.returncode is not None:
             return self._process.returncode
 
-        self._process.terminate()
+        # POSIX: the child was spawned with ``start_new_session=True``,
+        # so ``self._process.pid`` is the leader of its own session and
+        # equals its process-group ID. SIGTERM the whole group so
+        # ``pnpm exec`` plus all its descendants (including the vite
+        # process pnpm doesn't forward signals to) exit. asyncio's
+        # ``Process.terminate()`` is PID-only — it would leave vite
+        # orphaned. Windows has no ``killpg``; the asyncio default is
+        # the right primitive there.
+        with contextlib.suppress(ProcessLookupError):
+            if sys.platform != "win32":
+                os.killpg(self._process.pid, signal.SIGTERM)
+            else:
+                self._process.terminate()
         try:
             await asyncio.wait_for(self._process.wait(), timeout=timeout)
         except asyncio.TimeoutError:
@@ -208,7 +223,10 @@ class AsyncProcess:
             # ProcessLookupError race: the child can exit between
             # TimeoutError and kill().
             with contextlib.suppress(ProcessLookupError):
-                self._process.kill()
+                if sys.platform != "win32":
+                    os.killpg(self._process.pid, signal.SIGKILL)
+                else:
+                    self._process.kill()
             await self._process.wait()
 
         # Wait for drainers to consume their last buffered line before
