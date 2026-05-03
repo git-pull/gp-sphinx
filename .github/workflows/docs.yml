@@ -44,14 +44,12 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Install workspace dependencies
-        if: steps.changes.outputs.publishable == 'true'
-        run: uv sync --all-packages --all-extras --group dev
-
-      - name: Install just
-        if: steps.changes.outputs.publishable == 'true'
-        uses: extractions/setup-just@v4
-
+      # `gp-furo-theme`'s build backend (`sphinx_vite_builder.build`)
+      # runs `pnpm exec vite build` during the `uv sync` editable
+      # install below — populating the gitignored `static/` tree so
+      # the docs build picks up real CSS / JS. pnpm + Node MUST be on
+      # PATH before `uv sync` runs, or the backend fast-fails with
+      # PnpmMissingError. Mirrors the ordering in tests.yml's docs job.
       - name: Set up pnpm
         if: steps.changes.outputs.publishable == 'true'
         uses: pnpm/action-setup@v6
@@ -65,13 +63,13 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Install JS workspace
+      - name: Install workspace dependencies
         if: steps.changes.outputs.publishable == 'true'
-        run: pnpm install --frozen-lockfile
+        run: uv sync --all-packages --all-extras --group dev
 
-      - name: Build vite-managed theme assets
+      - name: Install just
         if: steps.changes.outputs.publishable == 'true'
-        run: pnpm --filter @gp-sphinx/furo-theme-web exec vite build
+        uses: extractions/setup-just@v4
 
       - name: Print Python versions
         if: steps.changes.outputs.publishable == 'true'
