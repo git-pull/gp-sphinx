@@ -133,11 +133,16 @@ and seamless live-reload during authoring.
 :link: packages/sphinx-vite-builder
 :link-type: doc
 
-[PEP 517](https://peps.python.org/pep-0517/) build backend that runs
+[PEP 517](https://peps.python.org/pep-0517/) build backend (or
+hatchling build hook via `[tool.hatch.build.hooks.vite]`) that runs
 `pnpm exec vite build` before delegating wheel/sdist construction to
 hatchling. Also a Sphinx extension that auto-orchestrates
-`vite build --watch` during `sphinx-autobuild`.
+`vite build --watch` during `sphinx-autobuild` and one-shot
+`vite build` during plain `sphinx-build`.
 Source builds error loudly without pnpm/Node; wheels ship turn-key.
+**Publishable for use outside this workspace** — any vite + Sphinx
+project can adopt either activation path without depending on the
+gp-sphinx coordinator.
 :::
 
 ::::
