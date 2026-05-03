@@ -3,7 +3,7 @@
 ```{gp-sphinx-package-meta} sphinx-vite-builder
 ```
 
-A PEP 517 build backend and Sphinx extension that orchestrates
+A [PEP 517](https://peps.python.org/pep-0517/) build backend and Sphinx extension that orchestrates
 [Vite](https://vitejs.dev/) builds via [pnpm](https://pnpm.io/) for any
 Sphinx-theme package whose static assets (CSS / JS) are produced by a
 JavaScript toolchain. The same pattern that
@@ -17,7 +17,7 @@ $ pip install sphinx-vite-builder
 
 ## Two heads, one core
 
-### PEP 517 build backend
+### [PEP 517](https://peps.python.org/pep-0517/) build backend
 
 Drop-in replacement for `hatchling.build`. Runs `pnpm exec vite build`
 before delegating wheel/sdist construction to hatchling. End users who
