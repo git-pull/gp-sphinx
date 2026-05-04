@@ -1,5 +1,5 @@
 /**
- * @gp-sphinx-astro/theme — public exports.
+ * @gp-sphinx/astro — public exports.
  *
  * Astro theme components and Zod schemas for the gp-sphinx static site
  * renderer. The package is the consumer of typed JSON emitted by the

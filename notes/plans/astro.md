@@ -128,7 +128,7 @@ plain-function tests with `t.NamedTuple` parametrization. Python ≥
 appropriate level — pure tree-unit tests for the translator, full
 integration builds (`@pytest.mark.integration`) for the builder.
 
-### `@gp-sphinx-astro/theme` — the Astro theme
+### `@gp-sphinx/astro` — the Astro theme
 
 A pnpm workspace package at `astro/packages/theme/`. Owns:
 
@@ -155,7 +155,7 @@ component without using the full builder if it wants. The canonical
 wiring is the recursive `<Node>` renderer reading from a content
 collection populated by the builder.
 
-### `@gp-sphinx-astro/integration` — optional Astro integration
+### `@gp-sphinx/astro-integration` — optional Astro integration
 
 Convenience, not load-bearing. Runs `sphinx-build -b astro` from
 `astro:config:setup` and invalidates the content cache when Sphinx
@@ -298,14 +298,14 @@ gp-sphinx/
 │   ├── vitest.workspace.ts
 │   ├── tsconfig.base.json                             # extends "astro/tsconfigs/strictest"
 │   ├── packages/
-│   │   ├── theme/                                     # @gp-sphinx-astro/theme
+│   │   ├── theme/                                     # @gp-sphinx/astro
 │   │   │   ├── src/schemas/{doctree,symbol}.ts
 │   │   │   ├── src/components/Node.astro
 │   │   │   ├── src/components/nodes/                  # one per node type, ~30 files
 │   │   │   ├── src/layouts/Doc.astro
 │   │   │   ├── src/styles/tokens.css
 │   │   │   └── src/tailwind.preset.ts
-│   │   └── integration/                               # @gp-sphinx-astro/integration (optional, deferred)
+│   │   └── integration/                               # @gp-sphinx/astro-integration (optional, deferred)
 │   ├── apps/
 │   │   └── gp-sphinx-docs/                            # first dogfood site
 │   │       ├── astro.config.ts
@@ -441,7 +441,7 @@ test`).
 6. **Generated `src/content.config.ts`.** `content_config.py` is a
    pure function returning TypeScript source; `finish()` writes the
    file. The output imports the parity-tested Zod schemas from
-   `@gp-sphinx-astro/theme` and wires them into `defineCollection`
+   `@gp-sphinx/astro` and wires them into `defineCollection`
    for both the `docs` (glob loader) and `api` (file loader)
    collections. Done when `astro check` against the emitted file
    in a fixture site passes.
@@ -486,7 +486,7 @@ Steps 11+ (deferred to separate sessions): libtmux migration; per-PR
 previews via the existing CloudFront distribution; Furo deprecation
 in `merge_sphinx_config` (one release of warning); removal of
 `sphinx-gp-theme` once every consumer is on Astro; the optional
-`@gp-sphinx-astro/integration` Astro integration that runs
+`@gp-sphinx/astro-integration` Astro integration that runs
 `sphinx-build` automatically during `astro dev`.
 
 ## Standards

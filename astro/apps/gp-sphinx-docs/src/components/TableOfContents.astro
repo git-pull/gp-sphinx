@@ -3,14 +3,14 @@
  * TableOfContents — right-rail in-page navigation built from the
  * ``Document.tree`` of the active doc page.
  *
- * The walking logic lives in ``@gp-sphinx-astro/theme`` (TDD'd via
+ * The walking logic lives in ``@gp-sphinx/astro`` (TDD'd via
  * vitest in ``test/render/build-toc.test.ts``); this component is
  * the visual seam. When no ``tree`` prop is passed (e.g. on symbol
  * pages, which have their own structured article header), the
  * component renders nothing so the layout's right column collapses.
  */
-import { buildToc } from '@gp-sphinx-astro/theme/render/build-toc'
-import type { Document } from '@gp-sphinx-astro/theme/schemas/doctree'
+import { buildToc } from '@gp-sphinx/astro/render/build-toc'
+import type { Document } from '@gp-sphinx/astro/schemas/doctree'
 
 interface Props {
   tree?: Document['tree']

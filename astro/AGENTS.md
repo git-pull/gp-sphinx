@@ -16,7 +16,7 @@ astro/
 ├── biome.json                   # lint + format
 ├── tsconfig.base.json           # strict TypeScript baseline
 └── packages/
-    └── theme/                   # @gp-sphinx-astro/theme
+    └── theme/                   # @gp-sphinx/astro
         ├── src/                 # source: components, schemas, index.ts
         └── test/                # vitest tests
 ```

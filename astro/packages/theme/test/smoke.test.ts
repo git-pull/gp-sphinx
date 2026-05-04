@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 import { z } from 'zod/v4'
 import { VERSION } from '../src/index.ts'
 
-describe('@gp-sphinx-astro/theme toolchain smoke', () => {
+describe('@gp-sphinx/astro toolchain smoke', () => {
   test('package exports VERSION constant', () => {
     expect(VERSION).toBe('0.0.1a16')
   })
