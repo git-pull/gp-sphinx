@@ -70,6 +70,11 @@ export function applyScheme(scheme: ThemeScheme): void {
   const mode = resolveEffectiveMode(scheme, detectSystemPrefersDark())
   root.setAttribute('data-theme-mode', mode)
   root.setAttribute('data-color-scheme', scheme)
+  // Mirror the resolved mode onto <body data-theme> so the
+  // @gp-sphinx/furo-tokens Tailwind plugin's CSS variables (emitted
+  // under `body[data-theme="dark"]` to match upstream Furo) activate
+  // alongside this app's `:root[data-theme-mode]` selector.
+  document.body.setAttribute('data-theme', mode)
 }
 
 export interface InitThemeToggleOptions {
