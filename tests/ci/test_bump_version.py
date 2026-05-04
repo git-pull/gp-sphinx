@@ -205,6 +205,45 @@ def test_bump_updates_astro_js_literals(tmp_path: pathlib.Path) -> None:
     assert "'0.0.1a8'" in (app_components / "TopNav.astro").read_text()
 
 
+def test_bump_updates_main_js_literals(tmp_path: pathlib.Path) -> None:
+    """Bumping rewrites main-side JS-only and hybrid package literals.
+
+    Two main-side package shapes need coverage independently of astro/:
+    a pure JS package (``packages/gp-furo-tokens/``) and a hybrid Python
+    package with a nested vite asset pipeline
+    (``packages/gp-furo-theme/web/``). Without explicit globs covering
+    them, JS literals would lag behind every Python bump.
+    """
+    _seed_workspace(tmp_path, version="0.0.1a7")
+
+    tokens_dir = tmp_path / "packages" / "demo-tokens"
+    tokens_src = tokens_dir / "src"
+    tokens_src.mkdir(parents=True)
+    (tokens_dir / "package.json").write_text(
+        '{"name":"@gp-sphinx/demo-tokens","version":"0.0.1-alpha.7"}\n',
+    )
+    (tokens_src / "index.ts").write_text(
+        'export const TOKENS_VERSION = "0.0.1-alpha.7";\n',
+    )
+
+    theme_web = tmp_path / "packages" / "demo-theme" / "web"
+    theme_web.mkdir(parents=True)
+    (theme_web / "package.json").write_text(
+        '{"name":"@gp-sphinx/demo-theme-web","version":"0.0.1-alpha.7"}\n',
+    )
+
+    changes = bump_version.bump_workspace_version("0.0.1a8", root=tmp_path)
+    changed_paths = {path for path, _ in changes}
+
+    assert (tokens_dir / "package.json") in changed_paths
+    assert (tokens_src / "index.ts") in changed_paths
+    assert (theme_web / "package.json") in changed_paths
+
+    assert '"version":"0.0.1-alpha.8"' in (tokens_dir / "package.json").read_text()
+    assert '"0.0.1-alpha.8"' in (tokens_src / "index.ts").read_text()
+    assert '"version":"0.0.1-alpha.8"' in (theme_web / "package.json").read_text()
+
+
 def test_bump_skips_node_modules(tmp_path: pathlib.Path) -> None:
     """Files under any node_modules/ directory are excluded even if they match.
 

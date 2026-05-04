@@ -47,6 +47,13 @@ BUMP_GLOBS: t.Final[tuple[str, ...]] = (
     "packages/*/src/**/*.py",
     "tests/**/*.py",
     "scripts/**/*.py",
+    # Main-side JS-only / hybrid packages — gp-furo-tokens (pure JS) and
+    # gp-furo-theme/web (vite asset pipeline nested inside a Python
+    # package). Without these globs, JS package.json + TypeScript
+    # version literals lag behind every Python bump.
+    "packages/*/package.json",
+    "packages/*/web/package.json",
+    "packages/*/src/**/*.ts",
     # Astro JS stack — both PEP 440 and npm SemVer prerelease literals.
     # _alt_form() handles the form equivalence so one bump call covers both.
     "astro/package.json",
