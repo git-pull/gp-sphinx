@@ -18,6 +18,63 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### What's new
+
+#### Astro renderer rebased onto post-PR-#29 main
+
+The `gp-sphinx-astro-builder` Sphinx extension (Sphinx → typed JSON),
+the `@gp-sphinx/astro` Astro theme package (Zod wire-format schemas +
+recursive renderer + render utilities), and the `@gp-sphinx/astro-docs-site`
+dogfood site land alongside the existing HTML stack. `sphinx-build
+--builder astro docs/ astro/apps/gp-sphinx-docs/` emits per-doc JSON
+into the Astro app's content collection; `astro build` renders 244
+HTML pages with Pagefind search index. The Astro stack is opt-in —
+HTML builds via `gp-furo-theme` are unchanged. Workspace consolidation
+collapses the formerly-separate `astro/` pnpm workspace into the root
+workspace; one `pnpm install` resolves all five JS projects.
+
+#### Dual-token coexistence: `@gp-sphinx/furo-tokens` loaded alongside Astro OKLCH palette
+
+`@gp-sphinx/astro-docs-site/src/styles/global.css` loads the
+`@gp-sphinx/furo-tokens/plugin` Tailwind v4 plugin alongside its own
+`@theme` block. The two CSS-variable namespaces are disjoint
+(`--color-bg` / `--color-fg` / etc. from the Astro app vs.
+`--color-background-primary` / `--sidebar-*` / etc. from Furo's
+169-token contract), so both sets are simultaneously available to
+components. The `@custom-variant dark` declaration unions both runtime
+selectors (`:root[data-theme-mode="dark"]` and
+`body[data-theme="dark"]`); the theme-toggle JS sets both attributes
+so dark Furo tokens activate without a CSS shim. Rendering components
+inside `@gp-sphinx/astro` can migrate from Astro tokens to Furo tokens
+incrementally for shared concepts (admonitions, links, code, prose).
+
+#### `scripts/ci/bump_version.py` covers JS package literals
+
+`BUMP_GLOBS` extended to scan `astro/**/*.{json,ts,astro}` and
+`packages/*/{package.json,web/package.json,src/**/*.ts}`. The new
+`_alt_form()` helper maps PEP 440 prerelease form (`0.0.1a16`) to the
+equivalent npm SemVer prerelease form (`0.0.1-alpha.16`) so a single
+bump call updates Python and JS literals in lockstep.
+`/node_modules/` joins the exclude list so vendored package.json
+files stay frozen.
+
+#### `sphinx-vite-builder`: builder-name skip list
+
+New config value `sphinx_vite_builder_skip_builders: list[str]`
+(default `["astro"]`) short-circuits the `builder-inited` hook before
+any vite-root resolution or pnpm-install probe. Builders that emit
+non-HTML output (e.g. the JSON-emitting `astro` builder) no longer
+spawn `pnpm exec vite build` for assets they don't consume.
+
+#### CI: astro pipeline workflow
+
+New `.github/workflows/astro.yml` runs the full astro chain
+(`uv sync` → `pnpm install` → Sphinx → JSON → Astro build →
+type-check → vitest) on changes to `astro/`,
+`packages/gp-sphinx-astro-builder/`, `packages/gp-furo-{tokens,theme/web}/`,
+or `docs/`. Marked `continue-on-error: true` while it stabilises;
+promote to required by removing that line once it's trusted.
+
 ### Bug fixes
 
 #### `gp-sphinx`: MystLexer highlights `:::{directive}` colon-fences
@@ -26,6 +83,42 @@ Embedded MyST snippets that use the colon-fence directive syntax now
 tokenize correctly when rendered through `pygments` (e.g. inside
 `.. code-block:: myst`). Previously the fence and body fell through
 to plain text. (#33)
+
+#### `@gp-sphinx/astro`: three strict-tsc errors fixed
+
+The theme's `tsc --noEmit` script now exits 0. Previously
+`src/render/highlight-code.ts` cast Shiki's `langs` array as
+`readonly BundledLanguage[]` against a mutable parameter (TS4104);
+`test/render/build-toc.test.ts` accessed `.value` on InlineNode
+without guarding the image variant; and the Pydantic ↔ Zod
+`SymbolKind` enum omitted `'exception'` even though
+`render-symbol.ts`'s `KEYWORD_PREFIX_BY_KIND` already mapped it.
+Pydantic schema export and the committed
+`astro/fixtures/symbol.schema.json` regenerated for parity.
+
+#### `@gp-sphinx/astro-docs-site`: `astro check` shim for `@pagefind/default-ui`
+
+The dynamic import of `@pagefind/default-ui` in `SearchBox.astro`
+implicitly typed `any` because the package ships no `.d.ts` and isn't
+on DefinitelyTyped. `src/env.d.ts` adds an ambient
+`declare module '@pagefind/default-ui'` so `astro check` reports
+0 errors.
+
+#### `@gp-sphinx/astro`: `tsc` now resolvable via `pnpm --filter`
+
+The workspace consolidation deleted the inner `astro/package.json`'s
+role as a workspace anchor, and pnpm only places the `tsc` bin on
+packages that *declare* the dep. `typescript ^5.7.0` now lives in
+`@gp-sphinx/astro/devDependencies` so
+`pnpm --filter "@gp-sphinx/astro" run type-check` runs.
+
+#### `gp-furo-tokens` and `gp-furo-theme/web`: versions aligned to lockstep
+
+Both JS-only packages were stuck at `0.0.1-alpha.13` while the Python
+workspace and the astro stack landed at `0.0.1-alpha.16`. The
+`FURO_TOKENS_VERSION` constant in `gp-furo-tokens/src/index.ts` was
+even more stale at `0.0.1-alpha.12`. All three aligned to
+`0.0.1-alpha.16`.
 
 ### Documentation
 
@@ -39,6 +132,13 @@ landings and sidebar leaves from a `PackageDocsRecord` schema that
 reads both `pyproject.toml` and `package.json` manifests, so JS-only
 packages like `@gp-sphinx/furo-tokens` sit alongside the Python
 ones. Legacy `/packages/<name>.html` URLs continue to resolve. (#33)
+
+#### `gp-sphinx-astro-builder` joins as a new `astro` cluster
+
+The new builder lands under its own `{cluster-toctree} astro` block
+in the sidebar, alongside its forward-compat sibling `@gp-sphinx/astro`
+(JS theme). The package ships `index`, `how-to`, `reference`, and
+`explanation` Diátaxis subpages.
 
 #### Showcase opt-in directives
 
