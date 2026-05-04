@@ -46,6 +46,7 @@ export const symbolKindSchema = z.enum([
   'enum',
   'dataclass',
   'module',
+  'exception',
 ])
 
 export const symbolSchema = z.object({

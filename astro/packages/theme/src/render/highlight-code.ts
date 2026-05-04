@@ -55,7 +55,7 @@ export interface CreateCodeHighlighterOptions {
 export async function createCodeHighlighter(
   options: CreateCodeHighlighterOptions,
 ): Promise<CodeHighlighter> {
-  const requestedLangs = options.langs as readonly BundledLanguage[]
+  const requestedLangs = options.langs as BundledLanguage[]
   const highlighter = await createHighlighter({
     themes: [options.themes.light, options.themes.dark],
     langs: requestedLangs,

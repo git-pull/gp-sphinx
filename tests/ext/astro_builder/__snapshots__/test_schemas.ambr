@@ -5050,6 +5050,7 @@
           'enum',
           'dataclass',
           'module',
+          'exception',
         ]),
         'title': 'Kind',
         'type': 'string',
