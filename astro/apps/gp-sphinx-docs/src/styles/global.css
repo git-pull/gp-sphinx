@@ -17,6 +17,23 @@
 
 @plugin '@tailwindcss/typography';
 
+/* Dual-token coexistence: load Furo's CSS-variable contract alongside
+ * the Astro-app OKLCH palette declared in `@theme` below. The
+ * namespaces are disjoint (`--color-background-primary` etc. from
+ * Furo vs. `--color-bg` etc. from the Astro app), so consumers
+ * reference whichever set fits the component. Rendering components
+ * inside `@gp-sphinx/astro` will migrate from Astro tokens to Furo
+ * tokens for shared concepts (admonitions, links, code, prose) over
+ * time; app-shell components (TopNav, Sidebar, TOC) keep Astro OKLCH.
+ *
+ * Known divergence (deferred): the plugin emits dark tokens under
+ * `body[data-theme="dark"]` while this app uses
+ * `:root[data-theme-mode="dark"]`. Light tokens always activate;
+ * dark Furo tokens require a future selector-bridging shim or an
+ * upstream tweak to `@gp-sphinx/furo-tokens` to also emit under
+ * `:root[data-theme-mode="dark"]`. */
+@plugin '@gp-sphinx/furo-tokens/plugin';
+
 /* The Sphinx pipeline writes a sibling content.config.ts at build
  * time; Tailwind would otherwise scan it and miss the actual app
  * source. Pin the source root explicitly. */
