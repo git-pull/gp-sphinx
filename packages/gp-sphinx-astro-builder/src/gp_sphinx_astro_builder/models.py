@@ -832,6 +832,7 @@ SymbolKind = t.Literal[
     "enum",
     "dataclass",
     "module",
+    "exception",
 ]
 """Allowed values for :attr:`Symbol.kind`.
 

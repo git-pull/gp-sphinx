@@ -2146,7 +2146,8 @@
         "property",
         "enum",
         "dataclass",
-        "module"
+        "module",
+        "exception"
       ],
       "title": "Kind",
       "type": "string"

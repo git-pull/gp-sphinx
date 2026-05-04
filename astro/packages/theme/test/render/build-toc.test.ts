@@ -25,7 +25,13 @@ function section(
 }
 
 function makeDocument(tree: Extract<BlockNode, { type: 'section' }>): Document {
-  return { id: 'doc', title: tree.title.map((c) => c.value).join(''), tree }
+  return {
+    id: 'doc',
+    title: tree.title
+      .map((c) => (c.type === 'text' || c.type === 'literal' ? c.value : ''))
+      .join(''),
+    tree,
+  }
 }
 
 describe('buildToc — flat document', () => {
