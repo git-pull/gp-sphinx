@@ -9,6 +9,7 @@ from __future__ import annotations
 import pathlib
 import sys
 import textwrap
+import typing as t
 
 import pytest
 
@@ -122,3 +123,103 @@ def test_bump_main_prints_summary(
     out = capsys.readouterr().out
     assert "0.0.1a7 -> 0.0.1a8" in out
     assert "file(s) changed" in out
+
+
+class AltFormCase(t.NamedTuple):
+    """Fixture for _alt_form() PEP 440 ↔ npm SemVer mapping."""
+
+    test_id: str
+    pep_version: str
+    expected: str | None
+
+
+_ALT_FORM_CASES: list[AltFormCase] = [
+    AltFormCase(test_id="alpha", pep_version="0.0.1a16", expected="0.0.1-alpha.16"),
+    AltFormCase(test_id="beta", pep_version="1.2.3b1", expected="1.2.3-beta.1"),
+    AltFormCase(test_id="rc", pep_version="1.2.3rc4", expected="1.2.3-rc.4"),
+    AltFormCase(test_id="stable", pep_version="1.2.3", expected=None),
+    AltFormCase(test_id="garbage", pep_version="not-a-version", expected=None),
+]
+
+
+@pytest.mark.parametrize(
+    list(AltFormCase._fields),
+    _ALT_FORM_CASES,
+    ids=[c.test_id for c in _ALT_FORM_CASES],
+)
+def test_alt_form(test_id: str, pep_version: str, expected: str | None) -> None:
+    """_alt_form maps PEP 440 prereleases to npm SemVer; returns None otherwise."""
+    assert bump_version._alt_form(pep_version) == expected
+
+
+def test_bump_updates_astro_js_literals(tmp_path: pathlib.Path) -> None:
+    """Bumping rewrites both PEP 440 and npm SemVer literals in one pass.
+
+    The Python workspace stores its version in PEP 440 form (``0.0.1a7``);
+    the astro JS stack stores the equivalent npm form (``0.0.1-alpha.7``)
+    in ``package.json`` files alongside PEP 440 literals in ``.ts`` /
+    ``.astro`` source. A single bump call must update both.
+    """
+    _seed_workspace(tmp_path, version="0.0.1a7")
+
+    astro_root = tmp_path / "astro"
+    workspace_root_pkg = astro_root / "package.json"
+    workspace_root_pkg.parent.mkdir()
+    workspace_root_pkg.write_text(
+        '{"name":"astro-workspace","version":"0.0.1-alpha.7"}\n',
+    )
+
+    theme_dir = astro_root / "packages" / "theme"
+    theme_src = theme_dir / "src"
+    theme_src.mkdir(parents=True)
+    (theme_dir / "package.json").write_text(
+        '{"name":"@gp-sphinx/astro","version":"0.0.1-alpha.7"}\n',
+    )
+    (theme_src / "index.ts").write_text(
+        "export const VERSION = '0.0.1a7'\n",
+    )
+
+    app_dir = astro_root / "apps" / "docs"
+    app_components = app_dir / "src" / "components"
+    app_components.mkdir(parents=True)
+    (app_dir / "package.json").write_text(
+        '{"name":"docs","version":"0.0.1-alpha.7"}\n',
+    )
+    (app_components / "TopNav.astro").write_text(
+        "const VERSION = '0.0.1a7'\n",
+    )
+
+    changes = bump_version.bump_workspace_version("0.0.1a8", root=tmp_path)
+    changed_paths = {path for path, _ in changes}
+
+    assert workspace_root_pkg in changed_paths
+    assert (theme_dir / "package.json") in changed_paths
+    assert (theme_src / "index.ts") in changed_paths
+    assert (app_dir / "package.json") in changed_paths
+    assert (app_components / "TopNav.astro") in changed_paths
+
+    assert '"version":"0.0.1-alpha.8"' in workspace_root_pkg.read_text()
+    assert '"version":"0.0.1-alpha.8"' in (theme_dir / "package.json").read_text()
+    assert "'0.0.1a8'" in (theme_src / "index.ts").read_text()
+    assert '"version":"0.0.1-alpha.8"' in (app_dir / "package.json").read_text()
+    assert "'0.0.1a8'" in (app_components / "TopNav.astro").read_text()
+
+
+def test_bump_skips_node_modules(tmp_path: pathlib.Path) -> None:
+    """Files under any node_modules/ directory are excluded even if they match.
+
+    A vendored ``package.json`` inside ``node_modules`` could legitimately
+    pin the same version literal as the workspace, but rewriting it would
+    corrupt the dependency graph.
+    """
+    _seed_workspace(tmp_path, version="0.0.1a7")
+
+    nm = tmp_path / "astro" / "packages" / "theme" / "node_modules" / "vendored"
+    nm.mkdir(parents=True)
+    (nm / "package.json").write_text(
+        '{"name":"vendored","version":"0.0.1-alpha.7"}\n',
+    )
+
+    bump_version.bump_workspace_version("0.0.1a8", root=tmp_path)
+
+    assert '"version":"0.0.1-alpha.7"' in (nm / "package.json").read_text()

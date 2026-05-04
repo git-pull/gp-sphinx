@@ -7,6 +7,12 @@ The workspace keeps its version duplicated in several places:
 - Sphinx ``setup()`` return-dict ``"version"`` keys
 - ``tests/test_package_tools.py`` assertions
 - ``smoke_gp_sphinx`` template in ``scripts/ci/package_tools.py``
+- npm ``package.json`` ``version`` fields under ``astro/`` (SemVer prerelease form)
+- TypeScript / Astro source literals under ``astro/`` (PEP 440 form)
+
+Both PEP 440 (``0.0.1a16``) and the equivalent npm SemVer prerelease form
+(``0.0.1-alpha.16``) are recognised by :func:`_alt_form`, so a single bump
+call keeps Python and JS literals in lockstep.
 
 ``scripts/ci/package_tools.py check-versions`` catches drift between the
 pyproject version and whatever the runtime source says, so any literal missed
@@ -17,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import pathlib
+import re
 import sys
 import typing as t
 
@@ -40,6 +47,14 @@ BUMP_GLOBS: t.Final[tuple[str, ...]] = (
     "packages/*/src/**/*.py",
     "tests/**/*.py",
     "scripts/**/*.py",
+    # Astro JS stack — both PEP 440 and npm SemVer prerelease literals.
+    # _alt_form() handles the form equivalence so one bump call covers both.
+    "astro/package.json",
+    "astro/packages/*/package.json",
+    "astro/apps/*/package.json",
+    "astro/packages/*/src/**/*.ts",
+    "astro/apps/*/src/**/*.ts",
+    "astro/apps/*/src/components/*.astro",
 )
 
 #: Path fragments to skip even if a glob matches them.
@@ -48,8 +63,57 @@ EXCLUDE_FRAGMENTS: t.Final[tuple[str, ...]] = (
     "/build/",
     "/dist/",
     "/.git/",
+    "/node_modules/",
     "__pycache__/",
 )
+
+#: PEP 440 prerelease pattern: base ``X.Y.Z`` + kind ``a|b|rc`` + numeric tail.
+_PEP_PRERELEASE_RE: t.Final[re.Pattern[str]] = re.compile(
+    r"^(\d+(?:\.\d+)*)(a|b|rc)(\d+)$",
+)
+
+#: PEP 440 prerelease kind → npm SemVer prerelease label.
+_NPM_KIND_BY_PEP: t.Final[dict[str, str]] = {
+    "a": "alpha",
+    "b": "beta",
+    "rc": "rc",
+}
+
+
+def _alt_form(version: str) -> str | None:
+    """Return the npm SemVer prerelease form of a PEP 440 version, or ``None``.
+
+    Parameters
+    ----------
+    version : str
+        PEP 440 version string. Stable releases (``1.2.3``) and any string
+        that doesn't match :data:`_PEP_PRERELEASE_RE` return ``None``.
+
+    Returns
+    -------
+    str | None
+        The npm form (``0.0.1-alpha.16``) when ``version`` is a PEP 440
+        prerelease (``a``/``b``/``rc``); otherwise ``None``.
+
+    Examples
+    --------
+    >>> _alt_form("0.0.1a16")
+    '0.0.1-alpha.16'
+    >>> _alt_form("1.2.3b1")
+    '1.2.3-beta.1'
+    >>> _alt_form("1.2.3rc4")
+    '1.2.3-rc.4'
+    >>> _alt_form("1.2.3") is None
+    True
+    >>> _alt_form("not-a-version") is None
+    True
+    """
+    match = _PEP_PRERELEASE_RE.match(version)
+    if match is None:
+        return None
+    base, kind, num = match.groups()
+    return f"{base}-{_NPM_KIND_BY_PEP[kind]}.{num}"
+
 
 #: File-level opt-out sentinel. A line whose stripped content equals this
 #: marker freezes the file's version literals — use in scenario fixtures
@@ -125,6 +189,11 @@ def _rewrite_file(
 ) -> int:
     """Rewrite ``old_version`` -> ``new_version`` in ``path``; return replacement count.
 
+    Both the primary PEP 440 form and the equivalent npm SemVer prerelease
+    form (when applicable) are rewritten in a single pass so that a Python
+    bump (e.g. ``0.0.1a16 → 0.0.1a17``) also updates JS ``package.json``
+    literals (``0.0.1-alpha.16 → 0.0.1-alpha.17``).
+
     Parameters
     ----------
     path : pathlib.Path
@@ -137,15 +206,28 @@ def _rewrite_file(
     Returns
     -------
     int
-        Number of occurrences replaced. Zero if the file did not change.
+        Number of occurrences replaced across both forms. Zero if the file
+        did not change.
     """
     original = path.read_text()
     if any(line.strip() == SKIP_FILE_MARKER for line in original.splitlines()):
         return 0
-    if old_version not in original:
+
+    pairs: list[tuple[str, str]] = [(old_version, new_version)]
+    old_alt = _alt_form(old_version)
+    new_alt = _alt_form(new_version)
+    if old_alt is not None and new_alt is not None:
+        pairs.append((old_alt, new_alt))
+
+    updated = original
+    replacements = 0
+    for old, new in pairs:
+        if old in updated:
+            replacements += updated.count(old)
+            updated = updated.replace(old, new)
+
+    if replacements == 0:
         return 0
-    updated = original.replace(old_version, new_version)
-    replacements = original.count(old_version)
     path.write_text(updated)
     return replacements
 
