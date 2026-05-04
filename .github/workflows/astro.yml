@@ -1,0 +1,87 @@
+name: astro
+
+# This workflow uses NO untrusted inputs (no github.event.* references in
+# run: blocks). All shell commands are literal pnpm/uv invocations against
+# fixed paths, so the command-injection risks the security-review guide
+# enumerates do not apply here. If a future edit adds dynamic content
+# (e.g. github.event.pull_request.title), pipe it through env: with
+# proper quoting per the canonical pattern.
+
+on:
+  push:
+    paths:
+      - "astro/**"
+      - "packages/gp-sphinx-astro-builder/**"
+      - "packages/gp-furo-tokens/**"
+      - "packages/gp-furo-theme/web/**"
+      - "docs/**"
+      - "pyproject.toml"
+      - "pnpm-workspace.yaml"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/astro.yml"
+  pull_request:
+    paths:
+      - "astro/**"
+      - "packages/gp-sphinx-astro-builder/**"
+      - "packages/gp-furo-tokens/**"
+      - "packages/gp-furo-theme/web/**"
+      - "docs/**"
+      - "pyproject.toml"
+      - "pnpm-workspace.yaml"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/astro.yml"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    # Informational status until the pipeline has 2-3 PRs of stability
+    # data. Failures don't block merges; promote to required by removing
+    # the job-level continue-on-error once trusted.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install Python workspace dependencies
+        run: uv sync --all-packages --all-extras --group dev
+
+      - name: Install JS workspace dependencies
+        run: pnpm install
+
+      - name: Sphinx to Astro JSON (prebuild)
+        run: pnpm --filter "@gp-sphinx/astro-docs-site" run prebuild
+
+      - name: Astro build (renders JSON to HTML, runs pagefind index)
+        run: pnpm --filter "@gp-sphinx/astro-docs-site" run build
+
+      - name: Astro check (strict TS / Astro diagnostics)
+        run: pnpm --filter "@gp-sphinx/astro-docs-site" run type-check
+
+      - name: Theme tsc strict type-check
+        run: pnpm --filter "@gp-sphinx/astro" run type-check
+
+      - name: Vitest @gp-sphinx/astro (theme schemas + render utilities)
+        run: pnpm --filter "@gp-sphinx/astro" test
+
+      - name: Vitest @gp-sphinx/astro-docs-site (app-shell + interactions)
+        run: pnpm --filter "@gp-sphinx/astro-docs-site" test
