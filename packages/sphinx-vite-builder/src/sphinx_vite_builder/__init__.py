@@ -33,14 +33,18 @@ logger.addHandler(logging.NullHandler())
 def setup(app: Sphinx) -> dict[str, t.Any]:
     """Register the Sphinx-extension head.
 
-    Wires two config values (``sphinx_vite_builder_mode``,
-    ``sphinx_vite_builder_root``) and connects the ``builder-inited`` /
-    ``build-finished`` lifecycle hooks. Under ``sphinx-autobuild`` (or
-    when ``sphinx_vite_builder_mode = "dev"``) the ``builder-inited``
+    Wires three config values (``sphinx_vite_builder_mode``,
+    ``sphinx_vite_builder_root``, ``sphinx_vite_builder_skip_builders``)
+    and connects the ``builder-inited`` / ``build-finished`` lifecycle
+    hooks. Under ``sphinx-autobuild`` (or when
+    ``sphinx_vite_builder_mode = "dev"``) the ``builder-inited``
     handler spawns ``pnpm exec vite build --watch`` against
     ``sphinx_vite_builder_root``; under plain ``sphinx-build`` (or
     ``mode = "prod"``) the handler is a no-op so production wheels
-    carry no Node runtime requirement.
+    carry no Node runtime requirement. Builders listed in
+    ``sphinx_vite_builder_skip_builders`` short-circuit before any
+    config resolution — useful for builders that emit non-HTML output
+    (the default skip list is ``["astro"]``).
 
     Examples
     --------
@@ -57,6 +61,8 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     >>> "sphinx_vite_builder_mode" in fake.config_values
     True
     >>> "sphinx_vite_builder_root" in fake.config_values
+    True
+    >>> "sphinx_vite_builder_skip_builders" in fake.config_values
     True
     >>> "builder-inited" in fake.events
     True
@@ -78,6 +84,15 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         default=None,
         rebuild="env",
         types=[str, type(None)],
+    )
+    # Builders that don't consume vite-built assets — by default just the
+    # JSON-emitting ``astro`` builder. Users can extend this list for any
+    # custom builder that shouldn't trigger a vite spawn.
+    app.add_config_value(
+        "sphinx_vite_builder_skip_builders",
+        default=["astro"],
+        rebuild="env",
+        types=[list],
     )
 
     app.connect("builder-inited", hooks.on_builder_inited)

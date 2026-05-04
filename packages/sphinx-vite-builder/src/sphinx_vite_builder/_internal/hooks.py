@@ -142,10 +142,22 @@ def on_builder_inited(app: Sphinx) -> None:
     across multiple builder-inited firings (sphinx-autobuild re-fires
     this on every rebuild).
 
+    Short-circuits when ``app.builder.name`` is in
+    ``sphinx_vite_builder_skip_builders`` (default: ``["astro"]``) —
+    these builders don't consume vite-built static assets, so spawning
+    vite would just burn CPU on a no-op build.
+
     If ``<vite_root>/node_modules/`` is missing (typical after
     ``git clean -fdx``), runs ``pnpm install --frozen-lockfile``
     synchronously first so ``pnpm exec vite`` resolves on first try.
     """
+    skip_builders = getattr(app.config, "sphinx_vite_builder_skip_builders", ())
+    if app.builder.name in skip_builders:
+        # Builder doesn't consume vite output; skip the spawn. Common
+        # case: gp_sphinx_astro_builder emits per-doc JSON, not HTML
+        # backed by theme assets.
+        return
+
     config = _build_config(app)
     if config.vite_root is None:
         # No vite_root configured → nothing to orchestrate. Both modes

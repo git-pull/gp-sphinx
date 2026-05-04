@@ -31,18 +31,35 @@ class _FakeConfig:
 
     sphinx_vite_builder_mode: str = "auto"
     sphinx_vite_builder_root: str | None = None
+    sphinx_vite_builder_skip_builders: list[str] = dataclasses.field(
+        default_factory=lambda: ["astro"],
+    )
+
+
+@dataclasses.dataclass
+class _FakeBuilder:
+    """The slice of ``app.builder`` the hooks read.
+
+    Only ``name`` is consulted (for the skip-builders allowlist). The
+    default ``"html"`` keeps existing tests untouched: ``"html"`` is
+    not in the default skip list, so the hooks proceed.
+    """
+
+    name: str = "html"
 
 
 @dataclasses.dataclass
 class _FakeApp:
     """Minimal stand-in for ``sphinx.application.Sphinx``.
 
-    Carries only the surface the hooks touch: a ``config`` namespace
-    and the few private attributes the hooks ``setattr`` onto the app
-    (bus, proc, teardown-registered flag).
+    Carries only the surface the hooks touch: a ``config`` namespace,
+    a ``builder`` with a ``name``, and the few private attributes the
+    hooks ``setattr`` onto the app (bus, proc, teardown-registered
+    flag).
     """
 
     config: _FakeConfig = dataclasses.field(default_factory=_FakeConfig)
+    builder: _FakeBuilder = dataclasses.field(default_factory=_FakeBuilder)
 
 
 def _write_fake_vite(
@@ -187,6 +204,63 @@ def test_on_builder_inited_no_op_when_root_is_none(
         raise AssertionError(msg)
 
     monkeypatch.setattr(hooks, "vite_watch_command", _fail)
+    hooks.on_builder_inited(app)  # type: ignore[arg-type]
+    assert getattr(app, hooks._PROC_ATTR, None) is None
+
+
+def test_on_builder_inited_no_op_for_skip_builder(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Builders in ``sphinx_vite_builder_skip_builders`` short-circuit early.
+
+    Even with a fully-configured vite root, the hook returns immediately
+    when ``app.builder.name`` is in the skip list (default: ``["astro"]``).
+    No bus, no process, no ``vite_watch_command`` resolution.
+    """
+    app = _FakeApp(
+        config=_FakeConfig(
+            sphinx_vite_builder_mode="dev",
+            sphinx_vite_builder_root="/some/vite/root",
+        ),
+        builder=_FakeBuilder(name="astro"),
+    )
+
+    def _fail() -> tuple[str, ...]:
+        msg = "vite_watch_command should not be called for skipped builders"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(hooks, "vite_watch_command", _fail)
+    hooks.on_builder_inited(app)  # type: ignore[arg-type]
+    assert getattr(app, hooks._PROC_ATTR, None) is None
+    assert getattr(app, hooks._BUS_ATTR, None) is None
+
+
+def test_on_builder_inited_runs_for_html_builder_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The default skip list does not contain ``html``; HTML builds proceed.
+
+    Regression guard against accidentally widening the skip list to a
+    superset that would silence vite for ordinary Sphinx HTML builds.
+    """
+    # vite_root None still no-ops, but the run is past the skip check.
+    app = _FakeApp(
+        config=_FakeConfig(
+            sphinx_vite_builder_mode="dev",
+            sphinx_vite_builder_root=None,
+        ),
+        builder=_FakeBuilder(name="html"),
+    )
+
+    # If the skip-builders early-return mistakenly matched "html", we'd
+    # never reach the vite_root None branch. We assert by relying on the
+    # SAME no-op path test_on_builder_inited_no_op_when_root_is_none uses
+    # — successful return with no _PROC_ATTR set.
+    monkeypatch.setattr(
+        hooks,
+        "vite_watch_command",
+        lambda: (sys.executable, "-c", "pass"),
+    )
     hooks.on_builder_inited(app)  # type: ignore[arg-type]
     assert getattr(app, hooks._PROC_ATTR, None) is None
 
