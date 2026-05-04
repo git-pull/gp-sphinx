@@ -1,6 +1,6 @@
 # Astro Documentation Platform for gp-sphinx
 
-**Branch:** `astro-2026-04-26` **Status:** plan, not yet implemented
+**Branch:** `astro-2026-04-26` **Status:** implemented (rebased onto post-PR-#29 main, 2026-05-04)
 
 ## What we're building
 
