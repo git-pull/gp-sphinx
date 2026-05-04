@@ -26,12 +26,12 @@
  * tokens for shared concepts (admonitions, links, code, prose) over
  * time; app-shell components (TopNav, Sidebar, TOC) keep Astro OKLCH.
  *
- * Known divergence (deferred): the plugin emits dark tokens under
- * `body[data-theme="dark"]` while this app uses
- * `:root[data-theme-mode="dark"]`. Light tokens always activate;
- * dark Furo tokens require a future selector-bridging shim or an
- * upstream tweak to `@gp-sphinx/furo-tokens` to also emit under
- * `:root[data-theme-mode="dark"]`. */
+ * Dark-mode bridge: the Furo plugin emits dark tokens under
+ * `body[data-theme="dark"]`. The theme-toggle JS sets that attribute
+ * alongside its own `<html data-theme-mode>` so Furo's CSS variables
+ * activate. The `@custom-variant dark` declaration below unions both
+ * selectors (and both elements) so a Tailwind `dark:` class resolves
+ * to true under either runtime convention. */
 @plugin '@gp-sphinx/furo-tokens/plugin';
 
 /* The Sphinx pipeline writes a sibling content.config.ts at build
@@ -45,7 +45,12 @@
  * because no scanned source file references them. */
 @source '../../../../packages/theme/src/**/*.{ts,tsx,astro}';
 
-@custom-variant dark (&:where(:root[data-theme-mode='dark'], :root[data-theme-mode='dark'] *));
+@custom-variant dark (&:where(
+  :root[data-theme-mode='dark'],
+  :root[data-theme-mode='dark'] *,
+  body[data-theme='dark'],
+  body[data-theme='dark'] *
+));
 
 @theme {
   --font-sans:
