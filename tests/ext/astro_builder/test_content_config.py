@@ -20,9 +20,9 @@ def test_render_content_config_returns_string() -> None:
 def test_render_content_config_imports_canonical_zod_schemas() -> None:
     """The generated source imports the parity-tested theme schemas."""
     source = render_content_config()
-    assert "from '@gp-sphinx-astro/theme/schemas/doctree'" in source
-    assert "from '@gp-sphinx-astro/theme/schemas/symbol'" in source
-    assert "from '@gp-sphinx-astro/theme/schemas/xref'" in source
+    assert "from '@gp-sphinx/astro/schemas/doctree'" in source
+    assert "from '@gp-sphinx/astro/schemas/symbol'" in source
+    assert "from '@gp-sphinx/astro/schemas/xref'" in source
 
 
 def test_render_content_config_defines_three_collections() -> None:

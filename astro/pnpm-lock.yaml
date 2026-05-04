@@ -20,7 +20,7 @@ importers:
 
   apps/gp-sphinx-docs:
     dependencies:
-      '@gp-sphinx-astro/theme':
+      '@gp-sphinx/astro':
         specifier: workspace:^
         version: link:../../packages/theme
       '@tailwindcss/typography':

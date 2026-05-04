@@ -6,9 +6,9 @@
   
   import { defineCollection } from 'astro:content'
   import { file, glob } from 'astro/loaders'
-  import { documentSchema } from '@gp-sphinx-astro/theme/schemas/doctree'
-  import { symbolSchema } from '@gp-sphinx-astro/theme/schemas/symbol'
-  import { xrefEntrySchema } from '@gp-sphinx-astro/theme/schemas/xref'
+  import { documentSchema } from '@gp-sphinx/astro/schemas/doctree'
+  import { symbolSchema } from '@gp-sphinx/astro/schemas/symbol'
+  import { xrefEntrySchema } from '@gp-sphinx/astro/schemas/xref'
   
   export const collections = {
     docs: defineCollection({

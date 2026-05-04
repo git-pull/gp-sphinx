@@ -18,7 +18,7 @@
 import {
   type CodeHighlighter,
   createCodeHighlighter,
-} from '@gp-sphinx-astro/theme/render/highlight-code'
+} from '@gp-sphinx/astro/render/highlight-code'
 
 let cached: Promise<CodeHighlighter> | null = null
 

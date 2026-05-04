@@ -1,5 +1,5 @@
 {
-  "name": "gp-sphinx-astro-workspace",
+  "name": "@gp-sphinx/astro-workspace",
   "version": "0.0.1-alpha.16",
   "description": "Workspace root for the gp-sphinx Astro static-site renderer.",
   "private": true,

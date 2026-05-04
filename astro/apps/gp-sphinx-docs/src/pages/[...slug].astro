@@ -1,8 +1,8 @@
 ---
 import type { GetStaticPaths } from 'astro'
 import { getCollection } from 'astro:content'
-import { extractDescription } from '@gp-sphinx-astro/theme/render/extract-description'
-import { renderDocumentWithHighlighting } from '@gp-sphinx-astro/theme/render/render-with-highlighting'
+import { extractDescription } from '@gp-sphinx/astro/render/extract-description'
+import { renderDocumentWithHighlighting } from '@gp-sphinx/astro/render/render-with-highlighting'
 import Doc from '../layouts/Doc.astro'
 import { editOnGithubUrl } from '../lib/edit-link.ts'
 import { getCodeHighlighter } from '../lib/highlighter-singleton.ts'
