@@ -1,6 +1,13 @@
 packages:
   - "packages/gp-furo-tokens"
   - "packages/gp-furo-theme/web"
+  # Astro stack — hoisted from the former astro/pnpm-workspace.yaml so a
+  # single `pnpm install` at the repo root resolves the entire JS graph
+  # (Furo theme tokens AND the Astro renderer + dogfood site).
+  - "astro"
+  - "astro/packages/*"
+  - "astro/apps/*"
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
+  sharp: true
