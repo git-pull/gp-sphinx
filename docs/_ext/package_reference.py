@@ -1501,6 +1501,105 @@ class PackageReferenceDirective(SphinxDirective):
         return self.parse_text_to_nodes(package_reference_markdown(package_name))
 
 
+def _public_callables(module_name: str) -> list[tuple[str, str]]:
+    """Return ``(qualname, signature)`` pairs for the module's public callables.
+
+    Imports ``module_name`` once, walks ``dir(module)`` for callables
+    not starting with ``_``, and renders each via :func:`inspect.signature`.
+    Errors during inspection are logged and skipped so a single drift
+    doesn't break the build.
+    """
+    try:
+        module = importlib.import_module(module_name)
+    except ImportError:
+        logger.warning("live-signature: could not import %r", module_name)
+        return []
+
+    pairs: list[tuple[str, str]] = []
+    for name in sorted(dir(module)):
+        if name.startswith("_"):
+            continue
+        obj = getattr(module, name)
+        if not callable(obj):
+            continue
+        if getattr(obj, "__module__", None) != module_name:
+            continue  # re-exports are documented in their owning module
+        try:
+            sig = str(inspect.signature(obj))
+        except (TypeError, ValueError):
+            continue
+        pairs.append((name, sig))
+    return pairs
+
+
+def _live_signature_markdown(package_name: str) -> str:
+    """Render the live-signature subpage content for a workspace package."""
+    record = next(
+        (r for r in workspace_package_records() if r.name == package_name),
+        None,
+    )
+    if record is None or record.state != "shipped-py":
+        return ""
+
+    pairs = _public_callables(record.module_name)
+    if not pairs:
+        return ""
+
+    lines = [
+        f"({record.name}-signatures)=",
+        "",
+        "# Signatures (live)",
+        "",
+        f"Public callables in `{record.module_name}` rendered from the "
+        "running interpreter at docs-build time. Drift between this "
+        "block and the prose elsewhere on the page indicates a stale "
+        "docstring or signature comment.",
+        "",
+    ]
+    for name, sig in pairs:
+        lines.append(f"### `{name}`")
+        lines.append("")
+        lines.append("```python")
+        lines.append(f"def {name}{sig}:")
+        lines.append("    ...")
+        lines.append("```")
+        lines.append("")
+    return "\n".join(lines)
+
+
+class LiveSignatureDirective(SphinxDirective):
+    """Render runtime-introspected signatures for a workspace package's module.
+
+    Imports the package's module and emits a ``### <name>`` section per
+    public callable showing its live signature. Use on a package's
+    ``signatures.md`` subpage when the author has opted in via
+    ``[tool.gp-sphinx.docs].showcase = ["signatures"]``.
+
+    No inline JavaScript is emitted by this directive; the signatures
+    are rendered server-side at build time. (Risk 7 in the woven
+    plan — Cloudflare Rocket Loader interaction — does not apply.)
+
+    Usage in ``packages/<name>/docs/signatures.md``::
+
+        ```{live-signature} sphinx-fonts
+        ```
+    """
+
+    required_arguments = 1
+    has_content = False
+
+    def run(self) -> list[nodes.Node]:
+        package_name = self.arguments[0].strip()
+        markdown = _live_signature_markdown(package_name)
+        if not markdown:
+            logger.warning(
+                "live-signature: no public callables for %r",
+                package_name,
+            )
+            return []
+        return self.parse_text_to_nodes(markdown)
+
+
 class WorkspacePackageGridDirective(SphinxDirective):
     """Render the workspace package index grid.
 
@@ -1543,6 +1642,7 @@ def setup(app: t.Any) -> dict[str, object]:
     ensure_workspace_imports()
     app.add_directive("package-landing", PackageLandingDirective)
     app.add_directive("cluster-toctree", ClusterToctreeDirective)
+    app.add_directive("live-signature", LiveSignatureDirective)
     app.add_directive("package-reference", PackageReferenceDirective)
     app.add_directive("workspace-package-grid", WorkspacePackageGridDirective)
     app.add_role("subpage-exists", subpage_exists_role)
