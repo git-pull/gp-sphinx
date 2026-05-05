@@ -1,19 +1,6 @@
-# sphinx-vite-builder
+(sphinx-vite-builder-how-to)=
 
-```{gp-sphinx-package-meta} sphinx-vite-builder
-```
-
-A [PEP 517](https://peps.python.org/pep-0517/) build backend and Sphinx extension that orchestrates
-[Vite](https://vitejs.dev/) builds via [pnpm](https://pnpm.io/) for any
-Sphinx-theme package whose static assets (CSS / JS) are produced by a
-JavaScript toolchain. The same pattern that
-[maturin](https://github.com/PyO3/maturin) uses for Rust+Python and
-that [sphinx-theme-builder](https://github.com/pradyunsg/sphinx-theme-builder)
-uses for webpack, applied to vite + pnpm.
-
-```console
-$ pip install sphinx-vite-builder
-```
+# How to
 
 ## Two heads, one core
 

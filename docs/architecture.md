@@ -130,7 +130,7 @@ and seamless live-reload during authoring.
 :gutter: 2
 
 :::{grid-item-card} sphinx-vite-builder
-:link: packages/sphinx-vite-builder
+:link: packages/sphinx-vite-builder/index
 :link-type: doc
 
 [PEP 517](https://peps.python.org/pep-0517/) build backend (or

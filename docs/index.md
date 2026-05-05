@@ -139,7 +139,7 @@ packages/gp-furo-theme/index
 :caption: Build utils
 :hidden:
 
-packages/sphinx-vite-builder
+packages/sphinx-vite-builder/index
 ```
 
 ```{toctree}
