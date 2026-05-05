@@ -1813,6 +1813,106 @@ class SurfaceChangelogDirective(SphinxDirective):
         return self.parse_text_to_nodes(markdown)
 
 
+def _package_dependents(target: str) -> list[str]:
+    """Return workspace packages that depend on ``target`` per pyproject.toml.
+
+    Walks every shipped-py record and reads the ``[project].dependencies``
+    array from its manifest, plus ``[tool.uv.sources]`` for workspace
+    pin entries. Returns the set of dependents sorted alphabetically.
+    """
+    dependents: set[str] = set()
+    for record in workspace_package_records():
+        if record.state != "shipped-py" or record.manifest_path is None:
+            continue
+        if record.name == target:
+            continue
+        with record.manifest_path.open("rb") as handle:
+            manifest = tomllib.load(handle)
+        deps = manifest.get("project", {}).get("dependencies", [])
+        for dep_spec in deps:
+            # dep_spec is e.g. "sphinx-ux-badges>=0.0.1" or just "sphinx-ux-badges"
+            dep_name = (
+                str(dep_spec)
+                .split(">")[0]
+                .split("=")[0]
+                .split("<")[0]
+                .split("!")[0]
+                .split("~")[0]
+                .split(";")[0]
+                .strip()
+                # PEP 508: extras may appear in []; strip them
+                .split("[")[0]
+                .strip()
+            )
+            if dep_name == target:
+                dependents.add(record.name)
+    return sorted(dependents)
+
+
+def _package_dependents_markdown(package_name: str) -> str:
+    """Render the dependents subpage for a package.
+
+    Reverse-intersphinx: which workspace packages import or extend
+    ``package_name``? Each becomes a Sphinx ``:doc:`` cross-reference
+    so navigation lands on the dependent's per-package landing.
+    """
+    record = next(
+        (r for r in workspace_package_records() if r.name == package_name),
+        None,
+    )
+    if record is None:
+        return ""
+
+    dependents = _package_dependents(package_name)
+    lines = [
+        f"({record.name}-dependents)=",
+        "",
+        "# Dependents",
+        "",
+        f"Workspace packages that declare a `{package_name}` dependency in "
+        "their `pyproject.toml` `[project].dependencies` array.",
+        "",
+    ]
+    if not dependents:
+        lines.append(
+            "_No workspace package currently depends on this one._",
+        )
+        lines.append("")
+    else:
+        for dep in dependents:
+            lines.append(f"- {{doc}}`packages/{dep}/index`")
+        lines.append("")
+    return "\n".join(lines)
+
+
+class PackageDependentsDirective(SphinxDirective):
+    """Render reverse-intersphinx: workspace packages that depend on this one.
+
+    Walks every shipped-py package's ``pyproject.toml`` and lists
+    those whose ``[project].dependencies`` include the named package.
+    Use on the package's optional ``dependents.md`` showcase subpage.
+
+    Usage in ``packages/<name>/docs/dependents.md``::
+
+        ```{package-dependents} sphinx-ux-badges
+        ```
+    """
+
+    required_arguments = 1
+    has_content = False
+
+    def run(self) -> list[nodes.Node]:
+        package_name = self.arguments[0].strip()
+        markdown = _package_dependents_markdown(package_name)
+        if not markdown:
+            logger.warning(
+                "package-dependents: unknown package %r",
+                package_name,
+            )
+            return []
+        return self.parse_text_to_nodes(markdown)
+
+
 class WorkspacePackageGridDirective(SphinxDirective):
     """Render the workspace package index grid.
 
@@ -1858,6 +1958,7 @@ def setup(app: t.Any) -> dict[str, object]:
     app.add_directive("live-signature", LiveSignatureDirective)
     app.add_directive("package-kitchen-sink", PackageKitchenSinkDirective)
     app.add_directive("surface-changelog", SurfaceChangelogDirective)
+    app.add_directive("package-dependents", PackageDependentsDirective)
     app.add_directive("package-reference", PackageReferenceDirective)
     app.add_directive("workspace-package-grid", WorkspacePackageGridDirective)
     app.add_role("subpage-exists", subpage_exists_role)
