@@ -1,44 +1,11 @@
-(sphinx-autodoc-typehints-gp)=
+(sphinx-autodoc-typehints-gp-how-to)=
 
-# sphinx-autodoc-typehints-gp
-
-```{gp-sphinx-package-meta} sphinx-autodoc-typehints-gp
-```
-
-:::{admonition} Alpha
-:class: warning
-
-Rendered output is stable. The Python API, CSS class names, and Sphinx
-config value names may change without a major version bump. Pin your
-dependency to a specific version range in production.
-:::
-
-Single-package replacement for `sphinx-autodoc-typehints` and `sphinx.ext.napoleon`
-— resolves annotations statically at build time, no monkey-patching required.
-
-It is also the shared type-rendering layer for the `sphinx-autodoc-*` family:
-annotation normalization, xref-node generation, and late-safe annotation
-paragraph helpers all live here.
+# How to
 
 ## Installation
 
 ```console
 $ pip install sphinx-autodoc-typehints-gp
-```
-
-## Working usage examples
-
-Add `sphinx_autodoc_typehints_gp` to your `extensions` list in `conf.py`:
-
-```python
-extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx_autodoc_typehints_gp",
-]
-
-# Required: makes autodoc insert type annotations into parameter descriptions.
-# Without this, the type cross-referencing pipeline fires but has nothing to attach to.
-autodoc_typehints = "description"
 ```
 
 ## Pipeline position
@@ -114,17 +81,3 @@ detection heuristics.
 This extension uses `sphinx_stringify_annotation()` to resolve annotations at
 build time, making it safe with `TYPE_CHECKING` blocks and eliminating
 text-processing races with Napoleon.
-
-## Live demos
-
-Type annotations are cross-referenced automatically. The function below uses
-`str`, `int`, and `str` — each becomes a clickable `py:class` link in the
-rendered output.
-
-```{eval-rst}
-.. autofunction:: api_demo_layout.compact_function
-   :noindex:
-```
-
-```{package-reference} sphinx-autodoc-typehints-gp
-```

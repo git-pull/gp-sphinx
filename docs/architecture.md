@@ -34,7 +34,7 @@ Parameter folding, managed signatures, card regions.
 :::
 
 :::{grid-item-card} sphinx-autodoc-typehints-gp
-:link: packages/sphinx-autodoc-typehints-gp
+:link: packages/sphinx-autodoc-typehints-gp/index
 :link-type: doc
 
 Annotation normalization and type rendering.

@@ -123,7 +123,7 @@ packages/sphinx-ux-badges/index
 :caption: Utils
 :hidden:
 
-packages/sphinx-autodoc-typehints-gp
+packages/sphinx-autodoc-typehints-gp/index
 ```
 
 ```{toctree}
