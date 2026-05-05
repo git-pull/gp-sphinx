@@ -104,7 +104,7 @@ history
 
 packages/sphinx-autodoc-api-style/index
 packages/sphinx-autodoc-argparse/index
-packages/sphinx-autodoc-docutils
+packages/sphinx-autodoc-docutils/index
 packages/sphinx-autodoc-fastmcp
 packages/sphinx-autodoc-pytest-fixtures
 packages/sphinx-autodoc-sphinx/index

@@ -70,7 +70,7 @@ source-construct family:
 :::
 
 :::{grid-item-card} sphinx-autodoc-docutils
-:link: packages/sphinx-autodoc-docutils
+:link: packages/sphinx-autodoc-docutils/index
 :link-type: doc
 
 **Subject**: docutils directives and roles.
@@ -154,7 +154,7 @@ componentized HTML output structure, and the same type annotation
 pipeline — so [Python APIs](packages/sphinx-autodoc-api-style/index.md),
 [pytest fixtures](packages/sphinx-autodoc-pytest-fixtures.md),
 [Sphinx config values](packages/sphinx-autodoc-sphinx/index.md),
-[docutils directives](packages/sphinx-autodoc-docutils.md), and
+[docutils directives](packages/sphinx-autodoc-docutils/index.md), and
 [FastMCP tools](packages/sphinx-autodoc-fastmcp.md) all look like
 they belong together.
 
