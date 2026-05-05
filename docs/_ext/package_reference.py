@@ -923,16 +923,70 @@ def maturity_badge(maturity: str) -> str:
     return f"{{bdg-secondary-line}}`{maturity}`"
 
 
-def workspace_package_grid_markdown() -> str:
-    """Render the package index grid from workspace metadata.
+_CLUSTER_HEADINGS: tuple[tuple[str, str, str], ...] = (
+    (
+        "theme-coordinator",
+        "Theme & coordinator",
+        "Shared Sphinx configuration and presentation surface.",
+    ),
+    (
+        "tokens",
+        "Tokens",
+        "Design tokens, fonts, and shared CSS custom properties.",
+    ),
+    (
+        "autodoc",
+        "Autodoc extensions",
+        "Domain-specific autodoc extensions: each adds directives that "
+        "generate documentation from a particular source-construct family.",
+    ),
+    (
+        "ux",
+        "UX components",
+        "Badge primitives, layout presenters, and other shared "
+        "rendering helpers consumed by the autodoc family.",
+    ),
+    (
+        "build-seo",
+        "Build & SEO",
+        "PEP 517 backends, build orchestration, and crawl-indexing "
+        "extensions auto-loaded by gp-sphinx when ``docs_url`` is set.",
+    ),
+)
 
-    Examples
-    --------
-    >>> "grid-item-card" in workspace_package_grid_markdown()
-    True
-    >>> "+++" in workspace_package_grid_markdown()
-    True
-    """
+
+def _grid_card_lines_for_record(record: PackageDocsRecord) -> list[str]:
+    """Render one ``{grid-item-card}`` block for a workspace record."""
+    if record.state == "emerging":
+        # Emerging packages have no per-package landing yet — link to
+        # the GitHub directory (or repo root) rather than a 404.
+        link = record.repository_url or "https://github.com/git-pull/gp-sphinx"
+        return [
+            f":::{{grid-item-card}} {record.name}",
+            f":link: {link}",
+            "",
+            "Coming soon — see GitHub for status.",
+            "",
+            ":::",
+            "",
+        ]
+
+    return [
+        f":::{{grid-item-card}} {record.name}",
+        f":link: {record.name}",
+        ":link-type: doc",
+        "",
+        record.description,
+        "",
+        "+++",
+        maturity_badge(record.maturity),
+        ":::",
+        "",
+    ]
+
+
+def _flat_workspace_grid_markdown() -> str:
+    """Render the legacy single-grid layout (no per-cluster headings)."""
     lines = [
         "::::{grid} 1 1 2 2",
         ":gutter: 2 2 3 3",
@@ -955,6 +1009,77 @@ def workspace_package_grid_markdown() -> str:
         )
     lines.append("::::")
     return "\n".join(lines)
+
+
+def _grouped_workspace_grid_markdown() -> str:
+    """Render the workspace inventory as one ``{grid}`` block per cluster.
+
+    Each cluster gets a heading + framing prose + a grid containing
+    only the records assigned to that cluster (Shipped + Emerging).
+    Emerging cards link to the GitHub directory rather than a
+    landing docname so the build does not 404.
+    """
+    records = workspace_package_records()
+    by_cluster: dict[str, list[PackageDocsRecord]] = {}
+    for record in records:
+        by_cluster.setdefault(record.cluster, []).append(record)
+
+    lines: list[str] = []
+    for cluster_id, heading, prose in _CLUSTER_HEADINGS:
+        members = sorted(
+            by_cluster.get(cluster_id, []),
+            key=lambda r: r.name,
+        )
+        if not members:
+            continue
+        lines.extend(
+            [
+                f"## {heading}",
+                "",
+                prose,
+                "",
+                "::::{grid} 1 1 2 2",
+                ":gutter: 2 2 3 3",
+                "",
+            ],
+        )
+        for member in members:
+            lines.extend(_grid_card_lines_for_record(member))
+        lines.append("::::")
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def workspace_package_grid_markdown(*, groups: str | None = None) -> str:
+    """Render the workspace package index grid.
+
+    Parameters
+    ----------
+    groups
+        ``None`` (default) renders the legacy single grid of every
+        Python-shipped package — backward compatible with existing
+        ``{workspace-package-grid}`` invocations. ``"by-cluster"``
+        emits one grid per sidebar cluster, with cluster headings,
+        framing prose, and Emerging packages rendered as
+        GitHub-linked cards.
+
+    Examples
+    --------
+    >>> "grid-item-card" in workspace_package_grid_markdown()
+    True
+    >>> "+++" in workspace_package_grid_markdown()
+    True
+    >>> "## Autodoc extensions" in workspace_package_grid_markdown(
+    ...     groups="by-cluster"
+    ... )
+    True
+    """
+    if groups is None:
+        return _flat_workspace_grid_markdown()
+    if groups == "by-cluster":
+        return _grouped_workspace_grid_markdown()
+    msg = f"unsupported groups argument: {groups!r}"
+    raise ValueError(msg)
 
 
 def _register_extension_objects(
@@ -1354,12 +1479,32 @@ class PackageReferenceDirective(SphinxDirective):
 
 
 class WorkspacePackageGridDirective(SphinxDirective):
-    """Render the packages index grid from workspace package metadata."""
+    """Render the workspace package index grid.
+
+    By default emits a single grid of every Python-shipped package
+    (backward compatible). Pass ``:groups: by-cluster`` to instead
+    emit one grid per sidebar cluster, with headings, framing prose,
+    and Emerging packages rendered as GitHub-linked cards.
+
+    Usage in ``docs/packages/index.md``::
+
+        ```{workspace-package-grid}
+        ```
+
+        ```{workspace-package-grid}
+        :groups: by-cluster
+        ```
+    """
 
     has_content = False
+    option_spec = {  # noqa: RUF012
+        "groups": lambda v: str(v).strip(),
+    }
 
     def run(self) -> list[nodes.Node]:
-        return self.parse_text_to_nodes(workspace_package_grid_markdown())
+        groups = self.options.get("groups")
+        markdown = workspace_package_grid_markdown(groups=groups)
+        return self.parse_text_to_nodes(markdown)
 
 
 def setup(app: t.Any) -> dict[str, object]:
