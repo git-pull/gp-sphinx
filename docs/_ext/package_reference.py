@@ -1111,10 +1111,25 @@ def _register_extension_objects(
     except (KeyError, AttributeError, ImportError):
         return
 
-    for package in workspace_packages():
-        pkg_docname = f"packages/{package['name']}"
+    found_docs: set[str] = getattr(env, "found_docs", set())
 
-        for ext_module_name in extension_modules(package["module_name"]):
+    for record in workspace_package_records():
+        if record.state != "shipped-py":
+            # Emerging records have no source; shipped-js has no Python
+            # module to introspect. Either way, nothing to register.
+            continue
+
+        # Prefer the per-package reference subpage when the package has
+        # migrated (its docname is in env.found_docs); fall back to the
+        # legacy flat page during the migration window so xrefs keep
+        # resolving for un-migrated packages.
+        reference_docname = f"packages/{record.name}/reference"
+        flat_docname = f"packages/{record.name}"
+        pkg_docname = (
+            reference_docname if reference_docname in found_docs else flat_docname
+        )
+
+        for ext_module_name in extension_modules(record.module_name):
             recorder = replay_setup(ext_module_name)
             if recorder is None:
                 continue
