@@ -102,7 +102,7 @@ history
 :caption: Domain Packages
 :hidden:
 
-packages/sphinx-autodoc-api-style
+packages/sphinx-autodoc-api-style/index
 packages/sphinx-autodoc-argparse
 packages/sphinx-autodoc-docutils
 packages/sphinx-autodoc-fastmcp

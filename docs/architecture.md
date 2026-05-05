@@ -54,7 +54,7 @@ source-construct family:
 :gutter: 2
 
 :::{grid-item-card} sphinx-autodoc-api-style
-:link: packages/sphinx-autodoc-api-style
+:link: packages/sphinx-autodoc-api-style/index
 :link-type: doc
 
 **Subject**: standard Python.
@@ -151,7 +151,7 @@ gp-sphinx coordinator.
 
 Every autodoc extension shares the same badge palette, the same
 componentized HTML output structure, and the same type annotation
-pipeline — so [Python APIs](packages/sphinx-autodoc-api-style.md),
+pipeline — so [Python APIs](packages/sphinx-autodoc-api-style/index.md),
 [pytest fixtures](packages/sphinx-autodoc-pytest-fixtures.md),
 [Sphinx config values](packages/sphinx-autodoc-sphinx/index.md),
 [docutils directives](packages/sphinx-autodoc-docutils.md), and

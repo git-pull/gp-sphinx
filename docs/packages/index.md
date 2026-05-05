@@ -23,7 +23,7 @@ The rendering pipeline every autodoc extension consumes:
 
 Domain-specific [autodoc extensions](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html) — each adds directives that generate documentation from a particular source-construct family (Python APIs, argparse parsers, pytest fixtures, etc.):
 
-- [`sphinx-autodoc-api-style`](sphinx-autodoc-api-style.md) — Python API rendering style
+- [`sphinx-autodoc-api-style`](sphinx-autodoc-api-style/index.md) — Python API rendering style
 - [`sphinx-autodoc-argparse`](sphinx-autodoc-argparse.md) — argparse parsers + subcommands
 - [`sphinx-autodoc-docutils`](sphinx-autodoc-docutils.md) — docutils directives + nodes
 - [`sphinx-autodoc-fastmcp`](sphinx-autodoc-fastmcp.md) — FastMCP tools, prompts, resources
