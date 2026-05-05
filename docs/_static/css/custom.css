@@ -521,3 +521,20 @@ article > section > p:first-of-type > .sd-badge.sd-bg-info {
   text-transform: uppercase;
   vertical-align: middle;
 }
+
+/* Per-package landing layout — rendered by PackageLandingDirective.
+ * gp-sphinx-package__landing-grid is the :class-container: on the
+ * sphinx-design {grid} that holds the Diátaxis card row.
+ * gp-sphinx-package__hero is the synopsis line beneath the H1, kept
+ * lightweight so the meta-badge row + grid carry the visual weight.
+ * Specificity stays at 0,1,0 per the workspace CSS standards. */
+.gp-sphinx-package__landing-grid {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.gp-sphinx-package__hero {
+  font-size: 1.05rem;
+  color: var(--color-foreground-secondary);
+  margin: 0.5rem 0 1rem 0;
+}
