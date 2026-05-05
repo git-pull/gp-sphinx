@@ -61,12 +61,14 @@ from __future__ import annotations
 
 import importlib
 import inspect
+import json
 import logging
 import os
 import pathlib
 import pkgutil
 import sys
 import typing as t
+from dataclasses import dataclass, field
 
 from sphinx.util.docutils import SphinxDirective
 
@@ -81,6 +83,169 @@ else:
     import tomli as tomllib  # type: ignore[import-not-found]
 
 logger = logging.getLogger(__name__)
+
+
+PackageState = t.Literal["shipped-py", "shipped-js", "emerging"]
+
+
+@dataclass(frozen=True)
+class DocsOpts:
+    """Per-package overrides parsed from ``[tool.gp-sphinx.docs]``.
+
+    Attributes
+    ----------
+    omit
+        Subpages this package opts out of (e.g. tokens packages omit
+        ``tutorial`` and ``examples``).
+    extra
+        Subpages beyond the Diátaxis defaults (e.g. ``errors``, ``cli``,
+        ``tokens``).
+    showcase
+        Optional Sublimity subpages this package opts into (subset of
+        ``signatures``, ``kitchen-sink``, ``surface-diff``, ``dependents``).
+    reference_link
+        When set, the Reference card on the landing redirects to this
+        docname rather than rendering ``packages/<name>/reference``.
+
+    Examples
+    --------
+    >>> DocsOpts().omit
+    ()
+    >>> DocsOpts(extra=("errors",)).extra
+    ('errors',)
+    """
+
+    omit: tuple[str, ...] = ()
+    extra: tuple[str, ...] = ()
+    showcase: tuple[str, ...] = ()
+    reference_link: str | None = None
+
+
+@dataclass(frozen=True)
+class PackageDocsRecord:
+    """Single source of truth for a workspace package's docs metadata.
+
+    Populated once at workspace discovery; every directive downstream
+    reads from this record rather than re-parsing manifest files.
+
+    Attributes
+    ----------
+    name
+        Distribution name (``"sphinx-autodoc-fastmcp"``,
+        ``"@gp-sphinx/furo-tokens"``).
+    state
+        Manifest probe result: ``"shipped-py"`` (has ``pyproject.toml``),
+        ``"shipped-js"`` (has ``package.json`` only), or ``"emerging"``
+        (no manifest yet).
+    cluster
+        Sidebar cluster the package belongs to (e.g. ``"autodoc"``).
+    package_dir
+        Directory of the package under ``packages/``.
+    manifest_path
+        Path to the manifest file (``pyproject.toml`` or
+        ``package.json``); ``None`` for emerging packages.
+    src_dir
+        Path to the package's ``src/`` directory; ``None`` if absent.
+    module_name
+        Importable Python module name (only meaningful for shipped-py).
+    description
+        One-line synopsis for the landing page.
+    version
+        Package version string from the manifest; empty for emerging.
+    repository_url
+        GitHub URL.
+    pypi_url
+        PyPI project URL; ``None`` for shipped-js and emerging.
+    npm_url
+        npm registry URL; ``None`` for shipped-py and emerging.
+    maturity
+        Short label (``"Alpha"``, ``"Beta"``, ``"Production/Stable"``,
+        ``"Unknown"``).
+    docs_opts
+        Parsed ``[tool.gp-sphinx.docs]`` overrides (empty if section
+        absent or manifest is ``package.json``).
+
+    Examples
+    --------
+    >>> records = workspace_package_records()
+    >>> shipped_py = [r for r in records if r.state == "shipped-py"]
+    >>> "gp-sphinx" in {r.name for r in shipped_py}
+    True
+    """
+
+    name: str
+    state: PackageState
+    cluster: str
+    package_dir: pathlib.Path
+    manifest_path: pathlib.Path | None
+    src_dir: pathlib.Path | None
+    module_name: str
+    description: str
+    version: str
+    repository_url: str
+    pypi_url: str | None
+    npm_url: str | None
+    maturity: str
+    docs_opts: DocsOpts = field(default_factory=DocsOpts)
+
+
+_CLUSTER_FOR_NAME: dict[str, str] = {
+    "gp-sphinx": "theme-coordinator",
+    "sphinx-gp-theme": "theme-coordinator",
+    "gp-furo-theme": "theme-coordinator",
+    "sphinx-serene-theme": "theme-coordinator",
+    "gp-furo-tokens": "tokens",
+    "gp-serene-tokens": "tokens",
+    "@gp-sphinx/furo-tokens": "tokens",
+    "@gp-sphinx/serene-tokens": "tokens",
+    "sphinx-fonts": "tokens",
+    "sphinx-ux-badges": "ux",
+    "sphinx-ux-autodoc-layout": "ux",
+    "sphinx-vite-builder": "build-seo",
+    "sphinx-gp-opengraph": "build-seo",
+    "sphinx-gp-sitemap": "build-seo",
+}
+
+
+def _cluster_for(name: str) -> str:
+    """Return the sidebar cluster a package belongs to.
+
+    Examples
+    --------
+    >>> _cluster_for("sphinx-autodoc-fastmcp")
+    'autodoc'
+    >>> _cluster_for("gp-sphinx")
+    'theme-coordinator'
+    >>> _cluster_for("sphinx-ux-badges")
+    'ux'
+    """
+    if name in _CLUSTER_FOR_NAME:
+        return _CLUSTER_FOR_NAME[name]
+    if name.startswith("sphinx-autodoc-"):
+        return "autodoc"
+    return "unknown"
+
+
+def _docs_opts_from_pyproject(table: dict[str, t.Any]) -> DocsOpts:
+    """Parse ``[tool.gp-sphinx.docs]`` overrides from a pyproject TOML dict.
+
+    Examples
+    --------
+    >>> _docs_opts_from_pyproject({}).extra
+    ()
+    >>> opts = _docs_opts_from_pyproject(
+    ...     {"tool": {"gp-sphinx": {"docs": {"extra": ["errors"]}}}}
+    ... )
+    >>> opts.extra
+    ('errors',)
+    """
+    section = table.get("tool", {}).get("gp-sphinx", {}).get("docs", {})
+    return DocsOpts(
+        omit=tuple(section.get("omit", [])),
+        extra=tuple(section.get("extra", [])),
+        showcase=tuple(section.get("showcase", [])),
+        reference_link=section.get("reference_link"),
+    )
 
 
 class SurfaceDict(t.TypedDict):
@@ -150,6 +315,149 @@ def workspace_packages() -> list[dict[str, str]]:
             },
         )
     return packages
+
+
+def workspace_package_records() -> list[PackageDocsRecord]:
+    """Return every workspace package directory as a :class:`PackageDocsRecord`.
+
+    Probes ``pyproject.toml`` first; falls back to ``package.json`` for
+    JS-only packages; classifies as ``"emerging"`` when neither manifest
+    is present. Records are returned sorted by directory name.
+
+    Unlike :func:`workspace_packages` this includes JS-only and emerging
+    packages and surfaces the parsed ``[tool.gp-sphinx.docs]`` overrides.
+
+    Examples
+    --------
+    >>> records = workspace_package_records()
+    >>> "gp-sphinx" in {r.name for r in records}
+    True
+    >>> states = {r.state for r in records}
+    >>> states <= {"shipped-py", "shipped-js", "emerging"}
+    True
+    """
+    packages_dir = workspace_root() / "packages"
+    records: list[PackageDocsRecord] = []
+    for pkg_dir in sorted(packages_dir.iterdir()):
+        if not pkg_dir.is_dir():
+            continue
+        record = _package_record_from_dir(pkg_dir)
+        if record is not None:
+            records.append(record)
+    return records
+
+
+def _package_record_from_dir(pkg_dir: pathlib.Path) -> PackageDocsRecord | None:
+    """Build a :class:`PackageDocsRecord` for a single package directory.
+
+    Returns ``None`` for directories that do not look like a workspace
+    package at all (e.g. an ``__pycache__/`` slipped in).
+    """
+    pyproject_path = pkg_dir / "pyproject.toml"
+    package_json_path = pkg_dir / "package.json"
+    src_dir = pkg_dir / "src"
+    src_module_dir: pathlib.Path | None = None
+    if src_dir.is_dir():
+        src_module_dir = next(
+            (path for path in src_dir.iterdir() if path.is_dir()),
+            None,
+        )
+
+    if pyproject_path.is_file():
+        with pyproject_path.open("rb") as handle:
+            table = tomllib.load(handle)
+        project = table.get("project")
+        if not isinstance(project, dict):
+            return None
+        if src_module_dir is None:
+            return None
+        name = str(project["name"])
+        return PackageDocsRecord(
+            name=name,
+            state="shipped-py",
+            cluster=_cluster_for(name),
+            package_dir=pkg_dir,
+            manifest_path=pyproject_path,
+            src_dir=src_dir,
+            module_name=src_module_dir.name,
+            description=str(project.get("description", "")),
+            version=str(project.get("version", "")),
+            repository_url=str(project.get("urls", {}).get("Repository", "")),
+            pypi_url=f"https://pypi.org/project/{name}/",
+            npm_url=None,
+            maturity=maturity_from_classifiers(
+                t.cast("list[str]", project.get("classifiers", [])),
+            ),
+            docs_opts=_docs_opts_from_pyproject(table),
+        )
+
+    if package_json_path.is_file():
+        manifest = json.loads(package_json_path.read_text(encoding="utf-8"))
+        name = str(manifest.get("name", pkg_dir.name))
+        npm_slug = name.lstrip("@").replace("/", "%2f") if name else pkg_dir.name
+        return PackageDocsRecord(
+            name=name,
+            state="shipped-js",
+            cluster=_cluster_for(name),
+            package_dir=pkg_dir,
+            manifest_path=package_json_path,
+            src_dir=src_dir if src_dir.is_dir() else None,
+            module_name="",
+            description=str(manifest.get("description", "")),
+            version=str(manifest.get("version", "")),
+            repository_url=_repository_url_from_package_json(manifest),
+            pypi_url=None,
+            npm_url=f"https://www.npmjs.com/package/{npm_slug}",
+            maturity="Unknown",
+        )
+
+    return PackageDocsRecord(
+        name=pkg_dir.name,
+        state="emerging",
+        cluster=_cluster_for(pkg_dir.name),
+        package_dir=pkg_dir,
+        manifest_path=None,
+        src_dir=src_dir if src_dir.is_dir() else None,
+        module_name="",
+        description="",
+        version="",
+        repository_url="",
+        pypi_url=None,
+        npm_url=None,
+        maturity="Unknown",
+    )
+
+
+def _repository_url_from_package_json(manifest: dict[str, t.Any]) -> str:
+    """Extract a GitHub URL from a ``package.json`` ``repository`` field.
+
+    Accepts either the string form (``"github:owner/repo"``) or the
+    object form (``{"type": "git", "url": "..."}``).
+
+    Examples
+    --------
+    >>> _repository_url_from_package_json({})
+    ''
+    >>> _repository_url_from_package_json({"repository": "github:git-pull/x"})
+    'https://github.com/git-pull/x'
+    >>> _repository_url_from_package_json(
+    ...     {"repository": {"url": "git+https://github.com/git-pull/x.git"}}
+    ... )
+    'https://github.com/git-pull/x'
+    """
+    repo = manifest.get("repository")
+    if isinstance(repo, str):
+        if repo.startswith("github:"):
+            return f"https://github.com/{repo[len('github:') :]}"
+        return repo
+    if isinstance(repo, dict):
+        url = str(repo.get("url", ""))
+        if url.startswith("git+"):
+            url = url[len("git+") :]
+        if url.endswith(".git"):
+            url = url[: -len(".git")]
+        return url
+    return ""
 
 
 def maturity_from_classifiers(classifiers: list[str]) -> str:

@@ -38,6 +38,82 @@ def test_workspace_packages_lists_publishable_packages() -> None:
     }
 
 
+def test_workspace_package_records_includes_shipped_js_packages() -> None:
+    """Workspace records include JS-only packages that have a ``package.json``."""
+    records = package_reference.workspace_package_records()
+    js_records = [r for r in records if r.state == "shipped-js"]
+    js_names = {r.name for r in js_records}
+    assert "@gp-sphinx/furo-tokens" in js_names
+
+
+def test_workspace_package_records_classify_python_packages_as_shipped_py() -> None:
+    """Every package returned by ``workspace_packages`` has a shipped-py record."""
+    py_names = {p["name"] for p in package_reference.workspace_packages()}
+    records = package_reference.workspace_package_records()
+    shipped_py_names = {r.name for r in records if r.state == "shipped-py"}
+    assert py_names <= shipped_py_names
+
+
+def test_workspace_package_records_emerging_packages_have_no_manifest() -> None:
+    """Emerging records have ``manifest_path is None``."""
+    records = package_reference.workspace_package_records()
+    for record in records:
+        if record.state == "emerging":
+            assert record.manifest_path is None
+
+
+def test_workspace_package_records_assign_each_package_a_known_cluster() -> None:
+    """Every shipped record has a non-``unknown`` cluster."""
+    records = package_reference.workspace_package_records()
+    for record in records:
+        if record.state in {"shipped-py", "shipped-js"}:
+            assert record.cluster != "unknown", (
+                f"package {record.name!r} fell through cluster classification"
+            )
+
+
+def test_workspace_package_records_pypi_url_only_for_python_packages() -> None:
+    """PyPI URLs are populated for shipped-py records and absent elsewhere."""
+    records = package_reference.workspace_package_records()
+    for record in records:
+        if record.state == "shipped-py":
+            assert record.pypi_url == f"https://pypi.org/project/{record.name}/"
+        else:
+            assert record.pypi_url is None
+
+
+def test_workspace_package_records_npm_url_only_for_js_packages() -> None:
+    """Npm URLs are populated for shipped-js records and absent elsewhere."""
+    records = package_reference.workspace_package_records()
+    for record in records:
+        if record.state == "shipped-js":
+            assert record.npm_url is not None
+        else:
+            assert record.npm_url is None
+
+
+def test_workspace_package_records_parse_docs_opts_from_pyproject() -> None:
+    """``[tool.gp-sphinx.docs]`` overrides round-trip into ``DocsOpts``."""
+    helper = package_reference._docs_opts_from_pyproject
+    opts = helper(
+        {
+            "tool": {
+                "gp-sphinx": {
+                    "docs": {
+                        "extra": ["errors", "cli"],
+                        "showcase": ["kitchen-sink"],
+                        "reference_link": "/configuration",
+                    },
+                },
+            },
+        },
+    )
+    assert opts.extra == ("errors", "cli")
+    assert opts.showcase == ("kitchen-sink",)
+    assert opts.reference_link == "/configuration"
+    assert opts.omit == ()
+
+
 def test_collect_extension_surface_for_sphinx_fonts() -> None:
     """The surface collector captures live config registration."""
     surface = package_reference.collect_extension_surface("sphinx_fonts")
