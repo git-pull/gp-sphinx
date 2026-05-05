@@ -41,3 +41,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sphinx_autodoc_docutils"]
+
+[tool.gp-sphinx.docs]
+# Four directives ({autodirective}, {autodirectives}, {autorole},
+# {autoroles}); kitchen-sink shows the invocation shape for each.
+showcase = ["kitchen-sink"]
