@@ -146,6 +146,6 @@ packages/sphinx-vite-builder/index
 :caption: SEO
 :hidden:
 
-packages/sphinx-gp-opengraph
+packages/sphinx-gp-opengraph/index
 packages/sphinx-gp-sitemap
 ```

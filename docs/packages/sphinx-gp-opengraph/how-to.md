@@ -1,30 +1,6 @@
-(sphinx-gp-opengraph)=
+(sphinx-gp-opengraph-how-to)=
 
-# sphinx-gp-opengraph
-
-```{gp-sphinx-package-meta} sphinx-gp-opengraph
-```
-
-:::{admonition} Alpha
-:class: warning
-
-Rendered output is stable. The Python API and Sphinx config value names
-may change without a major version bump. Pin your dependency to a
-specific version range in production.
-:::
-
-OpenGraph meta-tag emission for Sphinx. The package registers every
-`ogp_*` config value the upstream
-[`sphinxext-opengraph`](https://github.com/sphinx-doc/sphinxext-opengraph)
-exposes and emits the same `<meta>` tags, with one deliberate
-omission: the matplotlib-based social-card generator is not bundled.
-That is why the package has zero non-Sphinx runtime dependencies.
-
-For install, per-page overrides, Twitter-card markup, and the
-verbatim deprecation-warning text, see the package
-[README](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-opengraph#readme).
-This page covers integration with gp-sphinx, the emission pipeline,
-the trade-offs, and the auto-generated config-value reference.
+# How to
 
 ## Integration with gp-sphinx
 
@@ -98,19 +74,3 @@ workflow documented in the README.
 The extension never writes shared state — every emission is
 self-contained inside the per-page hook — so it is safe under any
 `sphinx-build -j N` value.
-
-## Config reference
-
-Generated from `app.add_config_value()` registrations in
-[`sphinx_gp_opengraph/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-opengraph/src/sphinx_gp_opengraph/__init__.py).
-
-```{eval-rst}
-.. autoconfigvalues:: sphinx_gp_opengraph
-```
-
-## Package reference
-
-```{package-reference} sphinx-gp-opengraph
-```
-
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-opengraph) · [PyPI](https://pypi.org/project/sphinx-gp-opengraph/)
