@@ -18,7 +18,7 @@ The rendering pipeline that every autodoc extension consumes:
 :gutter: 2
 
 :::{grid-item-card} sphinx-ux-badges
-:link: packages/sphinx-ux-badges
+:link: packages/sphinx-ux-badges/index
 :link-type: doc
 
 Badge primitives, colour palette, and CSS infrastructure.

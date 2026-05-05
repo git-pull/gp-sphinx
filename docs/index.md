@@ -116,7 +116,7 @@ packages/sphinx-autodoc-sphinx/index
 
 packages/sphinx-fonts/index
 packages/sphinx-ux-autodoc-layout
-packages/sphinx-ux-badges
+packages/sphinx-ux-badges/index
 ```
 
 ```{toctree}
