@@ -1096,6 +1096,171 @@ def subpage_exists_role(
     return [docutils_nodes.inline(rawtext, text_clean)], []
 
 
+_DEFAULT_LANDING_SUBPAGES: tuple[str, ...] = (
+    "tutorial",
+    "how-to",
+    "reference",
+    "explanation",
+    "examples",
+)
+
+_OCTICONS: dict[str, str] = {
+    "tutorial": "rocket",
+    "how-to": "tools",
+    "reference": "book",
+    "explanation": "light-bulb",
+    "examples": "star",
+    "errors": "alert",
+    "cli": "terminal",
+    "tokens": "paintbrush",
+    "signatures": "code",
+    "kitchen-sink": "device-camera",
+    "surface-diff": "diff",
+    "dependents": "link",
+}
+
+_TITLES: dict[str, str] = {
+    "tutorial": "Tutorial",
+    "how-to": "How-to",
+    "reference": "Reference",
+    "explanation": "Explanation",
+    "examples": "Examples",
+    "errors": "Errors",
+    "cli": "CLI",
+    "tokens": "Tokens",
+    "signatures": "Signatures",
+    "kitchen-sink": "Kitchen sink",
+    "surface-diff": "Surface diff",
+    "dependents": "Dependents",
+}
+
+_DEFAULT_SUMMARIES: dict[str, str] = {
+    "tutorial": "Get started in ten minutes.",
+    "how-to": "Task recipes for common workflows.",
+    "reference": "Every directive, role, and config value.",
+    "explanation": "Why the package is shaped this way.",
+    "examples": "Live demos rendered from real code.",
+    "errors": "Named failure modes and what to do about them.",
+    "cli": "Command-line surface and modes.",
+    "tokens": "Design-token tables and CSS custom properties.",
+    "signatures": "Runtime-rendered signatures and drift alerts.",
+    "kitchen-sink": "Every directive exercised on one page.",
+    "surface-diff": "What changed since the last release.",
+    "dependents": "Workspace packages that import this one.",
+}
+
+
+def _candidate_subpage_paths(record: PackageDocsRecord) -> dict[str, pathlib.Path]:
+    """Return the on-disk paths the landing checks for each candidate subpage.
+
+    The landing renders only those subpage cards whose target file exists.
+    Currently looks in ``docs/packages/<name>/<subpage>.md``; a future
+    commit will also probe the co-located ``packages/<name>/docs/`` tree.
+    """
+    docs_root = workspace_root() / "docs" / "packages" / record.name
+    subpages = list(_DEFAULT_LANDING_SUBPAGES) + list(record.docs_opts.extra)
+    return {sub: docs_root / f"{sub}.md" for sub in subpages}
+
+
+def _package_landing_markdown(
+    record: PackageDocsRecord,
+    present_subpages: list[str],
+) -> str:
+    """Render the per-package landing markdown for ``record``.
+
+    The caller is responsible for env.note_dependency() on the candidate
+    paths; this helper is pure (string in -> string out).
+    """
+    docname_anchor = f"({record.name})="
+    title = f"# {record.name}"
+    meta = f"```{{gp-sphinx-package-meta}} {record.name}\n```"
+    synopsis = (
+        f"> {record.description}"
+        if record.description
+        else "> No description provided."
+    )
+
+    lines: list[str] = [
+        docname_anchor,
+        "",
+        title,
+        "",
+        meta,
+        "",
+        synopsis,
+        "",
+        "::::{grid} 1 2 2 3",
+        ":gutter: 2 2 3 3",
+        ":class-container: gp-sphinx-package__landing-grid",
+        "",
+    ]
+    for subpage in present_subpages:
+        icon = _OCTICONS.get(subpage, "link")
+        title_text = _TITLES.get(subpage, subpage.replace("-", " ").title())
+        summary = _DEFAULT_SUMMARIES.get(subpage, "")
+        lines.extend(
+            [
+                f":::{{grid-item-card}} {{octicon}}`{icon}` {title_text}",
+                f":link: {subpage}",
+                ":link-type: doc",
+                summary,
+                ":::",
+                "",
+            ],
+        )
+    lines.append("::::")
+    lines.append("")
+    if present_subpages:
+        lines.append("```{toctree}")
+        lines.append(":hidden:")
+        lines.append("")
+        lines.extend(present_subpages)
+        lines.append("```")
+        lines.append("")
+    return "\n".join(lines)
+
+
+class PackageLandingDirective(SphinxDirective):
+    """Render a synthesized landing page for a workspace package.
+
+    Emits ``gp-sphinx-package-meta`` + synopsis + a conditional grid of
+    cards over only those Diátaxis subpages whose target markdown
+    exists on disk + a hidden toctree.
+
+    Calls ``env.note_dependency()`` on every candidate subpage path so
+    incremental builds rebuild the landing when an author drops a new
+    ``tutorial.md`` (or removes one) without a clean rebuild.
+
+    Usage in ``docs/packages/<name>/index.md``::
+
+        ```{package-landing} sphinx-autodoc-fastmcp
+        ```
+    """
+
+    required_arguments = 1
+    has_content = False
+
+    def run(self) -> list[nodes.Node]:
+        package_name = self.arguments[0].strip()
+        record = next(
+            (r for r in workspace_package_records() if r.name == package_name),
+            None,
+        )
+        if record is None:
+            logger.warning("package-landing: unknown package %r", package_name)
+            return []
+
+        candidates = _candidate_subpage_paths(record)
+        present: list[str] = []
+        for subpage, path in candidates.items():
+            self.env.note_dependency(str(path))
+            if path.is_file():
+                present.append(subpage)
+
+        markdown = _package_landing_markdown(record, present)
+        return self.parse_text_to_nodes(markdown)
+
+
 class PackageReferenceDirective(SphinxDirective):
     """Render a generated package reference block inside a page."""
 
@@ -1127,6 +1292,7 @@ def setup(app: t.Any) -> dict[str, object]:
     True
     """
     ensure_workspace_imports()
+    app.add_directive("package-landing", PackageLandingDirective)
     app.add_directive("package-reference", PackageReferenceDirective)
     app.add_directive("workspace-package-grid", WorkspacePackageGridDirective)
     app.add_role("subpage-exists", subpage_exists_role)
