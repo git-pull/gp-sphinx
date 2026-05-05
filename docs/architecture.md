@@ -78,7 +78,7 @@ source-construct family:
 :::
 
 :::{grid-item-card} sphinx-autodoc-fastmcp
-:link: packages/sphinx-autodoc-fastmcp
+:link: packages/sphinx-autodoc-fastmcp/index
 :link-type: doc
 
 **Subject**: FastMCP tools, prompts, resources.
@@ -155,7 +155,7 @@ pipeline — so [Python APIs](packages/sphinx-autodoc-api-style/index.md),
 [pytest fixtures](packages/sphinx-autodoc-pytest-fixtures.md),
 [Sphinx config values](packages/sphinx-autodoc-sphinx/index.md),
 [docutils directives](packages/sphinx-autodoc-docutils/index.md), and
-[FastMCP tools](packages/sphinx-autodoc-fastmcp.md) all look like
+[FastMCP tools](packages/sphinx-autodoc-fastmcp/index.md) all look like
 they belong together.
 
 This is the **one autodoc design system** principle: a change to the shared

@@ -20,12 +20,41 @@ from tests._sphinx_scenarios import (
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
 DOCS_ROOT = REPO_ROOT / "docs"
-PACKAGE_PAGES = sorted(
-    [
-        *(DOCS_ROOT / "packages").glob("sphinx-autodoc-*.md"),
-        *(DOCS_ROOT / "packages").glob("sphinx-ux-*.md"),
-    ]
-)
+
+
+def _autodoc_and_ux_package_paths() -> list[pathlib.Path]:
+    """Return one docs page per autodoc / ux package.
+
+    Accepts both layouts during the per-package migration window:
+    ``docs/packages/<name>.md`` (legacy flat) and
+    ``docs/packages/<name>/examples.md`` (post-migration). The
+    examples.md subpage is where live-demo content moves once the
+    package has migrated.
+    """
+    packages_dir = DOCS_ROOT / "packages"
+    paths: list[pathlib.Path] = []
+    candidates = sorted(
+        {
+            p.parent.name if p.parent.name != "packages" else p.stem
+            for p in [
+                *packages_dir.glob("sphinx-autodoc-*.md"),
+                *packages_dir.glob("sphinx-ux-*.md"),
+                *packages_dir.glob("sphinx-autodoc-*/index.md"),
+                *packages_dir.glob("sphinx-ux-*/index.md"),
+            ]
+        }
+    )
+    for name in candidates:
+        flat = packages_dir / f"{name}.md"
+        examples = packages_dir / name / "examples.md"
+        if examples.is_file():
+            paths.append(examples)
+        elif flat.is_file():
+            paths.append(flat)
+    return paths
+
+
+PACKAGE_PAGES = _autodoc_and_ux_package_paths()
 LIVE_DEMO_MARKERS = (
     "```{eval-rst}",
     "```{gp-sphinx-badge-demo}",
@@ -34,8 +63,22 @@ LIVE_DEMO_MARKERS = (
     "{tool}`",
     "{toolref}`",
 )
+
+
+def _fastmcp_docs_page() -> str:
+    """Return the FastMCP examples / demos page contents.
+
+    Prefers ``packages/sphinx-autodoc-fastmcp/examples.md`` (post-E7
+    migration); falls back to the flat legacy page until the
+    migration lands.
+    """
+    examples = DOCS_ROOT / "packages" / "sphinx-autodoc-fastmcp" / "examples.md"
+    flat = DOCS_ROOT / "packages" / "sphinx-autodoc-fastmcp.md"
+    return examples.read_text() if examples.is_file() else flat.read_text()
+
+
 _FASTMCP_DEMO_MODULE = (DOCS_ROOT / "_ext" / "fastmcp_demo_tools.py").read_text()
-_FASTMCP_DOCS_PAGE = (DOCS_ROOT / "packages" / "sphinx-autodoc-fastmcp.md").read_text()
+_FASTMCP_DOCS_PAGE = _fastmcp_docs_page()
 _FASTMCP_CONF = textwrap.dedent(
     f"""\
     from __future__ import annotations
@@ -76,17 +119,43 @@ def _section_content(text: str, heading: str) -> str:
     return match.group("body")
 
 
+def _test_id_for(path: pathlib.Path) -> str:
+    """Stable test ID across legacy + per-package layouts."""
+    if path.name == "examples.md":
+        return path.parent.name
+    return path.stem
+
+
 @pytest.mark.parametrize(
     "page_path",
     PACKAGE_PAGES,
-    ids=[path.stem for path in PACKAGE_PAGES],
+    ids=[_test_id_for(path) for path in PACKAGE_PAGES],
 )
 def test_autodoc_package_pages_have_copyable_examples_and_live_demos(
     page_path: pathlib.Path,
 ) -> None:
-    """Each autodoc package page includes examples and rendered demos."""
+    """Each autodoc package page exposes live demos.
+
+    Pre-migration: a flat ``packages/<name>.md`` page carried both
+    ``## Working usage examples`` and ``## Live demos`` H2 sections.
+    Post-migration: those H2 sections live on per-package subpages
+    (``packages/<name>/{tutorial,examples}.md``); for migrated
+    packages we assert the ``examples.md`` subpage carries one of
+    the live-demo markers, and skip the H2 / package-reference
+    checks (those live on the landing now).
+    """
     text = page_path.read_text()
 
+    if page_path.name == "examples.md":
+        # Migrated package: examples.md must carry at least one live
+        # demo marker; the package-reference and section structure
+        # are owned by the landing.
+        assert any(marker in text for marker in LIVE_DEMO_MARKERS), (
+            f"{page_path.relative_to(REPO_ROOT)} missing live demo marker"
+        )
+        return
+
+    # Legacy flat page: assert the original three structural pieces.
     working_examples = _section_content(text, "Working usage examples")
     live_demos = _section_content(text, "Live demos")
 
@@ -101,7 +170,13 @@ def test_docs_conf_registers_fastmcp_demo_page_support() -> None:
 
     assert '"sphinx_autodoc_fastmcp"' in text
     assert 'fastmcp_tool_modules=["fastmcp_demo_tools"]' in text
-    assert '"packages/sphinx-autodoc-fastmcp"' in text
+    # Post-E7: fastmcp_area_map points at the per-package examples
+    # subpage where the live demos render. Pre-migration accepts the
+    # legacy flat-page docname.
+    assert (
+        '"packages/sphinx-autodoc-fastmcp/examples"' in text
+        or '"packages/sphinx-autodoc-fastmcp"' in text
+    )
 
 
 @pytest.fixture(scope="module")

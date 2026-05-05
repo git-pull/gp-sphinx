@@ -89,7 +89,9 @@ conf = merge_sphinx_config(
         "sphinx_ux_autodoc_layout",
     ],
     fastmcp_tool_modules=["fastmcp_demo_tools"],
-    fastmcp_area_map={"fastmcp_demo_tools": "packages/sphinx-autodoc-fastmcp"},
+    fastmcp_area_map={
+        "fastmcp_demo_tools": "packages/sphinx-autodoc-fastmcp/examples",
+    },
     fastmcp_collector_mode="introspect",
     api_layout_enabled=True,
     api_collapsed_threshold=10,

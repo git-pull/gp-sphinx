@@ -26,7 +26,7 @@ Domain-specific [autodoc extensions](https://www.sphinx-doc.org/en/master/usage/
 - [`sphinx-autodoc-api-style`](sphinx-autodoc-api-style/index.md) — Python API rendering style
 - [`sphinx-autodoc-argparse`](sphinx-autodoc-argparse/index.md) — argparse parsers + subcommands
 - [`sphinx-autodoc-docutils`](sphinx-autodoc-docutils/index.md) — docutils directives + nodes
-- [`sphinx-autodoc-fastmcp`](sphinx-autodoc-fastmcp.md) — FastMCP tools, prompts, resources
+- [`sphinx-autodoc-fastmcp`](sphinx-autodoc-fastmcp/index.md) — FastMCP tools, prompts, resources
 - [`sphinx-autodoc-pytest-fixtures`](sphinx-autodoc-pytest-fixtures.md) — pytest fixtures
 - [`sphinx-autodoc-sphinx`](sphinx-autodoc-sphinx/index.md) — Sphinx config values
 
