@@ -41,10 +41,31 @@ def _flatten_inventory(inv_path: pathlib.Path) -> set[str]:
     }
 
 
+# Risk 1 (woven plan §5.3) is specifically about py-domain
+# cross-references not being lost during the migration. std:doc /
+# std:label entries are EXPECTED to change as docnames reorganize
+# (e.g. packages/sphinx-fonts -> packages/sphinx-fonts/index +
+# /how-to + /reference) and rediraffe handles those URL-level
+# redirects for legacy consumers. We assert the *xref-stable*
+# domains form a superset.
+_XREF_STABLE_DOMAIN_PREFIXES: tuple[str, ...] = (
+    "py:",
+    "rst:",
+    "argparse:",
+)
+
+
 def _baseline_keys() -> set[str]:
-    """Load the committed baseline as a set of ``domain<TAB>name`` keys."""
+    """Load the committed baseline filtered to xref-stable domains."""
     text = SNAPSHOT.read_text(encoding="utf-8")
-    return {line for line in text.splitlines() if line.strip()}
+    keys: set[str] = set()
+    for line in text.splitlines():
+        if not line.strip():
+            continue
+        domain = line.split("\t", 1)[0]
+        if any(domain.startswith(prefix) for prefix in _XREF_STABLE_DOMAIN_PREFIXES):
+            keys.add(line)
+    return keys
 
 
 @pytest.fixture(scope="module")

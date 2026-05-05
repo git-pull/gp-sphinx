@@ -1,16 +1,6 @@
-# sphinx-fonts
+(sphinx-fonts-how-to)=
 
-```{gp-sphinx-package-meta} sphinx-fonts
-```
-
-Sphinx extension for self-hosted web fonts via Fontsource. It downloads font
-assets during the HTML build, caches them locally, copies them into
-`_static/fonts/`, and exposes template context values that themes can render as
-inline `@font-face` and preload tags.
-
-```console
-$ pip install sphinx-fonts
-```
+# How-to
 
 ## Downstream `conf.py`
 
@@ -53,12 +43,6 @@ template context that downstream themes receive.
     <p class="font-specimen-mono">merge_sphinx_config(project="demo", version="1.0.0")</p>
   </div>
 </div>
-```
-
-## Configuration values
-
-```{eval-rst}
-.. autoconfigvalues:: sphinx_fonts
 ```
 
 ## Template context

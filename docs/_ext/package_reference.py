@@ -967,7 +967,7 @@ def _grid_card_lines_for_record(record: PackageDocsRecord) -> list[str]:
 
     return [
         f":::{{grid-item-card}} {record.name}",
-        f":link: {record.name}",
+        f":link: {_grid_link_for_legacy_record(record.name)}",
         ":link-type: doc",
         "",
         record.description,
@@ -977,6 +977,21 @@ def _grid_card_lines_for_record(record: PackageDocsRecord) -> list[str]:
         ":::",
         "",
     ]
+
+
+def _grid_link_for_legacy_record(name: str) -> str:
+    """Return the docname a legacy ``:link:`` entry should target.
+
+    Picks ``<name>/index`` when a per-package directory has migrated
+    (``docs/packages/<name>/index.md`` exists); falls back to the
+    flat ``<name>`` docname otherwise. Lets the workspace grid keep
+    rendering during the per-package migration window without
+    emitting unknown-document warnings.
+    """
+    docs_root = workspace_root() / "docs" / "packages"
+    if (docs_root / name / "index.md").is_file():
+        return f"{name}/index"
+    return name
 
 
 def _flat_workspace_grid_markdown() -> str:
@@ -990,7 +1005,7 @@ def _flat_workspace_grid_markdown() -> str:
         lines.extend(
             [
                 f":::{{grid-item-card}} {package['name']}",
-                f":link: {package['name']}",
+                f":link: {_grid_link_for_legacy_record(package['name'])}",
                 ":link-type: doc",
                 "",
                 str(package["description"]),

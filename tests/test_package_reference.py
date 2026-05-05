@@ -156,17 +156,24 @@ def test_package_reference_markdown_omits_surface_tables() -> None:
 
 
 def test_docs_package_pages_exist_for_every_workspace_package() -> None:
-    """Each publishable package has a matching docs page."""
-    page_names = {
-        path.stem
-        for path in (REPO_ROOT / "docs" / "packages").glob("*.md")
-        if path.stem != "index"
+    """Each publishable package has either a flat ``<name>.md`` or ``<name>/index.md``.
+
+    Migration accepts either layout: pre-migration packages keep their
+    legacy ``docs/packages/<name>.md`` pages, post-migration packages
+    have ``docs/packages/<name>/index.md`` rendered by
+    ``{package-landing}``. Both forms count as a present docs page.
+    """
+    packages_dir = REPO_ROOT / "docs" / "packages"
+    flat_pages = {
+        path.stem for path in packages_dir.glob("*.md") if path.stem != "index"
     }
+    dir_pages = {path.parent.name for path in packages_dir.glob("*/index.md")}
+    available_pages = flat_pages | dir_pages
     package_names = {
         package["name"] for package in package_reference.workspace_packages()
     }
-    assert package_names <= page_names, (
-        f"Missing docs pages for packages: {package_names - page_names}"
+    assert package_names <= available_pages, (
+        f"Missing docs pages for packages: {package_names - available_pages}"
     )
 
 

@@ -114,7 +114,7 @@ packages/sphinx-autodoc-sphinx
 :caption: UX
 :hidden:
 
-packages/sphinx-fonts
+packages/sphinx-fonts/index
 packages/sphinx-ux-autodoc-layout
 packages/sphinx-ux-badges
 ```
