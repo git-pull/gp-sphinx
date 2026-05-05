@@ -1261,6 +1261,87 @@ class PackageLandingDirective(SphinxDirective):
         return self.parse_text_to_nodes(markdown)
 
 
+def _cluster_toctree_markdown(
+    cluster: str,
+    *,
+    caption: str | None,
+    titlesonly: bool,
+) -> str:
+    """Render a hidden toctree of every Shipped package in ``cluster``.
+
+    Emerging packages are silently skipped at emit time so the
+    toctree never references a docname Sphinx has not discovered —
+    this prevents cluster-toctree-on-Emerging crashes (Risk: see
+    Group B2 commit message).
+
+    Each entry points at ``packages/<name>/index`` (the per-package
+    landing stub). Entries are sorted alphabetically within the
+    cluster so the sidebar reads predictably.
+    """
+    members = sorted(
+        record.name
+        for record in workspace_package_records()
+        if record.cluster == cluster and record.state in {"shipped-py", "shipped-js"}
+    )
+    if not members:
+        return ""
+
+    lines: list[str] = ["```{toctree}"]
+    if caption is not None:
+        lines.append(f":caption: {caption}")
+    lines.append(":hidden:")
+    if titlesonly:
+        lines.append(":titlesonly:")
+    lines.append("")
+    lines.extend(f"packages/{name}/index" for name in members)
+    lines.append("```")
+    return "\n".join(lines)
+
+
+class ClusterToctreeDirective(SphinxDirective):
+    """Render a hidden toctree of every Shipped package in a sidebar cluster.
+
+    Replaces the seven hand-edited toctree blocks in ``docs/index.md``
+    with a single source of truth: package classifier plus
+    ``[tool.gp-sphinx.docs]`` overrides drive both the workspace grid
+    and the sidebar.
+
+    Usage in ``docs/index.md``::
+
+        ```{cluster-toctree} autodoc
+        :caption: Autodoc
+        :titlesonly:
+        ```
+
+    Skips Emerging packages so the build does not reference a missing
+    docname.
+    """
+
+    required_arguments = 1
+    has_content = False
+    option_spec = {  # noqa: RUF012
+        "caption": lambda v: str(v).strip(),
+        "titlesonly": lambda v: True if v is None else bool(v),
+    }
+
+    def run(self) -> list[nodes.Node]:
+        cluster = self.arguments[0].strip()
+        caption = self.options.get("caption")
+        titlesonly = "titlesonly" in self.options
+        markdown = _cluster_toctree_markdown(
+            cluster,
+            caption=caption,
+            titlesonly=titlesonly,
+        )
+        if not markdown:
+            logger.warning(
+                "cluster-toctree: no Shipped packages found in cluster %r",
+                cluster,
+            )
+            return []
+        return self.parse_text_to_nodes(markdown)
+
+
 class PackageReferenceDirective(SphinxDirective):
     """Render a generated package reference block inside a page."""
 
@@ -1293,6 +1374,7 @@ def setup(app: t.Any) -> dict[str, object]:
     """
     ensure_workspace_imports()
     app.add_directive("package-landing", PackageLandingDirective)
+    app.add_directive("cluster-toctree", ClusterToctreeDirective)
     app.add_directive("package-reference", PackageReferenceDirective)
     app.add_directive("workspace-package-grid", WorkspacePackageGridDirective)
     app.add_role("subpage-exists", subpage_exists_role)
