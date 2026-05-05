@@ -32,11 +32,17 @@ def test_package_dependents_for_unknown_package_is_empty() -> None:
     assert package_reference._package_dependents("definitely-no-such-pkg") == []
 
 
-def test_package_dependents_markdown_includes_anchor_and_heading() -> None:
-    """Rendered markdown carries the anchor + H1 + intro paragraph."""
+def test_package_dependents_markdown_renders_intro_paragraph() -> None:
+    """Body-only output: directive emits intro + bullets only.
+
+    The stub at ``packages/<name>/dependents.md`` provides anchor +
+    H1 so Sphinx finds a page title at parse time.
+    """
     rendered = package_reference._package_dependents_markdown("sphinx-ux-badges")
-    assert "(sphinx-ux-badges-dependents)=" in rendered
-    assert "# Dependents" in rendered
+    # No anchor or H1 emitted by the directive
+    assert "(sphinx-ux-badges-dependents)=" not in rendered
+    assert "# Dependents" not in rendered
+    assert "Workspace packages that declare a `sphinx-ux-badges` dependency" in rendered
 
 
 def test_package_dependents_markdown_emits_doc_xrefs_for_each_dependent() -> None:

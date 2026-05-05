@@ -10,12 +10,18 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "docs" / "_
 import package_reference
 
 
-def test_kitchen_sink_markdown_includes_anchor_and_h1_for_known_package() -> None:
-    """Rendered markdown carries the anchor + H1 + intro paragraph."""
+def test_kitchen_sink_markdown_renders_intro_for_known_package() -> None:
+    """Body-only output: directive emits intro + per-directive sections.
+
+    The stub at ``packages/<name>/kitchen-sink.md`` provides anchor +
+    H1 so Sphinx finds a page title.
+    """
     rendered = package_reference._kitchen_sink_markdown("sphinx-autodoc-argparse")
     assert rendered, "expected non-empty markdown for sphinx-autodoc-argparse"
-    assert "(sphinx-autodoc-argparse-kitchen-sink)=" in rendered
-    assert "# Kitchen sink" in rendered
+    # No anchor or H1 emitted by the directive
+    assert "(sphinx-autodoc-argparse-kitchen-sink)=" not in rendered
+    assert "# Kitchen sink" not in rendered
+    assert "Every directive and role this package registers" in rendered
 
 
 def test_kitchen_sink_markdown_lists_each_directive_with_example_block() -> None:

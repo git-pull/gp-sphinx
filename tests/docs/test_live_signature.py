@@ -15,11 +15,17 @@ import package_reference
 
 
 def test_live_signature_markdown_renders_public_callables_for_sphinx_fonts() -> None:
-    """sphinx_fonts has at least one public callable; markdown lists it."""
+    """sphinx_fonts has at least one public callable; markdown lists it.
+
+    Body-only: the directive emits no anchor or H1; the stub at
+    ``packages/sphinx-fonts/signatures.md`` provides those so Sphinx
+    finds a page title at parse time.
+    """
     rendered = package_reference._live_signature_markdown("sphinx-fonts")
     assert rendered, "expected non-empty markdown for sphinx-fonts"
-    assert "(sphinx-fonts-signatures)=" in rendered
-    assert "# Signatures (live)" in rendered
+    # Body-only output: no anchor or H1 emitted by the directive
+    assert "(sphinx-fonts-signatures)=" not in rendered
+    assert "# Signatures (live)" not in rendered
     # The setup function must appear as a public callable
     assert (
         "### `setup`" in rendered

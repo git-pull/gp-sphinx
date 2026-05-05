@@ -30,15 +30,20 @@ def test_surface_changelog_markdown_warns_when_no_snapshot_exists(
     tmp_path: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A package with no snapshot file gets the no-prior-snapshot notice."""
+    """A package with no snapshot file gets the no-prior-snapshot notice.
+
+    Body-only output: the directive emits the comparison body; the
+    stub at ``packages/<name>/surface-diff.md`` provides anchor + H1.
+    """
     monkeypatch.setattr(
         package_reference,
         "_surface_snapshot_path",
         lambda name: tmp_path / f"{name}-no-such-file.json",
     )
     rendered = package_reference._surface_changelog_markdown("sphinx-fonts")
-    assert "(sphinx-fonts-surface-diff)=" in rendered
-    assert "# Surface diff" in rendered
+    # No anchor or H1 emitted by the directive
+    assert "(sphinx-fonts-surface-diff)=" not in rendered
+    assert "# Surface diff" not in rendered
     assert "No prior snapshot recorded" in rendered
 
 

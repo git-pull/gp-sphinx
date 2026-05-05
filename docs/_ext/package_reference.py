@@ -1302,12 +1302,25 @@ _DEFAULT_SUMMARIES: dict[str, str] = {
 def _candidate_subpage_paths(record: PackageDocsRecord) -> dict[str, pathlib.Path]:
     """Return the on-disk paths the landing checks for each candidate subpage.
 
-    The landing renders only those subpage cards whose target file exists.
-    Currently looks in ``docs/packages/<name>/<subpage>.md``; a future
-    commit will also probe the co-located ``packages/<name>/docs/`` tree.
+    Combines:
+
+    * the Diátaxis defaults (tutorial / how-to / reference / explanation /
+      examples)
+    * ``[tool.gp-sphinx.docs].extra`` entries (errors / cli / tokens / …)
+    * ``[tool.gp-sphinx.docs].showcase`` entries (signatures /
+      kitchen-sink / surface-diff / dependents)
+
+    The landing renders only those subpage cards whose target file
+    exists. Currently looks in ``docs/packages/<name>/<subpage>.md``;
+    a future commit will also probe the co-located
+    ``packages/<name>/docs/`` tree.
     """
     docs_root = workspace_root() / "docs" / "packages" / record.name
-    subpages = list(_DEFAULT_LANDING_SUBPAGES) + list(record.docs_opts.extra)
+    subpages = (
+        list(_DEFAULT_LANDING_SUBPAGES)
+        + list(record.docs_opts.extra)
+        + list(record.docs_opts.showcase)
+    )
     return {sub: docs_root / f"{sub}.md" for sub in subpages}
 
 
@@ -1555,11 +1568,12 @@ def _live_signature_markdown(package_name: str) -> str:
     if not pairs:
         return ""
 
+    # Body-only: the surrounding stub at packages/<name>/<showcase>.md
+    # provides the page anchor and H1 so Sphinx finds a page title at
+    # parse time (same constraint the package-landing directive learned
+    # in E2). Directives that emit H1 via parse_text_to_nodes do NOT
+    # set the page title — Sphinx's title extraction has already run.
     lines = [
-        f"({record.name}-signatures)=",
-        "",
-        "# Signatures (live)",
-        "",
         f"Public callables in `{record.module_name}` rendered from the "
         "running interpreter at docs-build time. Drift between this "
         "block and the prose elsewhere on the page indicates a stale "
@@ -1615,10 +1629,9 @@ def _kitchen_sink_markdown(package_name: str) -> str:
 
     Reads the package's collected surface (via collect_extension_surface)
     and emits one example invocation per directive. Roles get an inline
-    cross-reference example. The page is intended to be screenshotted by
-    a separate Playwright job to feed sphinx-gp-opengraph; this directive
-    only renders the HTML fragment — the screenshot pipeline is
-    out-of-band so Risk 5 (Playwright vs disk-state purity) doesn't apply.
+    cross-reference example. The page is a single discoverable place
+    where every directive and role is exercised, useful for quick
+    visual regressions and as a reference card for downstream authors.
     """
     record = next(
         (r for r in workspace_package_records() if r.name == package_name),
@@ -1640,14 +1653,11 @@ def _kitchen_sink_markdown(package_name: str) -> str:
     if not directives_seen and not roles_seen:
         return ""
 
+    # Body-only: stub supplies anchor + H1 so Sphinx finds a page title.
     lines = [
-        f"({record.name}-kitchen-sink)=",
-        "",
-        "# Kitchen sink",
-        "",
         "Every directive and role this package registers, exercised once "
-        "on the same page so a Playwright snapshot job can capture the "
-        "complete surface for `sphinx-gp-opengraph`.",
+        "on the same page — useful as a reference card for downstream "
+        "authors and as a visual-regression target.",
         "",
     ]
     if directives_seen:
@@ -1758,11 +1768,8 @@ def _surface_changelog_markdown(package_name: str) -> str:
     removed = sorted(snapshot_keys - current)
     unchanged = sorted(current & snapshot_keys)
 
+    # Body-only: stub supplies anchor + H1 so Sphinx finds a page title.
     lines = [
-        f"({record.name}-surface-diff)=",
-        "",
-        "# Surface diff",
-        "",
         "Comparison of the package's currently-registered directives, "
         "roles, and config values against the snapshot stored at "
         f"`docs/_static/surface-snapshots/{package_name}.json`.",
@@ -1874,11 +1881,8 @@ def _package_dependents_markdown(package_name: str) -> str:
         return ""
 
     dependents = _package_dependents(package_name)
+    # Body-only: stub supplies anchor + H1 so Sphinx finds a page title.
     lines = [
-        f"({record.name}-dependents)=",
-        "",
-        "# Dependents",
-        "",
         f"Workspace packages that declare a `{package_name}` dependency in "
         "their `pyproject.toml` `[project].dependencies` array.",
         "",
