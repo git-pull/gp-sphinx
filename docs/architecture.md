@@ -62,7 +62,7 @@ source-construct family:
 :::
 
 :::{grid-item-card} sphinx-autodoc-argparse
-:link: packages/sphinx-autodoc-argparse
+:link: packages/sphinx-autodoc-argparse/index
 :link-type: doc
 
 **Subject**: argparse parsers — programs, options, subcommands, positionals.
