@@ -49,7 +49,7 @@ Shared Sphinx configuration and presentation assets:
 Meta-tag and crawlability extensions auto-loaded by `gp-sphinx` when `docs_url` is set:
 
 - [`sphinx-gp-opengraph`](sphinx-gp-opengraph/index.md) — Open Graph + Twitter Card meta tags
-- [`sphinx-gp-sitemap`](sphinx-gp-sitemap.md) — `sitemap.xml` for crawl indexing
+- [`sphinx-gp-sitemap`](sphinx-gp-sitemap/index.md) — `sitemap.xml` for crawl indexing
 
 ## Design philosophy
 

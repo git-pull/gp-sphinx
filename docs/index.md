@@ -147,5 +147,5 @@ packages/sphinx-vite-builder/index
 :hidden:
 
 packages/sphinx-gp-opengraph/index
-packages/sphinx-gp-sitemap
+packages/sphinx-gp-sitemap/index
 ```
