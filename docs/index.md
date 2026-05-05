@@ -115,7 +115,7 @@ packages/sphinx-autodoc-sphinx/index
 :hidden:
 
 packages/sphinx-fonts/index
-packages/sphinx-ux-autodoc-layout
+packages/sphinx-ux-autodoc-layout/index
 packages/sphinx-ux-badges/index
 ```
 
