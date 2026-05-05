@@ -1,15 +1,6 @@
-# sphinx-gp-theme
+(sphinx-gp-theme-how-to)=
 
-```{gp-sphinx-package-meta} sphinx-gp-theme
-```
-
-Furo child theme for git-pull documentation sites. It keeps Furo’s responsive
-layout and dark mode, then layers in shared sidebars, typography, source-link
-controls, metadata toggles, and SPA-style navigation.
-
-```console
-$ pip install sphinx-gp-theme
-```
+# How to
 
 ## Downstream `conf.py`
 

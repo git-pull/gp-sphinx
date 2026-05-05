@@ -131,7 +131,7 @@ packages/sphinx-autodoc-typehints-gp/index
 :hidden:
 
 packages/gp-sphinx/index
-packages/sphinx-gp-theme
+packages/sphinx-gp-theme/index
 packages/gp-furo-theme
 ```
 
