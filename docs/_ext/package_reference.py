@@ -1694,6 +1694,125 @@ class PackageKitchenSinkDirective(SphinxDirective):
         return self.parse_text_to_nodes(markdown)
 
 
+def _surface_snapshot_path(package_name: str) -> pathlib.Path:
+    """Return the path to a package's stored surface snapshot."""
+    return (
+        workspace_root()
+        / "docs"
+        / "_static"
+        / "surface-snapshots"
+        / f"{package_name}.json"
+    )
+
+
+def _current_surface_keys(record: PackageDocsRecord) -> set[str]:
+    """Return the union of registered directives + roles + config-values names.
+
+    A flat ``set[str]`` of ``"<kind>:<name>"`` keys per registered
+    surface item is enough to detect adds / removes between releases.
+    """
+    blocks = [
+        collect_extension_surface(module)
+        for module in extension_modules(record.module_name)
+    ]
+    keys: set[str] = set()
+    for block in blocks:
+        keys.update(f"directive:{item['name']}" for item in block["directives"])
+        keys.update(f"role:{item['name']}" for item in block["roles"])
+        keys.update(f"config:{item['name']}" for item in block["config_values"])
+    return keys
+
+
+def _surface_changelog_markdown(package_name: str) -> str:
+    """Render the surface-diff subpage comparing live surface vs snapshot.
+
+    Reads ``docs/_static/surface-snapshots/<package>.json`` (a JSON
+    array of surface keys captured at the previous release tag).
+    Renders Added / Removed / Unchanged sections.
+    """
+    record = next(
+        (r for r in workspace_package_records() if r.name == package_name),
+        None,
+    )
+    if record is None or record.state != "shipped-py":
+        return ""
+
+    current = _current_surface_keys(record)
+    snapshot_path = _surface_snapshot_path(package_name)
+    if snapshot_path.is_file():
+        snapshot_keys = set(json.loads(snapshot_path.read_text(encoding="utf-8")))
+    else:
+        snapshot_keys = set()
+
+    added = sorted(current - snapshot_keys)
+    removed = sorted(snapshot_keys - current)
+    unchanged = sorted(current & snapshot_keys)
+
+    lines = [
+        f"({record.name}-surface-diff)=",
+        "",
+        "# Surface diff",
+        "",
+        "Comparison of the package's currently-registered directives, "
+        "roles, and config values against the snapshot stored at "
+        f"`docs/_static/surface-snapshots/{package_name}.json`.",
+        "",
+    ]
+    if not snapshot_path.is_file():
+        lines.append(
+            "**No prior snapshot recorded.** Capture the current surface "
+            f"by writing it to `docs/_static/surface-snapshots/{package_name}.json` "
+            "before the next release.",
+        )
+        lines.append("")
+    if added:
+        lines.append("## Added")
+        lines.append("")
+        lines.extend(f"- `{key}`" for key in added)
+        lines.append("")
+    if removed:
+        lines.append("## Removed")
+        lines.append("")
+        lines.extend(f"- `{key}`" for key in removed)
+        lines.append("")
+    if unchanged:
+        lines.append(f"## Unchanged ({len(unchanged)})")
+        lines.append("")
+        lines.append("Stable across this release window.")
+        lines.append("")
+    return "\n".join(lines)
+
+
+class SurfaceChangelogDirective(SphinxDirective):
+    """Diff a package's current surface against a snapshotted previous version.
+
+    Reads the JSON snapshot at
+    ``docs/_static/surface-snapshots/<package>.json`` (typically
+    captured at the previous release tag) and reports Added /
+    Removed / Unchanged surface keys. Use on the package's optional
+    ``surface-diff.md`` showcase subpage.
+
+    Usage in ``packages/<name>/docs/surface-diff.md``::
+
+        ```{surface-changelog} sphinx-autodoc-fastmcp
+        ```
+    """
+
+    required_arguments = 1
+    has_content = False
+
+    def run(self) -> list[nodes.Node]:
+        package_name = self.arguments[0].strip()
+        markdown = _surface_changelog_markdown(package_name)
+        if not markdown:
+            logger.warning(
+                "surface-changelog: nothing to diff for %r",
+                package_name,
+            )
+            return []
+        return self.parse_text_to_nodes(markdown)
+
+
 class WorkspacePackageGridDirective(SphinxDirective):
     """Render the workspace package index grid.
 
@@ -1738,6 +1857,7 @@ def setup(app: t.Any) -> dict[str, object]:
     app.add_directive("cluster-toctree", ClusterToctreeDirective)
     app.add_directive("live-signature", LiveSignatureDirective)
     app.add_directive("package-kitchen-sink", PackageKitchenSinkDirective)
+    app.add_directive("surface-changelog", SurfaceChangelogDirective)
     app.add_directive("package-reference", PackageReferenceDirective)
     app.add_directive("workspace-package-grid", WorkspacePackageGridDirective)
     app.add_role("subpage-exists", subpage_exists_role)
