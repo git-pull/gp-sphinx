@@ -1893,8 +1893,9 @@ def _package_dependents_markdown(package_name: str) -> str:
         )
         lines.append("")
     else:
-        for dep in dependents:
-            lines.append(f"- {{doc}}`packages/{dep}/index`")
+        # Use absolute docnames (leading slash) so cross-references
+        # resolve from the source root, not the current page's dir.
+        lines.extend(f"- {{doc}}`/packages/{dep}/index`" for dep in dependents)
         lines.append("")
     return "\n".join(lines)
 

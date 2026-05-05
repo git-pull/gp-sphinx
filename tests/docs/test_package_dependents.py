@@ -46,12 +46,16 @@ def test_package_dependents_markdown_renders_intro_paragraph() -> None:
 
 
 def test_package_dependents_markdown_emits_doc_xrefs_for_each_dependent() -> None:
-    """Each dependent renders as a ``{doc}`` cross-reference bullet."""
+    """Each dependent renders as an absolute ``{doc}`` cross-reference bullet.
+
+    Uses a leading ``/`` so cross-references resolve from the source
+    root rather than the current page's directory.
+    """
     rendered = package_reference._package_dependents_markdown("sphinx-ux-badges")
     deps = package_reference._package_dependents("sphinx-ux-badges")
     if deps:
         for dep in deps:
-            assert f"{{doc}}`packages/{dep}/index`" in rendered
+            assert f"{{doc}}`/packages/{dep}/index`" in rendered
     else:
         assert "No workspace package currently depends" in rendered
 
