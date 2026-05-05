@@ -38,3 +38,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sphinx_fonts"]
+
+[tool.gp-sphinx.docs]
+# gp-sphinx loads sphinx-fonts from DEFAULT_EXTENSIONS; the
+# Dependents page makes that consumer relationship explicit.
+showcase = ["dependents"]
