@@ -42,7 +42,7 @@ Shared Sphinx configuration and presentation assets:
 
 - [`gp-sphinx`](gp-sphinx/index.md) — umbrella coordinator (`merge_sphinx_config()`)
 - [`sphinx-gp-theme`](sphinx-gp-theme/index.md) — Furo child theme with the gp-sphinx default palette
-- [`gp-furo-theme`](gp-furo-theme.md) — Tailwind v4 port of upstream Furo for git-pull projects
+- [`gp-furo-theme`](gp-furo-theme/index.md) — Tailwind v4 port of upstream Furo for git-pull projects
 
 ## SEO
 

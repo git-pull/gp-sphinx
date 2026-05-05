@@ -132,7 +132,7 @@ packages/sphinx-autodoc-typehints-gp/index
 
 packages/gp-sphinx/index
 packages/sphinx-gp-theme/index
-packages/gp-furo-theme
+packages/gp-furo-theme/index
 ```
 
 ```{toctree}
