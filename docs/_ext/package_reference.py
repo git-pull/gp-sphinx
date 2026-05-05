@@ -843,8 +843,8 @@ def package_reference_markdown(package_name: str) -> str:
     --------
     >>> "Copyable config snippet" in package_reference_markdown("sphinx-fonts")
     True
-    >>> "pypi.org/project/sphinx-fonts" in package_reference_markdown("sphinx-fonts")
-    True
+    >>> "## Package metadata" in package_reference_markdown("sphinx-fonts")
+    False
     >>> package_reference_markdown("nonexistent-package")
     ''
     """
@@ -877,18 +877,12 @@ def package_reference_markdown(package_name: str) -> str:
 
     lines.extend(["]", "```", ""])
 
-    if package["repository"]:
-        pypi_url = f"https://pypi.org/project/{package_name}/"
-        lines.extend(
-            [
-                "## Package metadata",
-                "",
-                f"- Source on GitHub: [{package_name}]({package['repository']}/tree/main/packages/{package_name})",
-                f"- PyPI: [{package_name}]({pypi_url})",
-                f"- Maturity: `{package['maturity']}`",
-                "",
-            ],
-        )
+    # NOTE: The "Package metadata" section (GitHub + PyPI + Maturity)
+    # was dropped here in commit C2 of the per-package docs restructure.
+    # The same surface is conveyed once per page by the
+    # gp-sphinx-package-meta directive (docs/_ext/sab_meta.py); rendering
+    # it again as a paragraph below the conf snippet was duplication.
+    # The badge row remains the only metadata surface on the landing.
 
     if package_name == "gp-sphinx":
         lines.extend(
