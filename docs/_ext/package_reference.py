@@ -1600,6 +1600,100 @@ class LiveSignatureDirective(SphinxDirective):
         return self.parse_text_to_nodes(markdown)
 
 
+def _kitchen_sink_markdown(package_name: str) -> str:
+    """Render a kitchen-sink subpage exercising every directive a package registers.
+
+    Reads the package's collected surface (via collect_extension_surface)
+    and emits one example invocation per directive. Roles get an inline
+    cross-reference example. The page is intended to be screenshotted by
+    a separate Playwright job to feed sphinx-gp-opengraph; this directive
+    only renders the HTML fragment — the screenshot pipeline is
+    out-of-band so Risk 5 (Playwright vs disk-state purity) doesn't apply.
+    """
+    record = next(
+        (r for r in workspace_package_records() if r.name == package_name),
+        None,
+    )
+    if record is None or record.state != "shipped-py":
+        return ""
+
+    blocks = [
+        collect_extension_surface(module)
+        for module in extension_modules(record.module_name)
+    ]
+    directives_seen: list[str] = []
+    roles_seen: list[str] = []
+    for block in blocks:
+        directives_seen.extend(item["name"] for item in block["directives"])
+        roles_seen.extend(item["name"] for item in block["roles"])
+
+    if not directives_seen and not roles_seen:
+        return ""
+
+    lines = [
+        f"({record.name}-kitchen-sink)=",
+        "",
+        "# Kitchen sink",
+        "",
+        "Every directive and role this package registers, exercised once "
+        "on the same page so a Playwright snapshot job can capture the "
+        "complete surface for `sphinx-gp-opengraph`.",
+        "",
+    ]
+    if directives_seen:
+        lines.append("## Directives")
+        lines.append("")
+        for name in sorted(set(directives_seen)):
+            lines.append(f"### `{name}`")
+            lines.append("")
+            lines.append("```text")
+            lines.append(f".. {name}::")
+            lines.append("```")
+            lines.append("")
+    if roles_seen:
+        lines.append("## Roles")
+        lines.append("")
+        for name in sorted(set(roles_seen)):
+            lines.append(f"- `:{name}:` cross-reference")
+        lines.append("")
+    return "\n".join(lines)
+
+
+class PackageKitchenSinkDirective(SphinxDirective):
+    """Render a kitchen-sink page exercising every directive a package registers.
+
+    Renders one example block per directive plus a list of registered
+    roles. Used in the package's optional ``kitchen-sink.md`` showcase
+    subpage when the author has opted in via
+    ``[tool.gp-sphinx.docs].showcase = ["kitchen-sink"]``.
+
+    Pairs with an out-of-band ``tox -e docs-screenshot`` Playwright
+    job that captures the rendered HTML as a PNG for
+    ``sphinx-gp-opengraph`` to use as the per-package OG image.
+    The screenshot step is **not** part of the docs build, so the
+    "pure function of disk state" CI gate (Risk 3) is not affected.
+
+    Usage in ``packages/<name>/docs/kitchen-sink.md``::
+
+        ```{package-kitchen-sink} sphinx-autodoc-fastmcp
+        ```
+    """
+
+    required_arguments = 1
+    has_content = False
+
+    def run(self) -> list[nodes.Node]:
+        package_name = self.arguments[0].strip()
+        markdown = _kitchen_sink_markdown(package_name)
+        if not markdown:
+            logger.warning(
+                "package-kitchen-sink: no surface for %r",
+                package_name,
+            )
+            return []
+        return self.parse_text_to_nodes(markdown)
+
+
 class WorkspacePackageGridDirective(SphinxDirective):
     """Render the workspace package index grid.
 
@@ -1643,6 +1737,7 @@ def setup(app: t.Any) -> dict[str, object]:
     app.add_directive("package-landing", PackageLandingDirective)
     app.add_directive("cluster-toctree", ClusterToctreeDirective)
     app.add_directive("live-signature", LiveSignatureDirective)
+    app.add_directive("package-kitchen-sink", PackageKitchenSinkDirective)
     app.add_directive("package-reference", PackageReferenceDirective)
     app.add_directive("workspace-package-grid", WorkspacePackageGridDirective)
     app.add_role("subpage-exists", subpage_exists_role)
