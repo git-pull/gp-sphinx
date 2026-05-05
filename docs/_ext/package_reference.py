@@ -1337,28 +1337,38 @@ def _package_landing_markdown(
         "",
         synopsis,
         "",
-        "::::{grid} 1 2 2 3",
-        ":gutter: 2 2 3 3",
-        ":class-container: gp-sphinx-package__landing-grid",
-        "",
     ]
-    for subpage in present_subpages:
-        icon = _OCTICONS.get(subpage, "link")
-        title_text = _TITLES.get(subpage, subpage.replace("-", " ").title())
-        summary = _DEFAULT_SUMMARIES.get(subpage, "")
+
+    if present_subpages:
+        # Sphinx-design's {grid} directive requires at least one
+        # {grid-item-card} child — emit the grid only when we have
+        # subpages to show. Packages with no subpages yet (newly
+        # added, JS-only awaiting authoring) render meta + synopsis
+        # without the grid.
         lines.extend(
             [
-                f":::{{grid-item-card}} {{octicon}}`{icon}` {title_text}",
-                f":link: {subpage}",
-                ":link-type: doc",
-                summary,
-                ":::",
+                "::::{grid} 1 2 2 3",
+                ":gutter: 2 2 3 3",
+                ":class-container: gp-sphinx-package__landing-grid",
                 "",
             ],
         )
-    lines.append("::::")
-    lines.append("")
-    if present_subpages:
+        for subpage in present_subpages:
+            icon = _OCTICONS.get(subpage, "link")
+            title_text = _TITLES.get(subpage, subpage.replace("-", " ").title())
+            summary = _DEFAULT_SUMMARIES.get(subpage, "")
+            lines.extend(
+                [
+                    f":::{{grid-item-card}} {{octicon}}`{icon}` {title_text}",
+                    f":link: {subpage}",
+                    ":link-type: doc",
+                    summary,
+                    ":::",
+                    "",
+                ],
+            )
+        lines.append("::::")
+        lines.append("")
         lines.append("```{toctree}")
         lines.append(":hidden:")
         lines.append("")

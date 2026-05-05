@@ -40,7 +40,7 @@ them separately to your `extensions` list.
 
 ## CSS prefix
 
-All badge CSS classes use the `sab-` prefix from {doc}`sphinx-ux-badges`.
+All badge CSS classes use the `sab-` prefix from {doc}`/packages/sphinx-ux-badges/index`.
 Layout card classes (borders, headers, field-list rules) are local to this package
 and use `dl.py-*` and `.api-*` selectors.
 

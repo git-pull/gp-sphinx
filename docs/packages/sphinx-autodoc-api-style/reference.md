@@ -26,4 +26,4 @@ This extension uses:
 | `final` | `SAB.MOD_FINAL` | `gp-sphinx-badge--mod-final` |
 | `deprecated` | `SAB.STATE_DEPRECATED` | `gp-sphinx-badge--state-deprecated` |
 
-See {doc}`sphinx-ux-badges` for the full shared palette.
+See {doc}`/packages/sphinx-ux-badges/index` for the full shared palette.

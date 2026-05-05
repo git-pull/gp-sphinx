@@ -14,14 +14,14 @@ extensions reference `SAB.*` constants instead of maintaining their own
 
 * - Extension
   - Badge types used
-* - {doc}`sphinx-autodoc-fastmcp`
+* - {doc}`/packages/sphinx-autodoc-fastmcp/index`
   - Safety tiers (readonly / mutating / destructive), MCP tool type (`smf-*` — FastMCP-specific colours not in shared palette)
-* - {doc}`sphinx-autodoc-api-style`
+* - {doc}`/packages/sphinx-autodoc-api-style/index`
   - `SAB.TYPE_FUNCTION`, `SAB.TYPE_CLASS`, `SAB.TYPE_METHOD`, modifiers, `SAB.STATE_DEPRECATED`
-* - {doc}`sphinx-autodoc-pytest-fixtures`
+* - {doc}`/packages/sphinx-autodoc-pytest-fixtures/index`
   - `SAB.TYPE_FIXTURE`, `SAB.SCOPE_*`, `SAB.STATE_FACTORY`, `SAB.STATE_OVERRIDE`, `SAB.STATE_AUTOUSE`
-* - {doc}`sphinx-autodoc-sphinx`
+* - {doc}`/packages/sphinx-autodoc-sphinx/index`
   - `SAB.TYPE_CONFIG`, `SAB.MOD_REBUILD`
-* - {doc}`sphinx-autodoc-docutils`
+* - {doc}`/packages/sphinx-autodoc-docutils/index`
   - `SAB.TYPE_DIRECTIVE`, `SAB.TYPE_ROLE`, `SAB.TYPE_OPTION`
 ```
