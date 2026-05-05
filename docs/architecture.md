@@ -111,7 +111,7 @@ package to their `extensions` list.
 
 | Package | Role |
 |---------|------|
-| {doc}`gp-sphinx <packages/gp-sphinx>` | Coordinator.  `merge_sphinx_config()` wires up the full stack. |
+| {doc}`gp-sphinx <packages/gp-sphinx/index>` | Coordinator.  `merge_sphinx_config()` wires up the full stack. |
 | {doc}`sphinx-gp-theme <packages/sphinx-gp-theme>` | Furo-based theme with CSS variables and SPA navigation. |
 | {doc}`gp-furo-theme <packages/gp-furo-theme>` | Tailwind v4 port of upstream Furo for git-pull projects. |
 | {doc}`sphinx-fonts <packages/sphinx-fonts/index>` | IBM Plex via Fontsource — preloaded web fonts. |

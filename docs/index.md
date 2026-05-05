@@ -130,7 +130,7 @@ packages/sphinx-autodoc-typehints-gp/index
 :caption: Internal
 :hidden:
 
-packages/gp-sphinx
+packages/gp-sphinx/index
 packages/sphinx-gp-theme
 packages/gp-furo-theme
 ```

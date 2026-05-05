@@ -1,27 +1,6 @@
-# gp-sphinx
+(gp-sphinx-how-to)=
 
-```{gp-sphinx-package-meta} gp-sphinx
-```
-
-:::{admonition} Alpha
-:class: warning
-
-Rendered output is stable. The Python API, CSS class names, and Sphinx
-config value names may change without a major version bump. Pin your
-dependency to a specific version range in production.
-:::
-
-Shared configuration coordinator for Sphinx projects. {py:func}`~gp_sphinx.config.merge_sphinx_config`
-builds a complete `conf.py` namespace from the workspace defaults and leaves
-per-project overrides in one place.
-
-```console
-$ pip install gp-sphinx
-```
-
-```console
-$ uv add gp-sphinx
-```
+# How to
 
 ## Downstream `conf.py`
 
