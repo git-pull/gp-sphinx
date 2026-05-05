@@ -41,3 +41,10 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sphinx_autodoc_fastmcp"]
+
+[tool.gp-sphinx.docs]
+# fastmcp registers the richest surface in the autodoc family —
+# seven directives plus eight roles. The kitchen-sink page exercises
+# every one on a single page so contributors can see at a glance
+# what the extension exposes.
+showcase = ["kitchen-sink"]
