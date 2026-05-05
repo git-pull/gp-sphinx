@@ -94,7 +94,7 @@ source-construct family:
 :::
 
 :::{grid-item-card} sphinx-autodoc-sphinx
-:link: packages/sphinx-autodoc-sphinx
+:link: packages/sphinx-autodoc-sphinx/index
 :link-type: doc
 
 **Subject**: Sphinx config values.
@@ -153,7 +153,7 @@ Every autodoc extension shares the same badge palette, the same
 componentized HTML output structure, and the same type annotation
 pipeline — so [Python APIs](packages/sphinx-autodoc-api-style.md),
 [pytest fixtures](packages/sphinx-autodoc-pytest-fixtures.md),
-[Sphinx config values](packages/sphinx-autodoc-sphinx.md),
+[Sphinx config values](packages/sphinx-autodoc-sphinx/index.md),
 [docutils directives](packages/sphinx-autodoc-docutils.md), and
 [FastMCP tools](packages/sphinx-autodoc-fastmcp.md) all look like
 they belong together.

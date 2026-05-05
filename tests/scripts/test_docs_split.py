@@ -133,11 +133,16 @@ def test_assemble_subpage_emits_anchor_title_and_section() -> None:
     assert "demo body" in rendered
 
 
-def test_stub_markdown_is_two_lines() -> None:
-    """The stub is exactly the {package-landing} call + closing fence."""
+def test_stub_markdown_includes_anchor_h1_and_directive() -> None:
+    """The stub carries anchor + H1 (so Sphinx finds a page title) + directive."""
     rendered = docs_split.stub_markdown("sphinx-fonts")
     lines = [line for line in rendered.splitlines() if line]
-    assert lines == ["```{package-landing} sphinx-fonts", "```"]
+    assert lines == [
+        "(sphinx-fonts)=",
+        "# sphinx-fonts",
+        "```{package-landing} sphinx-fonts",
+        "```",
+    ]
 
 
 def test_assert_no_filler_raises_on_banned_pattern() -> None:

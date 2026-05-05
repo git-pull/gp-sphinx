@@ -1270,8 +1270,8 @@ _OCTICONS: dict[str, str] = {
 
 _TITLES: dict[str, str] = {
     "tutorial": "Tutorial",
-    "how-to": "How-to",
-    "reference": "Reference",
+    "how-to": "How to",
+    "reference": "API Reference",
     "explanation": "Explanation",
     "examples": "Examples",
     "errors": "Errors",
@@ -1320,8 +1320,11 @@ def _package_landing_markdown(
     The caller is responsible for env.note_dependency() on the candidate
     paths; this helper is pure (string in -> string out).
     """
-    docname_anchor = f"({record.name})="
-    title = f"# {record.name}"
+    # The stub at docs/packages/<name>/index.md carries the anchor + H1
+    # so Sphinx determines the page title at parse time (without it the
+    # parent toctree promotes the page's children to its own level).
+    # The directive emits everything else: meta badges, synopsis, grid,
+    # hidden toctree.
     meta = f"```{{gp-sphinx-package-meta}} {record.name}\n```"
     synopsis = (
         f"> {record.description}"
@@ -1330,10 +1333,6 @@ def _package_landing_markdown(
     )
 
     lines: list[str] = [
-        docname_anchor,
-        "",
-        title,
-        "",
         meta,
         "",
         synopsis,

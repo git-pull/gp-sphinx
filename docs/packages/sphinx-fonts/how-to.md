@@ -1,6 +1,6 @@
 (sphinx-fonts-how-to)=
 
-# How-to
+# How to
 
 ## Downstream `conf.py`
 

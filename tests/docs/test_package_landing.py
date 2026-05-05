@@ -33,13 +33,19 @@ def _shipped_py_fixture() -> package_reference.PackageDocsRecord:
     return record
 
 
-def test_package_landing_markdown_includes_meta_directive_and_anchor() -> None:
-    """Rendered markdown has the package anchor, title, and meta-badge call."""
+def test_package_landing_markdown_includes_meta_directive() -> None:
+    """Rendered markdown calls gp-sphinx-package-meta for the badge row.
+
+    Anchor and H1 live in the stub at docs/packages/<name>/index.md so
+    Sphinx determines the page title at parse time; the directive
+    emits only the body (meta, synopsis, grid, toctree).
+    """
     record = _shipped_py_fixture()
     rendered = package_reference._package_landing_markdown(record, [])
-    assert f"({record.name})=" in rendered
-    assert f"# {record.name}" in rendered
     assert f"```{{gp-sphinx-package-meta}} {record.name}" in rendered
+    # Anchor + H1 are intentionally NOT emitted by the directive
+    assert f"({record.name})=" not in rendered
+    assert f"# {record.name}" not in rendered
 
 
 def test_package_landing_markdown_includes_synopsis_block() -> None:
@@ -87,7 +93,7 @@ def test_package_landing_markdown_with_subpages_emits_grid_and_toctree() -> None
     )
     assert "::::{grid}" in rendered
     assert ":::{grid-item-card} {octicon}`rocket` Tutorial" in rendered
-    assert ":::{grid-item-card} {octicon}`book` Reference" in rendered
+    assert ":::{grid-item-card} {octicon}`book` API Reference" in rendered
     assert "```{toctree}" in rendered
     assert "tutorial" in rendered
     assert "reference" in rendered

@@ -28,7 +28,7 @@ Domain-specific [autodoc extensions](https://www.sphinx-doc.org/en/master/usage/
 - [`sphinx-autodoc-docutils`](sphinx-autodoc-docutils.md) — docutils directives + nodes
 - [`sphinx-autodoc-fastmcp`](sphinx-autodoc-fastmcp.md) — FastMCP tools, prompts, resources
 - [`sphinx-autodoc-pytest-fixtures`](sphinx-autodoc-pytest-fixtures.md) — pytest fixtures
-- [`sphinx-autodoc-sphinx`](sphinx-autodoc-sphinx.md) — Sphinx config values
+- [`sphinx-autodoc-sphinx`](sphinx-autodoc-sphinx/index.md) — Sphinx config values
 
 ## Build utils
 

@@ -1,6 +1,6 @@
 (sphinx-fonts-reference)=
 
-# Reference
+# API Reference
 
 ## Configuration values
 

@@ -107,7 +107,7 @@ packages/sphinx-autodoc-argparse
 packages/sphinx-autodoc-docutils
 packages/sphinx-autodoc-fastmcp
 packages/sphinx-autodoc-pytest-fixtures
-packages/sphinx-autodoc-sphinx
+packages/sphinx-autodoc-sphinx/index
 ```
 
 ```{toctree}

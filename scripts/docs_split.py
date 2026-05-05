@@ -191,8 +191,8 @@ def assemble_subpage(
     """
     bucket_titles = {
         "tutorial": "Tutorial",
-        "how-to": "How-to",
-        "reference": "Reference",
+        "how-to": "How to",
+        "reference": "API Reference",
         "explanation": "Explanation",
         "examples": "Examples",
         "errors": "Errors",
@@ -226,14 +226,31 @@ def assert_no_filler(rendered: str, *, source_label: str) -> None:
 
 
 def stub_markdown(package_name: str) -> str:
-    r"""Return the 2-line ``index.md`` stub that calls ``{package-landing}``.
+    r"""Return the per-package ``index.md`` stub source.
+
+    The stub carries the package anchor and ``H1`` so Sphinx can
+    determine the page title at parse time (without a title, the
+    parent toctree promotes the page's children to its own level).
+    The ``{package-landing}`` directive renders the rest of the
+    landing markup.
 
     Examples
     --------
-    >>> stub_markdown("sphinx-fonts")
-    '```{package-landing} sphinx-fonts\n```\n'
+    >>> "(sphinx-fonts)=" in stub_markdown("sphinx-fonts")
+    True
+    >>> "# sphinx-fonts" in stub_markdown("sphinx-fonts")
+    True
+    >>> "```{package-landing} sphinx-fonts" in stub_markdown("sphinx-fonts")
+    True
     """
-    return f"```{{package-landing}} {package_name}\n```\n"
+    return (
+        f"({package_name})=\n"
+        f"\n"
+        f"# {package_name}\n"
+        f"\n"
+        f"```{{package-landing}} {package_name}\n"
+        f"```\n"
+    )
 
 
 class _SplitOutcome(t.NamedTuple):
