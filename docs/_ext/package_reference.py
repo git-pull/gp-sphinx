@@ -1028,6 +1028,74 @@ def _register_extension_objects(
                 )
 
 
+def _subpage_target_exists(env: t.Any, target: str) -> bool:
+    """Return ``True`` if ``target`` resolves to an existing docname.
+
+    Accepts a same-directory subpage name (``"how-to"``) — resolved
+    relative to the current document — or an absolute docname
+    (``"packages/sphinx-fonts/index"``).
+
+    Examples
+    --------
+    >>> class _E:
+    ...     found_docs = {"packages/foo/index", "packages/foo/how-to"}
+    ...     docname = "packages/foo/tutorial"
+    >>> _subpage_target_exists(_E(), "how-to")
+    True
+    >>> _subpage_target_exists(_E(), "errors")
+    False
+    >>> _subpage_target_exists(_E(), "packages/foo/index")
+    True
+    """
+    found: set[str] = getattr(env, "found_docs", set())
+    if target in found:
+        return True
+    current = getattr(env, "docname", "")
+    if "/" in current:
+        prefix = current.rsplit("/", 1)[0] + "/"
+        if (prefix + target) in found:
+            return True
+    return False
+
+
+def subpage_exists_role(
+    name: str,
+    rawtext: str,
+    text: str,
+    lineno: int,
+    inliner: t.Any,
+    options: dict[str, t.Any] | None = None,
+    content: list[str] | None = None,
+) -> tuple[list[t.Any], list[t.Any]]:
+    """Implement the ``{subpage-exists}`<target>`` MyST role.
+
+    Renders a Sphinx ``:doc:`` cross-reference when ``<target>`` resolves
+    to an existing docname (sibling-relative or absolute); otherwise
+    emits plain text so the build does not fail. Used in tutorial /
+    how-to "Where to next" sections so prose never refers to absent
+    subpages.
+    """
+    from docutils import nodes as docutils_nodes
+    from sphinx import addnodes
+
+    text_clean = text.strip()
+    env = inliner.document.settings.env
+
+    if _subpage_target_exists(env, text_clean):
+        ref = addnodes.pending_xref(
+            rawtext,
+            refdomain="std",
+            reftype="doc",
+            reftarget=text_clean,
+            refexplicit=False,
+            refwarn=True,
+        )
+        ref += docutils_nodes.inline(rawtext, text_clean, classes=["xref", "doc"])
+        return [ref], []
+
+    return [docutils_nodes.inline(rawtext, text_clean)], []
+
+
 class PackageReferenceDirective(SphinxDirective):
     """Render a generated package reference block inside a page."""
 
@@ -1061,6 +1129,7 @@ def setup(app: t.Any) -> dict[str, object]:
     ensure_workspace_imports()
     app.add_directive("package-reference", PackageReferenceDirective)
     app.add_directive("workspace-package-grid", WorkspacePackageGridDirective)
+    app.add_role("subpage-exists", subpage_exists_role)
     app.connect("env-check-consistency", _register_extension_objects)
     return {
         "parallel_read_safe": True,
