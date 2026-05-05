@@ -86,7 +86,7 @@ source-construct family:
 :::
 
 :::{grid-item-card} sphinx-autodoc-pytest-fixtures
-:link: packages/sphinx-autodoc-pytest-fixtures
+:link: packages/sphinx-autodoc-pytest-fixtures/index
 :link-type: doc
 
 **Subject**: pytest fixtures (extends the `py` domain).
@@ -152,7 +152,7 @@ gp-sphinx coordinator.
 Every autodoc extension shares the same badge palette, the same
 componentized HTML output structure, and the same type annotation
 pipeline — so [Python APIs](packages/sphinx-autodoc-api-style/index.md),
-[pytest fixtures](packages/sphinx-autodoc-pytest-fixtures.md),
+[pytest fixtures](packages/sphinx-autodoc-pytest-fixtures/index.md),
 [Sphinx config values](packages/sphinx-autodoc-sphinx/index.md),
 [docutils directives](packages/sphinx-autodoc-docutils/index.md), and
 [FastMCP tools](packages/sphinx-autodoc-fastmcp/index.md) all look like
