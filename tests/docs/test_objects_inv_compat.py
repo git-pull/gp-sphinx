@@ -104,6 +104,7 @@ def _live_objects_inv(tmp_path_factory: pytest.TempPathFactory) -> pathlib.Path:
     return inv_path
 
 
+@pytest.mark.integration
 def test_objects_inv_is_superset_of_baseline(
     _live_objects_inv: pathlib.Path,
 ) -> None:
