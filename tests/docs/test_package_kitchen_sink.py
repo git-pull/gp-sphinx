@@ -25,13 +25,20 @@ def test_kitchen_sink_markdown_renders_intro_for_known_package() -> None:
 
 
 def test_kitchen_sink_markdown_lists_each_directive_with_example_block() -> None:
-    """Each registered directive gets a ``### `name`` heading and code fence."""
+    """Each registered directive gets a ``### `name``` heading + rst fence.
+
+    The fence MUST be tagged ``rst`` (pygments RstLexer) — using
+    ``text`` ships an unstyled ``<div class="highlight-text">`` block,
+    which is the original bug that motivated this assertion.
+    """
     rendered = package_reference._kitchen_sink_markdown("sphinx-autodoc-argparse")
     # sphinx-autodoc-argparse registers an ``argparse`` directive
     assert "## Directives" in rendered
     assert "### `argparse`" in rendered
-    # Each directive section opens a text fence and shows .. name:: invocation
-    assert "```text" in rendered
+    # Each directive section opens an rst fence (NOT text — text would
+    # disable highlighting) and shows .. name:: invocation
+    assert "```rst" in rendered
+    assert "```text" not in rendered
     assert ".. argparse::" in rendered
 
 

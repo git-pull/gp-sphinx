@@ -1666,7 +1666,14 @@ def _kitchen_sink_markdown(package_name: str) -> str:
         for name in sorted(set(directives_seen)):
             lines.append(f"### `{name}`")
             lines.append("")
-            lines.append("```text")
+            # Use the rst lang tag (pygments alias "rst" -> RstLexer)
+            # so the .. directive:: invocation syntax tokenizes —
+            # without it the block ships as <div class="highlight-text">
+            # (no token spans, plain text). RstLexer renders ".." as
+            # Punctuation, the directive name as Operator.Word, and
+            # "::" as Punctuation, matching the visual treatment the
+            # parallel package tutorials get via {eval-rst} fences.
+            lines.append("```rst")
             lines.append(f".. {name}::")
             lines.append("```")
             lines.append("")
