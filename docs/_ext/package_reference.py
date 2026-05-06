@@ -1223,6 +1223,33 @@ def subpage_exists_role(
     emits plain text so the build does not fail. Used in tutorial /
     how-to "Where to next" sections so prose never refers to absent
     subpages.
+
+    Examples
+    --------
+    >>> import types
+    >>> env = types.SimpleNamespace(
+    ...     found_docs={"packages/foo/index", "packages/foo/how-to"},
+    ...     docname="packages/foo/tutorial",
+    ... )
+    >>> inliner = types.SimpleNamespace(
+    ...     document=types.SimpleNamespace(
+    ...         settings=types.SimpleNamespace(env=env),
+    ...     ),
+    ... )
+    >>> ref_nodes, msgs = subpage_exists_role(
+    ...     "subpage-exists", "how-to", "how-to", 0, inliner,
+    ... )
+    >>> ref_nodes[0]["reftype"], ref_nodes[0]["reftarget"]
+    ('doc', 'how-to')
+    >>> msgs
+    []
+    >>> miss_nodes, msgs = subpage_exists_role(
+    ...     "subpage-exists", "errors", "errors", 0, inliner,
+    ... )
+    >>> miss_nodes[0].astext()
+    'errors'
+    >>> msgs
+    []
     """
     from docutils import nodes as docutils_nodes
     from sphinx import addnodes
