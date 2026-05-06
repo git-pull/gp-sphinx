@@ -68,6 +68,15 @@ manifest, plus an `emerging` state for directories without either.
 The Tokens cluster now houses both `sphinx-fonts` (Python) and
 `@gp-sphinx/furo-tokens` (JS) under one caption.
 
+### Bug fixes
+
+#### `gp-sphinx`: MystLexer highlights `:::{directive}` colon-fences
+
+Embedded MyST snippets that use the colon-fence directive syntax now
+tokenize correctly when rendered through `pygments` (e.g. inside
+`.. code-block:: myst`). Previously the fence and body fell through
+to plain text. (#33)
+
 ### CI gates
 
 A new `tests/docs/` test package ships:
