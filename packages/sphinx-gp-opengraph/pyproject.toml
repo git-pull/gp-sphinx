@@ -38,3 +38,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sphinx_gp_opengraph"]
+
+[tool.gp-sphinx.docs]
+# Three public callables (get_tags, html_page_context, setup) and
+# one workspace dependent (gp-sphinx auto-loads when docs_url is set).
+# Showcase the runtime signatures and the dependent surface.
+showcase = ["signatures", "dependents"]
