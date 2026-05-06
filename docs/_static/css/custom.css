@@ -523,14 +523,29 @@ article > section > p:first-of-type > .sd-badge.sd-bg-info {
 }
 
 /* Per-package landing layout — rendered by PackageLandingDirective.
- * gp-sphinx-package__landing-grid is the :class-container: on the
- * sphinx-design {grid} that holds the Diátaxis card row.
- * gp-sphinx-package__hero is the synopsis line beneath the H1, kept
- * lightweight so the meta-badge row + grid carry the visual weight.
+ *
+ * The directive emits :class-container: gp-sphinx-package__landing-grid
+ * (BEM-style with double underscore per the workspace CSS standards in
+ * CLAUDE.md). docutils normalizes underscores in HTML class attributes
+ * to hyphens, so the rendered class is gp-sphinx-package-landing-grid
+ * (single dash). Style both forms so the rule applies to whichever is
+ * present.
+ *
  * Specificity stays at 0,1,0 per the workspace CSS standards. */
-.gp-sphinx-package__landing-grid {
+.gp-sphinx-package__landing-grid,
+.gp-sphinx-package-landing-grid {
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
+}
+
+/* The synopsis beneath the meta-badge row is rendered as a MyST
+ * block-quote (> text) which Furo styles with strong vertical-rule
+ * formatting. Tighten the margin-bottom below the synopsis so the
+ * grid above gets visible breathing room — Furo's default leaves the
+ * blockquote flush against following content. */
+article > section > blockquote:has(+ .gp-sphinx-package-landing-grid),
+article > section > blockquote:has(+ .gp-sphinx-package__landing-grid) {
+  margin-bottom: 1.25rem;
 }
 
 .gp-sphinx-package__hero {
