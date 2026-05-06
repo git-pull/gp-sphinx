@@ -76,6 +76,7 @@ conf = merge_sphinx_config(
     docs_url=gp_sphinx.__docs__,
     source_branch="main",
     extra_extensions=[
+        "inline_highlight",
         "package_reference",
         "sab_demo",
         "sab_meta",
