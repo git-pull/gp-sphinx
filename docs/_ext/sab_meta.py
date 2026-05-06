@@ -54,25 +54,41 @@ def _link_badge(label: str, url: str) -> nodes.reference:
 
 
 def _package_meta_nodes(package_name: str) -> list[nodes.Node]:
-    """Return inline badge nodes for a workspace package."""
-    packages = {p["name"]: p for p in package_reference.workspace_packages()}
-    pkg = packages.get(package_name)
-    if pkg is None:
+    """Return inline badge nodes for a workspace package.
+
+    Reads the dual-source workspace inventory (``workspace_package_records``)
+    so JS-only packages (``state="shipped-js"``) get an npm badge instead
+    of a PyPI badge, and Emerging packages get a maturity-only badge row
+    without a registry link.
+    """
+    record = next(
+        (
+            r
+            for r in package_reference.workspace_package_records()
+            if r.name == package_name
+        ),
+        None,
+    )
+    if record is None:
         msg = nodes.inline(text=f"[unknown package: {package_name!r}]")
         return [msg]
 
-    maturity = pkg.get("maturity", "Unknown")
-    repo = pkg.get("repository", "")
-    github_url = repo if repo else "https://github.com/git-pull/gp-sphinx"
-    pypi_url = f"https://pypi.org/project/{package_name}/"
+    github_url = (
+        record.repository_url
+        if record.repository_url
+        else "https://github.com/git-pull/gp-sphinx"
+    )
 
     badge_nodes: list[nodes.Node] = [
-        _maturity_badge(maturity),
+        _maturity_badge(record.maturity),
         nodes.Text(" "),
         _link_badge("GitHub", github_url),
-        nodes.Text(" "),
-        _link_badge("PyPI", pypi_url),
     ]
+    # Append the registry badge appropriate to the package's state.
+    if record.pypi_url is not None:
+        badge_nodes.extend([nodes.Text(" "), _link_badge("PyPI", record.pypi_url)])
+    elif record.npm_url is not None:
+        badge_nodes.extend([nodes.Text(" "), _link_badge("npm", record.npm_url)])
     return badge_nodes
 
 

@@ -98,54 +98,22 @@ project/index
 history
 ```
 
-```{toctree}
-:caption: Domain Packages
-:hidden:
-
-packages/sphinx-autodoc-api-style
-packages/sphinx-autodoc-argparse
-packages/sphinx-autodoc-docutils
-packages/sphinx-autodoc-fastmcp
-packages/sphinx-autodoc-pytest-fixtures
-packages/sphinx-autodoc-sphinx
+```{cluster-toctree} autodoc
+:caption: Autodoc
 ```
 
-```{toctree}
+```{cluster-toctree} ux
 :caption: UX
-:hidden:
-
-packages/sphinx-fonts
-packages/sphinx-ux-autodoc-layout
-packages/sphinx-ux-badges
 ```
 
-```{toctree}
-:caption: Utils
-:hidden:
-
-packages/sphinx-autodoc-typehints-gp
+```{cluster-toctree} tokens
+:caption: Tokens
 ```
 
-```{toctree}
-:caption: Internal
-:hidden:
-
-packages/gp-sphinx
-packages/sphinx-gp-theme
-packages/gp-furo-theme
+```{cluster-toctree} theme-coordinator
+:caption: Theme & coordinator
 ```
 
-```{toctree}
-:caption: Build utils
-:hidden:
-
-packages/sphinx-vite-builder
-```
-
-```{toctree}
-:caption: SEO
-:hidden:
-
-packages/sphinx-gp-opengraph
-packages/sphinx-gp-sitemap
+```{cluster-toctree} build-seo
+:caption: Build & SEO
 ```

@@ -80,3 +80,12 @@ exclude = ["web/"]
 #   https://hatch.pypa.io/latest/config/build/#artifacts
 [tool.hatch.build]
 artifacts = ["src/gp_furo_theme/theme/gp-furo/static/"]
+
+[tool.gp-sphinx.docs]
+# Substantive public Python API (nine callables: theme path,
+# pygments helpers, etc.) plus one workspace dependent. Showcase
+# both: the signatures page surfaces type drift between source and
+# docstring (rendered by {live-signature}), the dependents page
+# links to consumers (rendered by {package-dependents}). The keys
+# below name the subpage filenames, not the directive names.
+showcase = ["signatures", "dependents"]

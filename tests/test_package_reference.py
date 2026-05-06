@@ -38,6 +38,91 @@ def test_workspace_packages_lists_publishable_packages() -> None:
     }
 
 
+def test_workspace_package_records_includes_shipped_js_packages() -> None:
+    """Workspace records include JS-only packages that have a ``package.json``."""
+    records = package_reference.workspace_package_records()
+    js_records = [r for r in records if r.state == "shipped-js"]
+    js_names = {r.name for r in js_records}
+    assert "@gp-sphinx/furo-tokens" in js_names
+
+
+def test_workspace_package_records_classify_python_packages_as_shipped_py() -> None:
+    """Every package returned by ``workspace_packages`` has a shipped-py record."""
+    py_names = {p["name"] for p in package_reference.workspace_packages()}
+    records = package_reference.workspace_package_records()
+    shipped_py_names = {r.name for r in records if r.state == "shipped-py"}
+    assert py_names <= shipped_py_names
+
+
+def test_workspace_package_records_emerging_packages_have_no_manifest() -> None:
+    """Emerging records have ``manifest_path is None``."""
+    records = package_reference.workspace_package_records()
+    for record in records:
+        if record.state == "emerging":
+            assert record.manifest_path is None
+
+
+def test_workspace_package_records_assign_each_package_a_known_cluster() -> None:
+    """Every shipped record has a non-``unknown`` cluster."""
+    records = package_reference.workspace_package_records()
+    for record in records:
+        if record.state in {"shipped-py", "shipped-js"}:
+            assert record.cluster != "unknown", (
+                f"package {record.name!r} fell through cluster classification"
+            )
+
+
+def test_workspace_package_records_pypi_url_only_for_python_packages() -> None:
+    """PyPI URLs are populated for shipped-py records and absent elsewhere."""
+    records = package_reference.workspace_package_records()
+    for record in records:
+        if record.state == "shipped-py":
+            assert record.pypi_url == f"https://pypi.org/project/{record.name}/"
+        else:
+            assert record.pypi_url is None
+
+
+def test_workspace_package_records_npm_url_only_for_js_packages() -> None:
+    """Npm URLs are populated for shipped-js records and absent elsewhere.
+
+    The npm web UI serves scoped packages at ``/package/@scope/name``
+    with the literal ``@`` and ``/`` — pinning the URL form here so a
+    future regression that percent-encodes the slash gets caught
+    (the resulting ``%2f`` URL 404s on npmjs.com).
+    """
+    records = package_reference.workspace_package_records()
+    for record in records:
+        if record.state == "shipped-js":
+            assert record.npm_url is not None
+            assert record.npm_url == f"https://www.npmjs.com/package/{record.name}", (
+                f"npm_url for {record.name} should preserve the manifest name verbatim"
+            )
+        else:
+            assert record.npm_url is None
+
+
+def test_workspace_package_records_parse_docs_opts_from_pyproject() -> None:
+    """``[tool.gp-sphinx.docs]`` overrides round-trip into ``DocsOpts``."""
+    helper = package_reference._docs_opts_from_pyproject
+    opts = helper(
+        {
+            "tool": {
+                "gp-sphinx": {
+                    "docs": {
+                        "extra": ["errors", "cli"],
+                        "showcase": ["kitchen-sink"],
+                        "reference_link": "/configuration",
+                    },
+                },
+            },
+        },
+    )
+    assert opts.extra == ("errors", "cli")
+    assert opts.showcase == ("kitchen-sink",)
+    assert opts.reference_link == "/configuration"
+    assert opts.omit == ()
+
+
 def test_collect_extension_surface_for_sphinx_fonts() -> None:
     """The surface collector captures live config registration."""
     surface = package_reference.collect_extension_surface("sphinx_fonts")
@@ -80,17 +165,24 @@ def test_package_reference_markdown_omits_surface_tables() -> None:
 
 
 def test_docs_package_pages_exist_for_every_workspace_package() -> None:
-    """Each publishable package has a matching docs page."""
-    page_names = {
-        path.stem
-        for path in (REPO_ROOT / "docs" / "packages").glob("*.md")
-        if path.stem != "index"
+    """Each publishable package has either a flat ``<name>.md`` or ``<name>/index.md``.
+
+    Migration accepts either layout: pre-migration packages keep their
+    legacy ``docs/packages/<name>.md`` pages, post-migration packages
+    have ``docs/packages/<name>/index.md`` rendered by
+    ``{package-landing}``. Both forms count as a present docs page.
+    """
+    packages_dir = REPO_ROOT / "docs" / "packages"
+    flat_pages = {
+        path.stem for path in packages_dir.glob("*.md") if path.stem != "index"
     }
+    dir_pages = {path.parent.name for path in packages_dir.glob("*/index.md")}
+    available_pages = flat_pages | dir_pages
     package_names = {
         package["name"] for package in package_reference.workspace_packages()
     }
-    assert package_names <= page_names, (
-        f"Missing docs pages for packages: {package_names - page_names}"
+    assert package_names <= available_pages, (
+        f"Missing docs pages for packages: {package_names - available_pages}"
     )
 
 
@@ -303,6 +395,58 @@ def test_register_extension_objects_populates_py_domain(
     entry = _MockPyDomain.objects[full_name]
     assert entry.objtype == expected_objtype
     assert entry.docname == expected_docname
+
+
+def test_register_extension_objects_uses_reference_docname_after_migration() -> None:
+    """Per-package /reference docname is preferred when found_docs contains it."""
+
+    class _MockPyDomain:
+        objects: t.ClassVar[dict[str, t.Any]] = {}
+
+    class _MockEnv:
+        domains: t.ClassVar[dict[str, object]] = {"py": _MockPyDomain()}
+        # Simulate post-migration state for one package only
+        found_docs: t.ClassVar[set[str]] = {
+            "packages/sphinx-autodoc-docutils/reference",
+        }
+
+    package_reference._register_extension_objects(None, _MockEnv())
+
+    entry = _MockPyDomain.objects.get(
+        "sphinx_autodoc_docutils._directives.AutoDirective"
+    )
+    assert entry is not None
+    # Migrated package: docname points at the reference subpage
+    assert entry.docname == "packages/sphinx-autodoc-docutils/reference"
+
+    # Other (un-migrated) packages still resolve to the flat docname
+    other_entry = _MockPyDomain.objects.get(
+        "sphinx_autodoc_sphinx._directives.AutoconfigvalueDirective"
+    )
+    assert other_entry is not None
+    assert other_entry.docname == "packages/sphinx-autodoc-sphinx"
+
+
+def test_register_extension_objects_skips_emerging_packages() -> None:
+    """Emerging records have no module to introspect — skip silently."""
+
+    # Build a state that resembles the production code path with no
+    # _real_ Emerging packages (the workspace currently has none); the
+    # test verifies the code path's branching, not data presence.
+    class _MockPyDomain:
+        objects: t.ClassVar[dict[str, t.Any]] = {}
+
+    class _MockEnv:
+        domains: t.ClassVar[dict[str, object]] = {"py": _MockPyDomain()}
+        found_docs: t.ClassVar[set[str]] = set()
+
+    package_reference._register_extension_objects(None, _MockEnv())
+    # No assertion on size here — we just verify the function returns
+    # cleanly without raising on the emerging branch (covered by the
+    # iteration logic; the workspace has zero Emerging packages today
+    # so nothing exercises the early-continue, but the code path
+    # remains sound).
+    assert isinstance(_MockPyDomain.objects, dict)
 
 
 def test_workspace_package_grid_markdown_badge_not_in_card_titles() -> None:

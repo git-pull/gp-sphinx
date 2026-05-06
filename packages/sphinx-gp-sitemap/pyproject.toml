@@ -38,3 +38,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sphinx_gp_sitemap"]
+
+[tool.gp-sphinx.docs]
+# gp-sphinx auto-loads sphinx-gp-sitemap when docs_url is set;
+# surfacing that consumer relationship from the package landing.
+showcase = ["dependents"]

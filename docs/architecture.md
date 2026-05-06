@@ -18,7 +18,7 @@ The rendering pipeline that every autodoc extension consumes:
 :gutter: 2
 
 :::{grid-item-card} sphinx-ux-badges
-:link: packages/sphinx-ux-badges
+:link: packages/sphinx-ux-badges/index
 :link-type: doc
 
 Badge primitives, colour palette, and CSS infrastructure.
@@ -26,7 +26,7 @@ All badge colours live in one place (`SAB.*` constants).
 :::
 
 :::{grid-item-card} sphinx-ux-autodoc-layout
-:link: packages/sphinx-ux-autodoc-layout
+:link: packages/sphinx-ux-autodoc-layout/index
 :link-type: doc
 
 Structural presenter for `api-*` entry components.
@@ -34,7 +34,7 @@ Parameter folding, managed signatures, card regions.
 :::
 
 :::{grid-item-card} sphinx-autodoc-typehints-gp
-:link: packages/sphinx-autodoc-typehints-gp
+:link: packages/sphinx-autodoc-typehints-gp/index
 :link-type: doc
 
 Annotation normalization and type rendering.
@@ -54,7 +54,7 @@ source-construct family:
 :gutter: 2
 
 :::{grid-item-card} sphinx-autodoc-api-style
-:link: packages/sphinx-autodoc-api-style
+:link: packages/sphinx-autodoc-api-style/index
 :link-type: doc
 
 **Subject**: standard Python.
@@ -62,7 +62,7 @@ source-construct family:
 :::
 
 :::{grid-item-card} sphinx-autodoc-argparse
-:link: packages/sphinx-autodoc-argparse
+:link: packages/sphinx-autodoc-argparse/index
 :link-type: doc
 
 **Subject**: argparse parsers — programs, options, subcommands, positionals.
@@ -70,7 +70,7 @@ source-construct family:
 :::
 
 :::{grid-item-card} sphinx-autodoc-docutils
-:link: packages/sphinx-autodoc-docutils
+:link: packages/sphinx-autodoc-docutils/index
 :link-type: doc
 
 **Subject**: docutils directives and roles.
@@ -78,7 +78,7 @@ source-construct family:
 :::
 
 :::{grid-item-card} sphinx-autodoc-fastmcp
-:link: packages/sphinx-autodoc-fastmcp
+:link: packages/sphinx-autodoc-fastmcp/index
 :link-type: doc
 
 **Subject**: FastMCP tools, prompts, resources.
@@ -86,7 +86,7 @@ source-construct family:
 :::
 
 :::{grid-item-card} sphinx-autodoc-pytest-fixtures
-:link: packages/sphinx-autodoc-pytest-fixtures
+:link: packages/sphinx-autodoc-pytest-fixtures/index
 :link-type: doc
 
 **Subject**: pytest fixtures (extends the `py` domain).
@@ -94,7 +94,7 @@ source-construct family:
 :::
 
 :::{grid-item-card} sphinx-autodoc-sphinx
-:link: packages/sphinx-autodoc-sphinx
+:link: packages/sphinx-autodoc-sphinx/index
 :link-type: doc
 
 **Subject**: Sphinx config values.
@@ -111,10 +111,10 @@ package to their `extensions` list.
 
 | Package | Role |
 |---------|------|
-| {doc}`gp-sphinx <packages/gp-sphinx>` | Coordinator.  `merge_sphinx_config()` wires up the full stack. |
-| {doc}`sphinx-gp-theme <packages/sphinx-gp-theme>` | Furo-based theme with CSS variables and SPA navigation. |
-| {doc}`gp-furo-theme <packages/gp-furo-theme>` | Tailwind v4 port of upstream Furo for git-pull projects. |
-| {doc}`sphinx-fonts <packages/sphinx-fonts>` | IBM Plex via Fontsource — preloaded web fonts. |
+| {doc}`gp-sphinx <packages/gp-sphinx/index>` | Coordinator.  `merge_sphinx_config()` wires up the full stack. |
+| {doc}`sphinx-gp-theme <packages/sphinx-gp-theme/index>` | Furo-based theme with CSS variables and SPA navigation. |
+| {doc}`gp-furo-theme <packages/gp-furo-theme/index>` | Tailwind v4 port of upstream Furo for git-pull projects. |
+| {doc}`sphinx-fonts <packages/sphinx-fonts/index>` | IBM Plex via Fontsource — preloaded web fonts. |
 
 ## Build tooling
 
@@ -130,7 +130,7 @@ and seamless live-reload during authoring.
 :gutter: 2
 
 :::{grid-item-card} sphinx-vite-builder
-:link: packages/sphinx-vite-builder
+:link: packages/sphinx-vite-builder/index
 :link-type: doc
 
 [PEP 517](https://peps.python.org/pep-0517/) build backend (or
@@ -151,11 +151,11 @@ gp-sphinx coordinator.
 
 Every autodoc extension shares the same badge palette, the same
 componentized HTML output structure, and the same type annotation
-pipeline — so [Python APIs](packages/sphinx-autodoc-api-style.md),
-[pytest fixtures](packages/sphinx-autodoc-pytest-fixtures.md),
-[Sphinx config values](packages/sphinx-autodoc-sphinx.md),
-[docutils directives](packages/sphinx-autodoc-docutils.md), and
-[FastMCP tools](packages/sphinx-autodoc-fastmcp.md) all look like
+pipeline — so [Python APIs](packages/sphinx-autodoc-api-style/index.md),
+[pytest fixtures](packages/sphinx-autodoc-pytest-fixtures/index.md),
+[Sphinx config values](packages/sphinx-autodoc-sphinx/index.md),
+[docutils directives](packages/sphinx-autodoc-docutils/index.md), and
+[FastMCP tools](packages/sphinx-autodoc-fastmcp/index.md) all look like
 they belong together.
 
 This is the **one autodoc design system** principle: a change to the shared

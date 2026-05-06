@@ -42,3 +42,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sphinx_autodoc_argparse"]
+
+[tool.gp-sphinx.docs]
+# argparse extension registers the {argparse} directive plus four
+# config values; the kitchen-sink page exercises the directive once
+# so a reader can see what an invocation looks like end-to-end.
+showcase = ["kitchen-sink"]

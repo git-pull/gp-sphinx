@@ -32,3 +32,9 @@ dependencies = ["sphinx>=8.1"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sphinx_ux_autodoc_layout"]
+
+[tool.gp-sphinx.docs]
+# Layout presenter consumed by every autodoc-* extension; five
+# workspace packages depend on it. Surfacing those dependents from
+# this package's own landing helps a reader navigate downstream.
+showcase = ["dependents"]

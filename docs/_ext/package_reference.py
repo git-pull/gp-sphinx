@@ -61,12 +61,14 @@ from __future__ import annotations
 
 import importlib
 import inspect
+import json
 import logging
 import os
 import pathlib
 import pkgutil
 import sys
 import typing as t
+from dataclasses import dataclass, field
 
 from sphinx.util.docutils import SphinxDirective
 
@@ -81,6 +83,169 @@ else:
     import tomli as tomllib  # type: ignore[import-not-found]
 
 logger = logging.getLogger(__name__)
+
+
+PackageState = t.Literal["shipped-py", "shipped-js", "emerging"]
+
+
+@dataclass(frozen=True)
+class DocsOpts:
+    """Per-package overrides parsed from ``[tool.gp-sphinx.docs]``.
+
+    Attributes
+    ----------
+    omit
+        Subpages this package opts out of (e.g. tokens packages omit
+        ``tutorial`` and ``examples``).
+    extra
+        Subpages beyond the Diátaxis defaults (e.g. ``errors``, ``cli``,
+        ``tokens``).
+    showcase
+        Optional Sublimity subpages this package opts into (subset of
+        ``signatures``, ``kitchen-sink``, ``surface-diff``, ``dependents``).
+    reference_link
+        When set, the Reference card on the landing redirects to this
+        docname rather than rendering ``packages/<name>/reference``.
+
+    Examples
+    --------
+    >>> DocsOpts().omit
+    ()
+    >>> DocsOpts(extra=("errors",)).extra
+    ('errors',)
+    """
+
+    omit: tuple[str, ...] = ()
+    extra: tuple[str, ...] = ()
+    showcase: tuple[str, ...] = ()
+    reference_link: str | None = None
+
+
+@dataclass(frozen=True)
+class PackageDocsRecord:
+    """Single source of truth for a workspace package's docs metadata.
+
+    Populated once at workspace discovery; every directive downstream
+    reads from this record rather than re-parsing manifest files.
+
+    Attributes
+    ----------
+    name
+        Distribution name (``"sphinx-autodoc-fastmcp"``,
+        ``"@gp-sphinx/furo-tokens"``).
+    state
+        Manifest probe result: ``"shipped-py"`` (has ``pyproject.toml``),
+        ``"shipped-js"`` (has ``package.json`` only), or ``"emerging"``
+        (no manifest yet).
+    cluster
+        Sidebar cluster the package belongs to (e.g. ``"autodoc"``).
+    package_dir
+        Directory of the package under ``packages/``.
+    manifest_path
+        Path to the manifest file (``pyproject.toml`` or
+        ``package.json``); ``None`` for emerging packages.
+    src_dir
+        Path to the package's ``src/`` directory; ``None`` if absent.
+    module_name
+        Importable Python module name (only meaningful for shipped-py).
+    description
+        One-line synopsis for the landing page.
+    version
+        Package version string from the manifest; empty for emerging.
+    repository_url
+        GitHub URL.
+    pypi_url
+        PyPI project URL; ``None`` for shipped-js and emerging.
+    npm_url
+        npm registry URL; ``None`` for shipped-py and emerging.
+    maturity
+        Short label (``"Alpha"``, ``"Beta"``, ``"Production/Stable"``,
+        ``"Unknown"``).
+    docs_opts
+        Parsed ``[tool.gp-sphinx.docs]`` overrides (empty if section
+        absent or manifest is ``package.json``).
+
+    Examples
+    --------
+    >>> records = workspace_package_records()
+    >>> shipped_py = [r for r in records if r.state == "shipped-py"]
+    >>> "gp-sphinx" in {r.name for r in shipped_py}
+    True
+    """
+
+    name: str
+    state: PackageState
+    cluster: str
+    package_dir: pathlib.Path
+    manifest_path: pathlib.Path | None
+    src_dir: pathlib.Path | None
+    module_name: str
+    description: str
+    version: str
+    repository_url: str
+    pypi_url: str | None
+    npm_url: str | None
+    maturity: str
+    docs_opts: DocsOpts = field(default_factory=DocsOpts)
+
+
+_CLUSTER_FOR_NAME: dict[str, str] = {
+    "gp-sphinx": "theme-coordinator",
+    "sphinx-gp-theme": "theme-coordinator",
+    "gp-furo-theme": "theme-coordinator",
+    "sphinx-serene-theme": "theme-coordinator",
+    "gp-furo-tokens": "tokens",
+    "gp-serene-tokens": "tokens",
+    "@gp-sphinx/furo-tokens": "tokens",
+    "@gp-sphinx/serene-tokens": "tokens",
+    "sphinx-fonts": "tokens",
+    "sphinx-ux-badges": "ux",
+    "sphinx-ux-autodoc-layout": "ux",
+    "sphinx-vite-builder": "build-seo",
+    "sphinx-gp-opengraph": "build-seo",
+    "sphinx-gp-sitemap": "build-seo",
+}
+
+
+def _cluster_for(name: str) -> str:
+    """Return the sidebar cluster a package belongs to.
+
+    Examples
+    --------
+    >>> _cluster_for("sphinx-autodoc-fastmcp")
+    'autodoc'
+    >>> _cluster_for("gp-sphinx")
+    'theme-coordinator'
+    >>> _cluster_for("sphinx-ux-badges")
+    'ux'
+    """
+    if name in _CLUSTER_FOR_NAME:
+        return _CLUSTER_FOR_NAME[name]
+    if name.startswith("sphinx-autodoc-"):
+        return "autodoc"
+    return "unknown"
+
+
+def _docs_opts_from_pyproject(table: dict[str, t.Any]) -> DocsOpts:
+    """Parse ``[tool.gp-sphinx.docs]`` overrides from a pyproject TOML dict.
+
+    Examples
+    --------
+    >>> _docs_opts_from_pyproject({}).extra
+    ()
+    >>> opts = _docs_opts_from_pyproject(
+    ...     {"tool": {"gp-sphinx": {"docs": {"extra": ["errors"]}}}}
+    ... )
+    >>> opts.extra
+    ('errors',)
+    """
+    section = table.get("tool", {}).get("gp-sphinx", {}).get("docs", {})
+    return DocsOpts(
+        omit=tuple(section.get("omit", [])),
+        extra=tuple(section.get("extra", [])),
+        showcase=tuple(section.get("showcase", [])),
+        reference_link=section.get("reference_link"),
+    )
 
 
 class SurfaceDict(t.TypedDict):
@@ -150,6 +315,152 @@ def workspace_packages() -> list[dict[str, str]]:
             },
         )
     return packages
+
+
+def workspace_package_records() -> list[PackageDocsRecord]:
+    """Return every workspace package directory as a :class:`PackageDocsRecord`.
+
+    Probes ``pyproject.toml`` first; falls back to ``package.json`` for
+    JS-only packages; classifies as ``"emerging"`` when neither manifest
+    is present. Records are returned sorted by directory name.
+
+    Unlike :func:`workspace_packages` this includes JS-only and emerging
+    packages and surfaces the parsed ``[tool.gp-sphinx.docs]`` overrides.
+
+    Examples
+    --------
+    >>> records = workspace_package_records()
+    >>> "gp-sphinx" in {r.name for r in records}
+    True
+    >>> states = {r.state for r in records}
+    >>> states <= {"shipped-py", "shipped-js", "emerging"}
+    True
+    """
+    packages_dir = workspace_root() / "packages"
+    records: list[PackageDocsRecord] = []
+    for pkg_dir in sorted(packages_dir.iterdir()):
+        if not pkg_dir.is_dir():
+            continue
+        record = _package_record_from_dir(pkg_dir)
+        if record is not None:
+            records.append(record)
+    return records
+
+
+def _package_record_from_dir(pkg_dir: pathlib.Path) -> PackageDocsRecord | None:
+    """Build a :class:`PackageDocsRecord` for a single package directory.
+
+    Returns ``None`` for directories that do not look like a workspace
+    package at all (e.g. an ``__pycache__/`` slipped in).
+    """
+    pyproject_path = pkg_dir / "pyproject.toml"
+    package_json_path = pkg_dir / "package.json"
+    src_dir = pkg_dir / "src"
+    src_module_dir: pathlib.Path | None = None
+    if src_dir.is_dir():
+        src_module_dir = next(
+            (path for path in src_dir.iterdir() if path.is_dir()),
+            None,
+        )
+
+    if pyproject_path.is_file():
+        with pyproject_path.open("rb") as handle:
+            table = tomllib.load(handle)
+        project = table.get("project")
+        if not isinstance(project, dict):
+            return None
+        if src_module_dir is None:
+            return None
+        name = str(project["name"])
+        return PackageDocsRecord(
+            name=name,
+            state="shipped-py",
+            cluster=_cluster_for(name),
+            package_dir=pkg_dir,
+            manifest_path=pyproject_path,
+            src_dir=src_dir,
+            module_name=src_module_dir.name,
+            description=str(project.get("description", "")),
+            version=str(project.get("version", "")),
+            repository_url=str(project.get("urls", {}).get("Repository", "")),
+            pypi_url=f"https://pypi.org/project/{name}/",
+            npm_url=None,
+            maturity=maturity_from_classifiers(
+                t.cast("list[str]", project.get("classifiers", [])),
+            ),
+            docs_opts=_docs_opts_from_pyproject(table),
+        )
+
+    if package_json_path.is_file():
+        manifest = json.loads(package_json_path.read_text(encoding="utf-8"))
+        name = str(manifest.get("name", pkg_dir.name))
+        # The npm web UI accepts the literal ``@scope/name`` form for
+        # scoped packages — percent-encoding the ``/`` (or stripping the
+        # ``@``) produces a 404. Pass the manifest name straight through.
+        npm_slug = name if name else pkg_dir.name
+        return PackageDocsRecord(
+            name=name,
+            state="shipped-js",
+            cluster=_cluster_for(name),
+            package_dir=pkg_dir,
+            manifest_path=package_json_path,
+            src_dir=src_dir if src_dir.is_dir() else None,
+            module_name="",
+            description=str(manifest.get("description", "")),
+            version=str(manifest.get("version", "")),
+            repository_url=_repository_url_from_package_json(manifest),
+            pypi_url=None,
+            npm_url=f"https://www.npmjs.com/package/{npm_slug}",
+            maturity="Unknown",
+        )
+
+    return PackageDocsRecord(
+        name=pkg_dir.name,
+        state="emerging",
+        cluster=_cluster_for(pkg_dir.name),
+        package_dir=pkg_dir,
+        manifest_path=None,
+        src_dir=src_dir if src_dir.is_dir() else None,
+        module_name="",
+        description="",
+        version="",
+        repository_url="",
+        pypi_url=None,
+        npm_url=None,
+        maturity="Unknown",
+    )
+
+
+def _repository_url_from_package_json(manifest: dict[str, t.Any]) -> str:
+    """Extract a GitHub URL from a ``package.json`` ``repository`` field.
+
+    Accepts either the string form (``"github:owner/repo"``) or the
+    object form (``{"type": "git", "url": "..."}``).
+
+    Examples
+    --------
+    >>> _repository_url_from_package_json({})
+    ''
+    >>> _repository_url_from_package_json({"repository": "github:git-pull/x"})
+    'https://github.com/git-pull/x'
+    >>> _repository_url_from_package_json(
+    ...     {"repository": {"url": "git+https://github.com/git-pull/x.git"}}
+    ... )
+    'https://github.com/git-pull/x'
+    """
+    repo = manifest.get("repository")
+    if isinstance(repo, str):
+        if repo.startswith("github:"):
+            return f"https://github.com/{repo[len('github:') :]}"
+        return repo
+    if isinstance(repo, dict):
+        url = str(repo.get("url", ""))
+        if url.startswith("git+"):
+            url = url[len("git+") :]
+        if url.endswith(".git"):
+            url = url[: -len(".git")]
+        return url
+    return ""
 
 
 def maturity_from_classifiers(classifiers: list[str]) -> str:
@@ -535,8 +846,8 @@ def package_reference_markdown(package_name: str) -> str:
     --------
     >>> "Copyable config snippet" in package_reference_markdown("sphinx-fonts")
     True
-    >>> "pypi.org/project/sphinx-fonts" in package_reference_markdown("sphinx-fonts")
-    True
+    >>> "## Package metadata" in package_reference_markdown("sphinx-fonts")
+    False
     >>> package_reference_markdown("nonexistent-package")
     ''
     """
@@ -569,18 +880,12 @@ def package_reference_markdown(package_name: str) -> str:
 
     lines.extend(["]", "```", ""])
 
-    if package["repository"]:
-        pypi_url = f"https://pypi.org/project/{package_name}/"
-        lines.extend(
-            [
-                "## Package metadata",
-                "",
-                f"- Source on GitHub: [{package_name}]({package['repository']}/tree/main/packages/{package_name})",
-                f"- PyPI: [{package_name}]({pypi_url})",
-                f"- Maturity: `{package['maturity']}`",
-                "",
-            ],
-        )
+    # NOTE: The "Package metadata" section (GitHub + PyPI + Maturity)
+    # was dropped here in commit C2 of the per-package docs restructure.
+    # The same surface is conveyed once per page by the
+    # gp-sphinx-package-meta directive (docs/_ext/sab_meta.py); rendering
+    # it again as a paragraph below the conf snippet was duplication.
+    # The badge row remains the only metadata surface on the landing.
 
     if package_name == "gp-sphinx":
         lines.extend(
@@ -615,16 +920,85 @@ def maturity_badge(maturity: str) -> str:
     return f"{{bdg-secondary-line}}`{maturity}`"
 
 
-def workspace_package_grid_markdown() -> str:
-    """Render the package index grid from workspace metadata.
+_CLUSTER_HEADINGS: tuple[tuple[str, str, str], ...] = (
+    (
+        "theme-coordinator",
+        "Theme & coordinator",
+        "Shared Sphinx configuration and presentation surface.",
+    ),
+    (
+        "tokens",
+        "Tokens",
+        "Design tokens, fonts, and shared CSS custom properties.",
+    ),
+    (
+        "autodoc",
+        "Autodoc extensions",
+        "Domain-specific autodoc extensions: each adds directives that "
+        "generate documentation from a particular source-construct family.",
+    ),
+    (
+        "ux",
+        "UX components",
+        "Badge primitives, layout presenters, and other shared "
+        "rendering helpers consumed by the autodoc family.",
+    ),
+    (
+        "build-seo",
+        "Build & SEO",
+        "PEP 517 backends, build orchestration, and crawl-indexing "
+        "extensions auto-loaded by gp-sphinx when ``docs_url`` is set.",
+    ),
+)
 
-    Examples
-    --------
-    >>> "grid-item-card" in workspace_package_grid_markdown()
-    True
-    >>> "+++" in workspace_package_grid_markdown()
-    True
+
+def _grid_card_lines_for_record(record: PackageDocsRecord) -> list[str]:
+    """Render one ``{grid-item-card}`` block for a workspace record."""
+    if record.state == "emerging":
+        # Emerging packages have no per-package landing yet — link to
+        # the GitHub directory (or repo root) rather than a 404.
+        link = record.repository_url or "https://github.com/git-pull/gp-sphinx"
+        return [
+            f":::{{grid-item-card}} {record.name}",
+            f":link: {link}",
+            "",
+            "Coming soon — see GitHub for status.",
+            "",
+            ":::",
+            "",
+        ]
+
+    return [
+        f":::{{grid-item-card}} {record.name}",
+        f":link: {_grid_link_for_legacy_record(record.name)}",
+        ":link-type: doc",
+        "",
+        record.description,
+        "",
+        "+++",
+        maturity_badge(record.maturity),
+        ":::",
+        "",
+    ]
+
+
+def _grid_link_for_legacy_record(name: str) -> str:
+    """Return the docname a legacy ``:link:`` entry should target.
+
+    Picks ``<name>/index`` when a per-package directory has migrated
+    (``docs/packages/<name>/index.md`` exists); falls back to the
+    flat ``<name>`` docname otherwise. Lets the workspace grid keep
+    rendering during the per-package migration window without
+    emitting unknown-document warnings.
     """
+    docs_root = workspace_root() / "docs" / "packages"
+    if (docs_root / name / "index.md").is_file():
+        return f"{name}/index"
+    return name
+
+
+def _flat_workspace_grid_markdown() -> str:
+    """Render the legacy single-grid layout (no per-cluster headings)."""
     lines = [
         "::::{grid} 1 1 2 2",
         ":gutter: 2 2 3 3",
@@ -634,7 +1008,7 @@ def workspace_package_grid_markdown() -> str:
         lines.extend(
             [
                 f":::{{grid-item-card}} {package['name']}",
-                f":link: {package['name']}",
+                f":link: {_grid_link_for_legacy_record(package['name'])}",
                 ":link-type: doc",
                 "",
                 str(package["description"]),
@@ -647,6 +1021,77 @@ def workspace_package_grid_markdown() -> str:
         )
     lines.append("::::")
     return "\n".join(lines)
+
+
+def _grouped_workspace_grid_markdown() -> str:
+    """Render the workspace inventory as one ``{grid}`` block per cluster.
+
+    Each cluster gets a heading + framing prose + a grid containing
+    only the records assigned to that cluster (Shipped + Emerging).
+    Emerging cards link to the GitHub directory rather than a
+    landing docname so the build does not 404.
+    """
+    records = workspace_package_records()
+    by_cluster: dict[str, list[PackageDocsRecord]] = {}
+    for record in records:
+        by_cluster.setdefault(record.cluster, []).append(record)
+
+    lines: list[str] = []
+    for cluster_id, heading, prose in _CLUSTER_HEADINGS:
+        members = sorted(
+            by_cluster.get(cluster_id, []),
+            key=lambda r: r.name,
+        )
+        if not members:
+            continue
+        lines.extend(
+            [
+                f"## {heading}",
+                "",
+                prose,
+                "",
+                "::::{grid} 1 1 2 2",
+                ":gutter: 2 2 3 3",
+                "",
+            ],
+        )
+        for member in members:
+            lines.extend(_grid_card_lines_for_record(member))
+        lines.append("::::")
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def workspace_package_grid_markdown(*, groups: str | None = None) -> str:
+    """Render the workspace package index grid.
+
+    Parameters
+    ----------
+    groups
+        ``None`` (default) renders the legacy single grid of every
+        Python-shipped package — backward compatible with existing
+        ``{workspace-package-grid}`` invocations. ``"by-cluster"``
+        emits one grid per sidebar cluster, with cluster headings,
+        framing prose, and Emerging packages rendered as
+        GitHub-linked cards.
+
+    Examples
+    --------
+    >>> "grid-item-card" in workspace_package_grid_markdown()
+    True
+    >>> "+++" in workspace_package_grid_markdown()
+    True
+    >>> "## Autodoc extensions" in workspace_package_grid_markdown(
+    ...     groups="by-cluster"
+    ... )
+    True
+    """
+    if groups is None:
+        return _flat_workspace_grid_markdown()
+    if groups == "by-cluster":
+        return _grouped_workspace_grid_markdown()
+    msg = f"unsupported groups argument: {groups!r}"
+    raise ValueError(msg)
 
 
 def _register_extension_objects(
@@ -678,10 +1123,25 @@ def _register_extension_objects(
     except (KeyError, AttributeError, ImportError):
         return
 
-    for package in workspace_packages():
-        pkg_docname = f"packages/{package['name']}"
+    found_docs: set[str] = getattr(env, "found_docs", set())
 
-        for ext_module_name in extension_modules(package["module_name"]):
+    for record in workspace_package_records():
+        if record.state != "shipped-py":
+            # Emerging records have no source; shipped-js has no Python
+            # module to introspect. Either way, nothing to register.
+            continue
+
+        # Prefer the per-package reference subpage when the package has
+        # migrated (its docname is in env.found_docs); fall back to the
+        # legacy flat page during the migration window so xrefs keep
+        # resolving for un-migrated packages.
+        reference_docname = f"packages/{record.name}/reference"
+        flat_docname = f"packages/{record.name}"
+        pkg_docname = (
+            reference_docname if reference_docname in found_docs else flat_docname
+        )
+
+        for ext_module_name in extension_modules(record.module_name):
             recorder = replay_setup(ext_module_name)
             if recorder is None:
                 continue
@@ -720,6 +1180,369 @@ def _register_extension_objects(
                 )
 
 
+def _subpage_target_exists(env: t.Any, target: str) -> bool:
+    """Return ``True`` if ``target`` resolves to an existing docname.
+
+    Accepts a same-directory subpage name (``"how-to"``) — resolved
+    relative to the current document — or an absolute docname
+    (``"packages/sphinx-fonts/index"``).
+
+    Examples
+    --------
+    >>> class _E:
+    ...     found_docs = {"packages/foo/index", "packages/foo/how-to"}
+    ...     docname = "packages/foo/tutorial"
+    >>> _subpage_target_exists(_E(), "how-to")
+    True
+    >>> _subpage_target_exists(_E(), "errors")
+    False
+    >>> _subpage_target_exists(_E(), "packages/foo/index")
+    True
+    """
+    found: set[str] = getattr(env, "found_docs", set())
+    if target in found:
+        return True
+    current = getattr(env, "docname", "")
+    if "/" in current:
+        prefix = current.rsplit("/", 1)[0] + "/"
+        if (prefix + target) in found:
+            return True
+    return False
+
+
+def subpage_exists_role(
+    name: str,
+    rawtext: str,
+    text: str,
+    lineno: int,
+    inliner: t.Any,
+    options: dict[str, t.Any] | None = None,
+    content: list[str] | None = None,
+) -> tuple[list[t.Any], list[t.Any]]:
+    """Implement the ``{subpage-exists}`<target>`` MyST role.
+
+    Renders a Sphinx ``:doc:`` cross-reference when ``<target>`` resolves
+    to an existing docname (sibling-relative or absolute); otherwise
+    emits plain text so the build does not fail. Used in tutorial /
+    how-to "Where to next" sections so prose never refers to absent
+    subpages.
+
+    Examples
+    --------
+    >>> import types
+    >>> env = types.SimpleNamespace(
+    ...     found_docs={"packages/foo/index", "packages/foo/how-to"},
+    ...     docname="packages/foo/tutorial",
+    ... )
+    >>> inliner = types.SimpleNamespace(
+    ...     document=types.SimpleNamespace(
+    ...         settings=types.SimpleNamespace(env=env),
+    ...     ),
+    ... )
+    >>> ref_nodes, msgs = subpage_exists_role(
+    ...     "subpage-exists", "how-to", "how-to", 0, inliner,
+    ... )
+    >>> ref_nodes[0]["reftype"], ref_nodes[0]["reftarget"]
+    ('doc', 'how-to')
+    >>> msgs
+    []
+    >>> miss_nodes, msgs = subpage_exists_role(
+    ...     "subpage-exists", "errors", "errors", 0, inliner,
+    ... )
+    >>> miss_nodes[0].astext()
+    'errors'
+    >>> msgs
+    []
+    """
+    from docutils import nodes as docutils_nodes
+    from sphinx import addnodes
+
+    text_clean = text.strip()
+    env = inliner.document.settings.env
+
+    if _subpage_target_exists(env, text_clean):
+        ref = addnodes.pending_xref(
+            rawtext,
+            refdomain="std",
+            reftype="doc",
+            reftarget=text_clean,
+            refexplicit=False,
+            refwarn=True,
+        )
+        ref += docutils_nodes.inline(rawtext, text_clean, classes=["xref", "doc"])
+        return [ref], []
+
+    return [docutils_nodes.inline(rawtext, text_clean)], []
+
+
+_DEFAULT_LANDING_SUBPAGES: tuple[str, ...] = (
+    "tutorial",
+    "how-to",
+    "reference",
+    "explanation",
+    "examples",
+)
+
+_OCTICONS: dict[str, str] = {
+    "tutorial": "rocket",
+    "how-to": "tools",
+    "reference": "book",
+    "explanation": "light-bulb",
+    "examples": "star",
+    "errors": "alert",
+    "cli": "terminal",
+    "tokens": "paintbrush",
+    "signatures": "code",
+    "kitchen-sink": "device-camera",
+    "surface-diff": "diff",
+    "dependents": "link",
+}
+
+_TITLES: dict[str, str] = {
+    "tutorial": "Tutorial",
+    "how-to": "How to",
+    "reference": "API Reference",
+    "explanation": "Explanation",
+    "examples": "Examples",
+    "errors": "Errors",
+    "cli": "CLI",
+    "tokens": "Tokens",
+    "signatures": "Signatures",
+    "kitchen-sink": "Kitchen sink",
+    "surface-diff": "Surface diff",
+    "dependents": "Dependents",
+}
+
+_DEFAULT_SUMMARIES: dict[str, str] = {
+    "tutorial": "Get started in ten minutes.",
+    "how-to": "Task recipes for common workflows.",
+    "reference": "Every directive, role, and config value.",
+    "explanation": "Why the package is shaped this way.",
+    "examples": "Live demos rendered from real code.",
+    "errors": "Named failure modes and what to do about them.",
+    "cli": "Command-line surface and modes.",
+    "tokens": "Design-token tables and CSS custom properties.",
+    "signatures": "Runtime-rendered signatures and drift alerts.",
+    "kitchen-sink": "Every directive exercised on one page.",
+    "surface-diff": "What changed since the last release.",
+    "dependents": "Workspace packages that import this one.",
+}
+
+
+def _candidate_subpage_paths(record: PackageDocsRecord) -> dict[str, pathlib.Path]:
+    """Return the on-disk paths the landing checks for each candidate subpage.
+
+    Combines:
+
+    * the Diátaxis defaults (tutorial / how-to / reference / explanation /
+      examples)
+    * ``[tool.gp-sphinx.docs].extra`` entries (errors / cli / tokens / …)
+    * ``[tool.gp-sphinx.docs].showcase`` entries (signatures /
+      kitchen-sink / surface-diff / dependents)
+
+    The landing renders only those subpage cards whose target file
+    exists. Currently looks in ``docs/packages/<name>/<subpage>.md``;
+    a future commit will also probe the co-located
+    ``packages/<name>/docs/`` tree.
+    """
+    docs_root = workspace_root() / "docs" / "packages" / record.name
+    subpages = (
+        list(_DEFAULT_LANDING_SUBPAGES)
+        + list(record.docs_opts.extra)
+        + list(record.docs_opts.showcase)
+    )
+    return {sub: docs_root / f"{sub}.md" for sub in subpages}
+
+
+def _package_landing_markdown(
+    record: PackageDocsRecord,
+    present_subpages: list[str],
+) -> str:
+    """Render the per-package landing markdown for ``record``.
+
+    The caller is responsible for env.note_dependency() on the candidate
+    paths; this helper is pure (string in -> string out).
+    """
+    # The stub at docs/packages/<name>/index.md carries the anchor + H1
+    # so Sphinx determines the page title at parse time (without it the
+    # parent toctree promotes the page's children to its own level).
+    # The directive emits everything else: meta badges, synopsis, grid,
+    # hidden toctree.
+    meta = f"```{{gp-sphinx-package-meta}} {record.name}\n```"
+    synopsis = (
+        f"> {record.description}"
+        if record.description
+        else "> No description provided."
+    )
+
+    lines: list[str] = [
+        meta,
+        "",
+        synopsis,
+        "",
+    ]
+
+    if present_subpages:
+        # Sphinx-design's {grid} directive requires at least one
+        # {grid-item-card} child — emit the grid only when we have
+        # subpages to show. Packages with no subpages yet (newly
+        # added, JS-only awaiting authoring) render meta + synopsis
+        # without the grid.
+        lines.extend(
+            [
+                "::::{grid} 1 2 2 3",
+                ":gutter: 2 2 3 3",
+                ":class-container: gp-sphinx-package__landing-grid",
+                "",
+            ],
+        )
+        for subpage in present_subpages:
+            icon = _OCTICONS.get(subpage, "link")
+            title_text = _TITLES.get(subpage, subpage.replace("-", " ").title())
+            summary = _DEFAULT_SUMMARIES.get(subpage, "")
+            lines.extend(
+                [
+                    f":::{{grid-item-card}} {{octicon}}`{icon}` {title_text}",
+                    f":link: {subpage}",
+                    ":link-type: doc",
+                    summary,
+                    ":::",
+                    "",
+                ],
+            )
+        lines.append("::::")
+        lines.append("")
+        lines.append("```{toctree}")
+        lines.append(":hidden:")
+        lines.append("")
+        lines.extend(present_subpages)
+        lines.append("```")
+        lines.append("")
+    return "\n".join(lines)
+
+
+class PackageLandingDirective(SphinxDirective):
+    """Render a synthesized landing page for a workspace package.
+
+    Emits ``gp-sphinx-package-meta`` + synopsis + a conditional grid of
+    cards over only those Diátaxis subpages whose target markdown
+    exists on disk + a hidden toctree.
+
+    Calls ``env.note_dependency()`` on every candidate subpage path so
+    incremental builds rebuild the landing when an author drops a new
+    ``tutorial.md`` (or removes one) without a clean rebuild.
+
+    Usage in ``docs/packages/<name>/index.md``::
+
+        ```{package-landing} sphinx-autodoc-fastmcp
+        ```
+    """
+
+    required_arguments = 1
+    has_content = False
+
+    def run(self) -> list[nodes.Node]:
+        package_name = self.arguments[0].strip()
+        record = next(
+            (r for r in workspace_package_records() if r.name == package_name),
+            None,
+        )
+        if record is None:
+            logger.warning("package-landing: unknown package %r", package_name)
+            return []
+
+        candidates = _candidate_subpage_paths(record)
+        present: list[str] = []
+        for subpage, path in candidates.items():
+            self.env.note_dependency(str(path))
+            if path.is_file():
+                present.append(subpage)
+
+        markdown = _package_landing_markdown(record, present)
+        return self.parse_text_to_nodes(markdown)
+
+
+def _cluster_toctree_markdown(
+    cluster: str,
+    *,
+    caption: str | None,
+    titlesonly: bool,
+) -> str:
+    """Render a hidden toctree of every Shipped package in ``cluster``.
+
+    Emerging packages are silently skipped at emit time so the
+    toctree never references a docname Sphinx has not discovered —
+    this prevents cluster-toctree-on-Emerging crashes (Risk: see
+    Group B2 commit message).
+
+    Each entry points at ``packages/<name>/index`` (the per-package
+    landing stub). Entries are sorted alphabetically within the
+    cluster so the sidebar reads predictably.
+    """
+    members = sorted(
+        record.name
+        for record in workspace_package_records()
+        if record.cluster == cluster and record.state in {"shipped-py", "shipped-js"}
+    )
+    if not members:
+        return ""
+
+    lines: list[str] = ["```{toctree}"]
+    if caption is not None:
+        lines.append(f":caption: {caption}")
+    lines.append(":hidden:")
+    if titlesonly:
+        lines.append(":titlesonly:")
+    lines.append("")
+    lines.extend(f"packages/{name}/index" for name in members)
+    lines.append("```")
+    return "\n".join(lines)
+
+
+class ClusterToctreeDirective(SphinxDirective):
+    """Render a hidden toctree of every Shipped package in a sidebar cluster.
+
+    Replaces the seven hand-edited toctree blocks in ``docs/index.md``
+    with a single source of truth: package classifier plus
+    ``[tool.gp-sphinx.docs]`` overrides drive both the workspace grid
+    and the sidebar.
+
+    Usage in ``docs/index.md``::
+
+        ```{cluster-toctree} autodoc
+        :caption: Autodoc
+        :titlesonly:
+        ```
+
+    Skips Emerging packages so the build does not reference a missing
+    docname.
+    """
+
+    required_arguments = 1
+    has_content = False
+    option_spec = {  # noqa: RUF012
+        "caption": lambda v: str(v).strip(),
+        "titlesonly": lambda v: True if v is None else bool(v),
+    }
+
+    def run(self) -> list[nodes.Node]:
+        cluster = self.arguments[0].strip()
+        caption = self.options.get("caption")
+        titlesonly = "titlesonly" in self.options
+        markdown = _cluster_toctree_markdown(
+            cluster,
+            caption=caption,
+            titlesonly=titlesonly,
+        )
+        if not markdown:
+            logger.warning(
+                "cluster-toctree: no Shipped packages found in cluster %r",
+                cluster,
+            )
+            return []
+        return self.parse_text_to_nodes(markdown)
+
+
 class PackageReferenceDirective(SphinxDirective):
     """Render a generated package reference block inside a page."""
 
@@ -731,13 +1554,444 @@ class PackageReferenceDirective(SphinxDirective):
         return self.parse_text_to_nodes(package_reference_markdown(package_name))
 
 
-class WorkspacePackageGridDirective(SphinxDirective):
-    """Render the packages index grid from workspace package metadata."""
+def _public_callables(module_name: str) -> list[tuple[str, str]]:
+    """Return ``(qualname, signature)`` pairs for the module's public callables.
 
+    Imports ``module_name`` once, walks ``dir(module)`` for callables
+    not starting with ``_``, and renders each via :func:`inspect.signature`.
+    Errors during inspection are logged and skipped so a single drift
+    doesn't break the build.
+    """
+    try:
+        module = importlib.import_module(module_name)
+    except ImportError:
+        logger.warning("live-signature: could not import %r", module_name)
+        return []
+
+    pairs: list[tuple[str, str]] = []
+    for name in sorted(dir(module)):
+        if name.startswith("_"):
+            continue
+        obj = getattr(module, name)
+        if not callable(obj):
+            continue
+        if getattr(obj, "__module__", None) != module_name:
+            continue  # re-exports are documented in their owning module
+        try:
+            sig = str(inspect.signature(obj))
+        except (TypeError, ValueError):
+            continue
+        pairs.append((name, sig))
+    return pairs
+
+
+def _live_signature_markdown(package_name: str) -> str:
+    """Render the live-signature subpage content for a workspace package."""
+    record = next(
+        (r for r in workspace_package_records() if r.name == package_name),
+        None,
+    )
+    if record is None or record.state != "shipped-py":
+        return ""
+
+    pairs = _public_callables(record.module_name)
+    if not pairs:
+        return ""
+
+    # Body-only: the surrounding stub at packages/<name>/<showcase>.md
+    # provides the page anchor and H1 so Sphinx finds a page title at
+    # parse time (same constraint the package-landing directive learned
+    # in E2). Directives that emit H1 via parse_text_to_nodes do NOT
+    # set the page title — Sphinx's title extraction has already run.
+    lines = [
+        f"Public callables in `{record.module_name}` rendered from the "
+        "running interpreter at docs-build time. Drift between this "
+        "block and the prose elsewhere on the page indicates a stale "
+        "docstring or signature comment.",
+        "",
+    ]
+    for name, sig in pairs:
+        lines.append(f"### `{name}`")
+        lines.append("")
+        lines.append("```python")
+        lines.append(f"def {name}{sig}:")
+        lines.append("    ...")
+        lines.append("```")
+        lines.append("")
+    return "\n".join(lines)
+
+
+class LiveSignatureDirective(SphinxDirective):
+    """Render runtime-introspected signatures for a workspace package's module.
+
+    Imports the package's module and emits a ``### <name>`` section per
+    public callable showing its live signature. Use on a package's
+    ``signatures.md`` subpage when the author has opted in via
+    ``[tool.gp-sphinx.docs].showcase = ["signatures"]``.
+
+    No inline JavaScript is emitted by this directive; the signatures
+    are rendered server-side at build time. (Risk 7 in the woven
+    plan — Cloudflare Rocket Loader interaction — does not apply.)
+
+    Usage in ``packages/<name>/docs/signatures.md``::
+
+        ```{live-signature} sphinx-fonts
+        ```
+    """
+
+    required_arguments = 1
     has_content = False
 
     def run(self) -> list[nodes.Node]:
-        return self.parse_text_to_nodes(workspace_package_grid_markdown())
+        package_name = self.arguments[0].strip()
+        markdown = _live_signature_markdown(package_name)
+        if not markdown:
+            logger.warning(
+                "live-signature: no public callables for %r",
+                package_name,
+            )
+            return []
+        return self.parse_text_to_nodes(markdown)
+
+
+def _kitchen_sink_markdown(package_name: str) -> str:
+    """Render a kitchen-sink subpage exercising every directive a package registers.
+
+    Reads the package's collected surface (via collect_extension_surface)
+    and emits one example invocation per directive. Roles get an inline
+    cross-reference example. The page is a single discoverable place
+    where every directive and role is exercised, useful for quick
+    visual regressions and as a reference card for downstream authors.
+    """
+    record = next(
+        (r for r in workspace_package_records() if r.name == package_name),
+        None,
+    )
+    if record is None or record.state != "shipped-py":
+        return ""
+
+    blocks = [
+        collect_extension_surface(module)
+        for module in extension_modules(record.module_name)
+    ]
+    directives_seen: list[str] = []
+    roles_seen: list[str] = []
+    for block in blocks:
+        directives_seen.extend(item["name"] for item in block["directives"])
+        roles_seen.extend(item["name"] for item in block["roles"])
+
+    if not directives_seen and not roles_seen:
+        return ""
+
+    # Body-only: stub supplies anchor + H1 so Sphinx finds a page title.
+    lines = [
+        "Every directive and role this package registers, exercised once "
+        "on the same page — useful as a reference card for downstream "
+        "authors and as a visual-regression target.",
+        "",
+    ]
+    if directives_seen:
+        lines.append("## Directives")
+        lines.append("")
+        for name in sorted(set(directives_seen)):
+            lines.append(f"### `{name}`")
+            lines.append("")
+            # Use the rst lang tag (pygments alias "rst" -> RstLexer)
+            # so the .. directive:: invocation syntax tokenizes —
+            # without it the block ships as <div class="highlight-text">
+            # (no token spans, plain text). RstLexer renders ".." as
+            # Punctuation, the directive name as Operator.Word, and
+            # "::" as Punctuation, matching the visual treatment the
+            # parallel package tutorials get via {eval-rst} fences.
+            lines.append("```rst")
+            lines.append(f".. {name}::")
+            lines.append("```")
+            lines.append("")
+    if roles_seen:
+        lines.append("## Roles")
+        lines.append("")
+        for name in sorted(set(roles_seen)):
+            lines.append(f"- `:{name}:` cross-reference")
+        lines.append("")
+    return "\n".join(lines)
+
+
+class PackageKitchenSinkDirective(SphinxDirective):
+    """Render a kitchen-sink page exercising every directive a package registers.
+
+    Renders one example block per directive plus a list of registered
+    roles. Used in the package's optional ``kitchen-sink.md`` showcase
+    subpage when the author has opted in via
+    ``[tool.gp-sphinx.docs].showcase = ["kitchen-sink"]``.
+
+    Pairs with an out-of-band ``tox -e docs-screenshot`` Playwright
+    job that captures the rendered HTML as a PNG for
+    ``sphinx-gp-opengraph`` to use as the per-package OG image.
+    The screenshot step is **not** part of the docs build, so the
+    "pure function of disk state" CI gate (Risk 3) is not affected.
+
+    Usage in ``packages/<name>/docs/kitchen-sink.md``::
+
+        ```{package-kitchen-sink} sphinx-autodoc-fastmcp
+        ```
+    """
+
+    required_arguments = 1
+    has_content = False
+
+    def run(self) -> list[nodes.Node]:
+        package_name = self.arguments[0].strip()
+        markdown = _kitchen_sink_markdown(package_name)
+        if not markdown:
+            logger.warning(
+                "package-kitchen-sink: no surface for %r",
+                package_name,
+            )
+            return []
+        return self.parse_text_to_nodes(markdown)
+
+
+def _surface_snapshot_path(package_name: str) -> pathlib.Path:
+    """Return the path to a package's stored surface snapshot."""
+    return (
+        workspace_root()
+        / "docs"
+        / "_static"
+        / "surface-snapshots"
+        / f"{package_name}.json"
+    )
+
+
+def _current_surface_keys(record: PackageDocsRecord) -> set[str]:
+    """Return the union of registered directives + roles + config-values names.
+
+    A flat ``set[str]`` of ``"<kind>:<name>"`` keys per registered
+    surface item is enough to detect adds / removes between releases.
+    """
+    blocks = [
+        collect_extension_surface(module)
+        for module in extension_modules(record.module_name)
+    ]
+    keys: set[str] = set()
+    for block in blocks:
+        keys.update(f"directive:{item['name']}" for item in block["directives"])
+        keys.update(f"role:{item['name']}" for item in block["roles"])
+        keys.update(f"config:{item['name']}" for item in block["config_values"])
+    return keys
+
+
+def _surface_changelog_markdown(package_name: str) -> str:
+    """Render the surface-diff subpage comparing live surface vs snapshot.
+
+    Reads ``docs/_static/surface-snapshots/<package>.json`` (a JSON
+    array of surface keys captured at the previous release tag).
+    Renders Added / Removed / Unchanged sections.
+    """
+    record = next(
+        (r for r in workspace_package_records() if r.name == package_name),
+        None,
+    )
+    if record is None or record.state != "shipped-py":
+        return ""
+
+    current = _current_surface_keys(record)
+    snapshot_path = _surface_snapshot_path(package_name)
+    if snapshot_path.is_file():
+        snapshot_keys = set(json.loads(snapshot_path.read_text(encoding="utf-8")))
+    else:
+        snapshot_keys = set()
+
+    added = sorted(current - snapshot_keys)
+    removed = sorted(snapshot_keys - current)
+    unchanged = sorted(current & snapshot_keys)
+
+    # Body-only: stub supplies anchor + H1 so Sphinx finds a page title.
+    lines = [
+        "Comparison of the package's currently-registered directives, "
+        "roles, and config values against the snapshot stored at "
+        f"`docs/_static/surface-snapshots/{package_name}.json`.",
+        "",
+    ]
+    if not snapshot_path.is_file():
+        lines.append(
+            "**No prior snapshot recorded.** Capture the current surface "
+            f"by writing it to `docs/_static/surface-snapshots/{package_name}.json` "
+            "before the next release.",
+        )
+        lines.append("")
+    if added:
+        lines.append("## Added")
+        lines.append("")
+        lines.extend(f"- `{key}`" for key in added)
+        lines.append("")
+    if removed:
+        lines.append("## Removed")
+        lines.append("")
+        lines.extend(f"- `{key}`" for key in removed)
+        lines.append("")
+    if unchanged:
+        lines.append(f"## Unchanged ({len(unchanged)})")
+        lines.append("")
+        lines.append("Stable across this release window.")
+        lines.append("")
+    return "\n".join(lines)
+
+
+class SurfaceChangelogDirective(SphinxDirective):
+    """Diff a package's current surface against a snapshotted previous version.
+
+    Reads the JSON snapshot at
+    ``docs/_static/surface-snapshots/<package>.json`` (typically
+    captured at the previous release tag) and reports Added /
+    Removed / Unchanged surface keys. Use on the package's optional
+    ``surface-diff.md`` showcase subpage.
+
+    Usage in ``packages/<name>/docs/surface-diff.md``::
+
+        ```{surface-changelog} sphinx-autodoc-fastmcp
+        ```
+    """
+
+    required_arguments = 1
+    has_content = False
+
+    def run(self) -> list[nodes.Node]:
+        package_name = self.arguments[0].strip()
+        markdown = _surface_changelog_markdown(package_name)
+        if not markdown:
+            logger.warning(
+                "surface-changelog: nothing to diff for %r",
+                package_name,
+            )
+            return []
+        return self.parse_text_to_nodes(markdown)
+
+
+def _package_dependents(target: str) -> list[str]:
+    """Return workspace packages that depend on ``target`` per pyproject.toml.
+
+    Walks every shipped-py record and reads the ``[project].dependencies``
+    array from its manifest, plus ``[tool.uv.sources]`` for workspace
+    pin entries. Returns the set of dependents sorted alphabetically.
+    """
+    dependents: set[str] = set()
+    for record in workspace_package_records():
+        if record.state != "shipped-py" or record.manifest_path is None:
+            continue
+        if record.name == target:
+            continue
+        with record.manifest_path.open("rb") as handle:
+            manifest = tomllib.load(handle)
+        deps = manifest.get("project", {}).get("dependencies", [])
+        for dep_spec in deps:
+            # dep_spec is e.g. "sphinx-ux-badges>=0.0.1" or just "sphinx-ux-badges"
+            dep_name = (
+                str(dep_spec)
+                .split(">")[0]
+                .split("=")[0]
+                .split("<")[0]
+                .split("!")[0]
+                .split("~")[0]
+                .split(";")[0]
+                .strip()
+                # PEP 508: extras may appear in []; strip them
+                .split("[")[0]
+                .strip()
+            )
+            if dep_name == target:
+                dependents.add(record.name)
+    return sorted(dependents)
+
+
+def _package_dependents_markdown(package_name: str) -> str:
+    """Render the dependents subpage for a package.
+
+    Reverse-intersphinx: which workspace packages import or extend
+    ``package_name``? Each becomes a Sphinx ``:doc:`` cross-reference
+    so navigation lands on the dependent's per-package landing.
+    """
+    record = next(
+        (r for r in workspace_package_records() if r.name == package_name),
+        None,
+    )
+    if record is None:
+        return ""
+
+    dependents = _package_dependents(package_name)
+    # Body-only: stub supplies anchor + H1 so Sphinx finds a page title.
+    lines = [
+        f"Workspace packages that declare a `{package_name}` dependency in "
+        "their `pyproject.toml` `[project].dependencies` array.",
+        "",
+    ]
+    if not dependents:
+        lines.append(
+            "_No workspace package currently depends on this one._",
+        )
+        lines.append("")
+    else:
+        # Use absolute docnames (leading slash) so cross-references
+        # resolve from the source root, not the current page's dir.
+        lines.extend(f"- {{doc}}`/packages/{dep}/index`" for dep in dependents)
+        lines.append("")
+    return "\n".join(lines)
+
+
+class PackageDependentsDirective(SphinxDirective):
+    """Render reverse-intersphinx: workspace packages that depend on this one.
+
+    Walks every shipped-py package's ``pyproject.toml`` and lists
+    those whose ``[project].dependencies`` include the named package.
+    Use on the package's optional ``dependents.md`` showcase subpage.
+
+    Usage in ``packages/<name>/docs/dependents.md``::
+
+        ```{package-dependents} sphinx-ux-badges
+        ```
+    """
+
+    required_arguments = 1
+    has_content = False
+
+    def run(self) -> list[nodes.Node]:
+        package_name = self.arguments[0].strip()
+        markdown = _package_dependents_markdown(package_name)
+        if not markdown:
+            logger.warning(
+                "package-dependents: unknown package %r",
+                package_name,
+            )
+            return []
+        return self.parse_text_to_nodes(markdown)
+
+
+class WorkspacePackageGridDirective(SphinxDirective):
+    """Render the workspace package index grid.
+
+    By default emits a single grid of every Python-shipped package
+    (backward compatible). Pass ``:groups: by-cluster`` to instead
+    emit one grid per sidebar cluster, with headings, framing prose,
+    and Emerging packages rendered as GitHub-linked cards.
+
+    Usage in ``docs/packages/index.md``::
+
+        ```{workspace-package-grid}
+        ```
+
+        ```{workspace-package-grid}
+        :groups: by-cluster
+        ```
+    """
+
+    has_content = False
+    option_spec = {  # noqa: RUF012
+        "groups": lambda v: str(v).strip(),
+    }
+
+    def run(self) -> list[nodes.Node]:
+        groups = self.options.get("groups")
+        markdown = workspace_package_grid_markdown(groups=groups)
+        return self.parse_text_to_nodes(markdown)
 
 
 def setup(app: t.Any) -> dict[str, object]:
@@ -751,8 +2005,15 @@ def setup(app: t.Any) -> dict[str, object]:
     True
     """
     ensure_workspace_imports()
+    app.add_directive("package-landing", PackageLandingDirective)
+    app.add_directive("cluster-toctree", ClusterToctreeDirective)
+    app.add_directive("live-signature", LiveSignatureDirective)
+    app.add_directive("package-kitchen-sink", PackageKitchenSinkDirective)
+    app.add_directive("surface-changelog", SurfaceChangelogDirective)
+    app.add_directive("package-dependents", PackageDependentsDirective)
     app.add_directive("package-reference", PackageReferenceDirective)
     app.add_directive("workspace-package-grid", WorkspacePackageGridDirective)
+    app.add_role("subpage-exists", subpage_exists_role)
     app.connect("env-check-consistency", _register_extension_objects)
     return {
         "parallel_read_safe": True,

@@ -10,17 +10,17 @@ stack works.  See the {doc}`gallery` for a visual showcase.
 
 Two new foundational packages form the core of the rendering pipeline:
 
-- {doc}`sphinx-ux-autodoc-layout <packages/sphinx-ux-autodoc-layout>` — componentized
+- {doc}`sphinx-ux-autodoc-layout <packages/sphinx-ux-autodoc-layout/index>` — componentized
   autodoc output with semantic regions, parameter folding, managed signatures,
   and card containers.
-- {doc}`sphinx-autodoc-typehints-gp <packages/sphinx-autodoc-typehints-gp>` — single-package
+- {doc}`sphinx-autodoc-typehints-gp <packages/sphinx-autodoc-typehints-gp/index>` — single-package
   replacement for `sphinx-autodoc-typehints` and `sphinx.ext.napoleon`.
   Resolves annotations statically at build time with no monkey-patching.
 
 ## Unified badge system
 
 All badge colours have been consolidated into
-{doc}`sphinx-ux-badges <packages/sphinx-ux-badges>`.  Every
+{doc}`sphinx-ux-badges <packages/sphinx-ux-badges/index>`.  Every
 downstream package references `SAB.*` constants instead of maintaining its
 own colour classes — one palette, thirty-plus colour variants, full
 light/dark theming.
@@ -28,19 +28,19 @@ light/dark theming.
 ## Shared layout stack
 
 The autodoc extensions
-({doc}`api-style <packages/sphinx-autodoc-api-style>`,
-{doc}`argparse <packages/sphinx-autodoc-argparse>`,
-{doc}`docutils <packages/sphinx-autodoc-docutils>`,
-{doc}`fastmcp <packages/sphinx-autodoc-fastmcp>`,
-{doc}`pytest-fixtures <packages/sphinx-autodoc-pytest-fixtures>`,
-{doc}`sphinx <packages/sphinx-autodoc-sphinx>`)
+({doc}`api-style <packages/sphinx-autodoc-api-style/index>`,
+{doc}`argparse <packages/sphinx-autodoc-argparse/index>`,
+{doc}`docutils <packages/sphinx-autodoc-docutils/index>`,
+{doc}`fastmcp <packages/sphinx-autodoc-fastmcp/index>`,
+{doc}`pytest-fixtures <packages/sphinx-autodoc-pytest-fixtures/index>`,
+{doc}`sphinx <packages/sphinx-autodoc-sphinx/index>`)
 now all share the same layout, badge, and typehint infrastructure.  A
 change in the foundational layout package propagates instantly and
 consistently.
 
 ## argparse Sphinx domain
 
-{doc}`sphinx-autodoc-argparse <packages/sphinx-autodoc-argparse>` now
+{doc}`sphinx-autodoc-argparse <packages/sphinx-autodoc-argparse/index>` now
 ships a real Sphinx `Domain` subclass.  Programs, options, subcommands,
 and positional arguments are individually addressable via
 `:argparse:program:`, `:argparse:option:`, `:argparse:subcommand:`, and
@@ -79,7 +79,7 @@ builds.  This makes tests faster, more precise, and easier to debug.
 
 ## sphinx-vite-builder: Vite + pnpm orchestration end-to-end
 
-{doc}`sphinx-vite-builder <packages/sphinx-vite-builder>` consolidates
+{doc}`sphinx-vite-builder <packages/sphinx-vite-builder/index>` consolidates
 the workspace's Vite story into a single package with three orthogonal
 activation paths sharing one async-subprocess core:
 

@@ -45,3 +45,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sphinx_gp_theme"]
+
+[tool.gp-sphinx.docs]
+# Theme consumed by gp-sphinx workspace projects; surfaces the
+# dependent relationship from the theme's own landing.
+showcase = ["dependents"]

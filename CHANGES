@@ -18,6 +18,35 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Bug fixes
+
+#### `gp-sphinx`: MystLexer highlights `:::{directive}` colon-fences
+
+Embedded MyST snippets that use the colon-fence directive syntax now
+tokenize correctly when rendered through `pygments` (e.g. inside
+`.. code-block:: myst`). Previously the fence and body fell through
+to plain text. (#33)
+
+### Documentation
+
+#### Per-package documentation tree
+
+Workspace packages now ship per-package directories with Diátaxis
+subpages (`tutorial`, `how-to`, `reference`, `explanation`,
+`examples`); the sidebar nests subpages under their package. New
+`{package-landing}` and `{cluster-toctree}` directives derive
+landings and sidebar leaves from a `PackageDocsRecord` schema that
+reads both `pyproject.toml` and `package.json` manifests, so JS-only
+packages like `@gp-sphinx/furo-tokens` sit alongside the Python
+ones. Legacy `/packages/<name>.html` URLs continue to resolve. (#33)
+
+#### Showcase opt-in directives
+
+`{live-signature}`, `{package-kitchen-sink}`, `{surface-changelog}`,
+and `{package-dependents}` opt in via
+`[tool.gp-sphinx.docs].showcase` for richer per-package landings.
+(#33)
+
 ## gp-sphinx 0.0.1a16 (2026-05-03)
 
 ### What's new

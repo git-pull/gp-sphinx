@@ -34,3 +34,9 @@ dependencies = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sphinx_autodoc_typehints_gp"]
+
+[tool.gp-sphinx.docs]
+# Foundational typehint normalization library — five workspace
+# packages depend on it. The dependents subpage surfaces that
+# fan-out from the package's own landing.
+showcase = ["dependents"]
