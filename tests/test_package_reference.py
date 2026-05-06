@@ -83,11 +83,20 @@ def test_workspace_package_records_pypi_url_only_for_python_packages() -> None:
 
 
 def test_workspace_package_records_npm_url_only_for_js_packages() -> None:
-    """Npm URLs are populated for shipped-js records and absent elsewhere."""
+    """Npm URLs are populated for shipped-js records and absent elsewhere.
+
+    The npm web UI serves scoped packages at ``/package/@scope/name``
+    with the literal ``@`` and ``/`` — pinning the URL form here so a
+    future regression that percent-encodes the slash gets caught
+    (the resulting ``%2f`` URL 404s on npmjs.com).
+    """
     records = package_reference.workspace_package_records()
     for record in records:
         if record.state == "shipped-js":
             assert record.npm_url is not None
+            assert record.npm_url == f"https://www.npmjs.com/package/{record.name}", (
+                f"npm_url for {record.name} should preserve the manifest name verbatim"
+            )
         else:
             assert record.npm_url is None
 

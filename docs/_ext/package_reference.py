@@ -394,7 +394,10 @@ def _package_record_from_dir(pkg_dir: pathlib.Path) -> PackageDocsRecord | None:
     if package_json_path.is_file():
         manifest = json.loads(package_json_path.read_text(encoding="utf-8"))
         name = str(manifest.get("name", pkg_dir.name))
-        npm_slug = name.lstrip("@").replace("/", "%2f") if name else pkg_dir.name
+        # The npm web UI accepts the literal ``@scope/name`` form for
+        # scoped packages — percent-encoding the ``/`` (or stripping the
+        # ``@``) produces a 404. Pass the manifest name straight through.
+        npm_slug = name if name else pkg_dir.name
         return PackageDocsRecord(
             name=name,
             state="shipped-js",
