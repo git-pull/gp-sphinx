@@ -40,10 +40,10 @@ which establishes the precedent of post-parse pattern dispatch over
 
 from __future__ import annotations
 
+import html
 import io
 import re
 import typing as t
-from html import escape
 
 from docutils import nodes
 from docutils.transforms import Transform
@@ -160,7 +160,7 @@ def _bare_rst_role_html(text: str) -> str:
     >>> _bare_rst_role_html(":argparse:program:")
     '<span class="na">:argparse:program:</span>'
     """
-    return f'<span class="na">{escape(text)}</span>'
+    return f'<span class="na">{html.escape(text)}</span>'
 
 
 def _inline_html_for(text: str) -> str | None:
