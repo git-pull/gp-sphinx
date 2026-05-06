@@ -30,7 +30,7 @@ from __future__ import annotations
 import typing as t
 
 from pygments.lexers.markup import MarkdownLexer, RstLexer
-from pygments.token import String, Whitespace
+from pygments.token import Name, String, Text, Whitespace
 
 if t.TYPE_CHECKING:
     import re
@@ -60,7 +60,15 @@ class MystLexer(MarkdownLexer):
     >>> tokens = [(str(tok), v) for tok, v in lexer.get_tokens("Hello")]
     >>> any(v == "Hello" for _, v in tokens)
     True
-    """
+
+    Triple-colon fences (MyST ``colon_fence`` extension) tokenize the
+    opening, option keys, and closing markers so source samples
+    documenting MyST directives render with proper highlighting:
+
+    >>> tokens = tokenize_myst(":::{note}\\nhi\\n:::\\n")
+    >>> any(":::{note}" == v for _, v in tokens)
+    True
+    """  # noqa: D301 - backslashes are in doctest code, not escape sequences
 
     name = "MyST Markdown"
     aliases: t.ClassVar[list[str]] = ["myst", "myst-md"]
@@ -124,6 +132,97 @@ class MystLexer(MarkdownLexer):
 
         yield match.start("closing"), String.Backtick, match.group("closing")
 
+    def _handle_colon_fence(
+        self,
+        match: re.Match[str],
+    ) -> t.Iterator[tuple[int, _TokenType, str]]:
+        """Lex a ``:::{<directive>}`` colon-fenced block (MyST ``colon_fence``).
+
+        Emits the opening ``:::{name}`` line and the closing ``:::`` line
+        as ``String.Backtick`` (matching how :meth:`_handle_eval_rst`
+        renders fence boundaries). Within the body, lines matching the
+        ``:<key>: <value>`` MyST option syntax tokenize the key as
+        ``Name.Tag`` (RST-style option-list convention) and the value as
+        ``Text``; remaining body content is ``Text``.
+
+        Parameters
+        ----------
+        match : re.Match[str]
+            Regex match with named groups ``opening``, ``newline``,
+            ``body``, and ``closing``.
+
+        Yields
+        ------
+        tuple[int, _TokenType, str]
+            ``(offset, token_type, value)`` triples whose offsets are
+            relative to the start of the full document, suitable for
+            ``get_tokens_unprocessed``.
+
+        Notes
+        -----
+        Handles exactly three colons (``:::``). Four-or-more-colon
+        variants (``::::{name}``) are a known MyST feature but are not
+        currently in scope; if they appear later, capture the opening
+        colon count and require the closing count to match via a
+        backreference.
+
+        Body content is emitted as plain ``Text`` (plus ``Name.Tag`` for
+        option keys). MyST directive bodies vary by directive — e.g.
+        ``:::{grid}`` carries sphinx-design markup, ``:::{tab-set}``
+        carries inline content — so a single inner-language delegation
+        is not appropriate. Specialized inner highlighting can be added
+        per directive in a follow-up.
+
+        Examples
+        --------
+        >>> tokens = tokenize_myst(
+        ...     ":::{auto-pytest-plugin} my_project.pp\\n"
+        ...     ":package: my-project\\n"
+        ...     ":::\\n"
+        ... )
+        >>> any(":::{auto-pytest-plugin}" in v for _, v in tokens)
+        True
+        >>> any("Name.Tag" in tok and v == ":package:" for tok, v in tokens)
+        True
+        """  # noqa: D301 - backslashes are in doctest code, not escape sequences
+        import re as _re
+
+        yield match.start("opening"), String.Backtick, match.group("opening")
+        yield match.start("newline"), Whitespace, match.group("newline")
+
+        body = match.group("body")
+        body_offset = match.start("body")
+        # Walk the body line-by-line. Lines matching ``:<key>:[ <value>]``
+        # tokenize the key as Name.Tag; everything else is Text.
+        # Pattern: leading ``:``, identifier, trailing ``:``, then
+        # optional whitespace + value through end of line.
+        option_re = _re.compile(r"^(:[\w\-]+:)([^\n]*)(\n)", _re.MULTILINE)
+        cursor = 0
+        for option_match in option_re.finditer(body):
+            # Emit any text between the previous match end and this
+            # match's start as plain Text.
+            if option_match.start() > cursor:
+                preceding = body[cursor : option_match.start()]
+                yield body_offset + cursor, Text, preceding
+            yield (
+                body_offset + option_match.start(1),
+                Name.Tag,
+                option_match.group(1),
+            )
+            value = option_match.group(2)
+            if value:
+                yield body_offset + option_match.start(2), Text, value
+            yield (
+                body_offset + option_match.start(3),
+                Whitespace,
+                option_match.group(3),
+            )
+            cursor = option_match.end()
+        if cursor < len(body):
+            yield body_offset + cursor, Text, body[cursor:]
+
+        yield match.start("closing"), String.Backtick, match.group("closing")
+
     # tokens must be declared AFTER _handle_eval_rst because the class
     # body is executed sequentially and the dict literal references
     # _handle_eval_rst by name.
@@ -149,6 +248,27 @@ class MystLexer(MarkdownLexer):
                     r"(?P<closing>^```[ \t]*$\n?)"
                 ),
                 _handle_eval_rst,
+            ),
+            # Triple-colon fence (MyST colon_fence extension):
+            # :::{<directive>}[ <info-string>] ... :::
+            #
+            # The MarkdownLexer parent has no rule for these so they
+            # fall through to plain Token.Text without this handler.
+            # Handles exactly three colons; four-or-more variants are
+            # out of scope (see _handle_colon_fence Notes).
+            (
+                (
+                    # group opening: ::: fence + braced directive name +
+                    # optional info string (e.g. :::{tab-set} centered)
+                    r"(?P<opening>^:::\{[\w\-]+\}[^\n]*)"
+                    r"(?P<newline>\n)"
+                    # group body: directive content, non-greedy to stop
+                    # at the first closing fence
+                    r"(?P<body>(?:.|\n)*?)"
+                    # group closing: bare ::: at start of line
+                    r"(?P<closing>^:::[ \t]*$\n?)"
+                ),
+                _handle_colon_fence,
             ),
             # All MarkdownLexer root rules follow unchanged, providing
             # highlighting for normal fenced code blocks, inline code,

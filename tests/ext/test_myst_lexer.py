@@ -229,3 +229,101 @@ def test_tokenize_myst_helper() -> None:
 def test_tokenize_myst_returns_backtick_for_eval_rst() -> None:
     tokens = tokenize_myst("```{eval-rst}\nHello RST\n```\n")
     assert (_BACKTICK, "```{eval-rst}") in tokens
+
+
+# ---------------------------------------------------------------------------
+# Colon-fence (MyST colon_fence extension): :::{<directive>} ... :::
+# ---------------------------------------------------------------------------
+
+
+_NAME_TAG = "Token.Name.Tag"
+
+
+class ColonFenceFixture(t.NamedTuple):
+    """Fixture for :::{...} colon-fence tokenization assertions."""
+
+    test_id: str
+    input_text: str
+    expected_contains: list[tuple[str, str]]
+
+
+COLON_FENCE_FIXTURES: list[ColonFenceFixture] = [
+    ColonFenceFixture(
+        test_id="opening_is_backtick",
+        input_text=":::{note}\nhi\n:::\n",
+        expected_contains=[(_BACKTICK, ":::{note}")],
+    ),
+    ColonFenceFixture(
+        test_id="opening_with_info_string",
+        input_text=":::{auto-pytest-plugin} my_project.pp\n:::\n",
+        expected_contains=[
+            (_BACKTICK, ":::{auto-pytest-plugin} my_project.pp"),
+        ],
+    ),
+    ColonFenceFixture(
+        test_id="closing_is_backtick",
+        input_text=":::{note}\nhi\n:::\n",
+        expected_contains=[(_BACKTICK, ":::\n")],
+    ),
+    ColonFenceFixture(
+        test_id="option_key_is_name_tag",
+        input_text=":::{auto-pytest-plugin} my_project.pp\n:package: my-project\n:::\n",
+        expected_contains=[(_NAME_TAG, ":package:")],
+    ),
+    ColonFenceFixture(
+        test_id="hyphenated_directive_name",
+        input_text=":::{tab-set}\nbody\n:::\n",
+        expected_contains=[(_BACKTICK, ":::{tab-set}")],
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(ColonFenceFixture._fields),
+    COLON_FENCE_FIXTURES,
+    ids=[f.test_id for f in COLON_FENCE_FIXTURES],
+)
+def test_colon_fence_markers(
+    test_id: str,
+    input_text: str,
+    expected_contains: list[tuple[str, str]],
+) -> None:
+    """Colon-fence tokenization emits the expected token types."""
+    tokens = get_tokens(input_text)
+    for tok, val in expected_contains:
+        assert (tok, val) in tokens, (
+            f"Expected ({tok!r}, {val!r}) in tokens for test_id={test_id!r}\n"
+            f"Got: {tokens}"
+        )
+
+
+def test_colon_fence_user_failing_snippet_round_trip() -> None:
+    """The exact snippet from sphinx-autodoc-pytest-fixtures/tutorial.md.
+
+    Regression guard: this snippet was the original report — pygments'
+    MarkdownLexer (and the workspace's MystLexer extension) had no rule
+    for ``:::`` colon fences, so the entire block fell through to plain
+    ``Token.Text`` and the rendered HTML was unstyled. Tokenizing must
+    now produce both fence boundaries as ``String.Backtick`` and the
+    option key as ``Name.Tag``.
+    """
+    snippet = (
+        ":::{auto-pytest-plugin} my_project.pytest_plugin\n:package: my-project\n:::\n"
+    )
+    tokens = tokenize_myst(snippet)
+    assert (_BACKTICK, ":::{auto-pytest-plugin} my_project.pytest_plugin") in tokens
+    assert (_NAME_TAG, ":package:") in tokens
+    assert (_BACKTICK, ":::\n") in tokens
+
+
+def test_colon_fence_does_not_match_inline_colon_text() -> None:
+    """Inline text starting with `:::` mid-line stays as Text, not a fence.
+
+    The opening rule anchors `^:::` at the start of a line, so prose
+    like ``Note: :::-style`` doesn't accidentally trigger fence
+    tokenization.
+    """
+    tokens = tokenize_myst("Some inline :::not-a-fence text\n")
+    # No String.Backtick spans should be emitted from this prose
+    backticks = [val for tok, val in tokens if tok == _BACKTICK]
+    assert backticks == []
