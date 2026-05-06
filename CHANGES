@@ -18,56 +18,6 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
-### What's new
-
-#### Per-package documentation tree
-
-Every package's flat `docs/packages/<name>.md` page now expands into
-a per-package directory carrying Diátaxis-shaped subpages: `index.md`
-(a 2-line stub rendered by the new `{package-landing}` directive),
-`tutorial.md`, `how-to.md`, `reference.md`, `explanation.md`,
-`examples.md`, plus opt-in subpages where appropriate (e.g.
-`errors.md`, `cli.md`). The sidebar nests subpages under each
-package — a reader on the workspace landing sees package names; a
-reader inside a package sees its sibling subpages indented under it.
-
-Adding a new package now touches `pyproject.toml` (or
-`package.json`) only. The `package-landing` directive synthesizes
-the landing markup at build time from a new `PackageDocsRecord`
-schema; the `cluster-toctree` directive emits the sidebar leaves
-from the same schema. Six hand-edited toctree blocks in
-`docs/index.md` collapsed to five `cluster-toctree` directive calls
-covering Autodoc, UX, Tokens, Theme & coordinator, Build & SEO.
-
-Cross-references (`{doc}`, `{ref}`, `:py:func:`) survive the move:
-the `_register_extension_objects()` registration site at
-`package_reference.py` now branches on per-package directory
-existence, registering against `packages/<name>/reference` once that
-docname appears in `env.found_docs` and falling back to the legacy
-flat docname during the migration window.
-
-#### Showcase opt-in directives
-
-Four optional directives ship for packages whose authors want
-specialized landings: `{live-signature}` renders runtime-introspected
-signatures from the package's module to surface drift between source
-and docstring; `{package-kitchen-sink}` emits one example per
-registered directive plus a list of registered roles for a
-Playwright snapshot job to capture as the per-package OG image;
-`{surface-changelog}` diffs the current registered surface against a
-JSON snapshot at `docs/_static/surface-snapshots/<name>.json`;
-`{package-dependents}` walks workspace `pyproject.toml` files and
-emits reverse-intersphinx links to packages that depend on the
-named one. Each is opt-in via `[tool.gp-sphinx.docs].showcase`.
-
-#### Workspace inventory now dual-source
-
-`workspace_package_records()` discovers packages with either a
-`pyproject.toml` (Python-shipped) or a `package.json` (JS-only)
-manifest, plus an `emerging` state for directories without either.
-The Tokens cluster now houses both `sphinx-fonts` (Python) and
-`@gp-sphinx/furo-tokens` (JS) under one caption.
-
 ### Bug fixes
 
 #### `gp-sphinx`: MystLexer highlights `:::{directive}` colon-fences
@@ -77,34 +27,25 @@ tokenize correctly when rendered through `pygments` (e.g. inside
 `.. code-block:: myst`). Previously the fence and body fell through
 to plain text. (#33)
 
-### CI gates
+### Documentation
 
-A new `tests/docs/` test package ships:
+#### Per-package documentation tree
 
-- `test_no_filler.py` — denylist guard catching `TBD`, `XXX`,
-  `FIXME`, `Coming soon`, `intentionally blank`, `Lorem ipsum`,
-  `(write me)`, `placeholder` in any shipped subpage.
-- `test_no_legacy_pages.py` — fails if a flat `<name>.md`
-  co-exists with a per-package `<name>/` directory.
-- `test_sidebar_density.py` — caps the rendered sidebar at
-  `19 * 6 + 30` toctree leaves so future refactors can't explode
-  the navigation.
-- `test_objects_inv_compat.py` — module-scoped Sphinx fixture
-  builds the live docs into a tmp dir, parses
-  `docs/_build/html/objects.inv`, and asserts the live build's
-  inventory is a superset of the committed snapshot at
-  `tests/docs/__snapshots__/objects-inv-baseline.txt`. Rejects
-  any future refactor that drops a py-domain cross-reference
-  target.
+Workspace packages now ship per-package directories with Diátaxis
+subpages (`tutorial`, `how-to`, `reference`, `explanation`,
+`examples`); the sidebar nests subpages under their package. New
+`{package-landing}` and `{cluster-toctree}` directives derive
+landings and sidebar leaves from a `PackageDocsRecord` schema that
+reads both `pyproject.toml` and `package.json` manifests, so JS-only
+packages like `@gp-sphinx/furo-tokens` sit alongside the Python
+ones. Legacy `/packages/<name>.html` URLs continue to resolve. (#33)
 
-### Migration notes
+#### Showcase opt-in directives
 
-Legacy URLs (`/packages/<name>.html`) continue to resolve through
-the existing `rediraffe_redirects` chain — no action required from
-downstream consumers. Internal `{doc}` cross-references in
-`docs/whats-new.md`, `docs/architecture.md`, `docs/packages/index.md`,
-and within the migrated subpages have been updated to point at the
-new per-package landings.
+`{live-signature}`, `{package-kitchen-sink}`, `{surface-changelog}`,
+and `{package-dependents}` opt in via
+`[tool.gp-sphinx.docs].showcase` for richer per-package landings.
+(#33)
 
 ## gp-sphinx 0.0.1a16 (2026-05-03)
 
