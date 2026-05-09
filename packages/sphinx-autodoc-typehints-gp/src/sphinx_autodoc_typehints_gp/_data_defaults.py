@@ -29,55 +29,14 @@ import typing as t
 
 from sphinx.ext.autodoc import AttributeDocumenter, DataDocumenter
 
-from sphinx_autodoc_typehints_gp._param_defaults import (
+from sphinx_autodoc_typehints_gp._resolvers import (
     ResolveContext,
     Resolver,
-    _run_chain,
+    TruncateLongRepr,
+    run_chain,
 )
 
 _VALUE_PREFIX: t.Final = "   :value: "
-
-
-class TruncateLongRepr:
-    """Truncate long ``:value:`` text.
-
-    Returns ``None`` (defer) for parameter contexts and for short
-    reprs; returns ``"<...truncated, N chars>"`` for reprs over the
-    threshold.
-
-    Examples
-    --------
-    >>> r = TruncateLongRepr(threshold=10)
-    >>> r(ResolveContext(
-    ...     value=None,
-    ...     kind='data',
-    ...     qualname='mod.X',
-    ...     param_name=None,
-    ...     default_repr='[1, 2]',
-    ... )) is None
-    True
-    >>> r(ResolveContext(
-    ...     value=None,
-    ...     kind='data',
-    ...     qualname='mod.X',
-    ...     param_name=None,
-    ...     default_repr='this string is longer than ten characters',
-    ... ))
-    '<...truncated, 41 chars>'
-    """
-
-    def __init__(self, threshold: int = 200) -> None:
-        self.threshold = threshold
-
-    def __call__(self, ctx: ResolveContext) -> str | None:
-        """Return a truncated marker if *ctx.default_repr* is too long."""
-        if ctx.kind not in {"data", "attribute"}:
-            return None
-        text = ctx.default_repr
-        if not text or len(text) <= self.threshold:
-            return None
-        return f"<...truncated, {len(text)} chars>"
-
 
 _DATA_RESOLVERS: tuple[Resolver, ...] = (TruncateLongRepr(),)
 
@@ -129,7 +88,7 @@ def _curate_value_line(
         param_name=None,
         default_repr=raw_repr,
     )
-    text = _run_chain(ctx, _DATA_RESOLVERS)
+    text = run_chain(ctx, _DATA_RESOLVERS)
     if text is None:
         return None
     if text == "":

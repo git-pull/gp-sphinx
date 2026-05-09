@@ -7,10 +7,12 @@ import typing as t
 import pytest
 
 from sphinx_autodoc_typehints_gp._data_defaults import (
-    TruncateLongRepr,
     _curate_value_line,
 )
-from sphinx_autodoc_typehints_gp._param_defaults import ResolveContext
+from sphinx_autodoc_typehints_gp._resolvers import (
+    ResolveContext,
+    TruncateLongRepr,
+)
 
 
 def _ctx(default_repr: str, kind: str = "data") -> ResolveContext:

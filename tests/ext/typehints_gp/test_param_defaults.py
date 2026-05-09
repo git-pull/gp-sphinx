@@ -10,10 +10,12 @@ import pytest
 from sphinx.util.inspect import DefaultValue
 
 from sphinx_autodoc_typehints_gp._param_defaults import (
-    DataclassFactoryRepr,
-    ResolveContext,
     _walk_to_dataclass,
     update_synthetic_defvalues,
+)
+from sphinx_autodoc_typehints_gp._resolvers import (
+    DataclassFactoryRepr,
+    ResolveContext,
 )
 
 # ---------------------------------------------------------------------------
