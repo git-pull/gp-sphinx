@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import textwrap
 
 import pytest
@@ -90,27 +91,23 @@ def test_dataclass_factory_defaults_render_as_source_text(
     factory_defaults_html_result: SharedSphinxResult,
 ) -> None:
     """Dataclass default_factory params render source text, not <factory>."""
-    import re
-
     html = read_output(factory_defaults_html_result, "index.html")
 
-    # Extract plain text of every default_value span so we don't depend on
-    # the span/whitespace wrapping Sphinx applies between ``=`` and the value.
-    rendered = {
-        re.sub(r"<[^>]+>", "", m).strip()
-        for m in re.findall(
-            r'class="default_value">([^<]*(?:<[^>]+>[^<]*)*?)</span>',
-            html,
-        )
-    }
-    assert "[]" in rendered, f"missing list factory rendering; got {rendered!r}"
-    assert "{}" in rendered, f"missing dict factory rendering; got {rendered!r}"
-    assert "set()" in rendered, f"missing set factory rendering; got {rendered!r}"
-    # The direct-value default also lands in a default_value span
-    assert "5" in rendered, f"missing direct default; got {rendered!r}"
-    # The raw <factory> sentinel must not appear in the rendered output
+    # The raw <factory> sentinel must not appear anywhere — the contract
+    # of this fix.
     assert "&lt;factory&gt;" not in html
     assert "<factory>" not in html
+
+    # The chosen source-text fragments do appear in the page (each one
+    # may be split across xref / Text nodes by D6's post-transform, so
+    # we look at the plain-text reduction).
+    plain = re.sub(r"<[^>]+>", "", html)
+    plain = plain.replace("&lt;", "<").replace("&gt;", ">").replace("&#160;", " ")
+    plain = re.sub(r"\s+", " ", plain)
+    assert "items: list[int] = []" in plain
+    assert "mapping: dict[str, int] = {}" in plain
+    assert "names: set[str] = set()" in plain
+    assert "count: int = 5" in plain
 
 
 @pytest.mark.integration
