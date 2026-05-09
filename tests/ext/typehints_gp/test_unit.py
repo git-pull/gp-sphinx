@@ -1214,6 +1214,7 @@ def test_setup_registers_builder_inited_cache_clearing() -> None:
         types.SimpleNamespace(
             connect=lambda event, handler, **kw: connections.append((event, handler)),
             add_config_value=lambda *a, **kw: None,
+            add_autodocumenter=lambda *a, **kw: None,
         ),
     )
 

@@ -581,6 +581,10 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     >>> setup  # doctest: +ELLIPSIS
     <function setup at 0x...>
     """
+    from sphinx_autodoc_typehints_gp._data_defaults import (
+        GpAttributeDocumenter,
+        GpDataDocumenter,
+    )
     from sphinx_autodoc_typehints_gp._param_defaults import (
         update_synthetic_defvalues,
     )
@@ -591,6 +595,14 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         rebuild="env",
         types=frozenset({bool}),
     )
+    app.add_config_value(
+        "gp_typehints_curate_data_defaults",
+        default=True,
+        rebuild="env",
+        types=frozenset({bool}),
+    )
+    app.add_autodocumenter(GpDataDocumenter, override=True)
+    app.add_autodocumenter(GpAttributeDocumenter, override=True)
     app.connect("builder-inited", _clear_caches)
     try:
         app.connect("autodoc-process-docstring", process_docstring)
