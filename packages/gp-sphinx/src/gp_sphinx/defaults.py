@@ -232,15 +232,32 @@ Examples
 
 DEFAULT_SPHINX_FONT_PRELOAD: list[tuple[str, int, str]] = [
     ("IBM Plex Sans", 400, "normal"),
+    ("IBM Plex Sans", 500, "normal"),
+    ("IBM Plex Sans", 600, "normal"),
     ("IBM Plex Sans", 700, "normal"),
+    ("IBM Plex Sans", 400, "italic"),
     ("IBM Plex Mono", 400, "normal"),
+    ("IBM Plex Mono", 700, "normal"),
 ]
 """Font preload hints for critical rendering path.
+
+Each entry is ``(family, weight, style)``. Faces in this list are
+emitted as ``<link rel="preload" as="font">`` tags so the browser
+fetches them in parallel with the critical CSS/HTML, before
+``font-display: block`` would otherwise hide text waiting on a
+lazy ``@font-face`` request.
+
+The list covers every face Furo / ``furo-tw.css`` is observed to
+demand above the fold: body (Sans 400), headings + sidebar labels
+(Sans 500), epigraph blockquotes (Sans 600), strong / current
+sidebar (Sans 700), inline ``<em>`` and announcement-bar emphasis
+(Sans 400 italic), code blocks (Mono 400), and bold inline code
+``<strong><code>`` (Mono 700).
 
 Examples
 --------
 >>> len(DEFAULT_SPHINX_FONT_PRELOAD)
-3
+7
 """
 
 DEFAULT_SPHINX_FONT_FALLBACKS: list[dict[str, str]] = [

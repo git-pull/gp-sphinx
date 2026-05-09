@@ -18,6 +18,17 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### What's new
+
+#### `gp-sphinx`: Default font-preload list now covers heading, italic, and bold-code FOUT
+
+`DEFAULT_SPHINX_FONT_PRELOAD` adds IBM Plex Sans 500 / 600 normal
+(`h1`–`h6` and `blockquote.epigraph`), Sans 400 italic (`<em>` body
+text and announcement bars), and Mono 700 normal (bold inline code).
+Downstream consumers that render those surfaces no longer need a
+local `sphinx_font_preload` override to avoid first-paint FOUT.
+(#34)
+
 ### Bug fixes
 
 #### `gp-sphinx`: MystLexer highlights `:::{directive}` colon-fences
