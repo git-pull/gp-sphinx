@@ -13,16 +13,24 @@ walks every ``default_value`` span inside an
 :class:`~sphinx.addnodes.desc_parameter`, ``ast.parse``s its text,
 and replaces the span's plain-text children with a mix of
 ``nodes.Text`` and ``pending_xref`` nodes — using the same
-``:py:class:``-styled ``nodes.literal`` wrapping that Sphinx's
-``XRefRole`` produces in inline prose:
+``:py:obj:``-styled ``nodes.literal`` wrapping that Sphinx's
+``XRefRole`` produces for the generic ``:py:obj:`` role:
 
 .. code-block:: html
 
    <a class="reference internal" href="#mod.Foo" title="mod.Foo">
-     <code class="xref py py-class docutils literal notranslate">
+     <code class="xref py py-obj docutils literal notranslate">
        <span class="pre">Foo</span>
      </code>
    </a>
+
+Why ``:py:obj:`` rather than ``:py:class:``: defaults reference
+arbitrary Python identifiers — classes (``Foo``), module-level data
+constants (libtmux's ``DEFAULT_OPTION_SCOPE``), enum members,
+functions. The Python domain's ``class`` reftype only resolves
+documented classes, so a class-typed xref would leave data-attribute
+targets unlinked (the visible bug behind this design choice). The
+``obj`` reftype resolves any documented Python identifier.
 
 Priority is **5** — strictly below
 :class:`~sphinx.transforms.post_transforms.ReferencesResolver`'s
@@ -57,12 +65,22 @@ def _xref(
     py_module: str | None = None,
     py_class: str | None = None,
 ) -> addnodes.pending_xref:
-    """Build a ``:py:class:``-styled pending_xref for *target*.
+    """Build a ``:py:obj:``-style pending_xref for *target*.
+
+    Default values reference arbitrary Python identifiers — classes,
+    module-level data attributes (libtmux's
+    ``DEFAULT_OPTION_SCOPE``), enum members, functions. The Python
+    domain's ``class`` reftype only resolves documented classes, so
+    using it here would leave data-attribute targets unlinked. The
+    ``obj`` reftype resolves any documented Python identifier and
+    matches the semantics of the inline ``:py:obj:`target``` role.
 
     The contnode is ``nodes.literal('', '', nodes.Text(title),
-    classes=['xref', 'py', 'py-class'])`` — exactly the shape an
-    inline ``:py:class:`target``` role would produce, so the
-    rendered HTML matches that of normal class references.
+    classes=['xref', 'py', 'py-obj'])`` — same shape as the
+    ``:py:obj:`` role; the rendered HTML is
+    ``<a class="reference internal" href="…"><code class="xref py
+    py-obj docutils literal notranslate"><span class="pre">…</span>
+    </code></a>``.
 
     *py_module* and *py_class* mirror the ``ref_context`` keys
     Sphinx's Python domain reads when resolving references. Passing
@@ -75,21 +93,23 @@ def _xref(
     >>> n['reftarget']
     'mod.Foo'
     >>> n['reftype']
-    'class'
+    'obj'
     >>> isinstance(n.children[0], nodes.literal)
     True
+    >>> n.children[0]['classes']
+    ['xref', 'py', 'py-obj']
     """
     literal = nodes.literal(
         "",
         "",
         nodes.Text(title),
-        classes=["xref", "py", "py-class"],
+        classes=["xref", "py", "py-obj"],
     )
     xref = addnodes.pending_xref(
         "",
         literal,
         refdomain="py",
-        reftype="class",
+        reftype="obj",
         reftarget=target,
         refexplicit=False,
         refwarn=False,
@@ -111,10 +131,11 @@ def _ast_to_nodes(
 
     Identifier-emitting branches (``ast.Name``, ``ast.Attribute``)
     produce ``pending_xref`` nodes whose contnode is a
-    ``:py:class:``-styled ``nodes.literal``. Constants emit
-    ``nodes.Text`` matching ``repr(value)``. Containers
-    (Tuple/List/Set) and Call expressions emit punctuation as
-    ``nodes.Text``.
+    ``:py:obj:``-styled ``nodes.literal`` — the canonical XRefRole
+    shape (``classes=['xref', 'py', 'py-obj']``) emitted by
+    :func:`_xref`. Constants emit ``nodes.Text`` matching
+    ``repr(value)``. Containers (Tuple/List/Set) and Call expressions
+    emit punctuation as ``nodes.Text``.
 
     *py_module* / *py_class* are forwarded to every ``pending_xref``
     so that unqualified targets resolve against the surrounding

@@ -22,14 +22,20 @@ from sphinx_autodoc_typehints_gp._default_xref_transform import (
 
 
 def test_xref_builds_pending_xref_with_literal_contnode() -> None:
-    """The pending_xref wraps a `:py:class:`-styled literal."""
+    """The pending_xref wraps a `:py:obj:`-styled literal.
+
+    `obj` is the Python domain's catch-all reftype — it resolves
+    classes, module-level data, functions, and attributes uniformly.
+    Restricting to `class` would leave data-attribute targets like
+    libtmux's `DEFAULT_OPTION_SCOPE` silently unlinked.
+    """
     n = _xref("mod.Foo", "Foo")
     assert n["refdomain"] == "py"
-    assert n["reftype"] == "class"
+    assert n["reftype"] == "obj"
     assert n["reftarget"] == "mod.Foo"
     assert isinstance(n.children[0], nodes.literal)
     literal = n.children[0]
-    assert literal["classes"] == ["xref", "py", "py-class"]
+    assert literal["classes"] == ["xref", "py", "py-obj"]
     assert literal.astext() == "Foo"
 
 

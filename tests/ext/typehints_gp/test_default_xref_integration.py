@@ -93,14 +93,16 @@ def test_default_value_class_renders_as_xref_link(
     """An identifier in a default value renders as the same xref shape as :py:class:."""
     html = read_output(default_xref_html_result, "index.html")
 
-    # The bar() signature must contain a :py:class:-styled xref to Foo,
-    # not plain text. The exact HTML shape from the user's brief:
+    # The bar() signature must contain an :py:obj:-styled xref to Foo,
+    # not plain text. The exact HTML shape:
     # <a class="reference internal" href="#..."
-    #   ><code class="xref py py-class docutils literal notranslate"
+    #   ><code class="xref py py-obj docutils literal notranslate"
     #     ><span class="pre">Foo</span></code></a>
+    # Using py-obj rather than py-class so module-level data
+    # attributes (e.g. libtmux's DEFAULT_OPTION_SCOPE) also resolve.
     assert 'href="#default_xref_demo.Foo"' in html  # resolved link target
     assert 'class="reference internal"' in html  # the <a> wrapping
-    assert 'class="xref py py-class' in html  # the <code> wrapping
+    assert 'class="xref py py-obj' in html  # the <code> wrapping
     # The literal Foo span text appears wrapped in the xref code block
     assert ">Foo<" in html
 
@@ -115,6 +117,83 @@ def test_short_literal_default_remains_text(
     # The literal `0` should appear as a default_value span without an xref
     # wrapping. We check that the constant text is present.
     assert ">0<" in html
+
+
+_DATA_ATTRIBUTE_MODULE_SOURCE = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+
+    class _DefaultScope:
+        \"\"\"Sentinel type whose lone instance below is used as a default.\"\"\"
+
+
+    DEFAULT_SCOPE: _DefaultScope = _DefaultScope()
+    \"\"\"Module-level sentinel referenced by `using_default_scope`.\"\"\"
+
+
+    def using_default_scope(scope: object = DEFAULT_SCOPE) -> None:
+        \"\"\"Function whose `scope` default references DEFAULT_SCOPE data.\"\"\"
+    """
+)
+
+
+@pytest.fixture(scope="module")
+def data_attribute_default_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a project where a default references a module-level data attr."""
+    cache_root = tmp_path_factory.mktemp("default-xref-data-html")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("data_xref_demo.py", _DATA_ATTRIBUTE_MODULE_SOURCE),
+            ScenarioFile(
+                "conf.py",
+                _CONF_PY.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile(
+                "index.rst",
+                textwrap.dedent(
+                    """\
+                    Demo
+                    ====
+
+                    .. autoclass:: data_xref_demo._DefaultScope
+
+                    .. autodata:: data_xref_demo.DEFAULT_SCOPE
+
+                    .. autofunction:: data_xref_demo.using_default_scope
+                    """
+                ),
+            ),
+        ),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("data_xref_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_data_attribute_default_links_to_documented_constant(
+    data_attribute_default_html_result: SharedSphinxResult,
+) -> None:
+    """A default that references a module-level data attribute resolves.
+
+    Reftype ``obj`` (rather than ``class``) is what lets data
+    attributes resolve. Using ``class`` here would silently drop the
+    ``<a>`` wrapping (the original bug behind libtmux's
+    ``DEFAULT_OPTION_SCOPE`` not being linked).
+    """
+    html = read_output(data_attribute_default_html_result, "index.html")
+
+    # The internal link to the documented data attribute resolves
+    assert 'href="#data_xref_demo.DEFAULT_SCOPE"' in html
+    assert 'class="reference internal"' in html
+    # py-obj (not py-class) styling
+    assert 'class="xref py py-obj' in html
 
 
 @pytest.mark.integration
