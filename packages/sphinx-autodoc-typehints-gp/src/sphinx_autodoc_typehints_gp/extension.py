@@ -581,10 +581,24 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     >>> setup  # doctest: +ELLIPSIS
     <function setup at 0x...>
     """
+    from sphinx_autodoc_typehints_gp._param_defaults import (
+        update_synthetic_defvalues,
+    )
+
+    app.add_config_value(
+        "gp_typehints_curate_param_defaults",
+        default=True,
+        rebuild="env",
+        types=frozenset({bool}),
+    )
     app.connect("builder-inited", _clear_caches)
     try:
         app.connect("autodoc-process-docstring", process_docstring)
         app.connect("autodoc-process-signature", record_typehints)
+        # Runs after Sphinx's own update_defvalue (which only handles
+        # regular methods with readable source). Fills the gap for
+        # synthetic dataclass __init__.
+        app.connect("autodoc-before-process-signature", update_synthetic_defvalues)
     except ExtensionError as exc:
         if "Unknown event name" not in str(exc):
             raise
