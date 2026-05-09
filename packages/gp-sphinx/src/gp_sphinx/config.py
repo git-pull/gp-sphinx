@@ -39,6 +39,7 @@ from gp_sphinx.defaults import (
     DEFAULT_AUTODOC_CLASS_SIGNATURE,
     DEFAULT_AUTODOC_MEMBER_ORDER,
     DEFAULT_AUTODOC_OPTIONS,
+    DEFAULT_AUTODOC_PRESERVE_DEFAULTS,
     DEFAULT_AUTODOC_TYPEHINTS,
     DEFAULT_COPYBUTTON_LINE_CONTINUATION_CHARACTER,
     DEFAULT_COPYBUTTON_PROMPT_IS_REGEXP,
@@ -442,6 +443,7 @@ def merge_sphinx_config(
         "autodoc_member_order": DEFAULT_AUTODOC_MEMBER_ORDER,
         "autodoc_class_signature": DEFAULT_AUTODOC_CLASS_SIGNATURE,
         "autodoc_typehints": DEFAULT_AUTODOC_TYPEHINTS,
+        "autodoc_preserve_defaults": DEFAULT_AUTODOC_PRESERVE_DEFAULTS,
         "toc_object_entries_show_parents": DEFAULT_TOC_OBJECT_ENTRIES_SHOW_PARENTS,
         "autodoc_default_options": dict(DEFAULT_AUTODOC_OPTIONS),
         # Copybutton
