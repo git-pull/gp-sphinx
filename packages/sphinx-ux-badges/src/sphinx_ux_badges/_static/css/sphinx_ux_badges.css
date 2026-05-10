@@ -16,6 +16,12 @@
     inset 0 -1px 2px rgba(0, 0, 0, 0.28);
 }
 
+/* All workspace badge rules land in @layer gp-sphinx so precedence is
+ * declarative against Furo's @layer components rather than relying on
+ * accidental "unlayered wins." Layer order is established in
+ * gp-furo-theme/web/src/styles/index.css. */
+@layer gp-sphinx {
+
 /* ── Base badge ─────────────────────────────────────────── */
 .gp-sphinx-badge {
   display: inline-flex;
@@ -196,7 +202,7 @@ body[data-theme="dark"] .gp-sphinx-badge:not(.gp-sphinx-badge--outline):not(.gp-
 }
 
 .gp-sphinx-badge.gp-sphinx-badge--icon-only::before {
-  font-size: 10px;
+  font-size: var(--gp-sphinx-type-icon-glyph);
   line-height: 1;
   font-style: normal;
   font-weight: normal;
@@ -335,3 +341,5 @@ a.gp-sphinx-badge:hover {
   margin-right: 0.08rem;
   flex-shrink: 0;
 }
+
+}  /* end @layer gp-sphinx */
