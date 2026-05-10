@@ -18,6 +18,55 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### What's new
+
+#### `gp-sphinx`: Curated default-value rendering for autodoc
+
+`autodoc_preserve_defaults=True` is now the workspace default, and a
+new listener fills the synthetic `__init__` gap so dataclass
+parameters render as `=[]` instead of `=<factory>`, and sentinel
+constants render as their source name (e.g.
+`scope=DEFAULT_OPTION_SCOPE`) instead of `<...object at 0x...>`.
+Long `:value:` text is collapsed so multi-KB constants no longer
+dominate API pages while short useful values stay intact.
+Identifier defaults inside parameter signatures become live
+cross-references to their documented class — the resulting HTML
+matches an inline `:py:class:` role, so hand-written
+`.. py:function::` directives benefit too. (#36)
+
+#### `sphinx-autodoc-typehints-gp`: Canonical Python xrefs in field lists
+
+Type expressions in autodoc field lists route through the same
+xref pipeline as the signature, so links resolve consistently and
+nested types render with chip styling that matches the rest of the
+page. (#36)
+
+#### Autodoc typography polish across the docs surface
+
+Parameter and field-list rows share a unified metadata-sized
+typography band across the autodoc stack. Code chips sit flush
+against generic-type brackets, parameter names use sans-bold while
+monospace is reserved for code identifiers, and root-level scaling
+on wide viewports follows a `clamp()` ramp instead of stepping up
+at a single breakpoint. A new `gp-sphinx` cascade layer makes
+workspace overrides win over Furo declaratively rather than via
+unlayered precedence. (#36)
+
+### Bug fixes
+
+#### `sphinx-gp-theme`: TOC font-size override now applies
+
+The override for `--toc-font-size` and `--toc-title-font-size` was
+inert because `gp-furo-tokens` emits the default values on `body`,
+not `:root`. The sidebar TOC now picks up the configured larger
+size. (#36)
+
+#### `sphinx-ux-autodoc-layout`: Mobile header keeps the type badge beside the signature
+
+On narrow viewports the type badge previously wrapped below the
+signature, breaking the eyebrow-style layout. It now stays pinned
+to the left of the signature row. (#36)
+
 ## gp-sphinx 0.0.1a17 (2026-05-09)
 
 ### What's new
