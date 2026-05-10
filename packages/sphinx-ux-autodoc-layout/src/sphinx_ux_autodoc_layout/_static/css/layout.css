@@ -429,8 +429,17 @@ dl.gp-sphinx-api-container:not(.py) .gp-sphinx-api-footer dl.gp-sphinx-api-conta
   .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-layout-right {
     order: -1;
     margin-left: 0;
-    align-self: flex-start;
     flex-wrap: wrap;
+  }
+
+  /* Mirror the desktop split (signature-left, toolbar-right) inside the
+   * toolbar row itself: badges remain flush-left as the type/scope
+   * anchor; the source link floats to the right edge as the secondary
+   * action.  Falls back gracefully when the row wraps — the source link
+   * lands on its own line with the right anchor preserved. */
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-source-link,
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-source-link {
+    margin-left: auto;
   }
 
   dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-left,
