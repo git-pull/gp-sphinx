@@ -43,13 +43,16 @@
    * up monospace from Furo's `code.literal` rule in
    * gp-furo-theme/.../code.css; no extra rule needed here. */
 
-  /* Defensive: blocks Furo's `code.literal { font-size: 81.25% }`
-   * from compounding inside field-list rows.  Keeps inline xref
-   * code at the row's inherited size instead of shrinking on top. */
+  /* Furo's `code.literal` chip styling (background, padding,
+   * border-radius) acts as a cognitive container around each type
+   * identifier — preferred to a transparent inline link.  Pin the
+   * size to a root-relative `0.8125rem` so chips render at ≈ 13 px
+   * regardless of the row's metadata-size parent.  Furo's own
+   * `code.literal { font-size: 81.25% }` would otherwise compound
+   * to ~11.4 px against a 14 px parent (too small); using `rem`
+   * blocks the compounding while still scaling with the root clamp
+   * ramp on wide viewports. */
   .field-list code.literal {
-    background: transparent;
-    border: none;
-    padding: 0;
-    font-size: inherit;
+    font-size: 0.8125rem;
   }
 }
