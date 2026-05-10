@@ -1,6 +1,12 @@
 /* sphinx_ux_autodoc_layout — layout.css
  * Stable api-* component wrappers and disclosure styling.
+ *
+ * All rules land in @layer gp-sphinx so precedence is declarative
+ * against Furo's @layer components.  Layer order is established in
+ * gp-furo-theme/web/src/styles/index.css.
  */
+
+@layer gp-sphinx {
 
 /* ── Content sections ───────────────────────────────── */
 .gp-sphinx-api-region + .gp-sphinx-api-region {
@@ -156,25 +162,52 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-link:focus-v
   color: var(--color-link);
 }
 
-/* ── Field-list grid ────────────────────────────────── */
-dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  gap: 0 1rem;
-}
-
+/* ── Field-list grid + label typography (authoritative) ─────
+ * `sphinx-ux-autodoc-layout` owns the `.gp-sphinx-api-parameters`
+ * and `.gp-sphinx-api-facts` wrapper classes (added by
+ * `_wrap_content_runs`), so the styling for the transformed
+ * autodoc-card field-list lives here.  Mirror rules in api-style /
+ * pytest-fixtures stay direct-child (`> dd > dl.field-list`)
+ * intentionally so they only fire in standalone installs without
+ * sphinx-ux-autodoc-layout — see those packages' "standalone
+ * fallback" comments. */
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list,
 dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   gap: 0.25rem 1rem;
+  border-top: 1px solid var(--color-background-border);
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
 }
 
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dt,
 dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dt {
-  font-weight: 600;
+  grid-column: 1;
+  font-size: var(--gp-sphinx-type-metadata);
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: var(--color-foreground-muted);
 }
 
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dd,
 dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd {
+  grid-column: 2;
   margin-left: 0;
+}
+
+@media (max-width: 52rem) {
+  dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list,
+  dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list {
+    grid-template-columns: 1fr;
+  }
+  dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dt,
+  dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dd,
+  dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dt,
+  dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd {
+    grid-column: 1;
+  }
 }
 
 dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-options > .rst.directive-option + .rst.directive-option {
@@ -347,3 +380,6 @@ dl.gp-sphinx-api-container:not(.py) .gp-sphinx-api-footer dl.gp-sphinx-api-conta
     flex-wrap: wrap;
   }
 }
+
+
+}  /* end @layer gp-sphinx */
