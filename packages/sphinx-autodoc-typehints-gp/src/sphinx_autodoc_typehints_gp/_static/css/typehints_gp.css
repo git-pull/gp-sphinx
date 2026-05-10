@@ -33,9 +33,20 @@
    * `Raises` rows. Wrapper added by FieldListPrefixWrapTransform.
    * The monospace font matches the surrounding signature font and
    * makes typed names read as code; the description text after the
-   * em-dash sits outside this wrapper and keeps the body font. */
+   * em-dash sits outside this wrapper and keeps the body font.
+   *
+   * `font-size` is pinned to a root-relative `0.8125rem` (~13px at
+   * default 16px root) so the prefix never renders bigger than
+   * Furo's inline-code chips in body prose. Furo's
+   * `--font-size--small--2` (used by `code.literal`) is `81.25%`, a
+   * percentage that compounds against any cascade scaling — e.g. the
+   * 110% nudge some responsive layers inject — making field-list
+   * code visually heavier than equivalent prose code at certain
+   * widths. Using `rem` blocks the compounding while still scaling
+   * with browser-level accessibility zoom on the root. */
   .gp-sphinx-field-prefix {
     font-family: var(--font-stack--monospace);
+    font-size: 0.8125rem;
   }
 
   /* Same chip-styling neutralisation as the default_value rule
@@ -46,7 +57,12 @@
    * literal notranslate">` matches Furo's `code.literal` rule and
    * picks up a chip background, smaller font, and padding — all
    * unwanted inside the inline prefix. Specificity 0,2,1 beats
-   * Furo's `code.literal` (0,1,1) without `!important`. */
+   * Furo's `code.literal` (0,1,1) without `!important`.
+   *
+   * `font-size: inherit` is load-bearing: the prefix wrapper above
+   * pins the prefix to `0.8125rem`, and Furo's percentage-based
+   * `--font-size--small--2` would otherwise compound to ~81% of
+   * 13px (≈10.5px), shrinking type names below readability. */
   .field-list code.literal {
     background: transparent;
     border: none;
