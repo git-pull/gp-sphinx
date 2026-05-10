@@ -448,6 +448,15 @@ dl.gp-sphinx-api-container:not(.py) .gp-sphinx-api-footer dl.gp-sphinx-api-conta
     min-width: 0;
   }
 
+  /* Touch devices have no hover, so the permalink anchor (¶) is
+   * unreachable on phones under the desktop visibility:hidden rule.
+   * Promote it to always-visible at narrow widths so users can tap
+   * to copy a stable link to the entry. */
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-link,
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-link {
+    visibility: visible;
+  }
+
   /* Safety net for sub-300px viewports: prefer breaking long
    * identifiers at any point over per-character wrapping that
    * Furo's default overflow-wrap produces.  At the 280px low end
