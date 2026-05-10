@@ -227,7 +227,7 @@ def main(argv: list[str]) -> int:
             path = pathlib.Path(raw_path)
         else:
             path = pathlib.Path(spec)
-            label = path.parent.name or str(path)
+            label = path.name or str(path)
         trees.append((label, path))
     return _report(
         trees,

@@ -3,21 +3,35 @@
 Sphinx's ``autodoc_preserve_defaults`` flag handles regular function
 and method signatures via :func:`inspect.getsource` plus AST source
 slicing, wrapping each default in a ``DefaultValue`` shim whose
-``__repr__`` returns the literal source text. It explicitly bails
-out on synthetic ``__init__`` signatures (dataclass / attrs /
-NamedTuple) — see
-``sphinx/ext/autodoc/_dynamic/_preserve_defaults.py:107-110``.
+``__repr__`` returns the literal source text. It bails out when
+``inspect.getsource`` cannot recover the source — see the early
+return at
+``sphinx/ext/autodoc/_dynamic/_preserve_defaults.py:107-110`` (the
+upstream comment names dataclass synthetic ``__init__``; the same
+bailout fires generically for any object without retrievable source,
+which incidentally covers ``attrs``-generated and NamedTuple
+``__new__`` synthesis paths too).
 
-This module fills that gap.
-:func:`update_synthetic_defvalues` is connected to the
-``autodoc-before-process-signature`` event and runs after Sphinx's
-own ``update_defvalue``. For each parameter whose default is still a
-raw Python object (not a ``DefaultValue`` shim), it walks
-:func:`dataclasses.fields` on the parent class, runs a resolver
-chain over the field's ``default`` / ``default_factory``, and
+This module fills that gap **for dataclass synthetic ``__init__``
+specifically**. :func:`update_synthetic_defvalues` is connected to
+the ``autodoc-before-process-signature`` event and runs after
+Sphinx's own ``update_defvalue``. For each parameter whose default
+is still a raw Python object (not a ``DefaultValue`` shim), it walks
+:func:`dataclasses.fields` on the parent class and runs a resolver
+chain over the field's ``default_factory`` (the only path that
+otherwise renders as ``<factory>``; plain ``default`` values already
+have a correct ``repr`` and are passed through unchanged), then
 replaces ``Parameter.default`` with ``DefaultValue(<chosen text>)``.
 After that, all downstream stringifiers emit the chosen text
 verbatim, the directive arglist parses, and rendering is clean.
+
+NamedTuple defaults are always primitive immutable values whose
+``repr`` is already the source text, so no substitution is needed —
+:func:`_walk_to_dataclass` correctly returns ``None`` for them and
+the function is a no-op. ``attrs`` ``Factory`` defaults are not
+handled today; if needed, add a sibling ``_walk_to_attrs_class``
+helper and an ``AttrsFactoryRepr`` resolver alongside the existing
+``DataclassFactoryRepr``.
 
 The resolver chain is the seam for future extension. The built-in
 catalog is seeded by the empirical inventory in

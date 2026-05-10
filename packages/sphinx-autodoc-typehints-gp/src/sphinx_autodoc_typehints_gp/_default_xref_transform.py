@@ -290,6 +290,16 @@ def _wrap_seq(
 
     *force_trailing_comma* renders a trailing comma after the only
     element of a 1-tuple to disambiguate ``(x,)`` from ``(x)``.
+
+    Examples
+    --------
+    >>> import ast
+    >>> elts = ast.parse('1, 2', mode='eval').body.elts
+    >>> [n.astext() for n in _wrap_seq('[', ']', elts)]
+    ['[', '1', ', ', '2', ']']
+    >>> [n.astext() for n in _wrap_seq('(', ')', [elts[0]],
+    ...                                force_trailing_comma=True)]
+    ['(', '1', ',', ')']
     """
     result: list[nodes.Node] = [nodes.Text(opener)]
     first = True
@@ -312,6 +322,16 @@ def _attr_chain(node: ast.Attribute) -> str | None:
     Returns ``None`` if the leftmost base isn't a Name (e.g. a
     function-call result like ``foo().bar`` — too dynamic to
     cross-reference statically).
+
+    Examples
+    --------
+    >>> import ast
+    >>> _attr_chain(ast.parse('a.b', mode='eval').body)
+    'a.b'
+    >>> _attr_chain(ast.parse('mod.sub.Cls', mode='eval').body)
+    'mod.sub.Cls'
+    >>> _attr_chain(ast.parse('foo().bar', mode='eval').body) is None
+    True
     """
     parts: list[str] = [node.attr]
     current: ast.expr = node.value

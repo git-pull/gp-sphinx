@@ -51,10 +51,28 @@ a method documented under ``libtmux.session``; same fix logic as
 A second transform :class:`FieldListPrefixWrapTransform` (priority
 **6**, runs after the xref normalisation) wraps the prefix portion
 of each field-list ``<dd>`` paragraph (everything before the
-em-dash separator) in a
+en-dash separator) in a
 ``nodes.inline(classes=['gp-sphinx-field-prefix'])`` so the CSS in
 ``_static/css/typehints_gp.css`` can render the prefix in monospace
-without disturbing the description text after the em-dash.
+without disturbing the description text after the separator.
+
+Sphinx renders the prefix/description boundary as ASCII ``" -- "``
+in the doctree (see :mod:`sphinx.util.docfields`); docutils' smart-
+quotes pass converts that to U+2014 (em dash) at HTML render time.
+The defensive constant :data:`_EN_DASH` (U+2013) covers an alternate
+form that some upstream paths emit. ``_is_em_dash_separator`` matches
+both shapes; the variable name reflects the single-codepoint form,
+not Sphinx's typographic intent.
+
+The class :class:`FieldListXrefStyleTransform` is intentionally a
+**cosmetic canonicaliser**: every Python-domain xref inside a field
+list is rewritten to either ``py-class`` or ``py-exc``, regardless of
+the originating role's ``reftype``. This homogenises sibling-package
+roles like ``py:fixture`` (from sphinx-autodoc-pytest-fixtures) into
+``py-class`` styling inside field lists; the ``reftype`` itself is
+preserved on the ``pending_xref``, so cross-reference resolution is
+unaffected. If a future package wants distinct field-list styling for
+a custom reftype, this transform is the seam to extend.
 """
 
 from __future__ import annotations
@@ -236,13 +254,15 @@ _EN_DASH = "\N{EN DASH}"
 
 
 def _is_em_dash_separator(text: str) -> bool:
-    """Detect Sphinx's prefix/description em-dash separator.
+    """Detect Sphinx's prefix/description dash separator.
 
     Sphinx renders the boundary between a field-list prefix and its
-    description as a Text node containing the en-dash character
-    (U+2013) surrounded by spaces, or the ASCII fallback ``" -- "``.
-    This predicate matches both shapes so the wrapper transform can
-    locate the split.
+    description as a Text node containing the ASCII fallback
+    ``" -- "`` (the canonical form, see ``sphinx.util.docfields``);
+    docutils' smart-quotes converts it to U+2014 (em dash) at HTML
+    render time. This predicate also matches the U+2013 (en dash)
+    single-codepoint form some upstream paths emit, so the wrapper
+    transform locates the split regardless of which shape arrives.
 
     Examples
     --------
@@ -319,7 +339,7 @@ def _wrap_prefix_in_paragraph(
 ) -> bool:
     """Wrap the prefix children of *paragraph* in a monospace inline.
 
-    The prefix is the run of children before the first em-dash text
+    The prefix is the run of children before the first en-dash text
     separator. If no separator exists (e.g. ``:rtype:`` /
     ``:raises:`` rows whose entire content is a single identifier),
     wraps the full child list.
@@ -333,6 +353,26 @@ def _wrap_prefix_in_paragraph(
     Returns ``True`` if a wrapper was added, ``False`` if the
     paragraph was already wrapped, lives inside a prose field, or
     otherwise had no eligible content.
+
+    Examples
+    --------
+    >>> from docutils import nodes
+    >>> p = nodes.paragraph()
+    >>> p += nodes.Text('foo (int) ')
+    >>> p += nodes.Text(' -- description text')
+    >>> _wrap_prefix_in_paragraph(p, field_name='Parameters')
+    True
+    >>> first = p.children[0]
+    >>> isinstance(first, nodes.inline) and 'gp-sphinx-field-prefix' in first['classes']
+    True
+    >>> # Prose-style fields are skipped.
+    >>> q = nodes.paragraph()
+    >>> q += nodes.Text('Returns the result.')
+    >>> _wrap_prefix_in_paragraph(q, field_name='Returns')
+    False
+    >>> # Empty paragraph is a no-op.
+    >>> _wrap_prefix_in_paragraph(nodes.paragraph())
+    False
     """
     if not paragraph.children:
         return False
@@ -366,14 +406,14 @@ class FieldListPrefixWrapTransform(SphinxPostTransform):
 
     For each ``<dd>`` (``nodes.field_body``) of every
     ``nodes.field_list``, wraps the leading children of the first
-    paragraph (everything before the em-dash separator) in
+    paragraph (everything before the dash separator) in
     ``nodes.inline(classes=['gp-sphinx-field-prefix'])`` so a single
     CSS rule can render the prefix in monospace without affecting
     the description text.
 
     Bullet-list field bodies (e.g. ``:raises:`` lists) are walked
     one item at a time so each ``<li>``'s paragraph gets its own
-    wrapper. Field bodies with no em-dash (no description portion)
+    wrapper. Field bodies with no separator (no description portion)
     get the entire paragraph wrapped.
 
     Runs after :class:`FieldListXrefStyleTransform` so the wrapper
