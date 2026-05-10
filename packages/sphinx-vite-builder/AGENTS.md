@@ -168,12 +168,19 @@ motivated this whole package). The required steps are:
 - uses: actions/setup-node@v6
   with:
     node-version: 22
-    cache: pnpm
 ```
 
 If you find yourself removing those, ask: "is the source-build path
 still going to produce a populated `static/` in the wheel?" The
 answer must be yes.
+
+`cache: pnpm` is intentionally omitted from the recipe so it stays
+correct in *consumer* CI as well — setup-node's pnpm cache lookup
+expects a `pnpm-lock.yaml` at the repo root, which only exists in
+this workspace, not in downstream repos that pull a gp-sphinx-family
+package transitively from a git source. The workspace's own
+`release.yml` may keep `cache: pnpm` for a small speed-up since the
+lockfile lives at the repo root here.
 
 ## When in doubt
 

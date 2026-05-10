@@ -125,8 +125,7 @@ _CI_SETUP_RECIPES: dict[str, str] = {
             version: 10
         - uses: actions/setup-node@v6
           with:
-            node-version: 22
-            cache: pnpm""",
+            node-version: 22""",
     ),
     "circleci": textwrap.dedent(
         """\

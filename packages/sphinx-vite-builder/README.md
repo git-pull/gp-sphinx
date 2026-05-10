@@ -76,7 +76,6 @@ config (before the Python build step that triggers this backend):
           - uses: actions/setup-node@v6
             with:
               node-version: 22
-              cache: pnpm
 ```
 
 The error includes the resolved vite-root path, the platform-specific
@@ -227,8 +226,14 @@ search-discoverability.
 - uses: actions/setup-node@v6
   with:
     node-version: 22
-    cache: pnpm
 ```
+
+`cache: pnpm` is intentionally omitted: setup-node's pnpm cache
+lookup expects a `pnpm-lock.yaml` at the consumer repo root, which
+fails when sphinx-vite-builder runs from a transitive git source
+(the lockfile lives inside the source-built package's checkout, not
+the consumer repo). Workspaces that own their own `pnpm-lock.yaml`
+at the repo root may add `cache: pnpm` for a small speed-up.
 
 ### CircleCI (`CIRCLECI=true`)
 
