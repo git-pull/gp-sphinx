@@ -51,8 +51,17 @@
    * `code.literal { font-size: 81.25% }` would otherwise compound
    * to ~11.4 px against a 14 px parent (too small); using `rem`
    * blocks the compounding while still scaling with the root clamp
-   * ramp on wide viewports. */
+   * ramp on wide viewports.
+   *
+   * `padding-inline: 0` cancels Furo's `padding: 0.1em 0.2em`
+   * horizontal component so the chip background sits flush against
+   * the bracket characters around it.  Without this, generic types
+   * read with visible whitespace inside the brackets — `list[ str ]`
+   * instead of `list[str]` — because the brackets and commas live
+   * outside the chip and have no padding of their own.  Vertical
+   * `0.1em` padding stays so the chip retains visible block height. */
   .field-list code.literal {
     font-size: 0.8125rem;
+    padding-inline: 0;
   }
 }
