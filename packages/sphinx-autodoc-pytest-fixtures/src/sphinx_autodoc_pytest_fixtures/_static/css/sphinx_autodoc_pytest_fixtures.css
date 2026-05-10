@@ -84,7 +84,24 @@ dl.py.fixture > dd > dl.field-list > dt {
   color: var(--color-foreground-muted);
 }
 dl.py.fixture > dd > dl.field-list > dt .colon { display: none; }
-dl.py.fixture > dd > dl.field-list > dd { grid-column: 2; margin-left: 0; }
+dl.py.fixture > dd > dl.field-list > dd {
+  grid-column: 2;
+  margin-left: 0;
+  font-size: var(--gp-sphinx-type-metadata);
+  line-height: 1.5;
+}
+
+dl.py.fixture > dd > dl.field-list > dd > ul.simple {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+dl.py.fixture > dd > dl.field-list > dd > ul.simple > li > p {
+  margin: 0;
+}
 
 @media (max-width: 52rem) {
   dl.py.fixture > dd > dl.field-list {

@@ -191,10 +191,35 @@ dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.fi
   color: var(--color-foreground-muted);
 }
 
+/* Field body reads at metadata size so the monospace prefix wrapper
+ * inside doesn't visually outsize the surrounding sans prose.  The
+ * eyebrow <dt> (also metadata size) and the body now sit in the same
+ * data-band register; hierarchy is carried by uppercase + muted color
+ * on the label, not by a size delta. */
 dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dd,
 dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd {
   grid-column: 2;
   margin-left: 0;
+  font-size: var(--gp-sphinx-type-metadata);
+  line-height: 1.5;
+}
+
+/* Override docutils' tight `simple` list convention.  `<ul.simple>
+ * > li > p` collapses to `margin: 4px 0`, leaving only ~8px between
+ * adjacent rows against a 25.6px line-height.  Flex-gap delivers a
+ * cleaner ~12px without fighting per-row margin collapse. */
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dd > ul.simple,
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd > ul.simple {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dd > ul.simple > li > p,
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd > ul.simple > li > p {
+  margin: 0;
 }
 
 @media (max-width: 52rem) {
