@@ -112,6 +112,7 @@ dl.py:not(.fixture) > dd > dl.field-list > dd > ul.simple {
   margin-bottom: 0;
 }
 
+dl.py:not(.fixture) > dd > dl.field-list > dd > p,
 dl.py:not(.fixture) > dd > dl.field-list > dd > ul.simple > li > p {
   margin: 0;
 }

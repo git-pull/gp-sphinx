@@ -217,6 +217,14 @@ dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.fi
   margin-bottom: 0;
 }
 
+/* Zero `<p>` margins both inside `<ul.simple>` (parameter rows)
+ * and on direct children of `<dd>` (single-paragraph Returns,
+ * Yields, Raises). Without the latter selector the Return body
+ * keeps docutils' default `margin: 4px 0`, producing asymmetric
+ * spacing the moment the Return description spans more than one
+ * line.  Symmetric here keeps the field-list a coherent data band. */
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dd > p,
+dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd > p,
 dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dd > ul.simple > li > p,
 dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd > ul.simple > li > p {
   margin: 0;
