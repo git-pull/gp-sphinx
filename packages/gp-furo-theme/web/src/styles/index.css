@@ -22,7 +22,16 @@
  * dark-mode body-attribute swap works at runtime. A @theme inline
  * block here would inline literal values into utility classes,
  * defeating runtime CSS-variable theme swaps.
+ *
+ * Cascade-layer order: declare a `gp-sphinx` layer between Tailwind's
+ * `components` and `utilities` so workspace package CSS (api-style,
+ * pytest-fixtures, typehints-gp, sphinx-gp-theme custom.css, …) can
+ * land in `@layer gp-sphinx` and win over Furo's `@layer components`
+ * declaratively, without relying on accidental "unlayered wins"
+ * precedence. The declaration must precede `@import "tailwindcss"`
+ * so Tailwind v4 slots its native layers around the gp-sphinx layer.
  */
+@layer theme, base, components, gp-sphinx, utilities;
 
 @import "tailwindcss";
 
