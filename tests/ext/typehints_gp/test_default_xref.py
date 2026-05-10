@@ -160,6 +160,34 @@ def test_transform_rewrites_tuple_of_classes() -> None:
     assert [n["reftarget"] for n in xrefs] == ["Foo", "Bar"]
 
 
+def test_transform_tuple_branch_propagates_env_to_elements() -> None:
+    """Tuple-element xrefs honour the ``env`` documentation gate.
+
+    Regression for the bug where the ``ast.Tuple`` arm of
+    ``_ast_to_nodes`` forgot to forward ``env=env`` into
+    ``_wrap_seq``. Without the forward, ``_is_documented`` was bypassed
+    for tuple elements and undocumented targets emitted misleading
+    ``<code class="xref py py-obj">`` styling without an ``<a>``
+    wrapper. With ``env`` carrying an empty ``objects`` table every
+    target is "undocumented", so each tuple element should fall back
+    to a plain ``nodes.Text`` rather than a ``pending_xref``.
+    """
+    import types
+
+    span = _make_default_value_span("(Foo, Bar)")
+    env = t.cast(
+        "t.Any",
+        types.SimpleNamespace(domaindata={"py": {"objects": {}}}),
+    )
+    assert _transform_default_value_span(span, env=env) is True
+    xrefs = list(span.findall(addnodes.pending_xref))
+    assert xrefs == []
+    # Both element names survive as plain text inside the span.
+    plain = span.astext()
+    assert "Foo" in plain
+    assert "Bar" in plain
+
+
 def test_transform_leaves_unsupported_text_alone() -> None:
     """Unparseable text leaves the span untouched."""
     span = _make_default_value_span("lambda: 1")

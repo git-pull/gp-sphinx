@@ -1,0 +1,30 @@
+/* sphinx-autodoc-typehints-gp — neutralise inline-code styling for
+ * cross-referenced default values inside parameter signatures.
+ *
+ * Stage C of the default-rendering pipeline (see _default_xref_transform.py)
+ * wraps identifier defaults in a pending_xref whose contnode is
+ * `<code class="xref py py-obj docutils literal notranslate">`. That
+ * matches Furo's inline-code rule (`code.literal, .sig-inline { background:
+ * var(--color-inline-code-background); padding: 0.1em 0.2em; font-size:
+ * var(--font-size--small--2); }` in gp-furo-theme/components/code.css), which
+ * paints a chip-shaped background, a smaller font, and padding around each
+ * identifier — visually clashing with the bold signature font, the dt:hover
+ * background on the API card header, and adjacent default_value text spans.
+ *
+ * Default values are *signature content*, not body prose. Strip the
+ * inline-code chip styling for code.literal nested inside .default_value
+ * so the xref renders as a same-size, transparent-background, clickable
+ * link that flows with the rest of the signature.
+ *
+ * Specificity is 0,2,1 (vs the conflicting rule's 0,1,1) so no !important is
+ * needed.
+ */
+
+@layer components {
+  .default_value code.literal {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+  }
+}

@@ -581,6 +581,8 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     >>> setup  # doctest: +ELLIPSIS
     <function setup at 0x...>
     """
+    import pathlib
+
     from sphinx_autodoc_typehints_gp._data_defaults import (
         GpAttributeDocumenter,
         GpDataDocumenter,
@@ -591,6 +593,15 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     from sphinx_autodoc_typehints_gp._param_defaults import (
         update_synthetic_defvalues,
     )
+
+    static_dir = str(pathlib.Path(__file__).parent / "_static")
+
+    def _add_static_path(app: Sphinx) -> None:
+        if static_dir not in app.config.html_static_path:
+            app.config.html_static_path.append(static_dir)
+
+    app.connect("builder-inited", _add_static_path)
+    app.add_css_file("css/typehints_gp.css")
 
     app.add_config_value(
         "gp_typehints_curate_param_defaults",

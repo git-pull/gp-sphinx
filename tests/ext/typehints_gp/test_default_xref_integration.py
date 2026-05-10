@@ -196,6 +196,101 @@ def test_data_attribute_default_links_to_documented_constant(
     assert 'class="xref py py-obj' in html
 
 
+_CROSS_MODULE_PACKAGE_INIT = textwrap.dedent(
+    """\
+    \"\"\"Package init re-exporting api.\"\"\"
+    from cross_module_demo.api import use_default
+    """
+)
+
+_CROSS_MODULE_CONSTANTS = textwrap.dedent(
+    """\
+    \"\"\"Module-level sentinel that the api function defaults to.\"\"\"
+    from __future__ import annotations
+
+
+    DEFAULT_SCOPE: object = object()
+    \"\"\"Module-level default referenced from a sibling module.\"\"\"
+    """
+)
+
+_CROSS_MODULE_API = textwrap.dedent(
+    """\
+    \"\"\"Function whose default lives in a sibling module.\"\"\"
+    from __future__ import annotations
+
+    from cross_module_demo.constants import DEFAULT_SCOPE
+
+
+    def use_default(scope: object = DEFAULT_SCOPE) -> None:
+        \"\"\"Function whose `scope` default references a sibling-module value.\"\"\"
+    """
+)
+
+
+@pytest.fixture(scope="module")
+def cross_module_default_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a project where a default references a sibling module's constant."""
+    cache_root = tmp_path_factory.mktemp("default-xref-cross-html")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("cross_module_demo/__init__.py", _CROSS_MODULE_PACKAGE_INIT),
+            ScenarioFile("cross_module_demo/constants.py", _CROSS_MODULE_CONSTANTS),
+            ScenarioFile("cross_module_demo/api.py", _CROSS_MODULE_API),
+            ScenarioFile(
+                "conf.py",
+                _CONF_PY.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile(
+                "index.rst",
+                textwrap.dedent(
+                    """\
+                    Demo
+                    ====
+
+                    .. autodata:: cross_module_demo.constants.DEFAULT_SCOPE
+
+                    .. autofunction:: cross_module_demo.api.use_default
+                    """
+                ),
+            ),
+        ),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=(
+            "cross_module_demo",
+            "cross_module_demo.api",
+            "cross_module_demo.constants",
+        ),
+    )
+
+
+@pytest.mark.integration
+def test_cross_module_default_resolves_via_refspecific(
+    cross_module_default_html_result: SharedSphinxResult,
+) -> None:
+    """A default that references a sibling module's constant still resolves.
+
+    The function `use_default` is documented under
+    `cross_module_demo.api`; its default `DEFAULT_SCOPE` is
+    documented under `cross_module_demo.constants`. Without
+    `refspecific=True` on the pending_xref the Python domain only
+    tries `cross_module_demo.api.DEFAULT_SCOPE` (exact match in the
+    surrounding module) and the link silently fails. This pins the
+    cross-module fuzzy search.
+    """
+    html = read_output(cross_module_default_html_result, "index.html")
+
+    assert 'href="#cross_module_demo.constants.DEFAULT_SCOPE"' in html
+    assert 'class="reference internal"' in html
+    assert 'class="xref py py-obj' in html
+
+
 @pytest.mark.integration
 def test_unsupported_default_falls_back_to_plain_text(
     tmp_path_factory: pytest.TempPathFactory,

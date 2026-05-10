@@ -58,6 +58,44 @@ if t.TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def _is_documented(env: t.Any, target: str, py_module: str | None) -> bool:
+    """Return True if *target* resolves to a documented Python object.
+
+    Mirrors the searchmode=1 lookup paths in
+    :meth:`sphinx.domains.python.PythonDomain.find_obj` so we can
+    decide *before* emitting a ``pending_xref`` whether Sphinx will
+    successfully resolve it. When nothing matches, the caller emits
+    plain text instead of leaving a misleading
+    ``<code class="xref py py-obj">`` styling without an ``<a>``
+    wrapper around it.
+
+    Examples
+    --------
+    >>> import types
+    >>> env = types.SimpleNamespace(
+    ...     domaindata={"py": {"objects": {"mod.Foo": object()}}}
+    ... )
+    >>> _is_documented(env, "Foo", "mod")  # exact py_module.target match
+    True
+    >>> _is_documented(env, "Foo", None)   # fuzzy `.Foo` suffix match
+    True
+    >>> _is_documented(env, "NotThere", None)
+    False
+    >>> _is_documented(types.SimpleNamespace(domaindata={}), "X", None)
+    False
+    """
+    try:
+        objects = env.domaindata["py"]["objects"]
+    except (AttributeError, KeyError):
+        return False
+    if target in objects:
+        return True
+    if py_module and f"{py_module}.{target}" in objects:
+        return True
+    suffix = f".{target}"
+    return any(name.endswith(suffix) for name in objects)
+
+
 def _xref(
     target: str,
     title: str,
@@ -114,6 +152,16 @@ def _xref(
         refexplicit=False,
         refwarn=False,
     )
+    # `refspecific` triggers `searchmode=1` in
+    # `PythonDomain.find_obj`, which fuzzy-matches the short name
+    # across every documented module. Without it, the resolver only
+    # tries exact `<module>.<name>` matches and fails for defaults
+    # whose target lives in a sibling module — e.g. libtmux's
+    # `_show_option(scope=DEFAULT_OPTION_SCOPE)` documented under
+    # `libtmux.session` while the constant is in `libtmux.constants`.
+    # The presence of the key (not its value) is what flips
+    # searchmode; see `sphinx/domains/python/__init__.py:942`.
+    xref["refspecific"] = True
     if py_module is not None:
         xref["py:module"] = py_module
     if py_class is not None:
@@ -126,6 +174,7 @@ def _ast_to_nodes(
     *,
     py_module: str | None = None,
     py_class: str | None = None,
+    env: t.Any = None,
 ) -> list[nodes.Node]:
     """Convert an ``ast`` expression node into docutils inline nodes.
 
@@ -156,12 +205,16 @@ def _ast_to_nodes(
     ['42']
     """
     if isinstance(node, ast.Name):
+        if env is not None and not _is_documented(env, node.id, py_module):
+            return [nodes.Text(node.id)]
         return [_xref(node.id, node.id, py_module=py_module, py_class=py_class)]
     if isinstance(node, ast.Attribute):
         path = _attr_chain(node)
         if path is None:
             msg = f"unsupported attribute base: {ast.dump(node)}"
             raise SyntaxError(msg)
+        if env is not None and not _is_documented(env, path, py_module):
+            return [nodes.Text(path)]
         return [_xref(path, path, py_module=py_module, py_class=py_class)]
     if isinstance(node, ast.Constant):
         if node.value is Ellipsis:
@@ -175,30 +228,39 @@ def _ast_to_nodes(
             force_trailing_comma=len(node.elts) == 1,
             py_module=py_module,
             py_class=py_class,
+            env=env,
         )
     if isinstance(node, ast.List):
-        return _wrap_seq("[", "]", node.elts, py_module=py_module, py_class=py_class)
+        return _wrap_seq(
+            "[", "]", node.elts, py_module=py_module, py_class=py_class, env=env
+        )
     if isinstance(node, ast.Set):
         if not node.elts:
             msg = "empty set literal cannot be parsed"  # ast won't yield this
             raise SyntaxError(msg)
-        return _wrap_seq("{", "}", node.elts, py_module=py_module, py_class=py_class)
+        return _wrap_seq(
+            "{", "}", node.elts, py_module=py_module, py_class=py_class, env=env
+        )
     if isinstance(node, ast.Call):
         result: list[nodes.Node] = []
-        result.extend(_ast_to_nodes(node.func, py_module=py_module, py_class=py_class))
+        result.extend(
+            _ast_to_nodes(node.func, py_module=py_module, py_class=py_class, env=env)
+        )
         result.append(nodes.Text("("))
         first = True
         for arg in node.args:
             if not first:
                 result.append(nodes.Text(", "))
-            result.extend(_ast_to_nodes(arg, py_module=py_module, py_class=py_class))
+            result.extend(
+                _ast_to_nodes(arg, py_module=py_module, py_class=py_class, env=env)
+            )
             first = False
         for kw in node.keywords:
             if not first:
                 result.append(nodes.Text(", "))
             result.append(nodes.Text(f"{kw.arg}="))
             result.extend(
-                _ast_to_nodes(kw.value, py_module=py_module, py_class=py_class)
+                _ast_to_nodes(kw.value, py_module=py_module, py_class=py_class, env=env)
             )
             first = False
         result.append(nodes.Text(")"))
@@ -206,7 +268,9 @@ def _ast_to_nodes(
     if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
         return [
             nodes.Text("-"),
-            *_ast_to_nodes(node.operand, py_module=py_module, py_class=py_class),
+            *_ast_to_nodes(
+                node.operand, py_module=py_module, py_class=py_class, env=env
+            ),
         ]
     msg = f"unsupported expression: {ast.dump(node)}"
     raise SyntaxError(msg)
@@ -220,6 +284,7 @@ def _wrap_seq(
     force_trailing_comma: bool = False,
     py_module: str | None = None,
     py_class: str | None = None,
+    env: t.Any = None,
 ) -> list[nodes.Node]:
     """Render ``[a, b, c]`` / ``(a, b, c)`` style sequences.
 
@@ -231,7 +296,9 @@ def _wrap_seq(
     for elt in elts:
         if not first:
             result.append(nodes.Text(", "))
-        result.extend(_ast_to_nodes(elt, py_module=py_module, py_class=py_class))
+        result.extend(
+            _ast_to_nodes(elt, py_module=py_module, py_class=py_class, env=env)
+        )
         first = False
     if force_trailing_comma:
         result.append(nodes.Text(","))
@@ -262,6 +329,7 @@ def _transform_default_value_span(
     *,
     py_module: str | None = None,
     py_class: str | None = None,
+    env: t.Any = None,
 ) -> bool:
     """Mutate *span*'s children with cross-referenced AST nodes.
 
@@ -291,7 +359,9 @@ def _transform_default_value_span(
         return False
     try:
         tree = ast.parse(text, mode="eval")
-        new_children = _ast_to_nodes(tree.body, py_module=py_module, py_class=py_class)
+        new_children = _ast_to_nodes(
+            tree.body, py_module=py_module, py_class=py_class, env=env
+        )
     except SyntaxError:
         return False
     if not new_children:
@@ -366,6 +436,7 @@ class DefaultValueXrefTransform(SphinxPostTransform):
                     span,
                     py_module=py_module,
                     py_class=py_class,
+                    env=self.env,
                 )
 
 
