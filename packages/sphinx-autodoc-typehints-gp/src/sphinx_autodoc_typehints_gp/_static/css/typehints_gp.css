@@ -1,26 +1,22 @@
-/* sphinx-autodoc-typehints-gp — neutralise inline-code styling for
- * cross-referenced default values inside parameter signatures.
+/* sphinx-autodoc-typehints-gp — neutralise inline-code chip styling
+ * for cross-referenced default values and field-list xrefs.
  *
- * Stage C of the default-rendering pipeline (see _default_xref_transform.py)
- * wraps identifier defaults in a pending_xref whose contnode is
- * `<code class="xref py py-obj docutils literal notranslate">`. That
- * matches Furo's inline-code rule (`code.literal, .sig-inline { background:
- * var(--color-inline-code-background); padding: 0.1em 0.2em; font-size:
- * var(--font-size--small--2); }` in gp-furo-theme/components/code.css), which
- * paints a chip-shaped background, a smaller font, and padding around each
- * identifier — visually clashing with the bold signature font, the dt:hover
- * background on the API card header, and adjacent default_value text spans.
+ * Stage C of the default-rendering pipeline wraps identifier
+ * defaults in `<code class="xref py py-obj docutils literal
+ * notranslate">`, which matches Furo's
+ * `code.literal { background, padding, font-size: 81.25% }` chip
+ * rule.  In a signature default-value or a field-list parameter
+ * row, that chip styling clashes with the surrounding text.  These
+ * rules strip the chip back to plain inline content while keeping
+ * the xref clickable.
  *
- * Default values are *signature content*, not body prose. Strip the
- * inline-code chip styling for code.literal nested inside .default_value
- * so the xref renders as a same-size, transparent-background, clickable
- * link that flows with the rest of the signature.
- *
- * Specificity is 0,2,1 (vs the conflicting rule's 0,1,1) so no !important is
- * needed.
+ * All rules land in @layer gp-sphinx so precedence is declarative
+ * against Furo's @layer components.  Layer order is established in
+ * gp-furo-theme/web/src/styles/index.css.
  */
 
-@layer components {
+@layer gp-sphinx {
+  /* Default-value spans inside <dt> signatures. */
   .default_value code.literal {
     background: transparent;
     border: none;
@@ -28,58 +24,21 @@
     font-size: inherit;
   }
 
-  /* Field-list prefix portion — `name (str, optional)` on each
-   * `Parameters` row, the lone identifier on `Return type` /
-   * `Raises` rows. Wrapper added by FieldListPrefixWrapTransform.
-   * The monospace font matches the surrounding signature font and
-   * makes typed names read as code; the description text after the
-   * em-dash sits outside this wrapper and keeps the body font.
-   *
-   * `font-size` is pinned to a root-relative `0.8125rem` (~13px at
-   * default 16px root) so the prefix never renders bigger than
-   * Furo's inline-code chips in body prose. Furo's
-   * `--font-size--small--2` (used by `code.literal`) is `81.25%`, a
-   * percentage that compounds against any cascade scaling — e.g. the
-   * 110% nudge some responsive layers inject — making field-list
-   * code visually heavier than equivalent prose code at certain
-   * widths. Using `rem` blocks the compounding while still scaling
-   * with browser-level accessibility zoom on the root. */
+  /* Field-list prefix wrapper added by FieldListPrefixWrapTransform.
+   * Inherits field-body size; monospace family makes
+   * `name (type)` read as code without forcing a separate scale. */
   .gp-sphinx-field-prefix {
     font-family: var(--font-stack--monospace);
-    font-size: 0.8125rem;
+    font-size: inherit;
   }
 
-  /* Same chip-styling neutralisation as the default_value rule
-   * above, scoped to field-list context. After
-   * FieldListXrefStyleTransform replaces `Text`/`literal_strong`/
-   * `literal_emphasis` contnodes with `nodes.literal(['xref','py',
-   * 'py-X'])`, the rendered `<code class="xref py py-X docutils
-   * literal notranslate">` matches Furo's `code.literal` rule and
-   * picks up a chip background, smaller font, and padding — all
-   * unwanted inside the inline prefix. Specificity 0,2,1 beats
-   * Furo's `code.literal` (0,1,1) without `!important`.
-   *
-   * `font-size: inherit` is load-bearing: the prefix wrapper above
-   * pins the prefix to `0.8125rem`, and Furo's percentage-based
-   * `--font-size--small--2` would otherwise compound to ~81% of
-   * 13px (≈10.5px), shrinking type names below readability. */
+  /* Defensive: blocks Furo's `code.literal { font-size: 81.25% }`
+   * from compounding inside field-list rows.  Keeps inline xref
+   * code at the row's inherited size instead of shrinking on top. */
   .field-list code.literal {
     background: transparent;
     border: none;
     padding: 0;
     font-size: inherit;
-  }
-
-  /* Field-list description body — the prose after the en-dash on
-   * each `Parameters` / `Raises` row, plus the entire `Returns` and
-   * `Return type` field bodies. Pinned to the same `0.8125rem`
-   * (~13px) as the prefix so a `Parameters` row reads as one
-   * uniformly-sized line — the prefix at 13px monospace, the
-   * description at 13px sans — instead of jumping from a 13px
-   * prefix to a 16px description and visually outsizing the body
-   * prose around the autodoc block. The same rule covers `Returns`
-   * and `Raises` bodies so every field-list row matches. */
-  .field-list > dd {
-    font-size: 0.8125rem;
   }
 }
