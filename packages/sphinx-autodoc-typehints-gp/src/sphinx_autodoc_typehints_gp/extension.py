@@ -590,6 +590,9 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     from sphinx_autodoc_typehints_gp._default_xref_transform import (
         register as register_default_xref_transform,
     )
+    from sphinx_autodoc_typehints_gp._field_xref_transform import (
+        register as register_field_xref_transform,
+    )
     from sphinx_autodoc_typehints_gp._param_defaults import (
         update_synthetic_defvalues,
     )
@@ -618,6 +621,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_autodocumenter(GpDataDocumenter, override=True)
     app.add_autodocumenter(GpAttributeDocumenter, override=True)
     register_default_xref_transform(app)
+    register_field_xref_transform(app)
     app.connect("builder-inited", _clear_caches)
     try:
         app.connect("autodoc-process-docstring", process_docstring)

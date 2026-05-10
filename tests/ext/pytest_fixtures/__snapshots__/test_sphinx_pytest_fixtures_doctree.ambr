@@ -80,9 +80,10 @@
                                   Depends on
                               <field_body>
                                   <paragraph>
-                                      <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
-                                          <literal classes="xref py py-fixture">
-                                              my_server
+                                      <inline classes="gp-sphinx-field-prefix">
+                                          <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                              <literal classes="xref py py-class">
+                                                  my_server
           <index entries="('single',\ 'home_user\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.home_user',\ '',\ None) ('pair',\ 'override\ hooks;\ home_user',\ 'fixture_mod.home_user',\ '',\ None)">
           <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
               <desc_signature _toc_name="home_user" _toc_parts="('fixture_mod', 'home_user')" class="" classes="sig sig-object py" fullname="home_user" ids="fixture_mod.home_user" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.home_user" spf_deprecated="False" spf_kind="override_hook" spf_ret_type="str" spf_scope="function">
@@ -149,9 +150,10 @@
                                   Depends on
                               <field_body>
                                   <paragraph>
-                                      <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
-                                          <literal classes="xref py py-fixture">
-                                              my_server
+                                      <inline classes="gp-sphinx-field-prefix">
+                                          <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                              <literal classes="xref py py-class">
+                                                  my_server
           <index entries="('single',\ 'auto_cleanup\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.auto_cleanup',\ '',\ None)">
           <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
               <desc_signature _toc_name="auto_cleanup" _toc_parts="('fixture_mod', 'auto_cleanup')" class="" classes="sig sig-object py" fullname="auto_cleanup" ids="fixture_mod.auto_cleanup" module="fixture_mod" spf_autouse="True" spf_badges_injected="True" spf_canonical_name="fixture_mod.auto_cleanup" spf_deprecated="False" spf_kind="resource" spf_ret_type="None" spf_scope="function">
@@ -183,7 +185,8 @@
                                   Autouse
                               <field_body>
                                   <paragraph>
-                                      yes — runs automatically for every test
+                                      <inline classes="gp-sphinx-field-prefix">
+                                          yes — runs automatically for every test
                   <note>
                       <paragraph>
                           No request needed — this fixture runs automatically for every test.
@@ -272,9 +275,10 @@
                           Depends on
                       <field_body>
                           <paragraph>
-                              <reference refuri="https://docs.pytest.org/en/stable/reference/fixtures.html#tmp_path">
-                                  <literal>
-                                      tmp_path
+                              <inline classes="gp-sphinx-field-prefix">
+                                  <reference refuri="https://docs.pytest.org/en/stable/reference/fixtures.html#tmp_path">
+                                      <literal>
+                                          tmp_path
   '''
 # ---
 # name: test_dependency_rendering_snapshot[external_dependency_link]
@@ -302,9 +306,10 @@
                           Depends on
                       <field_body>
                           <paragraph>
-                              <reference refuri="https://example.com/fixtures/special_dep">
-                                  <literal>
-                                      special_dep
+                              <inline classes="gp-sphinx-field-prefix">
+                                  <reference refuri="https://example.com/fixtures/special_dep">
+                                      <literal>
+                                          special_dep
   '''
 # ---
 # name: test_dependency_rendering_snapshot[hidden_dependencies]
@@ -433,9 +438,10 @@
                                   Depends on
                               <field_body>
                                   <paragraph>
-                                      <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
-                                          <literal classes="xref py py-fixture">
-                                              my_server
+                                      <inline classes="gp-sphinx-field-prefix">
+                                          <reference internal="True" refid="fixture_mod.my_server" reftitle="fixture_mod.my_server">
+                                              <literal classes="xref py py-class">
+                                                  my_server
           <index entries="('single',\ 'renamed_fixture\ (pytest\ fixture\ in\ fixture_mod)',\ 'fixture_mod.renamed_fixture',\ '',\ None)">
           <desc classes="py fixture" desctype="fixture" domain="py" no-contents-entry="False" no-index="False" no-index-entry="False" no-typesetting="False" nocontentsentry="False" noindex="False" noindexentry="False" objtype="fixture" spf_metadata_injected="True">
               <desc_signature _toc_name="renamed_fixture" _toc_parts="('fixture_mod', 'renamed_fixture')" class="" classes="sig sig-object py" fullname="renamed_fixture" ids="fixture_mod.renamed_fixture" module="fixture_mod" spf_autouse="False" spf_badges_injected="True" spf_canonical_name="fixture_mod.renamed_fixture" spf_deprecated="False" spf_kind="resource" spf_ret_type="str" spf_scope="function">
@@ -693,9 +699,10 @@
                                   Depends on
                               <field_body>
                                   <paragraph>
-                                      <reference refuri="https://docs.pytest.org/en/stable/reference/fixtures.html#request">
-                                          <literal>
-                                              request
+                                      <inline classes="gp-sphinx-field-prefix">
+                                          <reference refuri="https://docs.pytest.org/en/stable/reference/fixtures.html#request">
+                                              <literal>
+                                                  request
                           <field>
                               <field_name>
                                   Parametrized

@@ -27,4 +27,30 @@
     padding: 0;
     font-size: inherit;
   }
+
+  /* Field-list prefix portion — `name (str, optional)` on each
+   * `Parameters` row, the lone identifier on `Return type` /
+   * `Raises` rows. Wrapper added by FieldListPrefixWrapTransform.
+   * The monospace font matches the surrounding signature font and
+   * makes typed names read as code; the description text after the
+   * em-dash sits outside this wrapper and keeps the body font. */
+  .gp-sphinx-field-prefix {
+    font-family: var(--font-stack--monospace);
+  }
+
+  /* Same chip-styling neutralisation as the default_value rule
+   * above, scoped to field-list context. After
+   * FieldListXrefStyleTransform replaces `Text`/`literal_strong`/
+   * `literal_emphasis` contnodes with `nodes.literal(['xref','py',
+   * 'py-X'])`, the rendered `<code class="xref py py-X docutils
+   * literal notranslate">` matches Furo's `code.literal` rule and
+   * picks up a chip background, smaller font, and padding — all
+   * unwanted inside the inline prefix. Specificity 0,2,1 beats
+   * Furo's `code.literal` (0,1,1) without `!important`. */
+  .field-list code.literal {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+  }
 }
