@@ -395,31 +395,59 @@ dl.gp-sphinx-api-container:not(.py) .gp-sphinx-api-footer dl.gp-sphinx-api-conta
   background: var(--color-api-background-hover);
 }
 
-/* ── Mobile adjustments ─────────────────────────────── */
+/* ── Mobile adjustments ─────────────────────────────── *
+ *
+ * Below the 52rem breakpoint the desktop "signature left, badge
+ * right" row no longer reads cleanly: long signatures wrap onto
+ * three or four lines and the badge ends up floating beside the
+ * tail of that wrap, or the whole row collapses and centers
+ * because `align-items: center` carries over from the desktop
+ * rule.  Instead, pin the badge column to the LEFT (single anchor
+ * point that the eye returns to) and let the signature reflow into
+ * the remaining width.  The badge tells you what kind of API entry
+ * this is at a glance; the signature is the mutable thing that
+ * wraps.  Reordering with `order: -1` keeps source-order
+ * untouched (badge stays after signature in the DOM for
+ * accessibility) while flipping visual order on narrow viewports. */
 @media (max-width: 52rem) {
   dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout {
-    flex-direction: column;
+    flex-direction: row;
+    align-items: flex-start;
     gap: 0.5rem;
   }
 
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-left {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
   dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right {
+    order: -1;
+    flex: 0 0 auto;
     margin-left: 0;
-    white-space: normal;
-    width: 100%;
+    width: auto;
     justify-content: flex-start;
     flex-wrap: wrap;
+    white-space: nowrap;
   }
 
   .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout {
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
   }
 
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-layout-left {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
   .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-layout-right {
+    order: -1;
+    flex: 0 0 auto;
     margin-left: 0;
-    white-space: normal;
-    width: 100%;
+    width: auto;
     flex-wrap: wrap;
+    white-space: nowrap;
   }
 }
 
