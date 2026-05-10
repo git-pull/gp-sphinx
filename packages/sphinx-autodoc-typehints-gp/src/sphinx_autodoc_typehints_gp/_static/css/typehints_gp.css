@@ -69,4 +69,17 @@
     padding: 0;
     font-size: inherit;
   }
+
+  /* Field-list description body — the prose after the en-dash on
+   * each `Parameters` / `Raises` row, plus the entire `Returns` and
+   * `Return type` field bodies. Pinned to the same `0.8125rem`
+   * (~13px) as the prefix so a `Parameters` row reads as one
+   * uniformly-sized line — the prefix at 13px monospace, the
+   * description at 13px sans — instead of jumping from a 13px
+   * prefix to a 16px description and visually outsizing the body
+   * prose around the autodoc block. The same rule covers `Returns`
+   * and `Raises` bodies so every field-list row matches. */
+  .field-list > dd {
+    font-size: 0.8125rem;
+  }
 }
