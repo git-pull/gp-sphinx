@@ -467,5 +467,28 @@ dl.gp-sphinx-api-container:not(.py) .gp-sphinx-api-footer dl.gp-sphinx-api-conta
   }
 }
 
+/* ── Tiny viewports (< 30rem) ────────────────────────── *
+ *
+ * Below ~480px the safety-net `overflow-wrap: anywhere` from the
+ * 52rem block starts breaking unbreakable identifiers like
+ * `transport` mid-token (`tra` / `nsport`), which is uglier than
+ * the alternative: keep the identifier whole and let the
+ * signature scroll horizontally inside its card.  At phone widths
+ * a horizontal swipe to read the rest of a signature is preferable
+ * to a column of character-by-character wraps.
+ *
+ * `scrollbar-width: thin` keeps the scrollbar visually quiet on
+ * platforms that honour the property (Firefox, Chromium-on-Linux
+ * with overlay scrollbars disabled). */
+@media (max-width: 30rem) {
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-signature,
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-signature {
+    overflow-wrap: normal;
+    word-break: keep-all;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+}
+
 
 }  /* end @layer gp-sphinx */
