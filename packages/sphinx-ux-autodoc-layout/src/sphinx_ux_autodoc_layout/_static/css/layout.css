@@ -207,7 +207,15 @@ dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.fi
 /* Override docutils' tight `simple` list convention.  `<ul.simple>
  * > li > p` collapses to `margin: 4px 0`, leaving only ~8px between
  * adjacent rows against a 25.6px line-height.  Flex-gap delivers a
- * cleaner ~12px without fighting per-row margin collapse. */
+ * cleaner ~12px without fighting per-row margin collapse.
+ *
+ * `margin-left: 0` cancels Furo's `api.css` rule that pulls the
+ * `<ul>` 1.2rem to the left (`dl[class]:not(...).field-list dd > ul
+ * { margin-left: -1.2rem }`).  Combined with the inherited
+ * `padding-left: 1.2rem`, that negative margin would leak the first
+ * `<li>` marker into the column gap while subsequent markers stay at
+ * the dd's edge, leaving the first bullet flush against the eyebrow
+ * label and breaking row-to-row alignment. */
 dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list > dd > ul.simple,
 dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list > dd > ul.simple {
   display: flex;
@@ -215,6 +223,7 @@ dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.fi
   gap: 0.75rem;
   margin-top: 0.25rem;
   margin-bottom: 0;
+  margin-left: 0;
 }
 
 /* Zero `<p>` margins both inside `<ul.simple>` (parameter rows)

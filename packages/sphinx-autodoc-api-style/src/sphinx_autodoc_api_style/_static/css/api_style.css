@@ -104,12 +104,19 @@ dl.py:not(.fixture) > dd > dl.field-list > dd {
   line-height: 1.5;
 }
 
+/* `margin-left: 0` cancels Furo's `api.css` rule that pulls the
+ * `<ul>` 1.2rem to the left (`dl[class]:not(...).field-list dd > ul
+ * { margin-left: -1.2rem }`).  Combined with the inherited
+ * `padding-left: 1.2rem`, that negative margin would leak the first
+ * `<li>` marker into the column gap while subsequent markers stay at
+ * the dd's edge. */
 dl.py:not(.fixture) > dd > dl.field-list > dd > ul.simple {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   margin-top: 0.25rem;
   margin-bottom: 0;
+  margin-left: 0;
 }
 
 dl.py:not(.fixture) > dd > dl.field-list > dd > p,
