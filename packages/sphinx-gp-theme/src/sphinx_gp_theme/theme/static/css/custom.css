@@ -1,3 +1,9 @@
+/* All workspace overrides land in @layer gp-sphinx so precedence is
+ * declarative against Furo's @layer components rather than relying
+ * on accidental "unlayered wins." Layer order is established in
+ * gp-furo-theme/web/src/styles/index.css. */
+@layer gp-sphinx {
+
 .sidebar-tree p.indented-block {
   padding: var(--sidebar-item-spacing-vertical) var(--sidebar-item-spacing-horizontal) 0
     var(--sidebar-item-spacing-horizontal);
@@ -109,10 +115,13 @@ article h6 {
  * Uses Furo CSS variable overrides where possible.
  * ────────────────────────────────────────────────────────── */
 
-/* TOC font sizes: override Furo defaults (75% → 87.5%) */
-:root {
-  --toc-font-size: var(--font-size--small);         /* 87.5% = 14px */
-  --toc-title-font-size: var(--font-size--small);   /* 87.5% = 14px */
+/* TOC font sizes: drive from the gp-sphinx-type-metadata role token
+ * (87.5%, ~14px). Declared on `body` because gp-furo-tokens emits
+ * Furo's own --toc-font-size on `body` too — a `:root` override is
+ * silently shadowed for descendants of body. */
+body {
+  --toc-font-size: var(--gp-sphinx-type-metadata);
+  --toc-title-font-size: var(--gp-sphinx-type-metadata);
 }
 
 /* More generous line-height for wrapped TOC entries */
@@ -375,3 +384,5 @@ a.reference:has(.sd-badge[role="note"][aria-label^="Safety tier:"]):hover code {
 .sig:not(.sig-inline) {
   transition: none;
 }
+
+}  /* end @layer gp-sphinx */
