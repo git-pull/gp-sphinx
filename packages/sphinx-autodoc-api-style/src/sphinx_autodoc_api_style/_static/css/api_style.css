@@ -4,7 +4,13 @@
  * Badge colour tokens have moved to sab_palettes.css in
  * sphinx-ux-badges.  This file only contains the
  * card-level and field-list layout rules.
+ *
+ * All rules land in @layer gp-sphinx so precedence is declarative
+ * against Furo's @layer components.  Layer order is established in
+ * gp-furo-theme/web/src/styles/index.css.
  * ────────────────────────────────────────────────────────── */
+
+@layer gp-sphinx {
 
 /* ── Deprecated entry muting ───────────────────────────── */
 dl.py.gp-sphinx-badge--state-deprecated > dt {
@@ -59,7 +65,20 @@ dl.py:not(.fixture) dd dl.py:not(.fixture) > dt:hover {
   background: var(--color-api-background-hover);
 }
 
-/* ── Metadata fields (compact grid) ────────────────────── */
+/* ── Metadata fields (compact grid) — STANDALONE FALLBACK ──
+ * These rules use a direct-child chain `> dd > dl.field-list` that
+ * intentionally only fires when sphinx-autodoc-api-style is installed
+ * WITHOUT sphinx-ux-autodoc-layout. When the layout package is
+ * present, _wrap_content_runs inserts a `<div class="gp-sphinx-api-
+ * parameters">` between `<dd>` and `<dl class="field-list">`, which
+ * breaks this direct-child path; the authoritative styling for the
+ * transformed DOM lives in
+ * `packages/sphinx-ux-autodoc-layout/.../layout.css`.
+ *
+ * Per CLAUDE.md "Package self-containment," sphinx-autodoc-api-style
+ * must render the classes its Python emits even when consumed alone,
+ * so this fallback stays. Keep it visually identical to the
+ * authoritative layout.css block. */
 dl.py:not(.fixture) > dd > dl.field-list {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
@@ -71,10 +90,11 @@ dl.py:not(.fixture) > dd > dl.field-list {
 
 dl.py:not(.fixture) > dd > dl.field-list > dt {
   grid-column: 1;
+  font-size: var(--gp-sphinx-type-metadata);
   font-weight: normal;
   text-transform: uppercase;
-  font-size: 0.85em;
   letter-spacing: 0.025em;
+  color: var(--color-foreground-muted);
 }
 
 dl.py:not(.fixture) > dd > dl.field-list > dd {
@@ -91,3 +111,6 @@ dl.py:not(.fixture) > dd > dl.field-list > dd {
     grid-column: 1;
   }
 }
+
+
+}  /* end @layer gp-sphinx */
