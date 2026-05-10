@@ -25,23 +25,17 @@
   }
 
   /* Field-list prefix wrapper added by FieldListPrefixWrapTransform.
-   * Defaults to inherit so structural punctuation (parens,
-   * brackets, commas, ellipsis) flows in the body sans font.  Code
-   * identifiers inside the wrapper get monospace via the nested
-   * rules below — keeps the syntax-vs-text boundary clear. */
+   * Defaults to inherit so structural content — parameter name,
+   * parens, brackets, commas, ellipsis — flows in the body sans
+   * font.  Only the inline `<code>` type-name children get
+   * monospace, via Furo's `code.literal` rule in
+   * gp-furo-theme/.../code.css.  Result: parameter name reads as
+   * sans-bold definition term; type expressions stay mono inside
+   * chips.  One mono treatment per row, scoped to "this is code." */
   .gp-sphinx-field-prefix {
     font-family: inherit;
     font-size: inherit;
   }
-
-  /* The bold parameter name is a code identifier — render it in
-   * monospace alongside the type cross-references it labels. */
-  .gp-sphinx-field-prefix > strong {
-    font-family: var(--font-stack--monospace);
-  }
-  /* Inline `<code>` xref children of the prefix wrapper still pick
-   * up monospace from Furo's `code.literal` rule in
-   * gp-furo-theme/.../code.css; no extra rule needed here. */
 
   /* Furo's `code.literal` chip styling (background, padding,
    * border-radius) acts as a cognitive container around each type
