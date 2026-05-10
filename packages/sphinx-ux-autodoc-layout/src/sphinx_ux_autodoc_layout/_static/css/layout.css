@@ -398,57 +398,54 @@ dl.gp-sphinx-api-container:not(.py) .gp-sphinx-api-footer dl.gp-sphinx-api-conta
 
 /* ── Mobile adjustments ─────────────────────────────── *
  *
- * Below the 52rem breakpoint the desktop "signature left, badge
- * right" row no longer reads cleanly: long signatures wrap onto
- * three or four lines and the badge ends up floating beside the
- * tail of that wrap, or the whole row collapses and centers
- * because `align-items: center` carries over from the desktop
- * rule.  Instead, pin the badge column to the LEFT (single anchor
- * point that the eye returns to) and let the signature reflow into
- * the remaining width.  The badge tells you what kind of API entry
- * this is at a glance; the signature is the mutable thing that
- * wraps.  Reordering with `order: -1` keeps source-order
- * untouched (badge stays after signature in the DOM for
- * accessibility) while flipping visual order on narrow viewports. */
+ * Below the 52rem breakpoint the desktop "signature left, toolbar
+ * right" row stops fitting: the toolbar (badges + [source]) keeps
+ * its full natural width via `white-space: nowrap`, so the
+ * signature column gets squeezed below the width of an unbreakable
+ * identifier like `demo_session`.  Once that happens, Furo's
+ * inherited `overflow-wrap: break-word` is the only thing keeping
+ * the text inside the column — it breaks the identifier at every
+ * character, producing a one-letter-per-line column.
+ *
+ * Stack vertically instead, matching the same 52rem breakpoint the
+ * field-list grid uses (see line 243):
+ *   row 1: toolbar (badges + source link)
+ *   row 2: signature, full container width
+ *
+ * Reading-order hierarchy maps 1:1 from desktop (signature
+ * primary-left, toolbar secondary-right) to narrow (toolbar above,
+ * signature below at full width).  `order: -1` flips visual order
+ * while keeping the DOM order (signature first) intact for
+ * screen readers, copy-paste, and keyboard nav. */
 @media (max-width: 52rem) {
-  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-left {
-    flex: 1 1 0;
-    min-width: 0;
-  }
-
-  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right {
-    order: -1;
-    flex: 0 0 auto;
-    margin-left: 0;
-    width: auto;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    white-space: nowrap;
-  }
-
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout,
   .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout {
-    flex-direction: row;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
   }
 
-  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-layout-left {
-    flex: 1 1 0;
-    min-width: 0;
-  }
-
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right,
   .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-layout-right {
     order: -1;
-    flex: 0 0 auto;
     margin-left: 0;
-    width: auto;
+    align-self: flex-start;
     flex-wrap: wrap;
-    white-space: nowrap;
+  }
+
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-left,
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-layout-left {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Safety net for sub-300px viewports: prefer breaking long
+   * identifiers at any point over per-character wrapping that
+   * Furo's default overflow-wrap produces.  At the 280px low end
+   * this lets `demo_session_factory` wrap once or twice instead of
+   * one character per line. */
+  .gp-sphinx-api-signature {
+    overflow-wrap: anywhere;
   }
 }
 
