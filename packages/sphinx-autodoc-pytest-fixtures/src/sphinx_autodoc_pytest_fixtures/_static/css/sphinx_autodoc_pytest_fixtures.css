@@ -86,6 +86,7 @@ dl.py.fixture > dd > dl.field-list > dt {
 dl.py.fixture > dd > dl.field-list > dt .colon { display: none; }
 dl.py.fixture > dd > dl.field-list > dd {
   grid-column: 2;
+  margin-top: 0.25rem;
   margin-left: 0;
   font-size: var(--gp-sphinx-type-metadata);
   line-height: 1.5;
@@ -95,7 +96,7 @@ dl.py.fixture > dd > dl.field-list > dd > ul.simple {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin-top: 0.25rem;
+  margin-top: 0;
   margin-bottom: 0;
 }
 
