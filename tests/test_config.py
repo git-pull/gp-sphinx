@@ -2,10 +2,17 @@
 
 from __future__ import annotations
 
+import pathlib
+
 import pytest
 
 import gp_sphinx
-from gp_sphinx.config import deep_merge, make_linkcode_resolve, merge_sphinx_config
+from gp_sphinx.config import (
+    deep_merge,
+    make_linkcode_resolve,
+    make_workspace_linkcode_resolve,
+    merge_sphinx_config,
+)
 from gp_sphinx.defaults import DEFAULT_EXTENSIONS, DEFAULT_MYST_EXTENSIONS
 
 
@@ -538,3 +545,134 @@ def test_make_linkcode_resolve_uses_source_branch(
     url = resolver("py", {"module": "fake", "fullname": "dummy"})
     assert url is not None
     assert "/blob/custom-branch/src/" in url
+
+
+# ---------------------------------------------------------------------------
+# make_workspace_linkcode_resolve
+# ---------------------------------------------------------------------------
+
+
+def test_make_workspace_linkcode_resolve_returns_callable(
+    tmp_path: pathlib.Path,
+) -> None:
+    """make_workspace_linkcode_resolve returns a callable."""
+    resolver = make_workspace_linkcode_resolve(
+        repo_root=tmp_path,
+        github_url="https://github.com/git-pull/gp-sphinx",
+    )
+    assert callable(resolver)
+
+
+def test_make_workspace_linkcode_resolve_non_py_domain_returns_none(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Resolver returns None for non-Python domains."""
+    resolver = make_workspace_linkcode_resolve(
+        repo_root=tmp_path,
+        github_url="https://github.com/git-pull/gp-sphinx",
+    )
+    assert resolver("c", {"module": "gp_sphinx", "fullname": "foo"}) is None
+
+
+def test_make_workspace_linkcode_resolve_url_for_workspace_module() -> None:
+    """Resolver produces a correct GitHub URL for a workspace package module."""
+    repo_root = pathlib.Path(__file__).resolve().parent.parent
+    resolver = make_workspace_linkcode_resolve(
+        repo_root=repo_root,
+        github_url="https://github.com/git-pull/gp-sphinx",
+        source_branch="main",
+    )
+    url = resolver(
+        "py",
+        {"module": "gp_sphinx.config", "fullname": "merge_sphinx_config"},
+    )
+    assert url is not None
+    assert "/blob/main/" in url
+    assert "packages/gp-sphinx/src/gp_sphinx/config.py" in url
+    assert "#L" in url
+
+
+def test_make_workspace_linkcode_resolve_uses_source_branch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Resolver uses the provided source_branch in the generated URL."""
+    import sys
+    import types
+
+    repo_root = pathlib.Path("/tmp/ws_repo")
+    src_file = repo_root / "packages" / "mypkg" / "src" / "mypkg" / "_mod.py"
+
+    fake_module = types.ModuleType("mypkg._mod")
+
+    def dummy_fn() -> None:
+        pass
+
+    fake_module.dummy_fn = dummy_fn  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "mypkg._mod", fake_module)
+    monkeypatch.setattr(
+        "inspect.getsourcefile",
+        lambda obj: str(src_file) if obj is dummy_fn else None,
+    )
+    monkeypatch.setattr(
+        "inspect.getsourcelines",
+        lambda obj: (["def dummy_fn(): ...\n"], 42),
+    )
+
+    resolver = make_workspace_linkcode_resolve(
+        repo_root=repo_root,
+        github_url="https://github.com/git-pull/gp-sphinx",
+        source_branch="release/0.1",
+    )
+    url = resolver("py", {"module": "mypkg._mod", "fullname": "dummy_fn"})
+    assert url is not None
+    assert "/blob/release/0.1/" in url
+
+
+def test_make_workspace_linkcode_resolve_outside_repo_returns_none(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: pathlib.Path,
+) -> None:
+    """Resolver returns None when source file is outside repo_root."""
+    import sys
+    import types
+
+    outside_file = "/tmp/other_project/src/mod.py"
+
+    fake_module = types.ModuleType("other_mod")
+
+    def dummy_fn() -> None:
+        pass
+
+    fake_module.dummy_fn = dummy_fn  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "other_mod", fake_module)
+    monkeypatch.setattr(
+        "inspect.getsourcefile",
+        lambda obj: outside_file if obj is dummy_fn else None,
+    )
+    monkeypatch.setattr(
+        "inspect.getsourcelines",
+        lambda obj: (["def dummy_fn(): ...\n"], 1),
+    )
+
+    resolver = make_workspace_linkcode_resolve(
+        repo_root=tmp_path,
+        github_url="https://github.com/git-pull/gp-sphinx",
+    )
+    assert resolver("py", {"module": "other_mod", "fullname": "dummy_fn"}) is None
+
+
+def test_merge_sphinx_config_linkcode_auto_added_with_workspace_resolver(
+    tmp_path: pathlib.Path,
+) -> None:
+    """sphinx.ext.linkcode auto-added when workspace resolver is provided."""
+    resolver = make_workspace_linkcode_resolve(
+        repo_root=tmp_path,
+        github_url="https://github.com/git-pull/gp-sphinx",
+    )
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        linkcode_resolve=resolver,
+    )
+    assert "sphinx.ext.linkcode" in result["extensions"]

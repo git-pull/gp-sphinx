@@ -61,7 +61,10 @@ sys.path.insert(
 sys.path.insert(0, str(cwd / "_ext"))  # docs demo modules
 
 import gp_sphinx  # noqa: E402
-from gp_sphinx.config import merge_sphinx_config  # noqa: E402
+from gp_sphinx.config import (  # noqa: E402
+    make_workspace_linkcode_resolve,
+    merge_sphinx_config,
+)
 
 intersphinx_mapping = {
     "py": ("https://docs.python.org/3/", None),
@@ -75,6 +78,11 @@ conf = merge_sphinx_config(
     source_repository=f"{gp_sphinx.__github__}/",
     docs_url=gp_sphinx.__docs__,
     source_branch="main",
+    linkcode_resolve=make_workspace_linkcode_resolve(
+        repo_root=project_root,
+        github_url=gp_sphinx.__github__,
+        source_branch="main",
+    ),
     extra_extensions=[
         "inline_highlight",
         "package_reference",

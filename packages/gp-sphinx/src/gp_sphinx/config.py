@@ -32,6 +32,7 @@ import json
 import logging
 import os.path
 import pathlib
+import sys
 import typing as t
 
 from gp_sphinx.defaults import (
@@ -203,6 +204,108 @@ def make_linkcode_resolve(
         if "dev" in version:
             return f"{github_url}/blob/{source_branch}/{src_dir}/{fn}{linespec}"
         return f"{github_url}/blob/v{version}/{src_dir}/{fn}{linespec}"
+
+    return linkcode_resolve
+
+
+def make_workspace_linkcode_resolve(
+    *,
+    repo_root: pathlib.Path | str,
+    github_url: str,
+    source_branch: str = "main",
+) -> Callable[[str, dict[str, str]], str | None]:
+    """Create a ``linkcode_resolve`` function for a uv/pnpm workspace monorepo.
+
+    Unlike :func:`make_linkcode_resolve`, which assumes a single-package layout
+    rooted at ``<repo>/<src_dir>/<package>/…``, this resolver computes URLs by
+    taking the absolute path returned by :func:`inspect.getsourcefile` and
+    making it relative to *repo_root*. This works uniformly across all packages
+    in a workspace layout such as ``<repo>/packages/<pkg>/src/<module>/…``
+    without requiring per-package registration.
+
+    The URL always points to *source_branch* — there is no per-package version
+    tag branching because each workspace package carries its own independent
+    version string while the docs site tracks the live monorepo tip.
+
+    Returns ``None`` when the domain is not ``"py"``, the module is not
+    imported, the attribute cannot be resolved, ``inspect.getsourcefile``
+    returns a falsy value, or the source file lives outside *repo_root*.
+
+    Parameters
+    ----------
+    repo_root : pathlib.Path or str
+        Absolute path to the repository root (the directory that contains
+        ``pyproject.toml`` and the ``packages/`` tree).
+    github_url : str
+        Base GitHub repository URL, e.g.
+        ``"https://github.com/git-pull/gp-sphinx"``.
+    source_branch : str
+        Branch used in all generated URLs (default ``"main"``).
+
+    Returns
+    -------
+    Callable[[str, dict[str, str]], str | None]
+        A function suitable for ``linkcode_resolve`` in a Sphinx config.
+
+    Examples
+    --------
+    >>> import pathlib
+    >>> resolver = make_workspace_linkcode_resolve(
+    ...     repo_root=pathlib.Path("/tmp/repo"),
+    ...     github_url="https://github.com/git-pull/gp-sphinx",
+    ... )
+    >>> callable(resolver)
+    True
+    >>> resolver("c", {"module": "x", "fullname": "y"}) is None
+    True
+    """
+    root = pathlib.Path(repo_root).resolve()
+
+    def linkcode_resolve(domain: str, info: dict[str, str]) -> str | None:
+        if domain != "py":
+            return None
+
+        modname = info["module"]
+        fullname = info["fullname"]
+
+        submod = sys.modules.get(modname)
+        if submod is None:
+            return None
+
+        obj: object = submod
+        for part in fullname.split("."):
+            try:
+                obj = getattr(obj, part)
+            except Exception:  # noqa: PERF203
+                return None
+
+        try:
+            unwrap = inspect.unwrap
+        except AttributeError:
+            pass
+        else:
+            if callable(obj):
+                obj = unwrap(obj)
+
+        try:
+            fn = inspect.getsourcefile(obj)  # type: ignore[arg-type]
+        except Exception:
+            fn = None
+        if not fn:
+            return None
+
+        try:
+            source, lineno = inspect.getsourcelines(obj)  # type: ignore[arg-type]
+        except Exception:
+            lineno = None
+
+        linespec = f"#L{lineno}-L{lineno + len(source) - 1}" if lineno else ""
+
+        rel = os.path.relpath(fn, start=root)
+        if rel.startswith(".."):
+            return None
+
+        return f"{github_url}/blob/{source_branch}/{rel}{linespec}"
 
     return linkcode_resolve
 
