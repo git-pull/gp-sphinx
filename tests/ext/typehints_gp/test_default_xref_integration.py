@@ -291,24 +291,26 @@ def test_cross_module_default_resolves_via_refspecific(
     assert 'class="xref py py-obj' in html
 
 
-@pytest.mark.integration
-def test_unsupported_default_falls_back_to_plain_text(
+_LAMBDA_MODULE_SOURCE = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+
+    def has_lambda_default(callback=lambda: 1) -> None:
+        \"\"\"Function with a lambda default.\"\"\"
+    """
+)
+
+
+@pytest.fixture(scope="module")
+def lambda_default_html_result(
     tmp_path_factory: pytest.TempPathFactory,
-) -> None:
-    """Unparseable defaults (lambdas) leave the span as plain text."""
-    module_source = textwrap.dedent(
-        """\
-        from __future__ import annotations
-
-
-        def has_lambda_default(callback=lambda: 1) -> None:
-            \"\"\"Function with a lambda default.\"\"\"
-        """
-    )
+) -> SharedSphinxResult:
+    """Build a project with a lambda default exercising the plain-text fallback."""
     cache_root = tmp_path_factory.mktemp("default-xref-lambda-html")
     scenario = SphinxScenario(
         files=(
-            ScenarioFile("lambda_demo.py", module_source),
+            ScenarioFile("lambda_demo.py", _LAMBDA_MODULE_SOURCE),
             ScenarioFile(
                 "conf.py",
                 _CONF_PY.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN),
@@ -327,12 +329,19 @@ def test_unsupported_default_falls_back_to_plain_text(
             ),
         ),
     )
-    result = build_shared_sphinx_result(
+    return build_shared_sphinx_result(
         cache_root,
         scenario,
         purge_modules=("lambda_demo",),
     )
-    html = read_output(result, "index.html")
+
+
+@pytest.mark.integration
+def test_unsupported_default_falls_back_to_plain_text(
+    lambda_default_html_result: SharedSphinxResult,
+) -> None:
+    """Unparseable defaults (lambdas) leave the span as plain text."""
+    html = read_output(lambda_default_html_result, "index.html")
 
     # The lambda text appears in the rendered output but not wrapped in an xref
     assert "lambda" in html
