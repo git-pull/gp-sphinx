@@ -2,6 +2,7 @@ import plugin from "tailwindcss/plugin";
 
 import { FURO_DARK_TOKENS } from "./dark.js";
 import { FURO_LIGHT_TOKENS } from "./light.js";
+import { GP_SPHINX_ROLE_TOKENS } from "./roles.js";
 
 /**
  * Convert a token map to a CSS rule body, skipping empty values.
@@ -62,7 +63,10 @@ function declarations(
 export default plugin((api) => {
   const darkDeclarations = declarations(FURO_DARK_TOKENS);
   api.addBase({
-    body: declarations(FURO_LIGHT_TOKENS),
+    body: {
+      ...declarations(FURO_LIGHT_TOKENS),
+      ...declarations(GP_SPHINX_ROLE_TOKENS),
+    },
     'body[data-theme="dark"]': darkDeclarations,
     "@media (prefers-color-scheme: dark)": {
       'body:not([data-theme="light"])': darkDeclarations,

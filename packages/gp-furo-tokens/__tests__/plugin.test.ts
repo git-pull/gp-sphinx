@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { FURO_TOKEN_NAMES } from "../src/contract.js";
+import { FURO_TOKEN_NAMES, GP_SPHINX_ROLE_NAMES } from "../src/contract.js";
 import { FURO_DARK_TOKENS } from "../src/dark.js";
 import { FURO_LIGHT_TOKENS } from "../src/light.js";
 import furoTokensPlugin from "../src/plugin.js";
+import { GP_SPHINX_ROLE_TOKENS } from "../src/roles.js";
 
 // addBase accepts nested CssInJs — at-rule keys (`@media (...)`) hold
 // nested selector→declaration maps; selector keys hold flat
@@ -51,9 +52,21 @@ describe("plugin", () => {
     expect(root, "body rule missing").toBeDefined();
     if (!root) return;
 
-    const expected = FURO_TOKEN_NAMES.filter((name) => FURO_LIGHT_TOKENS[name] !== "").sort();
+    const expected = [
+      ...FURO_TOKEN_NAMES.filter((name) => FURO_LIGHT_TOKENS[name] !== ""),
+      ...GP_SPHINX_ROLE_NAMES.filter((name) => GP_SPHINX_ROLE_TOKENS[name] !== ""),
+    ].sort();
     const got = Object.keys(root).sort();
     expect(got).toEqual(expected);
+  });
+
+  it("emits gp-sphinx role tokens on body alongside Furo's tokens", () => {
+    const rules = runPlugin();
+    const root = rules[0]?.["body"] as Declarations | undefined;
+    expect(root?.["--gp-sphinx-type-body"]).toBe("var(--font-size--normal)");
+    expect(root?.["--gp-sphinx-type-metadata"]).toBe("var(--font-size--small)");
+    expect(root?.["--gp-sphinx-type-code-inline"]).toBe("var(--font-size--small--2)");
+    expect(root?.["--gp-sphinx-type-icon-glyph"]).toBe("0.625rem");
   });
 
   it("emits a body[data-theme='dark'] rule for every dark delta", () => {
