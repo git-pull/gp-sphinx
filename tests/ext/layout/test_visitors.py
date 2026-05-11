@@ -36,13 +36,24 @@ def test_visit_desc_signature_html_emits_managed_header_attrs() -> None:
     sig = addnodes.desc_signature(ids=["demo.func"])
     sig["classes"] = ["sig", "gp-sphinx-api-header"]
     sig["api_managed"] = True
-    sig["html_attrs"] = {"data-signature-expanded": "false"}
+    sig["html_attrs"] = {
+        "data-signature-expanded": "false",
+        "data-domain": "py",
+        "data-objtype": "function",
+        "data-has-source": "true",
+        "data-has-badges": "true",
+        "data-badge-count": "2",
+        "data-has-fold": "false",
+    }
 
     translator = _DummyTranslator()
 
     visit_desc_signature_html(t.cast(t.Any, translator), sig)
 
-    assert translator.calls == [("dt", {"data-signature-expanded": "false"})]
+    assert len(translator.calls) == 1
+    tag, attributes = translator.calls[0]
+    assert tag == "dt"
+    assert attributes == sig["html_attrs"]
     assert translator.body == ["<dt>\n"]
     assert translator.protect_literal_text == 1
 

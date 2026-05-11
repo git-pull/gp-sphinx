@@ -501,13 +501,32 @@ def _count_signature_parameters(
     return first, len(params)
 
 
-def _signature_expanded_id(desc_sig: addnodes.desc_signature) -> str:
-    """Return the stable DOM id for an expanded signature wrapper."""
+_LAYOUT_VARIANTS: t.Final[tuple[str, ...]] = ("desktop", "mobile")
+"""Stable variant tags emitted side-by-side in every managed header.
+
+CSS in ``layout.css`` toggles visibility between the two via container
+queries on ``dl.gp-sphinx-api-container``; only one variant is rendered at
+a time, but both ship in the DOM so the cascade can pick the right one
+per containing column without JS measurement.
+"""
+
+
+def _signature_expanded_id(
+    desc_sig: addnodes.desc_signature, variant: str | None = None
+) -> str:
+    """Return the stable DOM id for an expanded signature wrapper.
+
+    When ``variant`` is provided it is appended as a suffix so each layout
+    variant (desktop / mobile) ships with a distinct, addressable panel id.
+    """
     ids: list[str] = [
         str(node_id) for node_id in t.cast(list[t.Any], desc_sig.get("ids", []))
     ]
     base = ids[0] if ids else API.SIGNATURE
-    return f"{base}--signature-expanded"
+    suffix = "--signature-expanded"
+    if variant is not None:
+        suffix = f"{suffix}-{variant}"
+    return f"{base}{suffix}"
 
 
 def _parameter_has_annotation(parameter: addnodes.desc_parameter) -> bool:
@@ -784,18 +803,37 @@ def _extract_slot_content(
     return slot_children
 
 
-def _rebuild_signature_layout(
+@dataclasses.dataclass(frozen=True, slots=True)
+class _HeaderInputs:
+    """Parsed material for one or more header layout variants.
+
+    ``signature_row_children`` is the list of inline nodes that belong in
+    the signature column (operating from the original ``desc_signature``
+    children minus toolbar/source/headerlink siblings). ``badge_children``
+    and ``source_children`` populate the toolbar; ``param_count`` /
+    ``first_param`` are pre-computed so metadata callers don't re-walk
+    the parameter list.
+    """
+
+    signature_row_children: tuple[nodes.Node, ...]
+    badge_children: tuple[nodes.Node, ...]
+    source_children: tuple[nodes.Node, ...]
+    parameter_types: dict[str, list[nodes.Node]]
+    first_param: str
+    param_count: int
+    has_parameter_list: bool
+
+
+def _parse_signature_inputs(
     desc_node: addnodes.desc,
     desc_sig: addnodes.desc_signature,
-    *,
-    threshold: int,
-    include_permalink: bool,
-    show_annotations: bool,
-) -> None:
-    """Rebuild a signature into explicit API header subcomponents."""
-    if desc_sig.get("is_multiline"):
-        return
+) -> _HeaderInputs:
+    """Detach the signature's children and partition them by destination.
 
+    Slots, the legacy badge toolbar, viewcode source link, headerlink, and
+    everything else are split apart so each layout variant can rebuild a
+    fresh subtree from independently deepcopied parts.
+    """
     slot_children = _extract_slot_content(desc_sig)
     original = list(desc_sig.children)
     desc_sig.children = []
@@ -826,76 +864,282 @@ def _rebuild_signature_layout(
     if not source_children and fallback_source_ref is not None:
         source_children = [fallback_source_ref]
 
-    layout = build_api_component(API.LAYOUT)
-    left = build_api_component(API.LAYOUT_LEFT)
+    first_param = ""
+    param_count = 0
+    has_parameter_list = False
+    for child in row_children:
+        if isinstance(child, addnodes.desc_parameterlist):
+            has_parameter_list = True
+            first_param, param_count = _count_signature_parameters(child)
+            break
+
+    return _HeaderInputs(
+        signature_row_children=tuple(row_children),
+        badge_children=tuple(badge_children),
+        source_children=tuple(source_children),
+        parameter_types=_extract_parameter_types(desc_node),
+        first_param=first_param,
+        param_count=param_count,
+        has_parameter_list=has_parameter_list,
+    )
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
+class _HeaderMetadata:
+    """Builder-driven metadata about a managed header.
+
+    Both the boolean ``classes`` (CSS modifier list) and the ``data_attrs``
+    (data-* attributes on the rendered ``<dt>``) describe styling-relevant
+    facts CSS can't compute on its own — number of badges, presence of a
+    source link, whether the signature folds, the Sphinx domain/objtype.
+    """
+
+    classes: tuple[str, ...]
+    data_attrs: dict[str, str]
+
+
+def _compute_header_metadata(
+    desc_node: addnodes.desc,
+    inputs: _HeaderInputs,
+    *,
+    threshold: int,
+) -> _HeaderMetadata:
+    """Derive class modifiers and data-* attributes for the managed header."""
+    domain = str(desc_node.get("domain", "") or "")
+    objtype = str(desc_node.get("objtype", "") or "")
+    badge_count = len(inputs.badge_children)
+    has_source = bool(inputs.source_children)
+    has_badges = badge_count > 0
+    has_fold = inputs.has_parameter_list and inputs.param_count >= threshold
+
+    data_attrs: dict[str, str] = {"data-signature-expanded": "false"}
+    if domain:
+        data_attrs["data-domain"] = domain
+    if objtype:
+        data_attrs["data-objtype"] = objtype
+    data_attrs["data-has-source"] = "true" if has_source else "false"
+    data_attrs["data-has-badges"] = "true" if has_badges else "false"
+    data_attrs["data-badge-count"] = str(badge_count)
+    data_attrs["data-has-fold"] = "true" if has_fold else "false"
+
+    classes: list[str] = []
+    if has_source:
+        classes.append(API.HEADER_HAS_SOURCE)
+    if has_badges:
+        classes.append(API.HEADER_HAS_BADGES)
+    if has_fold:
+        classes.append(API.HEADER_HAS_FOLD)
+
+    return _HeaderMetadata(classes=tuple(classes), data_attrs=data_attrs)
+
+
+def _build_signature_column(
+    desc_sig: addnodes.desc_signature,
+    inputs: _HeaderInputs,
+    *,
+    variant: str,
+    threshold: int,
+    show_annotations: bool,
+    include_permalink: bool,
+) -> tuple[api_component, api_permalink | None]:
+    """Build a fresh signature column (signature + permalink) for one variant.
+
+    Every node is deepcopied from ``inputs`` so each variant owns an
+    independent subtree — docutils requires single parentage and the
+    expanded panel id needs to be variant-specific.
+    """
     signature = build_api_component(API.SIGNATURE)
-    right = build_api_component(API.LAYOUT_RIGHT, classes=(SAB.TOOLBAR,))
-    parameter_types = _extract_parameter_types(desc_node)
     folded = False
 
-    for child in row_children:
-        if not folded and isinstance(child, addnodes.desc_parameterlist):
-            first_param, param_count = _count_signature_parameters(child)
-            if param_count >= threshold:
-                panel_id = _signature_expanded_id(desc_sig)
-                signature += api_sig_fold(
-                    first_param=first_param,
-                    param_count=param_count,
-                    panel_id=panel_id,
-                )
-                _prepare_folded_parameter_list(
-                    child,
-                    parameter_types=parameter_types,
-                    show_annotations=show_annotations,
-                )
-                expanded = build_api_component(
-                    API.SIGNATURE_EXPANDED,
-                    classes=(API.SIG_EXPANDED,),
-                    html_attrs={
-                        "aria-hidden": "true",
-                        "data-expanded": "false",
-                        "hidden": "hidden",
-                        "id": panel_id,
-                    },
-                )
-                expanded += child
-                collapse = build_api_inline_component(
-                    API.SIG_COLLAPSE,
-                    tag="button",
-                    html_attrs={
-                        "aria-controls": panel_id,
-                        "aria-expanded": "true",
-                        "type": "button",
-                    },
-                )
-                collapse += nodes.Text("[collapse]")
-                expanded += collapse
-                signature += expanded
-                folded = True
-                continue
-        signature += child
+    for child in inputs.signature_row_children:
+        cloned = child.deepcopy() if isinstance(child, nodes.Node) else child
+        if (
+            not folded
+            and isinstance(cloned, addnodes.desc_parameterlist)
+            and inputs.has_parameter_list
+            and inputs.param_count >= threshold
+        ):
+            panel_id = _signature_expanded_id(desc_sig, variant=variant)
+            signature += api_sig_fold(
+                first_param=inputs.first_param,
+                param_count=inputs.param_count,
+                panel_id=panel_id,
+            )
+            _prepare_folded_parameter_list(
+                cloned,
+                parameter_types=inputs.parameter_types,
+                show_annotations=show_annotations,
+            )
+            expanded = build_api_component(
+                API.SIGNATURE_EXPANDED,
+                classes=(API.SIG_EXPANDED,),
+                html_attrs={
+                    "aria-hidden": "true",
+                    "data-expanded": "false",
+                    "hidden": "hidden",
+                    "id": panel_id,
+                },
+            )
+            expanded += cloned
+            collapse = build_api_inline_component(
+                API.SIG_COLLAPSE,
+                tag="button",
+                html_attrs={
+                    "aria-controls": panel_id,
+                    "aria-expanded": "true",
+                    "type": "button",
+                },
+            )
+            collapse += nodes.Text("[collapse]")
+            expanded += collapse
+            signature += expanded
+            folded = True
+            continue
+        signature += cloned
 
-    left += signature
-    if include_permalink:
-        permalink = _make_api_permalink(desc_sig)
+    permalink = _make_api_permalink(desc_sig) if include_permalink else None
+    return signature, permalink
+
+
+def _clone_node(node: nodes.Node) -> nodes.Node:
+    """Return an independent copy of *node* via docutils' own ``deepcopy``.
+
+    Stdlib ``copy.deepcopy`` is unsafe for docutils nodes: ``Node`` does not
+    override ``__deepcopy__``, so the default machinery follows ``.parent``
+    upward and clones every ancestor.  Docutils' ``Element.deepcopy`` /
+    ``Text.deepcopy`` walk only descendants, which is what we want when
+    duplicating header content for the desktop and mobile variants.
+    """
+    if isinstance(node, nodes.Node):
+        return node.deepcopy()
+    return node
+
+
+def _build_toolbar_column(
+    inputs: _HeaderInputs,
+    *,
+    classes: tuple[str, ...],
+    name: str,
+) -> api_component:
+    """Build a fresh toolbar column (badges + source) for one variant.
+
+    Each toolbar gets a docutils-native deep copy of the badge / source
+    nodes so the two layout variants are independent subtrees.
+    """
+    column = build_api_component(name, classes=(SAB.TOOLBAR, *classes))
+    if inputs.badge_children:
+        badge_container = build_api_inline_component(API.BADGE_CONTAINER)
+        for child in inputs.badge_children:
+            badge_container += _clone_node(child)
+        column += badge_container
+    if inputs.source_children:
+        source_container = build_api_inline_component(API.SOURCE_LINK)
+        for child in inputs.source_children:
+            source_container += _clone_node(child)
+        column += source_container
+    return column
+
+
+def _build_layout_variant(
+    desc_sig: addnodes.desc_signature,
+    inputs: _HeaderInputs,
+    *,
+    variant: str,
+    threshold: int,
+    show_annotations: bool,
+    include_permalink: bool,
+) -> api_component:
+    """Build a complete ``gp-sphinx-api-layout--<variant>`` subtree.
+
+    Desktop variant: ``[ left(signature, permalink), right(toolbar) ]``.
+    Mobile variant:  ``[ top(toolbar), bottom(signature, permalink) ]``.
+
+    The horizontal/vertical naming reflects each variant's intended layout
+    axis (desktop = inline row, mobile = block stack); CSS uses container
+    queries on ``dl.gp-sphinx-api-container`` to toggle which one is
+    visible.
+    """
+    layout = build_api_component(API.LAYOUT, classes=(API.layout_variant(variant),))
+    signature, permalink = _build_signature_column(
+        desc_sig,
+        inputs,
+        variant=variant,
+        threshold=threshold,
+        show_annotations=show_annotations,
+        include_permalink=include_permalink,
+    )
+
+    if variant == "desktop":
+        left = build_api_component(API.LAYOUT_LEFT)
+        left += signature
         if permalink is not None:
             left += permalink
+        right = _build_toolbar_column(
+            inputs,
+            classes=(),
+            name=API.LAYOUT_RIGHT,
+        )
+        layout += left
+        layout += right
+        return layout
 
-    if badge_children:
-        badge_container = build_api_inline_component(API.BADGE_CONTAINER)
-        for child in badge_children:
-            badge_container += child
-        right += badge_container
+    # variant == "mobile" — toolbar on top, signature on the bottom.  This
+    # avoids the desktop's `order: -1` flex hack: each variant owns the
+    # natural DOM order it needs, and CSS picks one to display per
+    # container width.
+    top = _build_toolbar_column(
+        inputs,
+        classes=(),
+        name=API.LAYOUT_TOP,
+    )
+    bottom = build_api_component(API.LAYOUT_BOTTOM)
+    bottom += signature
+    if permalink is not None:
+        bottom += permalink
+    layout += top
+    layout += bottom
+    return layout
 
-    if source_children:
-        source_container = build_api_inline_component(API.SOURCE_LINK)
-        for child in source_children:
-            source_container += child
-        right += source_container
 
-    layout += left
-    layout += right
-    desc_sig += layout
+def _rebuild_signature_layout(
+    desc_node: addnodes.desc,
+    desc_sig: addnodes.desc_signature,
+    *,
+    threshold: int,
+    include_permalink: bool,
+    show_annotations: bool,
+) -> None:
+    """Rebuild a signature into desktop + mobile API header variants.
+
+    Each variant is a fully independent subtree (deepcopied content) so
+    docutils' single-parent invariant is preserved and CSS can hide one
+    variant entirely without leaving stale shared state.  The desc
+    signature also receives builder-driven ``data-*`` metadata and
+    boolean modifier classes so theme CSS can branch on facts that the
+    cascade alone cannot derive (badge count, source-link presence,
+    fold availability).
+    """
+    if desc_sig.get("is_multiline"):
+        return
+
+    inputs = _parse_signature_inputs(desc_node, desc_sig)
+    metadata = _compute_header_metadata(desc_node, inputs, threshold=threshold)
+
+    existing_attrs = t.cast(dict[str, str], desc_sig.get("html_attrs", {}) or {})
+    merged_attrs: dict[str, str] = {**existing_attrs, **metadata.data_attrs}
+    desc_sig["html_attrs"] = merged_attrs
+    for class_name in metadata.classes:
+        _append_class(desc_sig, class_name)
+
+    for variant in _LAYOUT_VARIANTS:
+        desc_sig += _build_layout_variant(
+            desc_sig,
+            inputs,
+            variant=variant,
+            threshold=threshold,
+            show_annotations=show_annotations,
+            include_permalink=include_permalink,
+        )
 
 
 def on_doctree_resolved(
@@ -951,8 +1195,6 @@ def on_doctree_resolved(
                 continue
             _append_class(child, API.HEADER)
             child["api_managed"] = not child.get("is_multiline", False)
-            if child["api_managed"]:
-                child["html_attrs"] = {"data-signature-expanded": "false"}
             _rebuild_signature_layout(
                 desc_node,
                 child,

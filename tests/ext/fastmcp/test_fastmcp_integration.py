@@ -111,7 +111,8 @@ def test_fastmcp_tool_cards_use_shared_layout(
         'class="gp-sphinx-api-entry gp-sphinx-api-card-entry gp-sphinx-api-profile--fastmcp-tool gp-sphinx-fastmcp__tool-entry"'
         in html
     )
-    assert 'class="gp-sphinx-api-layout"' in html
+    assert "gp-sphinx-api-layout--desktop" in html
+    assert "gp-sphinx-api-layout--mobile" in html
     assert 'class="gp-sphinx-api-badge-container"' in html
     assert (
         'class="gp-sphinx-api-facts gp-sphinx-api-region gp-sphinx-api-region--facts gp-sphinx-fastmcp__body-section"'

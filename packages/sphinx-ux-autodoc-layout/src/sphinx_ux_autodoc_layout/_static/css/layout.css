@@ -4,6 +4,28 @@
  * All rules land in @layer gp-sphinx so precedence is declarative
  * against Furo's @layer components.  Layer order is established in
  * gp-furo-theme/web/src/styles/index.css.
+ *
+ * Dual-variant header
+ * -------------------
+ * Every managed `<dt class="gp-sphinx-api-header">` ships two sibling
+ * subtrees: a `gp-sphinx-api-layout--desktop` (signature-left,
+ * toolbar-right) and a `gp-sphinx-api-layout--mobile` (toolbar-top,
+ * signature-bottom).  The `dl.gp-sphinx-api-container` shell sets up a
+ * size container so a `@container` rule can switch between the two by
+ * inline-size, regardless of viewport width — this lets a Furo article
+ * column get the desktop variant while a narrow sidebar embed gets the
+ * mobile variant on the same page.  Each variant carries its own natural
+ * DOM order so we never rely on flex order overrides that would
+ * otherwise split visual order from accessibility tree order.
+ *
+ * Header metadata
+ * ---------------
+ * The Python builder emits ``data-domain``, ``data-objtype``,
+ * ``data-has-source``, ``data-has-badges``, ``data-badge-count``, and
+ * ``data-has-fold`` attributes on the rendered ``<dt>``, mirrored as
+ * ``gp-sphinx-api-header--has-{source,badges,fold}`` modifier classes.
+ * Theme CSS can branch on facts the cascade alone cannot compute (e.g.
+ * `dt[data-has-source="true"][data-has-badges="false"]`).
  */
 
 @layer gp-sphinx {
@@ -22,13 +44,49 @@
   margin-top: 0;
 }
 
+/* ── Container query setup ──────────────────────────── *
+ *
+ * `inline-size` measures the inline (column) axis only, which is what
+ * we want — the entry width is what dictates whether the toolbar
+ * fits beside the signature.  Both managed `dl` shells and the
+ * `gp-sphinx-api-card-shell` wrapper become size containers so non-Python
+ * card consumers (FastMCP tools, etc.) inherit the same query basis. */
+dl.gp-sphinx-api-container,
+.gp-sphinx-api-card-shell {
+  container-type: inline-size;
+  container-name: gp-sphinx-api-entry;
+}
+
+/* ── Default mobile visibility ───────────────────────── *
+ *
+ * The mobile variant is hidden by default.  The matching toggle that
+ * swaps the variants when the entry's inline-size drops below 36rem
+ * lives at the bottom of this file (after every default layout rule)
+ * so its `@container` overrides win the cascade — `@container` does
+ * not bump specificity, so source order matters: the toggle has to
+ * appear AFTER the `--desktop { display: flex }` defaults below or
+ * those defaults would override the toggle's `display: none`.
+ *
+ * The 36rem threshold is deliberately below Furo's `.content { width:
+ * 46em }` article column so a typical Furo article gets the desktop
+ * variant; only genuinely narrow embeds (sidebar widgets, sub-1em
+ * card shells, viewports < ~600px once Furo's content goes fluid)
+ * cross into mobile.  Going higher (e.g. 52rem) would have mobile win
+ * unconditionally inside Furo articles since their inline-size is
+ * always ~46rem. */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile,
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile {
+  display: none;
+}
+
 /* ── API shell ──────────────────────────────────────── */
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
 }
 
-dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -57,7 +115,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header[data-signature-expanded="tr
   align-items: flex-start;
 }
 
-dl.gp-sphinx-api-container > dt.gp-sphinx-api-header[data-signature-expanded="true"] > .gp-sphinx-api-layout {
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header[data-signature-expanded="true"] > .gp-sphinx-api-layout--desktop {
   align-items: flex-start;
 }
 
@@ -78,6 +136,35 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-source-link 
   align-items: center;
 }
 
+/* ── Mobile variant: toolbar-top, signature-bottom ──── */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-layout-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-layout-bottom {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Mirror the desktop split inside the mobile toolbar row itself: badges
+ * remain flush-left as the type/scope anchor; the source link floats to
+ * the right edge as the secondary action. */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-source-link {
+  margin-left: auto;
+}
+
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-layout-top:empty {
+  display: none;
+}
+
 /* ── Signature row ──────────────────────────────────── */
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-signature {
   flex: 1 1 auto;
@@ -93,6 +180,13 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-link {
 
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:hover .gp-sphinx-api-link,
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-link:focus-visible {
+  visibility: visible;
+}
+
+/* The mobile variant has no hover affordance on touch devices, so the
+ * permalink anchor is always reachable when the mobile layout is the
+ * one being shown. */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-link {
   visibility: visible;
 }
 
@@ -240,7 +334,10 @@ dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.fi
   margin: 0;
 }
 
-@media (max-width: 52rem) {
+/* Field-list grid collapse mirrors the header's mobile breakpoint so
+ * the parameters band reflows at the same width the toolbar/signature
+ * stack does.  Container-query basis matches the variant toggle below. */
+@container gp-sphinx-api-entry (max-width: 36rem) {
   dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-parameters dl.field-list,
   dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.field-list {
     grid-template-columns: 1fr;
@@ -343,7 +440,7 @@ dl.gp-sphinx-api-container:not(.py) > dd.gp-sphinx-api-content {
   visibility: visible;
 }
 
-.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout {
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--desktop {
   display: flex;
   align-items: center;
   gap: 0.45rem;
@@ -371,6 +468,27 @@ dl.gp-sphinx-api-container:not(.py) > dd.gp-sphinx-api-content {
   white-space: nowrap;
 }
 
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-layout-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-layout-bottom {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-source-link {
+  margin-left: auto;
+}
+
 .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-content {
   padding: 0.75rem 1rem;
 }
@@ -396,93 +514,52 @@ dl.gp-sphinx-api-container:not(.py) .gp-sphinx-api-footer dl.gp-sphinx-api-conta
   background: var(--color-api-background-hover);
 }
 
-/* ── Mobile adjustments ─────────────────────────────── *
+/* ── Variant visibility toggle ──────────────────────── *
  *
- * Below the 52rem breakpoint the desktop "signature left, toolbar
- * right" row stops fitting: the toolbar (badges + [source]) keeps
- * its full natural width via `white-space: nowrap`, so the
- * signature column gets squeezed below the width of an unbreakable
- * identifier like `demo_session`.  Once that happens, Furo's
- * inherited `overflow-wrap: break-word` is the only thing keeping
- * the text inside the column — it breaks the identifier at every
- * character, producing a one-letter-per-line column.
+ * Placed AFTER every default layout rule above so the cascade flips
+ * from desktop-default to mobile-default once the entry's container
+ * inline-size drops below 36rem.  `@container` does not bump
+ * specificity, so this block must appear last in source order — the
+ * `--desktop { display: flex }` defaults higher in this file would
+ * otherwise win and the toggle would be a no-op.
  *
- * Stack vertically instead, matching the same 52rem breakpoint the
- * field-list grid uses (see line 243):
- *   row 1: toolbar (badges + source link)
- *   row 2: signature, full container width
- *
- * Reading-order hierarchy maps 1:1 from desktop (signature
- * primary-left, toolbar secondary-right) to narrow (toolbar above,
- * signature below at full width).  `order: -1` flips visual order
- * while keeping the DOM order (signature first) intact for
- * screen readers, copy-paste, and keyboard nav. */
-@media (max-width: 52rem) {
-  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout,
-  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout {
+ * Threshold rationale: Furo's `.content { width: 46em }` keeps the
+ * article inline-size at ~46rem regardless of viewport, so any
+ * threshold ≥ 46rem makes mobile win unconditionally inside Furo.
+ * 36rem leaves headroom for the article (mobile only triggers in
+ * narrower embeds) and aligns with the field-list collapse above. */
+@container gp-sphinx-api-entry (max-width: 36rem) {
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--desktop,
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--desktop {
+    display: none;
+  }
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile,
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile {
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
+    width: 100%;
     gap: 0.25rem;
   }
-
-  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-right,
-  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-layout-right {
-    order: -1;
-    margin-left: 0;
-    flex-wrap: wrap;
-  }
-
-  /* Mirror the desktop split (signature-left, toolbar-right) inside the
-   * toolbar row itself: badges remain flush-left as the type/scope
-   * anchor; the source link floats to the right edge as the secondary
-   * action.  Falls back gracefully when the row wraps — the source link
-   * lands on its own line with the right anchor preserved. */
-  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-source-link,
-  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-source-link {
-    margin-left: auto;
-  }
-
-  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-layout-left,
-  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-layout-left {
-    width: 100%;
-    min-width: 0;
-  }
-
-  /* Touch devices have no hover, so the permalink anchor (¶) is
-   * unreachable on phones under the desktop visibility:hidden rule.
-   * Promote it to always-visible at narrow widths so users can tap
-   * to copy a stable link to the entry. */
-  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-link,
-  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-link {
-    visibility: visible;
-  }
-
-  /* Safety net for sub-300px viewports: prefer breaking long
-   * identifiers at any point over per-character wrapping that
-   * Furo's default overflow-wrap produces.  At the 280px low end
-   * this lets `demo_session_factory` wrap once or twice instead of
-   * one character per line. */
-  .gp-sphinx-api-signature {
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-signature,
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-signature {
     overflow-wrap: anywhere;
   }
 }
 
 /* ── Tiny viewports (< 30rem) ────────────────────────── *
  *
- * Below ~480px the safety-net `overflow-wrap: anywhere` from the
- * 52rem block starts breaking unbreakable identifiers like
- * `transport` mid-token (`tra` / `nsport`), which is uglier than
- * the alternative: keep the identifier whole and let the
- * signature scroll horizontally inside its card.  At phone widths
- * a horizontal swipe to read the rest of a signature is preferable
- * to a column of character-by-character wraps.
- *
- * `scrollbar-width: thin` keeps the scrollbar visually quiet on
- * platforms that honour the property (Firefox, Chromium-on-Linux
- * with overlay scrollbars disabled). */
-@media (max-width: 30rem) {
-  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-signature,
-  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header .gp-sphinx-api-signature {
+ * Below ~480px even the mobile variant's signature row needs help: we
+ * prefer to break long identifiers at any point over per-character
+ * wrapping that Furo's default `overflow-wrap: break-word` produces.
+ * At the 280px low end this lets `demo_session_factory` wrap once or
+ * twice instead of one character per line.  Below ~480px we drop the
+ * safety net in favour of horizontal scroll, since `overflow-wrap:
+ * anywhere` starts breaking unbreakable identifiers like `transport`
+ * mid-token (`tra` / `nsport`).  `scrollbar-width: thin` keeps the
+ * scrollbar visually quiet on platforms that honour the property. */
+@container gp-sphinx-api-entry (max-width: 30rem) {
+  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-signature,
+  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > .gp-sphinx-api-header > .gp-sphinx-api-layout--mobile .gp-sphinx-api-signature {
     overflow-wrap: normal;
     word-break: keep-all;
     overflow-x: auto;
