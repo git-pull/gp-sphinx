@@ -14,9 +14,28 @@ $ pip install --user --upgrade --pre gp-sphinx
 $ uv add gp-sphinx --prerelease allow
 ```
 
-## gp-sphinx 0.0.1 (unreleased)
+## gp-sphinx 0.0.1a18 (unreleased)
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
+
+gp-sphinx 0.0.1a18 ships curated autodoc rendering across the docs
+surface. Parameter signatures now resolve default values to their
+source text — including dataclass `__init__` synthetic defaults,
+sentinel constants by name, and identifier defaults wired up as
+live cross-references to their documented class. Type expressions
+in autodoc field lists route through the same xref pipeline so
+links and chip styling stay consistent with the signature.
+
+The autodoc layout adapts to narrow viewports with a dual-variant
+header: below 52rem the header row stacks instead of squeezing, and
+below 30rem long signatures scroll horizontally instead of wrapping
+mid-identifier. A new `gp-sphinx` cascade layer makes workspace
+overrides win over Furo declaratively, and parameter and field-list
+typography unify into a single metadata-sized band.
+
+A workspace-wide `linkcode_resolve` factory now covers every
+uv/pnpm monorepo package with one registration, pointing at the
+configured live tip branch rather than per-package version tags.
 
 ### What's new
 
