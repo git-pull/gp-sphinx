@@ -581,10 +581,55 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     >>> setup  # doctest: +ELLIPSIS
     <function setup at 0x...>
     """
+    import pathlib
+
+    from sphinx_autodoc_typehints_gp._data_defaults import (
+        GpAttributeDocumenter,
+        GpDataDocumenter,
+    )
+    from sphinx_autodoc_typehints_gp._default_xref_transform import (
+        register as register_default_xref_transform,
+    )
+    from sphinx_autodoc_typehints_gp._field_xref_transform import (
+        register as register_field_xref_transform,
+    )
+    from sphinx_autodoc_typehints_gp._param_defaults import (
+        update_synthetic_defvalues,
+    )
+
+    static_dir = str(pathlib.Path(__file__).parent / "_static")
+
+    def _add_static_path(app: Sphinx) -> None:
+        if static_dir not in app.config.html_static_path:
+            app.config.html_static_path.append(static_dir)
+
+    app.connect("builder-inited", _add_static_path)
+    app.add_css_file("css/typehints_gp.css")
+
+    app.add_config_value(
+        "gp_typehints_curate_param_defaults",
+        default=True,
+        rebuild="env",
+        types=frozenset({bool}),
+    )
+    app.add_config_value(
+        "gp_typehints_curate_data_defaults",
+        default=True,
+        rebuild="env",
+        types=frozenset({bool}),
+    )
+    app.add_autodocumenter(GpDataDocumenter, override=True)
+    app.add_autodocumenter(GpAttributeDocumenter, override=True)
+    register_default_xref_transform(app)
+    register_field_xref_transform(app)
     app.connect("builder-inited", _clear_caches)
     try:
         app.connect("autodoc-process-docstring", process_docstring)
         app.connect("autodoc-process-signature", record_typehints)
+        # Runs after Sphinx's own update_defvalue (which only handles
+        # regular methods with readable source). Fills the gap for
+        # synthetic dataclass __init__.
+        app.connect("autodoc-before-process-signature", update_synthetic_defvalues)
     except ExtensionError as exc:
         if "Unknown event name" not in str(exc):
             raise
@@ -593,7 +638,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     # are skipped by the built-in handler.
     app.connect("object-description-transform", merge_typehints, priority=499)
     return {
-        "version": "0.0.1a17",
+        "version": "0.0.1a18.dev0",
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }

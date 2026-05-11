@@ -363,6 +363,29 @@ Examples
 'description'
 """
 
+DEFAULT_AUTODOC_PRESERVE_DEFAULTS: bool = True
+"""Preserve source text of parameter defaults instead of ``repr()``.
+
+When ``True``, Sphinx's ``update_default_value`` listener wraps each
+``inspect.Parameter.default`` in a ``DefaultValue`` shim whose
+``__repr__`` returns the *literal source text* of the default
+expression. The result is that signatures render
+``scope=DEFAULT_OPTION_SCOPE`` instead of
+``scope=<libtmux.constants._DefaultOptionScope object>`` and
+``retry_exceptions=(libtmux_exc.LibTmuxException,)`` instead of
+``(<class 'libtmux.exc.LibTmuxException'>,)``.
+
+The flag has no effect on synthetic ``__init__`` (dataclass / attrs /
+NamedTuple) where ``inspect.getsource()`` returns nothing — Sphinx's
+listener bails out for those, leaving the defaults as ``=<factory>``
+until a sibling listener handles them.
+
+Examples
+--------
+>>> DEFAULT_AUTODOC_PRESERVE_DEFAULTS
+True
+"""
+
 DEFAULT_COPYBUTTON_LINE_CONTINUATION_CHARACTER: str = "\\"
 """Line continuation character for sphinx-copybutton."""
 

@@ -14,9 +14,102 @@ $ pip install --user --upgrade --pre gp-sphinx
 $ uv add gp-sphinx --prerelease allow
 ```
 
-## gp-sphinx 0.0.1 (unreleased)
+## gp-sphinx 0.0.1a18 (unreleased)
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
+
+gp-sphinx 0.0.1a18 ships curated autodoc rendering across the docs
+surface. Parameter signatures now resolve default values to their
+source text — including dataclass `__init__` synthetic defaults,
+sentinel constants by name, and identifier defaults wired up as
+live cross-references to their documented class. Type expressions
+in autodoc field lists route through the same xref pipeline so
+links and chip styling stay consistent with the signature.
+
+The autodoc layout adapts to narrow viewports with a dual-variant
+header: below 52rem the header row stacks instead of squeezing, and
+below 30rem long signatures scroll horizontally instead of wrapping
+mid-identifier. A new `gp-sphinx` cascade layer makes workspace
+overrides win over Furo declaratively, and parameter and field-list
+typography unify into a single metadata-sized band.
+
+A workspace-wide `linkcode_resolve` factory now covers every
+uv/pnpm monorepo package with one registration, pointing at the
+configured live tip branch rather than per-package version tags.
+
+### What's new
+
+#### `gp-sphinx`: Curated default-value rendering for autodoc
+
+`autodoc_preserve_defaults=True` is now the workspace default, and a
+new listener fills the synthetic `__init__` gap so dataclass
+parameters render as `=[]` instead of `=<factory>`, and sentinel
+constants render as their source name (e.g.
+`scope=DEFAULT_OPTION_SCOPE`) instead of `<...object at 0x...>`.
+Long `:value:` text is collapsed so multi-KB constants no longer
+dominate API pages while short useful values stay intact.
+Identifier defaults inside parameter signatures become live
+cross-references to their documented class — the resulting HTML
+matches an inline `:py:class:` role, so hand-written
+`.. py:function::` directives benefit too. (#36)
+
+#### `sphinx-autodoc-typehints-gp`: Canonical Python xrefs in field lists
+
+Type expressions in autodoc field lists route through the same
+xref pipeline as the signature, so links resolve consistently and
+nested types render with chip styling that matches the rest of the
+page. (#36)
+
+#### Autodoc typography polish across the docs surface
+
+Parameter and field-list rows share a unified metadata-sized
+typography band across the autodoc stack. Code chips sit flush
+against generic-type brackets, parameter names use sans-bold while
+monospace is reserved for code identifiers, and root-level scaling
+on wide viewports follows a `clamp()` ramp instead of stepping up
+at a single breakpoint. A new `gp-sphinx` cascade layer makes
+workspace overrides win over Furo declaratively rather than via
+unlayered precedence. (#36)
+
+#### `gp-sphinx`: Workspace-wide `linkcode_resolve` factory
+
+`make_workspace_linkcode_resolve()` is a drop-in `linkcode_resolve`
+for uv/pnpm monorepos — one registration covers every package under
+`packages/` by computing GitHub URLs relative to a `repo_root`. The
+generated URLs always point at a single configurable branch
+(default `main`), since workspace packages carry independent
+versions while the docs site tracks live tip. (#36)
+
+#### `sphinx-ux-autodoc-layout`: Responsive autodoc headers on narrow viewports
+
+Below 52rem the header row stacks instead of squeezing, with the
+type badge pinned beside the signature and the source link
+right-anchored in its toolbar. Below 30rem long signatures scroll
+horizontally rather than wrapping mid-identifier, and the permalink
+reveals on tap for touch users. (#36)
+
+### Bug fixes
+
+#### `sphinx-gp-theme`: TOC font-size override now applies
+
+The override for `--toc-font-size` and `--toc-title-font-size` was
+inert because `gp-furo-tokens` emits the default values on `body`,
+not `:root`. The sidebar TOC now picks up the configured larger
+size. (#36)
+
+#### `sphinx-ux-autodoc-layout`: Mobile header keeps the type badge beside the signature
+
+On narrow viewports the type badge previously wrapped below the
+signature, breaking the eyebrow-style layout. It now stays pinned
+to the left of the signature row. (#36)
+
+#### `sphinx-vite-builder`: CI setup hint no longer requires a root lockfile
+
+The recipe printed by `PnpmMissingError` (and the matching
+README/AGENTS samples) used to include `cache: pnpm`, which fails
+on consumer CI with "Dependencies lock file is not found" when the
+consumer repo has no root `pnpm-lock.yaml`. The hint now omits that
+line, with a note explaining when it is safe to add back. (#36)
 
 ## gp-sphinx 0.0.1a17 (2026-05-09)
 

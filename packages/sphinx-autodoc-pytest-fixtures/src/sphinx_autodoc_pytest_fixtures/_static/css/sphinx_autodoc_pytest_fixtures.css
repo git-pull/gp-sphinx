@@ -4,7 +4,13 @@
  * Badge colour tokens have moved to sab_palettes.css in
  * sphinx-ux-badges.  This file only contains fixture-card
  * layout rules and the index-table scroll wrapper.
+ *
+ * All rules land in @layer gp-sphinx so precedence is declarative
+ * against Furo's @layer components.  Layer order is established in
+ * gp-furo-theme/web/src/styles/index.css.
  * ────────────────────────────────────────────────────────── */
+
+@layer gp-sphinx {
 
 /* "fixture" keyword prefix — keep Furo's default keyword colour */
 dl.py.fixture.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-signature em.property {
@@ -49,7 +55,18 @@ dl.py.fixture > dd {
   margin-left: 0 !important;
 }
 
-/* Metadata fields: compact grid */
+/* Metadata fields: compact grid — STANDALONE FALLBACK
+ * These rules use a direct-child chain `> dd > dl.field-list` that
+ * intentionally only fires when sphinx-autodoc-pytest-fixtures is
+ * installed WITHOUT sphinx-ux-autodoc-layout. When the layout
+ * package is present, _wrap_content_runs inserts a `<div
+ * class="gp-sphinx-api-parameters">` between `<dd>` and
+ * `<dl class="field-list">`, which breaks this direct-child path;
+ * the authoritative styling for the transformed DOM lives in
+ * `packages/sphinx-ux-autodoc-layout/.../layout.css`.
+ *
+ * Per CLAUDE.md "Package self-containment," this package's CSS must
+ * render the classes its Python emits even when consumed alone. */
 dl.py.fixture > dd > dl.field-list {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
@@ -60,13 +77,33 @@ dl.py.fixture > dd > dl.field-list {
 }
 dl.py.fixture > dd > dl.field-list > dt {
   grid-column: 1;
+  font-size: var(--gp-sphinx-type-metadata);
   font-weight: normal;
   text-transform: uppercase;
-  font-size: 0.85em;
   letter-spacing: 0.025em;
+  color: var(--color-foreground-muted);
 }
 dl.py.fixture > dd > dl.field-list > dt .colon { display: none; }
-dl.py.fixture > dd > dl.field-list > dd { grid-column: 2; margin-left: 0; }
+dl.py.fixture > dd > dl.field-list > dd {
+  grid-column: 2;
+  margin-top: 0.25rem;
+  margin-left: 0;
+  font-size: var(--gp-sphinx-type-metadata);
+  line-height: 1.5;
+}
+
+dl.py.fixture > dd > dl.field-list > dd > ul.simple {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+dl.py.fixture > dd > dl.field-list > dd > p,
+dl.py.fixture > dd > dl.field-list > dd > ul.simple > li > p {
+  margin: 0;
+}
 
 @media (max-width: 52rem) {
   dl.py.fixture > dd > dl.field-list {
@@ -106,3 +143,6 @@ dl.py.fixture.gp-sphinx-badge--state-deprecated > dt {
   min-width: 40rem;
   width: 100%;
 }
+
+
+}  /* end @layer gp-sphinx */

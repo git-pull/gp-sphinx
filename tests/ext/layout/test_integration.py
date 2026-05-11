@@ -48,7 +48,8 @@ def test_layout_demo_renders_api_component_contract(layout_default_html: str) ->
         r'<dt [^>]*class="[^"]*gp-sphinx-api-header[^"]*"[^>]*data-signature-expanded="false"',
         init_html,
     )
-    assert 'class="gp-sphinx-api-layout"' in init_html
+    assert "gp-sphinx-api-layout--desktop" in init_html
+    assert "gp-sphinx-api-layout--mobile" in init_html
     assert 'class="gp-sphinx-api-layout-left"' in init_html
     assert 'class="gp-sphinx-api-layout-right gp-sphinx-toolbar"' in init_html
     assert 'class="gp-sphinx-api-signature"' in init_html
@@ -60,10 +61,21 @@ def test_layout_demo_renders_api_component_contract(layout_default_html: str) ->
         in init_html
     )
     assert (
-        'aria-controls="api_demo_layout.LayoutDemo.__init__--signature-expanded"'
+        'aria-controls="api_demo_layout.LayoutDemo.__init__--signature-expanded-desktop"'
         in init_html
     )
-    assert 'id="api_demo_layout.LayoutDemo.__init__--signature-expanded"' in init_html
+    assert (
+        'aria-controls="api_demo_layout.LayoutDemo.__init__--signature-expanded-mobile"'
+        in init_html
+    )
+    assert (
+        'id="api_demo_layout.LayoutDemo.__init__--signature-expanded-desktop"'
+        in init_html
+    )
+    assert (
+        'id="api_demo_layout.LayoutDemo.__init__--signature-expanded-mobile"'
+        in init_html
+    )
     assert "<dl>" in init_html
     assert '<span class="sig-paren">(</span>' in init_html
     assert '<span class="sig-paren">)</span>' in init_html

@@ -2,8 +2,8 @@
 # name: test_confval_snapshot[confval_entry]
   '''
   <desc classes="gp-sphinx-api-container gp-sphinx-api-profile--confval" domain="std" objtype="confval">
-      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="confval.demo_option">
-          <api_component classes="gp-sphinx-api-layout" name="gp-sphinx-api-layout" tag="div">
+      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header gp-sphinx-api-header--has-badges" html_attrs="{'data-signature-expanded': 'false', 'data-domain': 'std', 'data-objtype': 'confval', 'data-has-source': 'false', 'data-has-badges': 'true', 'data-badge-count': '1', 'data-has-fold': 'false'}" ids="confval.demo_option">
+          <api_component classes="gp-sphinx-api-layout gp-sphinx-api-layout--desktop" name="gp-sphinx-api-layout" tag="div">
               <api_component classes="gp-sphinx-api-layout-left" name="gp-sphinx-api-layout-left" tag="div">
                   <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
                       <desc_name classes="sig-name descname" xml:space="preserve">
@@ -22,6 +22,25 @@
                                
                           <inline classes="sas-badge--status">
                               stable
+          <api_component classes="gp-sphinx-api-layout gp-sphinx-api-layout--mobile" name="gp-sphinx-api-layout" tag="div">
+              <api_component classes="gp-sphinx-api-layout-top gp-sphinx-toolbar" name="gp-sphinx-api-layout-top" tag="div">
+                  <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
+                      <inline classes="sas-badge-group">
+                          <inline classes="sas-badge--type">
+                              config
+                          <inline>
+                               
+                          <inline classes="sas-badge--rebuild">
+                              env
+                          <inline>
+                               
+                          <inline classes="sas-badge--status">
+                              stable
+              <api_component classes="gp-sphinx-api-layout-bottom" name="gp-sphinx-api-layout-bottom" tag="div">
+                  <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
+                      <desc_name classes="sig-name descname" xml:space="preserve">
+                          demo_option
+                  <api_permalink classes="headerlink gp-sphinx-api-link" href="#confval.demo_option" title="Link to this definition">
       <desc_content classes="gp-sphinx-api-content">
           <api_component classes="gp-sphinx-api-parameters gp-sphinx-api-region gp-sphinx-api-region--fields" name="gp-sphinx-api-parameters" tag="div">
               <field_list>
@@ -45,14 +64,14 @@
 # name: test_fastmcp_tool_prototype_snapshot[fastmcp_tool_prototype]
   '''
   <desc classes="gp-sphinx-api-container gp-sphinx-api-profile--mcp-tool" domain="mcp" objtype="tool">
-      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="list-sessions" smf_prototype_slots="True">
-          <api_component classes="gp-sphinx-api-layout" name="gp-sphinx-api-layout" tag="div">
+      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header gp-sphinx-api-header--has-badges gp-sphinx-api-header--has-fold" html_attrs="{'data-signature-expanded': 'false', 'data-domain': 'mcp', 'data-objtype': 'tool', 'data-has-source': 'false', 'data-has-badges': 'true', 'data-badge-count': '1', 'data-has-fold': 'true'}" ids="list-sessions" smf_prototype_slots="True">
+          <api_component classes="gp-sphinx-api-layout gp-sphinx-api-layout--desktop" name="gp-sphinx-api-layout" tag="div">
               <api_component classes="gp-sphinx-api-layout-left" name="gp-sphinx-api-layout-left" tag="div">
                   <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
                       <desc_name classes="sig-name descname" xml:space="preserve">
                           list_sessions
-                      <api_sig_fold first_param="server" panel_id="list-sessions--signature-expanded" param_count="12">
-                      <api_component classes="gp-sphinx-api-signature-expanded gp-sphinx-api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'list-sessions--signature-expanded'}" name="gp-sphinx-api-signature-expanded" tag="div">
+                      <api_sig_fold first_param="server" panel_id="list-sessions--signature-expanded-desktop" param_count="12">
+                      <api_component classes="gp-sphinx-api-signature-expanded gp-sphinx-api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'list-sessions--signature-expanded-desktop'}" name="gp-sphinx-api-signature-expanded" tag="div">
                           <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
                               <desc_parameter xml:space="preserve">
                                   <desc_sig_name classes="n">
@@ -250,7 +269,7 @@
                                        
                                   <inline classes="default_value">
                                       None
-                          <api_inline_component classes="gp-sphinx-api-sig-collapse" html_attrs="{'aria-controls': 'list-sessions--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gp-sphinx-api-sig-collapse" tag="button">
+                          <api_inline_component classes="gp-sphinx-api-sig-collapse" html_attrs="{'aria-controls': 'list-sessions--signature-expanded-desktop', 'aria-expanded': 'true', 'type': 'button'}" name="gp-sphinx-api-sig-collapse" tag="button">
                               [collapse]
                   <api_permalink classes="headerlink gp-sphinx-api-link" href="#list-sessions" title="Link to this definition">
               <api_component classes="gp-sphinx-api-layout-right gp-sphinx-toolbar" name="gp-sphinx-api-layout-right" tag="div">
@@ -261,6 +280,221 @@
                            
                           <BadgeNode badge_tooltip="MCP tool" classes="gp-sphinx-badge gp-sphinx-badge--dense gp-sphinx-badge--underline-none gp-sphinx-badge--slot-type gp-sphinx-fastmcp__type-tool" tabindex="0">
                               tool
+          <api_component classes="gp-sphinx-api-layout gp-sphinx-api-layout--mobile" name="gp-sphinx-api-layout" tag="div">
+              <api_component classes="gp-sphinx-api-layout-top gp-sphinx-toolbar" name="gp-sphinx-api-layout-top" tag="div">
+                  <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
+                      <inline classes="gp-sphinx-badge-group">
+                          <BadgeNode badge_icon="🔍" badge_tooltip="Read-only — does not modify external state" classes="gp-sphinx-badge gp-sphinx-badge--dense gp-sphinx-badge--underline-none gp-sphinx-fastmcp__safety gp-sphinx-fastmcp__safety-readonly" tabindex="0">
+                              readonly
+                           
+                          <BadgeNode badge_tooltip="MCP tool" classes="gp-sphinx-badge gp-sphinx-badge--dense gp-sphinx-badge--underline-none gp-sphinx-badge--slot-type gp-sphinx-fastmcp__type-tool" tabindex="0">
+                              tool
+              <api_component classes="gp-sphinx-api-layout-bottom" name="gp-sphinx-api-layout-bottom" tag="div">
+                  <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
+                      <desc_name classes="sig-name descname" xml:space="preserve">
+                          list_sessions
+                      <api_sig_fold first_param="server" panel_id="list-sessions--signature-expanded-mobile" param_count="12">
+                      <api_component classes="gp-sphinx-api-signature-expanded gp-sphinx-api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'list-sessions--signature-expanded-mobile'}" name="gp-sphinx-api-signature-expanded" tag="div">
+                          <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      server
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      limit
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      int
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      20
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      cursor
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      project
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      status
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      'open' | 'closed'
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      'open'
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      owner
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      region
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      updated_after
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      updated_before
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      include_archived
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      bool
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      False
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      expand
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      request_id
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <emphasis>
+                                      str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                          <api_inline_component classes="gp-sphinx-api-sig-collapse" html_attrs="{'aria-controls': 'list-sessions--signature-expanded-mobile', 'aria-expanded': 'true', 'type': 'button'}" name="gp-sphinx-api-sig-collapse" tag="button">
+                              [collapse]
+                  <api_permalink classes="headerlink gp-sphinx-api-link" href="#list-sessions" title="Link to this definition">
       <desc_content classes="gp-sphinx-api-content">
           <api_component classes="gp-sphinx-api-description gp-sphinx-api-region gp-sphinx-api-region--narrative" name="gp-sphinx-api-description" tag="div">
               <paragraph>
@@ -535,14 +769,14 @@
 # name: test_large_signature_snapshot_annotated[large_signature_annotated]
   '''
   <desc classes="gp-sphinx-api-container gp-sphinx-api-profile--py-method" domain="py" objtype="method">
-      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="demo.Session.__init__">
-          <api_component classes="gp-sphinx-api-layout" name="gp-sphinx-api-layout" tag="div">
+      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header gp-sphinx-api-header--has-source gp-sphinx-api-header--has-badges gp-sphinx-api-header--has-fold" html_attrs="{'data-signature-expanded': 'false', 'data-domain': 'py', 'data-objtype': 'method', 'data-has-source': 'true', 'data-has-badges': 'true', 'data-badge-count': '1', 'data-has-fold': 'true'}" ids="demo.Session.__init__">
+          <api_component classes="gp-sphinx-api-layout gp-sphinx-api-layout--desktop" name="gp-sphinx-api-layout" tag="div">
               <api_component classes="gp-sphinx-api-layout-left" name="gp-sphinx-api-layout-left" tag="div">
                   <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
                       <desc_name classes="sig-name descname" xml:space="preserve">
                           __init__
-                      <api_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded" param_count="13">
-                      <api_component classes="gp-sphinx-api-signature-expanded gp-sphinx-api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded'}" name="gp-sphinx-api-signature-expanded" tag="div">
+                      <api_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded-desktop" param_count="13">
+                      <api_component classes="gp-sphinx-api-signature-expanded gp-sphinx-api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded-desktop'}" name="gp-sphinx-api-signature-expanded" tag="div">
                           <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
                               <desc_parameter xml:space="preserve">
                                   <desc_sig_name classes="n">
@@ -794,7 +1028,7 @@
                                        
                                   <inline classes="default_value">
                                       None
-                          <api_inline_component classes="gp-sphinx-api-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gp-sphinx-api-sig-collapse" tag="button">
+                          <api_inline_component classes="gp-sphinx-api-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded-desktop', 'aria-expanded': 'true', 'type': 'button'}" name="gp-sphinx-api-sig-collapse" tag="button">
                               [collapse]
                   <api_permalink classes="headerlink gp-sphinx-api-link" href="#demo.Session.__init__" title="Link to this definition">
               <api_component classes="gp-sphinx-api-layout-right gp-sphinx-toolbar" name="gp-sphinx-api-layout-right" tag="div">
@@ -806,6 +1040,276 @@
                       <reference internal="False">
                           <inline classes="viewcode-link">
                               [source]
+          <api_component classes="gp-sphinx-api-layout gp-sphinx-api-layout--mobile" name="gp-sphinx-api-layout" tag="div">
+              <api_component classes="gp-sphinx-api-layout-top gp-sphinx-toolbar" name="gp-sphinx-api-layout-top" tag="div">
+                  <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
+                      <inline classes="gp-sphinx-badge-group">
+                          <inline classes="gp-sphinx-badge">
+                              method
+                  <api_inline_component classes="gp-sphinx-api-source-link" name="gp-sphinx-api-source-link" tag="span">
+                      <reference internal="False">
+                          <inline classes="viewcode-link">
+                              [source]
+              <api_component classes="gp-sphinx-api-layout-bottom" name="gp-sphinx-api-layout-bottom" tag="div">
+                  <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
+                      <desc_name classes="sig-name descname" xml:space="preserve">
+                          __init__
+                      <api_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded-mobile" param_count="13">
+                      <api_component classes="gp-sphinx-api-signature-expanded gp-sphinx-api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded-mobile'}" name="gp-sphinx-api-signature-expanded" tag="div">
+                          <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      session_name
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      window_name
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "main"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      start_directory
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "/tmp"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      attach
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          bool
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      True
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      kill_session
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          bool
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      False
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      environment
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          dict[str, str] | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      x
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          int
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      80
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      y
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          int
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      24
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      command
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "bash"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      shell
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "zsh"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      socket_name
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "default"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      socket_path
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      config_file
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_punctuation classes="p">
+                                      :
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_name classes="n">
+                                      <emphasis>
+                                          str | None
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                          <api_inline_component classes="gp-sphinx-api-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded-mobile', 'aria-expanded': 'true', 'type': 'button'}" name="gp-sphinx-api-sig-collapse" tag="button">
+                              [collapse]
+                  <api_permalink classes="headerlink gp-sphinx-api-link" href="#demo.Session.__init__" title="Link to this definition">
       <desc_content classes="gp-sphinx-api-content">
           <api_component classes="gp-sphinx-api-description gp-sphinx-api-region gp-sphinx-api-region--narrative" name="gp-sphinx-api-description" tag="div">
               <paragraph>
@@ -927,14 +1431,14 @@
 # name: test_large_signature_snapshot_annotation_disabled[large_signature_annotation_disabled]
   '''
   <desc classes="gp-sphinx-api-container gp-sphinx-api-profile--py-method" domain="py" objtype="method">
-      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="demo.Session.__init__">
-          <api_component classes="gp-sphinx-api-layout" name="gp-sphinx-api-layout" tag="div">
+      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header gp-sphinx-api-header--has-source gp-sphinx-api-header--has-badges gp-sphinx-api-header--has-fold" html_attrs="{'data-signature-expanded': 'false', 'data-domain': 'py', 'data-objtype': 'method', 'data-has-source': 'true', 'data-has-badges': 'true', 'data-badge-count': '1', 'data-has-fold': 'true'}" ids="demo.Session.__init__">
+          <api_component classes="gp-sphinx-api-layout gp-sphinx-api-layout--desktop" name="gp-sphinx-api-layout" tag="div">
               <api_component classes="gp-sphinx-api-layout-left" name="gp-sphinx-api-layout-left" tag="div">
                   <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
                       <desc_name classes="sig-name descname" xml:space="preserve">
                           __init__
-                      <api_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded" param_count="13">
-                      <api_component classes="gp-sphinx-api-signature-expanded gp-sphinx-api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded'}" name="gp-sphinx-api-signature-expanded" tag="div">
+                      <api_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded-desktop" param_count="13">
+                      <api_component classes="gp-sphinx-api-signature-expanded gp-sphinx-api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded-desktop'}" name="gp-sphinx-api-signature-expanded" tag="div">
                           <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
                               <desc_parameter xml:space="preserve">
                                   <desc_sig_name classes="n">
@@ -1071,7 +1575,7 @@
                                        
                                   <inline classes="default_value">
                                       None
-                          <api_inline_component classes="gp-sphinx-api-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded', 'aria-expanded': 'true', 'type': 'button'}" name="gp-sphinx-api-sig-collapse" tag="button">
+                          <api_inline_component classes="gp-sphinx-api-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded-desktop', 'aria-expanded': 'true', 'type': 'button'}" name="gp-sphinx-api-sig-collapse" tag="button">
                               [collapse]
                   <api_permalink classes="headerlink gp-sphinx-api-link" href="#demo.Session.__init__" title="Link to this definition">
               <api_component classes="gp-sphinx-api-layout-right gp-sphinx-toolbar" name="gp-sphinx-api-layout-right" tag="div">
@@ -1083,6 +1587,161 @@
                       <reference internal="False">
                           <inline classes="viewcode-link">
                               [source]
+          <api_component classes="gp-sphinx-api-layout gp-sphinx-api-layout--mobile" name="gp-sphinx-api-layout" tag="div">
+              <api_component classes="gp-sphinx-api-layout-top gp-sphinx-toolbar" name="gp-sphinx-api-layout-top" tag="div">
+                  <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
+                      <inline classes="gp-sphinx-badge-group">
+                          <inline classes="gp-sphinx-badge">
+                              method
+                  <api_inline_component classes="gp-sphinx-api-source-link" name="gp-sphinx-api-source-link" tag="span">
+                      <reference internal="False">
+                          <inline classes="viewcode-link">
+                              [source]
+              <api_component classes="gp-sphinx-api-layout-bottom" name="gp-sphinx-api-layout-bottom" tag="div">
+                  <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
+                      <desc_name classes="sig-name descname" xml:space="preserve">
+                          __init__
+                      <api_sig_fold first_param="session_name" panel_id="demo.Session.__init__--signature-expanded-mobile" param_count="13">
+                      <api_component classes="gp-sphinx-api-signature-expanded gp-sphinx-api-sig-expanded" html_attrs="{'aria-hidden': 'true', 'data-expanded': 'false', 'hidden': 'hidden', 'id': 'demo.Session.__init__--signature-expanded-mobile'}" name="gp-sphinx-api-signature-expanded" tag="div">
+                          <desc_parameterlist multi_line_parameter_list="True" multi_line_trailing_comma="False" xml:space="preserve">
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      session_name
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      window_name
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "main"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      start_directory
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "/tmp"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      attach
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      True
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      kill_session
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      False
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      environment
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      x
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      80
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      y
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      24
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      command
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "bash"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      shell
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "zsh"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      socket_name
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      "default"
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      socket_path
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                              <desc_parameter xml:space="preserve">
+                                  <desc_sig_name classes="n">
+                                      config_file
+                                  <desc_sig_space classes="w">
+                                       
+                                  <desc_sig_operator classes="o">
+                                      =
+                                  <desc_sig_space classes="w">
+                                       
+                                  <inline classes="default_value">
+                                      None
+                          <api_inline_component classes="gp-sphinx-api-sig-collapse" html_attrs="{'aria-controls': 'demo.Session.__init__--signature-expanded-mobile', 'aria-expanded': 'true', 'type': 'button'}" name="gp-sphinx-api-sig-collapse" tag="button">
+                              [collapse]
+                  <api_permalink classes="headerlink gp-sphinx-api-link" href="#demo.Session.__init__" title="Link to this definition">
       <desc_content classes="gp-sphinx-api-content">
           <api_component classes="gp-sphinx-api-description gp-sphinx-api-region gp-sphinx-api-region--narrative" name="gp-sphinx-api-description" tag="div">
               <paragraph>
@@ -1204,8 +1863,8 @@
 # name: test_rst_directive_snapshot[rst_directive_entry]
   '''
   <desc classes="gp-sphinx-api-container gp-sphinx-api-profile--rst-directive" domain="rst" objtype="directive">
-      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="directive-demo-directive">
-          <api_component classes="gp-sphinx-api-layout" name="gp-sphinx-api-layout" tag="div">
+      <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header gp-sphinx-api-header--has-badges" html_attrs="{'data-signature-expanded': 'false', 'data-domain': 'rst', 'data-objtype': 'directive', 'data-has-source': 'false', 'data-has-badges': 'true', 'data-badge-count': '1', 'data-has-fold': 'false'}" ids="directive-demo-directive">
+          <api_component classes="gp-sphinx-api-layout gp-sphinx-api-layout--desktop" name="gp-sphinx-api-layout" tag="div">
               <api_component classes="gp-sphinx-api-layout-left" name="gp-sphinx-api-layout-left" tag="div">
                   <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
                       <desc_name classes="sig-name descname" xml:space="preserve">
@@ -1216,14 +1875,25 @@
                       <inline classes="sadoc-badge-group">
                           <inline classes="sadoc-badge--type">
                               directive
+          <api_component classes="gp-sphinx-api-layout gp-sphinx-api-layout--mobile" name="gp-sphinx-api-layout" tag="div">
+              <api_component classes="gp-sphinx-api-layout-top gp-sphinx-toolbar" name="gp-sphinx-api-layout-top" tag="div">
+                  <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
+                      <inline classes="sadoc-badge-group">
+                          <inline classes="sadoc-badge--type">
+                              directive
+              <api_component classes="gp-sphinx-api-layout-bottom" name="gp-sphinx-api-layout-bottom" tag="div">
+                  <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
+                      <desc_name classes="sig-name descname" xml:space="preserve">
+                          demo-directive
+                  <api_permalink classes="headerlink gp-sphinx-api-link" href="#directive-demo-directive" title="Link to this definition">
       <desc_content classes="gp-sphinx-api-content">
           <api_component classes="gp-sphinx-api-description gp-sphinx-api-region gp-sphinx-api-region--narrative" name="gp-sphinx-api-description" tag="div">
               <paragraph>
                   A demo directive.
           <api_component classes="gp-sphinx-api-footer gp-sphinx-api-region gp-sphinx-api-region--members" name="gp-sphinx-api-footer" tag="div">
               <desc classes="gp-sphinx-api-container gp-sphinx-api-profile--rst-directive-option" domain="rst" objtype="directive:option">
-                  <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header" html_attrs="{'data-signature-expanded': 'false'}" ids="directive-option-demo-opt">
-                      <api_component classes="gp-sphinx-api-layout" name="gp-sphinx-api-layout" tag="div">
+                  <desc_signature api_managed="True" classes="sig sig-object gp-sphinx-api-header gp-sphinx-api-header--has-badges" html_attrs="{'data-signature-expanded': 'false', 'data-domain': 'rst', 'data-objtype': 'directive:option', 'data-has-source': 'false', 'data-has-badges': 'true', 'data-badge-count': '1', 'data-has-fold': 'false'}" ids="directive-option-demo-opt">
+                      <api_component classes="gp-sphinx-api-layout gp-sphinx-api-layout--desktop" name="gp-sphinx-api-layout" tag="div">
                           <api_component classes="gp-sphinx-api-layout-left" name="gp-sphinx-api-layout-left" tag="div">
                               <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
                                   <desc_name classes="sig-name descname" xml:space="preserve">
@@ -1234,6 +1904,17 @@
                                   <inline classes="sadoc-badge-group">
                                       <inline classes="sadoc-badge--type">
                                           option
+                      <api_component classes="gp-sphinx-api-layout gp-sphinx-api-layout--mobile" name="gp-sphinx-api-layout" tag="div">
+                          <api_component classes="gp-sphinx-api-layout-top gp-sphinx-toolbar" name="gp-sphinx-api-layout-top" tag="div">
+                              <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
+                                  <inline classes="sadoc-badge-group">
+                                      <inline classes="sadoc-badge--type">
+                                          option
+                          <api_component classes="gp-sphinx-api-layout-bottom" name="gp-sphinx-api-layout-bottom" tag="div">
+                              <api_component classes="gp-sphinx-api-signature" name="gp-sphinx-api-signature" tag="div">
+                                  <desc_name classes="sig-name descname" xml:space="preserve">
+                                      demo-opt
+                              <api_permalink classes="headerlink gp-sphinx-api-link" href="#directive-option-demo-opt" title="Link to this definition">
                   <desc_content classes="gp-sphinx-api-content">
                       <api_component classes="gp-sphinx-api-description gp-sphinx-api-region gp-sphinx-api-region--narrative" name="gp-sphinx-api-description" tag="div">
                           <paragraph>

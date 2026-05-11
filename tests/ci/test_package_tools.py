@@ -13,7 +13,7 @@ import package_tools
 
 def test_workspace_version_is_lockstep() -> None:
     """All workspace packages share the same version."""
-    assert package_tools.workspace_version() == "0.0.1a17"
+    assert package_tools.workspace_version() == "0.0.1a18.dev0"
 
 
 def test_check_versions_passes_for_repo() -> None:
@@ -30,10 +30,12 @@ def test_smoke_targets_cover_workspace_packages() -> None:
 
 def test_release_metadata_accepts_repo_tag() -> None:
     """Repo-wide release tags resolve to the shared version."""
-    assert package_tools.release_metadata("v0.0.1a17") == {"version": "0.0.1a17"}
+    assert package_tools.release_metadata("v0.0.1a18.dev0") == {
+        "version": "0.0.1a18.dev0"
+    }
 
 
 def test_release_metadata_rejects_package_tag() -> None:
     """Package-scoped tags are no longer valid release inputs."""
     with pytest.raises(SystemExit, match="invalid release tag format"):
-        package_tools.release_metadata("gp-sphinx@v0.0.1a17")
+        package_tools.release_metadata("gp-sphinx@v0.0.1a18.dev0")

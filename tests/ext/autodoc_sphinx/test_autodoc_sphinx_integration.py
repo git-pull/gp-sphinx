@@ -100,7 +100,8 @@ def test_autodoc_sphinx_confvals_use_shared_layout(
         'class="std confval gp-sphinx-api-container gp-sphinx-api-profile--confval"'
         in html
     )
-    assert 'class="gp-sphinx-api-layout"' in html
+    assert "gp-sphinx-api-layout--desktop" in html
+    assert "gp-sphinx-api-layout--mobile" in html
     assert 'class="gp-sphinx-api-badge-container"' in html
     assert (
         'class="gp-sphinx-api-facts gp-sphinx-api-region gp-sphinx-api-region--facts"'

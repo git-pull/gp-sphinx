@@ -38,12 +38,27 @@ class API:
     HEADER = "gp-sphinx-api-header"
     CONTENT = "gp-sphinx-api-content"
     LAYOUT = "gp-sphinx-api-layout"
+    # Desktop variant: signature-left, toolbar-right (single row, ≥ 52rem)
+    LAYOUT_DESKTOP = "gp-sphinx-api-layout--desktop"
+    # Mobile variant: toolbar-top, signature-bottom (stacked, < 52rem)
+    LAYOUT_MOBILE = "gp-sphinx-api-layout--mobile"
+    # Desktop slots (horizontal axis)
     LAYOUT_LEFT = "gp-sphinx-api-layout-left"
     LAYOUT_RIGHT = "gp-sphinx-api-layout-right"
+    # Mobile slots (vertical axis): toolbar above, signature below
+    LAYOUT_TOP = "gp-sphinx-api-layout-top"
+    LAYOUT_BOTTOM = "gp-sphinx-api-layout-bottom"
     SIGNATURE = "gp-sphinx-api-signature"
     LINK = "gp-sphinx-api-link"
     BADGE_CONTAINER = "gp-sphinx-api-badge-container"
     SOURCE_LINK = "gp-sphinx-api-source-link"
+
+    # ── Header boolean modifiers (mirrored as data-has-*) ─
+    # Each modifier doubles a corresponding data-has-<name> attribute on
+    # the rendered <dt>; CSS can target either selector form.
+    HEADER_HAS_SOURCE = "gp-sphinx-api-header--has-source"
+    HEADER_HAS_BADGES = "gp-sphinx-api-header--has-badges"
+    HEADER_HAS_FOLD = "gp-sphinx-api-header--has-fold"
 
     # ── Signature expand/collapse (long signatures) ──────
     SIGNATURE_TOGGLE = "gp-sphinx-api-signature-toggle"
@@ -129,3 +144,35 @@ class API:
         'gp-sphinx-api-slot--badges'
         """
         return f"gp-sphinx-api-slot--{name}"
+
+    @staticmethod
+    def header_modifier(name: str) -> str:
+        """Return the header modifier class for ``name``.
+
+        Header modifiers describe styling-relevant metadata (whether the
+        signature has a source link, badge count > 0, a fold toggle, ...).
+        They mirror ``data-has-<name>`` attributes for selector flexibility.
+
+        Examples
+        --------
+        >>> API.header_modifier("has-source")
+        'gp-sphinx-api-header--has-source'
+
+        >>> API.header_modifier("has-badges")
+        'gp-sphinx-api-header--has-badges'
+        """
+        return f"gp-sphinx-api-header--{name}"
+
+    @staticmethod
+    def layout_variant(variant: str) -> str:
+        """Return the layout variant modifier class for ``variant``.
+
+        Examples
+        --------
+        >>> API.layout_variant("desktop")
+        'gp-sphinx-api-layout--desktop'
+
+        >>> API.layout_variant("mobile")
+        'gp-sphinx-api-layout--mobile'
+        """
+        return f"gp-sphinx-api-layout--{variant}"

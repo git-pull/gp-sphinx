@@ -456,13 +456,18 @@ def test_rebuild_signature_layout_splits_slots_and_permalink() -> None:
         show_annotations=True,
     )
 
-    assert len(sig.children) == 1
-    layout = sig.children[0]
-    assert isinstance(layout, api_component)
-    assert layout.get("name") == "gp-sphinx-api-layout"
-    assert layout.get("html_attrs") is None
+    assert len(sig.children) == 2
+    desktop, mobile = sig.children
+    assert isinstance(desktop, api_component)
+    assert isinstance(mobile, api_component)
+    assert desktop.get("name") == "gp-sphinx-api-layout"
+    assert mobile.get("name") == "gp-sphinx-api-layout"
+    assert "gp-sphinx-api-layout--desktop" in desktop.get("classes", [])
+    assert "gp-sphinx-api-layout--mobile" in mobile.get("classes", [])
+    assert desktop.get("html_attrs") is None
+    assert mobile.get("html_attrs") is None
 
-    left, right = layout.children
+    left, right = desktop.children
     assert isinstance(left, api_component)
     assert left.get("name") == "gp-sphinx-api-layout-left"
     assert isinstance(right, api_component)
@@ -477,6 +482,124 @@ def test_rebuild_signature_layout_splits_slots_and_permalink() -> None:
     )
 
     assert _child_component_names(right) == [
+        "gp-sphinx-api-badge-container",
+        "gp-sphinx-api-source-link",
+    ]
+
+    top, bottom = mobile.children
+    assert isinstance(top, api_component)
+    assert top.get("name") == "gp-sphinx-api-layout-top"
+    assert isinstance(bottom, api_component)
+    assert bottom.get("name") == "gp-sphinx-api-layout-bottom"
+    assert _child_component_names(top) == [
+        "gp-sphinx-api-badge-container",
+        "gp-sphinx-api-source-link",
+    ]
+    mobile_signature = bottom.children[0]
+    assert isinstance(mobile_signature, api_component)
+    assert mobile_signature.get("name") == "gp-sphinx-api-signature"
+    assert isinstance(bottom.children[1], api_permalink)
+
+
+def test_rebuild_signature_layout_emits_data_metadata_on_signature() -> None:
+    """Builder-derived metadata lands on the desc_signature as data-* attrs."""
+    desc = _make_desc(ids=("demo.func",))
+    sig = desc.children[0]
+    assert isinstance(sig, addnodes.desc_signature)
+    sig += addnodes.desc_name("", "func")
+    sig += _make_parameter_list(2)
+    sig += _make_badge_slot()
+    sig += _make_source_slot()
+
+    _rebuild_signature_layout(
+        desc,
+        sig,
+        threshold=10,
+        include_permalink=False,
+        show_annotations=True,
+    )
+
+    attrs = t.cast(dict[str, str], sig.get("html_attrs", {}))
+    assert attrs == {
+        "data-signature-expanded": "false",
+        "data-domain": "py",
+        "data-objtype": "function",
+        "data-has-source": "true",
+        "data-has-badges": "true",
+        "data-badge-count": "1",
+        "data-has-fold": "false",
+    }
+    classes: list[str] = sig.get("classes", [])
+    assert "gp-sphinx-api-header--has-source" in classes
+    assert "gp-sphinx-api-header--has-badges" in classes
+    assert "gp-sphinx-api-header--has-fold" not in classes
+
+
+def test_rebuild_signature_layout_metadata_marks_fold_when_threshold_met() -> None:
+    """data-has-fold + modifier class flips when the parameter list folds."""
+    desc = _make_desc(ids=("demo.LayoutDemo.__init__",))
+    sig = desc.children[0]
+    assert isinstance(sig, addnodes.desc_signature)
+    sig += addnodes.desc_name("", "__init__")
+    sig += _make_parameter_list(13)
+
+    _rebuild_signature_layout(
+        desc,
+        sig,
+        threshold=10,
+        include_permalink=False,
+        show_annotations=True,
+    )
+
+    attrs = t.cast(dict[str, str], sig.get("html_attrs", {}))
+    assert attrs.get("data-has-fold") == "true"
+    assert attrs.get("data-has-badges") == "false"
+    assert attrs.get("data-has-source") == "false"
+    assert attrs.get("data-badge-count") == "0"
+    assert "gp-sphinx-api-header--has-fold" in sig.get("classes", [])
+
+
+def test_rebuild_signature_layout_variant_subtrees_share_no_state() -> None:
+    """Mutating one variant's subtree never leaks into the other."""
+    desc = _make_desc(ids=("demo.func",))
+    sig = desc.children[0]
+    assert isinstance(sig, addnodes.desc_signature)
+    sig += addnodes.desc_name("", "func")
+    sig += _make_parameter_list(2)
+    sig += _make_badge_slot()
+    sig += _make_source_slot()
+
+    _rebuild_signature_layout(
+        desc,
+        sig,
+        threshold=10,
+        include_permalink=False,
+        show_annotations=True,
+    )
+
+    desktop, mobile = sig.children
+    assert isinstance(desktop, api_component)
+    assert isinstance(mobile, api_component)
+
+    desktop_left = desktop.children[0]
+    mobile_bottom = mobile.children[1]
+    assert isinstance(desktop_left, api_component)
+    assert isinstance(mobile_bottom, api_component)
+    assert desktop_left is not mobile_bottom
+
+    desktop_signature = desktop_left.children[0]
+    mobile_signature = mobile_bottom.children[0]
+    assert isinstance(desktop_signature, api_component)
+    assert isinstance(mobile_signature, api_component)
+    assert desktop_signature is not mobile_signature
+    assert desktop_signature.children[0] is not mobile_signature.children[0]
+
+    desktop_right = desktop.children[1]
+    mobile_top = mobile.children[0]
+    assert isinstance(desktop_right, api_component)
+    assert isinstance(mobile_top, api_component)
+    desktop_right.clear()
+    assert _child_component_names(mobile_top) == [
         "gp-sphinx-api-badge-container",
         "gp-sphinx-api-source-link",
     ]
@@ -499,32 +622,62 @@ def test_rebuild_signature_layout_uses_expanded_wrapper_for_large_signature() ->
         show_annotations=True,
     )
 
-    layout = sig.children[0]
-    assert isinstance(layout, api_component)
-    assert layout.get("html_attrs") is None
-    left = layout.children[0]
-    assert isinstance(left, api_component)
-    assert isinstance(left.children[0], api_component)
-    assert isinstance(left.children[1], api_permalink)
+    desktop, mobile = sig.children
+    assert isinstance(desktop, api_component)
+    assert isinstance(mobile, api_component)
+    assert desktop.get("html_attrs") is None
+    assert mobile.get("html_attrs") is None
 
-    signature = left.children[0]
-    assert isinstance(signature, api_component)
-    assert any(isinstance(child, api_sig_fold) for child in signature.children)
-    expanded = _find_component(signature, "gp-sphinx-api-signature-expanded")
-    html_attrs = t.cast(dict[str, str], expanded.get("html_attrs", {}))
-    assert html_attrs.get("id") == ("demo.LayoutDemo.__init__--signature-expanded")
-    plist = expanded.children[0]
-    assert isinstance(plist, addnodes.desc_parameterlist)
-    assert plist.get("multi_line_parameter_list") is True
-    assert plist.get("multi_line_trailing_comma") is False
-    collapse = expanded.children[1]
-    assert isinstance(collapse, api_inline_component)
-    assert collapse.get("name") == "gp-sphinx-api-sig-collapse"
-    collapse_attrs = t.cast(dict[str, str], collapse.get("html_attrs", {}))
-    assert collapse_attrs.get("aria-controls") == (
-        "demo.LayoutDemo.__init__--signature-expanded"
+    desktop_left = desktop.children[0]
+    assert isinstance(desktop_left, api_component)
+    assert isinstance(desktop_left.children[0], api_component)
+    assert isinstance(desktop_left.children[1], api_permalink)
+
+    desktop_signature = desktop_left.children[0]
+    assert isinstance(desktop_signature, api_component)
+    assert any(isinstance(child, api_sig_fold) for child in desktop_signature.children)
+    desktop_expanded = _find_component(
+        desktop_signature, "gp-sphinx-api-signature-expanded"
     )
-    assert collapse.astext() == "[collapse]"
+    desktop_html_attrs = t.cast(dict[str, str], desktop_expanded.get("html_attrs", {}))
+    assert desktop_html_attrs.get("id") == (
+        "demo.LayoutDemo.__init__--signature-expanded-desktop"
+    )
+    desktop_plist = desktop_expanded.children[0]
+    assert isinstance(desktop_plist, addnodes.desc_parameterlist)
+    assert desktop_plist.get("multi_line_parameter_list") is True
+    assert desktop_plist.get("multi_line_trailing_comma") is False
+    desktop_collapse = desktop_expanded.children[1]
+    assert isinstance(desktop_collapse, api_inline_component)
+    assert desktop_collapse.get("name") == "gp-sphinx-api-sig-collapse"
+    desktop_collapse_attrs = t.cast(
+        dict[str, str], desktop_collapse.get("html_attrs", {})
+    )
+    assert desktop_collapse_attrs.get("aria-controls") == (
+        "demo.LayoutDemo.__init__--signature-expanded-desktop"
+    )
+    assert desktop_collapse.astext() == "[collapse]"
+
+    mobile_bottom = mobile.children[1]
+    assert isinstance(mobile_bottom, api_component)
+    mobile_signature = mobile_bottom.children[0]
+    assert isinstance(mobile_signature, api_component)
+    mobile_expanded = _find_component(
+        mobile_signature, "gp-sphinx-api-signature-expanded"
+    )
+    mobile_html_attrs = t.cast(dict[str, str], mobile_expanded.get("html_attrs", {}))
+    assert mobile_html_attrs.get("id") == (
+        "demo.LayoutDemo.__init__--signature-expanded-mobile"
+    )
+    assert mobile_html_attrs.get("id") != desktop_html_attrs.get("id")
+    mobile_collapse = mobile_expanded.children[1]
+    assert isinstance(mobile_collapse, api_inline_component)
+    mobile_collapse_attrs = t.cast(
+        dict[str, str], mobile_collapse.get("html_attrs", {})
+    )
+    assert mobile_collapse_attrs.get("aria-controls") == (
+        "demo.LayoutDemo.__init__--signature-expanded-mobile"
+    )
 
 
 def test_rebuild_signature_layout_enriches_annotations_from_field_list() -> None:
@@ -549,9 +702,9 @@ def test_rebuild_signature_layout_enriches_annotations_from_field_list() -> None
         show_annotations=True,
     )
 
-    layout = sig.children[0]
-    assert isinstance(layout, api_component)
-    left = layout.children[0]
+    desktop = sig.children[0]
+    assert isinstance(desktop, api_component)
+    left = desktop.children[0]
     assert isinstance(left, api_component)
     signature = left.children[0]
     assert isinstance(signature, api_component)
@@ -582,9 +735,9 @@ def test_rebuild_signature_layout_strips_annotations_when_disabled() -> None:
         show_annotations=False,
     )
 
-    layout = sig.children[0]
-    assert isinstance(layout, api_component)
-    left = layout.children[0]
+    desktop = sig.children[0]
+    assert isinstance(desktop, api_component)
+    left = desktop.children[0]
     assert isinstance(left, api_component)
     signature = left.children[0]
     assert isinstance(signature, api_component)
@@ -642,7 +795,14 @@ def test_on_doctree_resolved_marks_managed_headers_with_initial_state() -> None:
 
     on_doctree_resolved(app, doctree, "index")
 
-    assert sig.get("html_attrs") == {"data-signature-expanded": "false"}
+    attrs = t.cast(dict[str, str], sig.get("html_attrs", {}))
+    assert attrs.get("data-signature-expanded") == "false"
+    assert attrs.get("data-domain") == "py"
+    assert attrs.get("data-objtype") == "function"
+    assert attrs.get("data-has-source") == "false"
+    assert attrs.get("data-has-badges") == "false"
+    assert attrs.get("data-badge-count") == "0"
+    assert attrs.get("data-has-fold") == "false"
 
 
 def test_on_doctree_resolved_manages_slot_backed_headers_without_gal_enabled() -> None:
@@ -670,9 +830,9 @@ def test_on_doctree_resolved_manages_slot_backed_headers_without_gal_enabled() -
     on_doctree_resolved(app, doctree, "index")
 
     assert "gp-sphinx-api-container" in desc.get("classes", [])
-    layout = sig.children[0]
-    assert isinstance(layout, api_component)
-    right = layout.children[1]
+    desktop = sig.children[0]
+    assert isinstance(desktop, api_component)
+    right = desktop.children[1]
     assert isinstance(right, api_component)
     assert _child_component_names(right) == ["gp-sphinx-api-badge-container"]
 
@@ -703,8 +863,8 @@ def test_on_doctree_resolved_manages_confval_entries_with_profile_classes() -> N
 
     assert "gp-sphinx-api-container" in desc.get("classes", [])
     assert "gp-sphinx-api-profile--confval" in desc.get("classes", [])
-    layout = sig.children[0]
-    assert isinstance(layout, api_component)
-    right = layout.children[1]
+    desktop = sig.children[0]
+    assert isinstance(desktop, api_component)
+    right = desktop.children[1]
     assert isinstance(right, api_component)
     assert _child_component_names(right) == ["gp-sphinx-api-badge-container"]

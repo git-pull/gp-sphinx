@@ -1,0 +1,61 @@
+/* sphinx-autodoc-typehints-gp — neutralise inline-code chip styling
+ * for cross-referenced default values and field-list xrefs.
+ *
+ * Stage C of the default-rendering pipeline wraps identifier
+ * defaults in `<code class="xref py py-obj docutils literal
+ * notranslate">`, which matches Furo's
+ * `code.literal { background, padding, font-size: 81.25% }` chip
+ * rule.  In a signature default-value or a field-list parameter
+ * row, that chip styling clashes with the surrounding text.  These
+ * rules strip the chip back to plain inline content while keeping
+ * the xref clickable.
+ *
+ * All rules land in @layer gp-sphinx so precedence is declarative
+ * against Furo's @layer components.  Layer order is established in
+ * gp-furo-theme/web/src/styles/index.css.
+ */
+
+@layer gp-sphinx {
+  /* Default-value spans inside <dt> signatures. */
+  .default_value code.literal {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  /* Field-list prefix wrapper added by FieldListPrefixWrapTransform.
+   * Defaults to inherit so structural content — parameter name,
+   * parens, brackets, commas, ellipsis — flows in the body sans
+   * font.  Only the inline `<code>` type-name children get
+   * monospace, via Furo's `code.literal` rule in
+   * gp-furo-theme/.../code.css.  Result: parameter name reads as
+   * sans-bold definition term; type expressions stay mono inside
+   * chips.  One mono treatment per row, scoped to "this is code." */
+  .gp-sphinx-field-prefix {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  /* Furo's `code.literal` chip styling (background, padding,
+   * border-radius) acts as a cognitive container around each type
+   * identifier — preferred to a transparent inline link.  Pin the
+   * size to a root-relative `0.8125rem` so chips render at ≈ 13 px
+   * regardless of the row's metadata-size parent.  Furo's own
+   * `code.literal { font-size: 81.25% }` would otherwise compound
+   * to ~11.4 px against a 14 px parent (too small); using `rem`
+   * blocks the compounding while still scaling with the root clamp
+   * ramp on wide viewports.
+   *
+   * `padding-inline: 0` cancels Furo's `padding: 0.1em 0.2em`
+   * horizontal component so the chip background sits flush against
+   * the bracket characters around it.  Without this, generic types
+   * read with visible whitespace inside the brackets — `list[ str ]`
+   * instead of `list[str]` — because the brackets and commas live
+   * outside the chip and have no padding of their own.  Vertical
+   * `0.1em` padding stays so the chip retains visible block height. */
+  .field-list code.literal {
+    font-size: 0.8125rem;
+    padding-inline: 0;
+  }
+}

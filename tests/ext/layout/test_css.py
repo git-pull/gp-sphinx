@@ -18,14 +18,14 @@ def test_signature_expanded_uses_contents_layout() -> None:
 def test_api_header_defaults_to_center_alignment() -> None:
     css = _LAYOUT_CSS.read_text(encoding="utf-8")
 
+    assert "display: block;" not in css
     assert (
         "dl.gp-sphinx-api-container > dt.gp-sphinx-api-header {\n"
         "  display: flex;\n  align-items: center;\n"
     ) in css
-    assert "display: block;" not in css
     assert (
         "dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > "
-        ".gp-sphinx-api-layout {\n"
+        ".gp-sphinx-api-layout--desktop {\n"
         "  display: flex;\n"
         "  align-items: center;\n"
     ) in css
@@ -55,7 +55,7 @@ def test_expanded_api_header_switches_back_to_top_alignment() -> None:
     ) in css
     assert (
         '> dt.gp-sphinx-api-header[data-signature-expanded="true"] > '
-        ".gp-sphinx-api-layout {\n"
+        ".gp-sphinx-api-layout--desktop {\n"
         "  align-items: flex-start;\n}" in css
     )
     assert (
@@ -68,6 +68,66 @@ def test_expanded_api_header_switches_back_to_top_alignment() -> None:
         ".gp-sphinx-api-layout-right {\n"
         "  align-items: flex-start;\n}" in css
     )
+
+
+def test_layout_uses_container_query_for_variant_toggle() -> None:
+    """Container query toggles desktop/mobile variant per inline-size.
+
+    The toggle selectors are written with the same specificity as the
+    layout rules (``dl.gp-sphinx-api-container > dt.gp-sphinx-api-header
+    > .gp-sphinx-api-layout--{desktop,mobile}``) so the cascade order
+    is preserved — ``@container`` does not bump specificity.
+    """
+    css = _LAYOUT_CSS.read_text(encoding="utf-8")
+
+    assert "container-type: inline-size;" in css
+    assert "container-name: gp-sphinx-api-entry;" in css
+    assert "@container gp-sphinx-api-entry (max-width: 36rem) {" in css
+    assert (
+        "dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > "
+        ".gp-sphinx-api-layout--mobile,\n"
+        ".gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > "
+        ".gp-sphinx-api-header > .gp-sphinx-api-layout--mobile {\n"
+        "  display: none;\n}"
+    ) in css
+    assert (
+        "  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > "
+        ".gp-sphinx-api-layout--desktop,\n"
+        "  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > "
+        ".gp-sphinx-api-header > .gp-sphinx-api-layout--desktop {\n"
+        "    display: none;\n  }"
+    ) in css
+    assert (
+        "  dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > "
+        ".gp-sphinx-api-layout--mobile,\n"
+        "  .gp-sphinx-api-card-shell > .gp-sphinx-api-card-entry > "
+        ".gp-sphinx-api-header > .gp-sphinx-api-layout--mobile {\n"
+        "    display: flex;"
+    ) in css
+
+
+def test_layout_mobile_variant_uses_top_bottom_axes() -> None:
+    """Mobile variant has its own top (toolbar) / bottom (signature) slots."""
+    css = _LAYOUT_CSS.read_text(encoding="utf-8")
+
+    assert (
+        ".gp-sphinx-api-layout--mobile .gp-sphinx-api-layout-top {\n  display: flex;\n"
+    ) in css
+    assert (
+        ".gp-sphinx-api-layout--mobile .gp-sphinx-api-layout-bottom {\n"
+        "  display: flex;\n"
+    ) in css
+    assert (
+        ".gp-sphinx-api-layout--mobile .gp-sphinx-api-source-link {\n"
+        "  margin-left: auto;\n}"
+    ) in css
+
+
+def test_layout_drops_legacy_order_minus_one_hack() -> None:
+    """Mobile variant has its own DOM order; no `order: -1` flex hack remains."""
+    css = _LAYOUT_CSS.read_text(encoding="utf-8")
+
+    assert "order: -1" not in css
 
 
 def test_signature_multiline_list_uses_padding_indent() -> None:
@@ -87,3 +147,19 @@ def test_signature_css_does_not_force_sig_param_block_layout() -> None:
     css = _LAYOUT_CSS.read_text(encoding="utf-8")
 
     assert ".gp-sphinx-api-signature-expanded em.sig-param" not in css
+
+
+def test_api_header_suppresses_inherited_transitions() -> None:
+    """Furo's `.sig` `transition: background .1s ease-out` is cancelled.
+
+    Furo ships a hover-smoothing transition on `.sig:not(.sig-inline)` in
+    `@layer components`.  Our managed `<dt>` retains the upstream `sig`
+    class, so the same transition would otherwise run on every theme swap
+    and produce a visible mid-blend.  The suppression rule lives in
+    `@layer gp-sphinx` so it wins regardless of selector specificity.
+    """
+    css = _LAYOUT_CSS.read_text(encoding="utf-8")
+
+    assert (
+        ".gp-sphinx-api-header {\n  transition: none;\n  animation: none;\n}"
+    ) in css

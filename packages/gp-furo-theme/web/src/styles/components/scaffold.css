@@ -449,11 +449,23 @@
     align-items: center;
   }
 
-  /* Responsive layouting — mobile-last per upstream comment. */
-  @media (min-width: 97em) {
-    html {
-      font-size: 110%;
-    }
+  /* Responsive root font-size — smooth ramp instead of cliff.
+   *
+   * Furo upstream uses `@media (min-width: 97em) { html { font-size:
+   * 110% } }`, which means a single-pixel viewport difference at
+   * 1552px causes every measurement on the page to jump 10%.
+   * Reviewers flagged this as a QA surface that didn't need to
+   * exist (MBP 14 at 1512, MBP 16 scaled at 1496, common 1440
+   * monitors all sit just below; 1600+ external displays sit just
+   * above).
+   *
+   * The clamp() form preserves the wide-viewport ceiling while
+   * removing the cliff: at 1280px the resolved root is 100% (16px),
+   * at 1600px it ramps to ~105% (~16.8px), at 1920px it reaches the
+   * 110% ceiling (17.6px). Endpoints match today's behaviour at
+   * 1280 and 1920px; the bump just becomes continuous between. */
+  :root {
+    font-size: clamp(100%, calc(80% + 0.25vw), 110%);
   }
 
   @media (max-width: 82em) {

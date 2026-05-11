@@ -74,10 +74,15 @@
 
     if (!header) return;
 
-    var expandedPanel = header.querySelector('.gp-sphinx-api-signature-expanded');
-    if (!expandedPanel || !expandedPanel.id) return;
-
-    setSignatureExpandedById(expandedPanel.id, true);
+    // The managed header carries both desktop and mobile layout variants
+    // side-by-side; only one is visible at a time per container query.
+    // Expand every panel we find so whichever variant the cascade picks
+    // displays in its open state without a flash of collapsed content.
+    var expandedPanels = header.querySelectorAll('.gp-sphinx-api-signature-expanded');
+    expandedPanels.forEach(function (panel) {
+      if (!panel.id) return;
+      setSignatureExpandedById(panel.id, true);
+    });
   }
 
   function expandForHash() {

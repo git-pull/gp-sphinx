@@ -188,7 +188,8 @@ def test_default_html_outputs_smoke(default_html_result) -> None:
     ):
         assert css_class in index_html
     assert 'tabindex="0"' in index_html
-    assert 'class="gp-sphinx-api-layout"' in index_html
+    assert "gp-sphinx-api-layout--desktop" in index_html
+    assert "gp-sphinx-api-layout--mobile" in index_html
     assert 'class="gp-sphinx-api-layout-left"' in index_html
     assert 'class="gp-sphinx-api-layout-right gp-sphinx-toolbar"' in index_html
     assert 'class="gp-sphinx-api-signature"' in index_html

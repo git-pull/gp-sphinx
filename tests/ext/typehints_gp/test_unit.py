@@ -1213,11 +1213,17 @@ def test_setup_registers_builder_inited_cache_clearing() -> None:
         Sphinx,
         types.SimpleNamespace(
             connect=lambda event, handler, **kw: connections.append((event, handler)),
+            add_config_value=lambda *a, **kw: None,
+            add_autodocumenter=lambda *a, **kw: None,
+            add_post_transform=lambda *a, **kw: None,
+            add_css_file=lambda *a, **kw: None,
         ),
     )
 
     setup(app)
 
-    event_map = dict(connections)
-    assert "builder-inited" in event_map
-    assert event_map["builder-inited"] is _clear_caches
+    # Multiple handlers may register on builder-inited (e.g. CSS static
+    # path injection alongside the cache clear), so check membership
+    # rather than asserting exactly one entry.
+    builder_inited_handlers = [h for ev, h in connections if ev == "builder-inited"]
+    assert _clear_caches in builder_inited_handlers

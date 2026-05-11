@@ -167,3 +167,22 @@ export const FURO_TOKEN_NAMES = [
 export type FuroTokenName = (typeof FURO_TOKEN_NAMES)[number];
 
 export const FuroTokenNameSchema = z.enum(FURO_TOKEN_NAMES);
+
+/**
+ * gp-sphinx semantic type-role names — workspace additions, distinct from
+ * Furo's contract.
+ *
+ * Kept as a separate const so the Furo contract test's "does not invent
+ * CSS custom properties Furo does not declare" assertion still passes.
+ * Values live in {@link GP_SPHINX_ROLE_TOKENS} (`./roles.js`).
+ */
+export const GP_SPHINX_ROLE_NAMES = [
+  "--gp-sphinx-type-body",
+  "--gp-sphinx-type-code-inline",
+  "--gp-sphinx-type-icon-glyph",
+  "--gp-sphinx-type-metadata",
+] as const;
+
+export type GpSphinxRoleName = (typeof GP_SPHINX_ROLE_NAMES)[number];
+
+export const GpSphinxRoleNameSchema = z.enum(GP_SPHINX_ROLE_NAMES);

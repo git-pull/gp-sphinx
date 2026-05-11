@@ -72,6 +72,23 @@ def test_build_api_card_entry_uses_shared_component_shell() -> None:
     assert "badge" in header.astext()
     assert "Demo body." in content.astext()
 
+    layout_classes: list[list[str]] = []
+    for child in header.children:
+        if (
+            isinstance(child, nodes.Element)
+            and child.get("name") == "gp-sphinx-api-layout"
+        ):
+            layout_classes.append(child.get("classes", []))
+    assert any("gp-sphinx-api-layout--desktop" in classes for classes in layout_classes)
+    assert any("gp-sphinx-api-layout--mobile" in classes for classes in layout_classes)
+
+    header_attrs = t.cast(dict[str, str], header.get("html_attrs", {}))
+    assert header_attrs.get("data-has-badges") == "true"
+    assert header_attrs.get("data-badge-count") == "1"
+    assert header_attrs.get("data-has-source") == "false"
+    assert header_attrs.get("data-has-fold") == "false"
+    assert "gp-sphinx-api-header--has-badges" in header.get("classes", [])
+
 
 def test_build_api_summary_section_uses_shared_summary_region() -> None:
     """Shared summary content uses a dedicated public summary wrapper."""
