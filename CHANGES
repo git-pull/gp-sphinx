@@ -52,6 +52,23 @@ at a single breakpoint. A new `gp-sphinx` cascade layer makes
 workspace overrides win over Furo declaratively rather than via
 unlayered precedence. (#36)
 
+#### `gp-sphinx`: Workspace-wide `linkcode_resolve` factory
+
+`make_workspace_linkcode_resolve()` is a drop-in `linkcode_resolve`
+for uv/pnpm monorepos — one registration covers every package under
+`packages/` by computing GitHub URLs relative to a `repo_root`. The
+generated URLs always point at a single configurable branch
+(default `main`), since workspace packages carry independent
+versions while the docs site tracks live tip. (#36)
+
+#### `sphinx-ux-autodoc-layout`: Responsive autodoc headers on narrow viewports
+
+Below 52rem the header row stacks instead of squeezing, with the
+type badge pinned beside the signature and the source link
+right-anchored in its toolbar. Below 30rem long signatures scroll
+horizontally rather than wrapping mid-identifier, and the permalink
+reveals on tap for touch users. (#36)
+
 ### Bug fixes
 
 #### `sphinx-gp-theme`: TOC font-size override now applies
@@ -66,6 +83,14 @@ size. (#36)
 On narrow viewports the type badge previously wrapped below the
 signature, breaking the eyebrow-style layout. It now stays pinned
 to the left of the signature row. (#36)
+
+#### `sphinx-vite-builder`: CI setup hint no longer requires a root lockfile
+
+The recipe printed by `PnpmMissingError` (and the matching
+README/AGENTS samples) used to include `cache: pnpm`, which fails
+on consumer CI with "Dependencies lock file is not found" when the
+consumer repo has no root `pnpm-lock.yaml`. The hint now omits that
+line, with a note explaining when it is safe to add back. (#36)
 
 ## gp-sphinx 0.0.1a17 (2026-05-09)
 
