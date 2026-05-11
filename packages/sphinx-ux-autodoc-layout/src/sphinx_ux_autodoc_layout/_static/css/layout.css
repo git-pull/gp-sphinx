@@ -79,6 +79,25 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mo
   display: none;
 }
 
+/* ── Suppress inherited transitions/animations ─────── *
+ *
+ * Furo's `.sig:not(.sig-inline)` rule (in @layer components) declares
+ * `transition: background .1s ease-out` for hover smoothing.  Our
+ * managed `<dt>` retains the upstream `sig sig-object py` classes, so
+ * that transition cascades onto every header and runs on every theme
+ * swap, producing a visible mid-blend during the toggle.  The same
+ * applies to card-mode headers (`<div class="gp-sphinx-api-header">`).
+ *
+ * Kill any inherited transitions/animations on the managed header
+ * itself.  Lives in @layer gp-sphinx so it beats Furo's @layer
+ * components regardless of selector specificity.  Descendants are
+ * intentionally left untouched so future signature/fold animations
+ * can opt in. */
+.gp-sphinx-api-header {
+  transition: none;
+  animation: none;
+}
+
 /* ── API shell ──────────────────────────────────────── */
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header {
   display: flex;

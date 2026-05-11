@@ -147,3 +147,19 @@ def test_signature_css_does_not_force_sig_param_block_layout() -> None:
     css = _LAYOUT_CSS.read_text(encoding="utf-8")
 
     assert ".gp-sphinx-api-signature-expanded em.sig-param" not in css
+
+
+def test_api_header_suppresses_inherited_transitions() -> None:
+    """Furo's `.sig` `transition: background .1s ease-out` is cancelled.
+
+    Furo ships a hover-smoothing transition on `.sig:not(.sig-inline)` in
+    `@layer components`.  Our managed `<dt>` retains the upstream `sig`
+    class, so the same transition would otherwise run on every theme swap
+    and produce a visible mid-blend.  The suppression rule lives in
+    `@layer gp-sphinx` so it wins regardless of selector specificity.
+    """
+    css = _LAYOUT_CSS.read_text(encoding="utf-8")
+
+    assert (
+        ".gp-sphinx-api-header {\n  transition: none;\n  animation: none;\n}"
+    ) in css
