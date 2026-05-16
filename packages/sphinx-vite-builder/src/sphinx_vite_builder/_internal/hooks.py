@@ -1,46 +1,31 @@
-"""Sphinx event handlers that drive the Vite watch lifecycle.
-
-The handlers live here (not in ``__init__.py``) so they're easy to unit
-test in isolation: tests mock a Sphinx-like app, call the handler
-directly, and assert against the process / bus instances stashed on
-``app._sphinx_vite_builder_*``.
+"""Sphinx event handlers that run the synchronous Vite build.
 
 Lifecycle:
 
-- ``builder-inited`` (:func:`on_builder_inited`) — resolve config; if
-  ``should_spawn``, start the bus, spawn the watch process,  and stash
-  both on ``app``. Idempotent: re-firing (sphinx-autobuild fires this
-  on every rebuild) finds the running process and returns.
-- ``build-finished`` (:func:`on_build_finished`) — no-op by default.
-  The watch process keeps running across rebuilds so Vite can
-  incrementally recompile on file changes. Teardown happens via
-  :data:`atexit` and signal handlers installed at first spawn.
+- ``builder-inited`` (:func:`on_builder_inited`) — resolve config, run
+  ``pnpm exec vite build`` synchronously (via :func:`run_vite_build`),
+  then return so Sphinx's static-file copying picks up fresh CSS/JS.
+- ``build-finished`` (:func:`on_build_finished`) — log exceptions; no
+  cleanup needed because the build is one-shot.
 
-Tear-down is the responsibility of :func:`teardown`, which is wired
-to ``atexit`` and to ``SIGINT`` / ``SIGTERM`` / ``SIGHUP``.
-
-The handlers are passive about command construction: they call
-:func:`sphinx_vite_builder._internal.process.vite_watch_command` for
-the default Vite argv. Tests monkey-patch that symbol when they want a
-fake-vite invocation.
+The build runs synchronously because under ``sphinx-autobuild``, each
+build executes in a short-lived subprocess (per
+:mod:`sphinx_autobuild.build`); an async vite watch would race
+Sphinx's ``copy_static_files`` phase and Sphinx would copy stale
+assets. A ~600ms blocking call per rebuild is the trade for
+guaranteed-fresh CSS/JS.
 """
 
 from __future__ import annotations
 
-import atexit
-import pathlib
-import signal
 import typing as t
-import weakref
 
 from sphinx.errors import ExtensionError
 from sphinx.util import logging as sphinx_logging
 
-from .bus import AsyncioBus
-from .config import Mode, SphinxViteBuilderConfig, detect_mode, resolve_vite_root
+from .config import SphinxViteBuilderConfig, detect_mode, resolve_vite_root
 from .errors import SphinxViteBuilderError
-from .process import AsyncProcess
-from .vite import pnpm_install_command, run_vite_build, vite_watch_command
+from .vite import run_vite_build
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -51,17 +36,6 @@ if t.TYPE_CHECKING:
 # same way Sphinx's own messages do. The stdlib `logging.getLogger`
 # does not propagate by default in Sphinx contexts.
 logger = sphinx_logging.getLogger(__name__)
-
-_BUS_ATTR = "_sphinx_vite_builder_bus"
-_PROC_ATTR = "_sphinx_vite_builder_proc"
-_TEARDOWN_REGISTERED_ATTR = "_sphinx_vite_builder_teardown_registered"
-
-# Live (bus, proc) pairs that the global teardown handler should clean
-# up. Held weakly so a Sphinx app being garbage-collected doesn't keep
-# the bus thread alive.
-_active_handles: weakref.WeakValueDictionary[int, AsyncioBus] = (
-    weakref.WeakValueDictionary()
-)
 
 
 def _raise_as_extension_error(exc: Exception) -> t.NoReturn:
@@ -93,205 +67,46 @@ def _build_config(app: Sphinx) -> SphinxViteBuilderConfig:
     )
 
 
-def _ensure_node_modules(vite_root: pathlib.Path, bus: AsyncioBus) -> bool:
-    """Ensure ``<vite_root>/node_modules/`` exists; install if missing.
-
-    Closes the developer-workflow gap where ``git clean -fdx`` wipes
-    ``node_modules/`` and the next ``sphinx-autobuild`` would otherwise
-    spawn ``pnpm exec vite`` against a missing tree, exit immediately
-    with ``Command "vite" not found``, and silently leave the docs site
-    serving 404s for the theme's CSS + JS.
-
-    Returns ``True`` if ``node_modules/`` exists (or was installed
-    successfully); ``False`` if the install ran but exited non-zero,
-    which signals to :func:`on_builder_inited` to skip the vite-watch
-    spawn rather than burn cycles on a guaranteed-failed
-    ``pnpm exec vite``.
-    """
-    if (vite_root / "node_modules").exists():
-        return True
-
-    install_cmd = pnpm_install_command()
-    logger.info(
-        "[vite] node_modules/ missing in %s; running `%s`",
-        vite_root,
-        " ".join(install_cmd),
-    )
-    install_proc = AsyncProcess(label="pnpm-install", logger=logger)
-    bus.call_sync(install_proc.start(install_cmd, cwd=vite_root))
-    returncode = bus.call_sync(install_proc.wait())
-    if returncode != 0:
-        logger.warning(
-            "[vite] pnpm install failed (exit %d) in %s — skipping vite "
-            "spawn; run the install manually and restart sphinx-autobuild",
-            returncode,
-            vite_root,
-        )
-        return False
-    logger.info("[vite] pnpm install complete; proceeding to vite-watch spawn")
-    return True
-
-
 def on_builder_inited(app: Sphinx) -> None:
     """``builder-inited`` event handler.
 
-    DEV mode (``sphinx-autobuild``) spawns the long-running Vite watch
-    process; PROD mode (plain ``sphinx-build``) runs a one-shot
-    ``pnpm exec vite build`` and blocks until it finishes so the
-    subsequent Sphinx build sees fresh CSS/JS in ``static/``. Idempotent
-    across multiple builder-inited firings (sphinx-autobuild re-fires
-    this on every rebuild).
+    Runs ``pnpm exec vite build`` synchronously and blocks until it
+    finishes. Both PROD (plain ``sphinx-build``) and DEV
+    (``sphinx-autobuild``) take this same path: each ``sphinx-autobuild``
+    rebuild is a fresh subprocess, so a synchronous one-shot vite per
+    rebuild is the correct primitive — it guarantees Sphinx's
+    ``copy_static_files`` phase sees fresh CSS/JS rather than racing an
+    async watch that hasn't finished its initial build yet.
 
-    If ``<vite_root>/node_modules/`` is missing (typical after
-    ``git clean -fdx``), runs ``pnpm install --frozen-lockfile``
-    synchronously first so ``pnpm exec vite`` resolves on first try.
+    :func:`run_vite_build` handles the ``SPHINX_VITE_BUILDER_SKIP``
+    escape hatch, the ``web/``-absent short-circuit, missing
+    ``node_modules`` auto-install, and fast-fail diagnostics
+    (``PnpmMissingError`` / ``NodeModulesInstallError`` /
+    ``ViteFailedError``) internally; this hook just funnels Sphinx's
+    extension-error path through ``_raise_as_extension_error``.
     """
     config = _build_config(app)
     if config.vite_root is None:
-        # No vite_root configured → nothing to orchestrate. Both modes
-        # treat this as "the consumer doesn't have a vite project to
-        # build" (typical when running off an installed wheel).
+        # No vite_root configured → nothing to orchestrate (typical when
+        # running off an installed wheel with the static tree pre-baked).
         return
 
-    if config.mode is Mode.PROD:
-        # One-shot build via the shared backend orchestration. Same
-        # short-circuits (SPHINX_VITE_BUILDER_SKIP, web/-absent) and
-        # same fast-fail diagnostics as the PEP 517 backend uses.
-        # ``run_vite_build`` resolves ``web/`` relative to its
-        # ``project_root`` argument, so pass the parent of vite_root.
-        try:
-            run_vite_build(project_root=config.vite_root.parent)
-        except SphinxViteBuilderError as exc:
-            _raise_as_extension_error(exc)
-        return
-
-    existing_proc: AsyncProcess | None = getattr(app, _PROC_ATTR, None)
-    if existing_proc is not None and existing_proc.is_running:
-        # sphinx-autobuild's repeated builder-inited; the watch is
-        # already running, leave it alone.
-        return
-
-    bus = getattr(app, _BUS_ATTR, None)
-    if bus is None:
-        bus = AsyncioBus()
-        bus.start()
-        setattr(app, _BUS_ATTR, bus)
-        _active_handles[id(app)] = bus
-
-    if config.vite_root is None:
-        # `should_spawn` already guards this, but tighten for type checkers.
-        msg = "should_spawn was True but vite_root resolved to None"
-        raise RuntimeError(msg)
-
-    if not _ensure_node_modules(config.vite_root, bus):
-        # Install failed; warning was already logged. Don't try to
-        # spawn vite — pnpm exec would fail the same way.
-        return
-
-    proc = AsyncProcess(label="vite", logger=logger)
-    setattr(app, _PROC_ATTR, proc)
-
-    command = vite_watch_command()
-    logger.info("[vite] spawning %s in %s", " ".join(command), config.vite_root)
+    # ``run_vite_build`` resolves ``web/`` relative to its
+    # ``project_root`` argument, so pass the parent of vite_root.
     try:
-        bus.call_sync(proc.start(command, cwd=config.vite_root))
-    except (SphinxViteBuilderError, OSError) as exc:
-        # OSError covers the FileNotFoundError that
-        # ``asyncio.create_subprocess_exec`` raises when the package
-        # manager (pnpm) is not on PATH. SphinxViteBuilderError covers
-        # any typed diagnostic raised through the bus from inside
-        # AsyncProcess.start. Both get the same modname-attributed
-        # ExtensionError treatment so users see "Extension error
-        # (sphinx_vite_builder)" instead of the internal module path.
+        run_vite_build(project_root=config.vite_root.parent)
+    except SphinxViteBuilderError as exc:
         _raise_as_extension_error(exc)
-
-    if not getattr(app, _TEARDOWN_REGISTERED_ATTR, False):
-        _install_teardown_handlers(app)
-        setattr(app, _TEARDOWN_REGISTERED_ATTR, True)
 
 
 def on_build_finished(app: Sphinx, exception: BaseException | None) -> None:
     """``build-finished`` event handler.
 
-    Deliberately a no-op: keeping the watch alive across rebuilds is
-    the whole point of the orchestration. Teardown happens via signal
-    handlers and the :mod:`atexit` registration installed at first
-    spawn.
-
-    Logs the exception (if any) for context, but does not interfere
-    with Sphinx's own error reporting.
+    No-op for the common case. Logs the exception (if any) for
+    context, but does not interfere with Sphinx's own error reporting.
     """
     if exception is not None:
         logger.debug(
-            "[vite] sphinx build finished with exception (%s); leaving watch alive",
+            "[vite] sphinx build finished with exception: %s",
             exception,
         )
-
-
-def teardown(app: Sphinx, *, terminate_timeout: float = 5.0) -> None:
-    """Stop the Vite watch and tear down the bus for ``app``.
-
-    Idempotent: safe to call from multiple signal sources (atexit +
-    SIGINT) without double-stop errors.
-    """
-    proc: AsyncProcess | None = getattr(app, _PROC_ATTR, None)
-    bus: AsyncioBus | None = getattr(app, _BUS_ATTR, None)
-    if proc is None and bus is None:
-        return
-
-    if proc is not None and bus is not None:
-        try:
-            bus.call_sync(proc.terminate(timeout=terminate_timeout))
-        except Exception as exc:
-            logger.warning("[vite] terminate raised during teardown: %s", exc)
-
-    if bus is not None:
-        bus.stop(timeout=terminate_timeout)
-
-    setattr(app, _PROC_ATTR, None)
-    setattr(app, _BUS_ATTR, None)
-
-
-def _install_teardown_handlers(app: Sphinx) -> None:
-    """Wire :data:`atexit` + signal handlers to tear down ``app``'s watch.
-
-    Uses a weak reference to the app so a long-lived Python process
-    holding the handler doesn't keep the app alive past its natural
-    lifetime.
-    """
-    app_ref = weakref.ref(app)
-
-    def _handle_atexit() -> None:
-        live_app = app_ref()
-        if live_app is not None:
-            teardown(live_app)
-
-    atexit.register(_handle_atexit)
-
-    previous_handlers: dict[int, t.Any] = {}
-    for sig_name in ("SIGINT", "SIGTERM", "SIGHUP"):
-        sig = getattr(signal, sig_name, None)
-        if sig is None:
-            continue  # Windows lacks SIGHUP, etc.
-
-        def _make_handler(
-            sig: int,
-            previous: t.Any = None,
-        ) -> t.Callable[[int, t.Any], None]:
-            def _handle(signum: int, frame: t.Any) -> None:
-                live_app = app_ref()
-                if live_app is not None:
-                    teardown(live_app)
-                if callable(previous):
-                    previous(signum, frame)
-                # Re-raise the signal once cleanup is done so the
-                # default behavior (process exit) follows.
-                if previous in (signal.SIG_DFL, None):
-                    signal.signal(signum, signal.SIG_DFL)
-                    signal.raise_signal(signum)
-
-            return _handle
-
-        previous = signal.getsignal(sig)
-        previous_handlers[sig] = previous
-        signal.signal(sig, _make_handler(sig, previous))
