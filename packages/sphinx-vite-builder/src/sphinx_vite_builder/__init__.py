@@ -7,10 +7,8 @@ Two orthogonal entry points sharing one subprocess core:
    to :mod:`hatchling.build`. Consumer packages declare it via
    ``[build-system].build-backend = "sphinx_vite_builder.build"``.
 2. **Sphinx extension** registered by :func:`setup`. Hooks
-   ``builder-inited`` and ``build-finished`` so ``sphinx-build`` /
-   ``sphinx-autobuild`` automatically run vite — one-shot for prod, a
-   long-lived ``vite build --watch`` child process for autobuild —
-   with graceful teardown on signal / :data:`atexit`.
+   ``builder-inited`` to run ``pnpm exec vite build`` synchronously
+   before Sphinx's ``copy_static_files`` phase.
 
 Both heads consume the smart-subprocess core under
 :mod:`sphinx_vite_builder._internal`.
@@ -34,13 +32,10 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     """Register the Sphinx-extension head.
 
     Wires two config values (``sphinx_vite_builder_mode``,
-    ``sphinx_vite_builder_root``) and connects the ``builder-inited`` /
-    ``build-finished`` lifecycle hooks. Under ``sphinx-autobuild`` (or
-    when ``sphinx_vite_builder_mode = "dev"``) the ``builder-inited``
-    handler spawns ``pnpm exec vite build --watch`` against
-    ``sphinx_vite_builder_root``; under plain ``sphinx-build`` (or
-    ``mode = "prod"``) the handler is a no-op so production wheels
-    carry no Node runtime requirement.
+    ``sphinx_vite_builder_root``) and connects the ``builder-inited``
+    hook. The hook runs ``pnpm exec vite build`` synchronously;
+    ``sphinx_vite_builder_root`` controls whether vite runs at all
+    (unset → no-op, typical for installed wheels).
 
     Examples
     --------

@@ -185,8 +185,25 @@ dev:
 
 # Start sphinx-autobuild server
 start:
-    uv run sphinx-autobuild -b dirhtml "{{ sourcedir }}" "{{ builddir }}" {{ sphinxopts }} --port {{ http_port }}
+    uv run sphinx-autobuild -b dirhtml "{{ sourcedir }}" "{{ builddir }}" {{ sphinxopts }} \
+        --port {{ http_port }} \
+        --watch ../packages \
+        --re-ignore '/node_modules(/|$)' \
+        --re-ignore '/__pycache__(/|$)' \
+        --re-ignore '/\.pytest_cache(/|$)' \
+        --re-ignore '/dist(/|$)' \
+        --re-ignore '/_build(/|$)' \
+        --re-ignore '/packages/[^/]+/src/[^/]+/theme/[^/]+/static(/|$)'
 
 # Design mode: watch static files and disable incremental builds
 design:
-    uv run sphinx-autobuild -b dirhtml "{{ sourcedir }}" "{{ builddir }}" {{ sphinxopts }} --port {{ http_port }} --watch "." -a
+    uv run sphinx-autobuild -b dirhtml "{{ sourcedir }}" "{{ builddir }}" {{ sphinxopts }} \
+        --port {{ http_port }} -a \
+        --watch "." \
+        --watch ../packages \
+        --re-ignore '/node_modules(/|$)' \
+        --re-ignore '/__pycache__(/|$)' \
+        --re-ignore '/\.pytest_cache(/|$)' \
+        --re-ignore '/dist(/|$)' \
+        --re-ignore '/_build(/|$)' \
+        --re-ignore '/packages/[^/]+/src/[^/]+/theme/[^/]+/static(/|$)'
