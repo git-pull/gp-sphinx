@@ -31,12 +31,20 @@
 
   .sidebar-logo-container {
     margin: var(--sidebar-item-spacing-vertical) 0;
+    /* Reserve a square box before the SVG bytes arrive. The img
+       carries width="200" height="200" attrs (CLS protection comes
+       from that primarily); this rule is belt-and-suspenders for
+       any consumer that loses the HTML attrs. Every shipped logo
+       (tmuxp.svg, libtmux.svg, libvcs.svg, cihai.svg) has a 1:1
+       viewBox. */
+    aspect-ratio: 1 / 1;
   }
 
   .sidebar-logo {
     margin: 0 auto;
     display: block;
     max-width: 100%;
+    height: auto;
   }
 
   /* Search input (sidebar-mounted) */
