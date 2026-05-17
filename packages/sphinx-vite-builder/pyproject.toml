@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-vite-builder"
-version = "0.0.1a18"
+version = "0.0.1a19"
 description = "PEP 517 build backend + Sphinx extension that orchestrates Vite via pnpm"
 requires-python = ">=3.10,<4.0"
 authors = [

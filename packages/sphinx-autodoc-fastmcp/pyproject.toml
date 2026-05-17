@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-autodoc-fastmcp"
-version = "0.0.1a18"
+version = "0.0.1a19"
 description = "Sphinx extension for documenting FastMCP tools (cards, badges, cross-refs)"
 requires-python = ">=3.10,<4.0"
 authors = [
@@ -27,9 +27,9 @@ readme = "README.md"
 keywords = ["sphinx", "fastmcp", "mcp", "documentation", "badges"]
 dependencies = [
   "sphinx>=8.1",
-  "sphinx-ux-badges==0.0.1a18",
-  "sphinx-ux-autodoc-layout==0.0.1a18",
-  "sphinx-autodoc-typehints-gp==0.0.1a18",
+  "sphinx-ux-badges==0.0.1a19",
+  "sphinx-ux-autodoc-layout==0.0.1a19",
+  "sphinx-autodoc-typehints-gp==0.0.1a19",
 ]
 
 [project.urls]

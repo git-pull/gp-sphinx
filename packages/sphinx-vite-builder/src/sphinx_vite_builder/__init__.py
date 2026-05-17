@@ -22,7 +22,7 @@ import typing as t
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
 
-__version__ = "0.0.1a18"
+__version__ = "0.0.1a19"
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
