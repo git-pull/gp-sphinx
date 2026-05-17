@@ -133,6 +133,93 @@ source ~/.config/fish/config.fish
 
 Click a tab in either tab-set; the other follows.
 
+## Size variants
+
+Default size — compact labels at `0.95em`:
+
+::::{tab-set}
+
+:::{tab-item} pip
+```console
+$ pip install gp-sphinx
+```
+:::
+
+:::{tab-item} uv
+```console
+$ uv add gp-sphinx
+```
+:::
+
+:::{tab-item} pipx
+```console
+$ pipx install gp-sphinx
+```
+:::
+
+::::
+
+`:class: gp-sphinx-tabs--large` — body-size labels with roomier
+padding:
+
+::::{tab-set}
+:class: gp-sphinx-tabs--large
+
+:::{tab-item} pip
+```console
+$ pip install gp-sphinx
+```
+:::
+
+:::{tab-item} uv
+```console
+$ uv add gp-sphinx
+```
+:::
+
+:::{tab-item} pipx
+```console
+$ pipx install gp-sphinx
+```
+:::
+
+::::
+
+## Deep-link to a tab
+
+::::{tab-set}
+:sync-group: example
+
+:::{tab-item} Python
+:sync: python
+```python
+print("hello world")
+```
+:::
+
+:::{tab-item} Rust
+:sync: rust
+```rust
+println!("hello world");
+```
+:::
+
+:::{tab-item} Go
+:sync: go
+```go
+fmt.Println("hello world")
+```
+:::
+
+::::
+
+Open this page with <a href="?example=python"><code>?example=python</code></a>
+to pre-select the Python tab via the sphinx-design URL form. The
+legacy sphinx-inline-tabs form is supported too:
+<a href="?tabs=Python"><code>?tabs=Python</code></a>. Either form
+writes through to `localStorage`, so the choice persists on subsequent
+visits.
+
 ## `:new-set:` breaks a consecutive run
 
 ```{eval-rst}

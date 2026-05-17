@@ -92,6 +92,59 @@ Later: see {ref}`the Python tab <py-tab>` for details.
 The label is the anchor — clicking the `{ref}` jumps to the tab's
 label, the radio remains in whichever state the user last selected.
 
+## Deep-link to a specific tab
+
+`sphinx-ux-tabs` reads two URL query-parameter forms on first paint and
+writes the resolved selection through to `localStorage`, so a link
+that sets a tab also persists the choice for the user's next visit.
+
+The label form deep-links by visible text — appropriate when the link
+target shouldn't care about authoring details:
+
+```
+https://example.org/install/?tabs=Python
+```
+
+The group form deep-links by the `:sync-group:` / `:sync:` pair —
+appropriate when more than one tab on the page shares a label, or when
+the link should target a specific sync-group:
+
+```
+https://example.org/install/?shell=zsh
+```
+
+Both forms persist to `localStorage` under the key
+`gp-sphinx-tabs.sync.<group>`, so the next page load on the same
+sync-group restores the user's last choice automatically. URL params
+apply on first paint only — subsequent SPA-nav events read from
+`localStorage`.
+
+## Use the larger size variant
+
+The default tab size is compact (`0.95em` labels) to match the
+workspace's tight prose rhythm. Use `:class: gp-sphinx-tabs--large` on
+the `{tab-set}` for callout sections, feature-comparison tables, or
+landing-page hero tabs — anywhere touch-target size or label
+prominence matters more than vertical economy.
+
+````markdown
+:::{tab-set}
+:class: gp-sphinx-tabs--large
+
+:::{tab-item} pip
+...
+:::
+
+:::{tab-item} uv
+...
+:::
+
+:::
+````
+
+The `:class:` option preserves the BEM `--` modifier verbatim — no
+extra escaping required.
+
 ## Use tabs after SPA navigation
 
 Tabs work without JS — the `:checked + label + .panel` selectors
