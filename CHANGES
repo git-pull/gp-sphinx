@@ -18,6 +18,16 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Documentation
+
+#### Visual identity for the gp-sphinx docs site
+
+The gp-sphinx docs site at <https://gp-sphinx.git-pull.com/> now
+ships the standard tony/* logo, favicon, and PWA icon set. The Furo
+sidebar shows light and dark logo variants, the browser tab carries
+a proper favicon, and a web-app manifest advertises the icon sizes
+for Android, Apple, and Microsoft platforms. (#41)
+
 ## gp-sphinx 0.0.1a19 (2026-05-17)
 
 gp-sphinx 0.0.1a19 closes the gap on Cloudflare Rocket Loader
