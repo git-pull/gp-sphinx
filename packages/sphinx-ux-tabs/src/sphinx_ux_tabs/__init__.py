@@ -43,6 +43,12 @@ from sphinx_ux_tabs._nodes import (
     TabPanelNode,
     TabSetNode,
 )
+from sphinx_ux_tabs._prehydrate import (
+    init_env_store,
+    inject_tabs_prehydrate,
+    merge_info,
+    purge_doc,
+)
 from sphinx_ux_tabs._transforms import TabsPostTransform
 from sphinx_ux_tabs._visitors import (
     depart_tab_input_html,
@@ -119,6 +125,25 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.connect("builder-inited", _add_static_path)
     app.add_css_file("css/sphinx_ux_tabs.css")
     app.add_js_file("js/sphinx_ux_tabs_sync.js")
+
+    # Prehydrate plumbing: collect (sync_group, sync_id) pairs per docname
+    # during the post-transform, then emit the matching <head> snippet at
+    # html-page-context time so the saved/URL-pinned tab paints on first
+    # frame.  env-purge-doc / env-merge-info keep the store coherent across
+    # incremental and parallel builds.
+    def _seed_env_store(app: Sphinx) -> None:
+        init_env_store(app.env)
+
+    app.connect("builder-inited", _seed_env_store)
+    app.connect(
+        "env-purge-doc",
+        lambda app, env, docname: purge_doc(env, docname),
+    )
+    app.connect(
+        "env-merge-info",
+        lambda app, env, docnames, other: merge_info(env, other),
+    )
+    app.connect("html-page-context", inject_tabs_prehydrate)
 
     return {
         "version": _EXTENSION_VERSION,

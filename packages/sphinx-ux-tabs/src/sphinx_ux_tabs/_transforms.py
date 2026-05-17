@@ -44,6 +44,7 @@ from sphinx_ux_tabs._nodes import (
     TabPanelNode,
     TabSetNode,
 )
+from sphinx_ux_tabs._prehydrate import record_pair
 
 WARNING_TYPE = "gp-sphinx-tabs"
 
@@ -417,6 +418,34 @@ class TabsPostTransform(SphinxPostTransform):
         del kwargs
         _group_tab_containers(self.document)
         _expand_tab_sets(self.document)
+        _record_sync_pairs(self.env, self.document)
+
+
+def _record_sync_pairs(env: t.Any, document: nodes.document) -> None:
+    """Stash every ``(sync_group, sync_id)`` pair in the document on ``env``.
+
+    Walks the post-expansion doctree, picks the panel nodes' sync
+    attributes (label and panel mirror each other; either source works),
+    and records each non-empty pair against the current ``docname``.
+    The collected set drives the per-page prehydrate ``<head>`` payload
+    that :func:`~sphinx_ux_tabs._prehydrate.inject_tabs_prehydrate` emits
+    during ``html-page-context``.
+
+    Parameters
+    ----------
+    env : Any
+        The Sphinx build environment (``self.env`` from the post-transform).
+    document : nodes.document
+        The expanded doctree to walk.
+    """
+    docname = getattr(env, "docname", None)
+    if not docname:
+        return
+    for panel in document.findall(TabPanelNode):
+        group = panel.get("sync_group", "")
+        sync_id = panel.get("sync_id", "")
+        if group and sync_id:
+            record_pair(env, docname, group, sync_id)
 
 
 __all__ = [
