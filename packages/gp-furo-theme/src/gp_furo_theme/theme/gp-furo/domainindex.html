@@ -8,7 +8,7 @@
 {% block scripts -%}
   {{ super() }}
   {%- if not embedded and collapse_index %}
-    <script>DOCUMENTATION_OPTIONS.COLLAPSE_INDEX = true</script>
+    <script data-cfasync="false">DOCUMENTATION_OPTIONS.COLLAPSE_INDEX = true</script>
   {%- endif -%}
 {%- endblock scripts %}
 

@@ -43,6 +43,22 @@ def test_theme_sidebar_projects_exists() -> None:
     assert (get_theme_path() / "sidebar" / "projects.html").is_file()
 
 
+def test_theme_sidebar_projects_opts_out_of_rocket_loader() -> None:
+    """Inline script in sidebar projects template carries ``data-cfasync="false"``.
+
+    Pairs with ``custom.css``'s ``#sidebar-projects:not(.ready)
+    {visibility:hidden}`` FOUC-hide rule: if Cloudflare Rocket Loader
+    defers the inline script that adds ``.ready``, the projects section
+    stays hidden until the deferred script runs, which can be tens of
+    seconds on slow networks. The opt-out keeps the script synchronous
+    in document order as designed. See
+    ``packages/gp-sphinx/src/gp_sphinx/config.py:730-755`` for the
+    broader Rocket Loader rationale.
+    """
+    template = (get_theme_path() / "sidebar" / "projects.html").read_text()
+    assert 'data-cfasync="false"' in template
+
+
 def test_theme_static_custom_css_exists() -> None:
     """Custom CSS is bundled in theme static."""
     assert (get_theme_path() / "static" / "css" / "custom.css").is_file()
