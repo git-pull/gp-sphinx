@@ -290,7 +290,7 @@ MATURITY_BADGE_FIXTURES: list[MaturityBadgeFixture] = [
     ids=[f.test_id for f in MATURITY_BADGE_FIXTURES],
 )
 def test_maturity_badge(test_id: str, maturity: str, expected: str) -> None:
-    """maturity_badge() returns the correct sphinx-design badge role."""
+    """maturity_badge() returns the correct badge role (MyST ``{bdg-*}`` syntax)."""
     assert package_reference.maturity_badge(maturity) == expected
 
 

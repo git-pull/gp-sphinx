@@ -41,9 +41,9 @@ globals().update(conf)
 ## Features
 
 - `merge_sphinx_config()` API for shared defaults with per-project overrides
-- Shared extension list (autodoc, intersphinx, myst_parser, sphinx_design, etc.)
+- Shared extension list (autodoc, intersphinx, myst_parser, sphinx_ux_*, etc.)
 - Shared Furo theme configuration (CSS variables, fonts, sidebar, footer)
-- Bundled workarounds (tabs.js removal, spa-nav.js injection)
+- Bundled workarounds (spa-nav.js injection)
 - Shared font configuration (IBM Plex via Fontsource)
 
 ## More information

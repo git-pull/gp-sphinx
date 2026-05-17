@@ -236,7 +236,6 @@ testpaths = [
 filterwarnings = [
   "ignore:distutils Version classes are deprecated. Use packaging.version instead.",
   "ignore:The frontend.Option(Parser)? class.*:DeprecationWarning::",
-  "ignore:nodes.Node.traverse\\(\\) is obsoleted by Node.findall\\(\\).::sphinx_inline_tabs._impl",
 ]
 
 [tool.coverage.report]

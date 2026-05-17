@@ -25,7 +25,6 @@ True
 
 from __future__ import annotations
 
-import contextlib
 import copy
 import inspect
 import json
@@ -678,25 +677,6 @@ def merge_sphinx_config(
     return conf
 
 
-def remove_tabs_js(app: Sphinx, exc: Exception | None) -> None:
-    """Remove ``tabs.js`` from ``_static`` after build.
-
-    Workaround for ``sphinx-inline-tabs#18``. The extension ships a
-    ``tabs.js`` that conflicts with SPA navigation.
-
-    Parameters
-    ----------
-    app : Sphinx
-        The Sphinx application object.
-    exc : Exception | None
-        Build exception, if any.
-    """
-    if app.builder.format == "html" and not exc:
-        tabs_js = pathlib.Path(app.builder.outdir) / "_static" / "tabs.js"
-        with contextlib.suppress(FileNotFoundError):
-            tabs_js.unlink()
-
-
 def _inject_copybutton_bridge(
     app: Sphinx,
     pagename: str,
@@ -832,8 +812,8 @@ def setup(app: Sphinx) -> None:
     """Configure Sphinx app hooks for gp-sphinx workarounds.
 
     Registers the bundled ``spa-nav.js`` script, wires the copy-button
-    configuration bridge, the FOWT-prevention head snippet, and
-    connects the ``remove_tabs_js`` post-build hook.
+    configuration bridge and the FOWT-prevention head snippet, and
+    installs the MyST lexer aliases.
 
     Parameters
     ----------
@@ -843,6 +823,5 @@ def setup(app: Sphinx) -> None:
     app.add_js_file("js/spa-nav.js", loading_method="defer")
     app.connect("html-page-context", _inject_copybutton_bridge)
     app.connect("html-page-context", _inject_fowt_prevention)
-    app.connect("build-finished", remove_tabs_js)
     app.add_lexer("myst", MystLexer)
     app.add_lexer("myst-md", MystLexer)

@@ -905,7 +905,7 @@ def package_reference_markdown(package_name: str) -> str:
 
 
 def maturity_badge(maturity: str) -> str:
-    """Return a sphinx-design badge role for use in grid markdown output.
+    """Return a badge role (MyST ``{bdg-*}`` syntax) for use in grid markdown output.
 
     Used only in :func:`workspace_package_grid_markdown` which produces raw
     MyST markdown strings.  Per-page package headers use the ``gp-sphinx-package-meta``
