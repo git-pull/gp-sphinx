@@ -1,6 +1,6 @@
 [project]
 name = "gp-furo-theme"
-version = "0.0.1a19"
+version = "0.0.1a20"
 description = "Tailwind v4 port of the Furo Sphinx theme for git-pull project documentation"
 requires-python = ">=3.10,<4.0"
 authors = [

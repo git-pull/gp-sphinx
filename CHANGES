@@ -14,9 +14,11 @@ $ pip install --user --upgrade --pre gp-sphinx
 $ uv add gp-sphinx --prerelease allow
 ```
 
-## gp-sphinx 0.0.1a20 (unreleased)
+## gp-sphinx 0.0.1a21 (unreleased)
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
+
+## gp-sphinx 0.0.1a20 (2026-05-17)
 
 gp-sphinx 0.0.1a20 closes a Largest-Contentful-Paint regression on
 the sidebar logo across every consumer docs site. Web-Vitals reports

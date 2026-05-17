@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-autodoc-docutils"
-version = "0.0.1a19"
+version = "0.0.1a20"
 description = "Sphinx extension for documenting docutils directives and roles as first-class reference entries"
 requires-python = ">=3.10,<4.0"
 authors = [
@@ -27,9 +27,9 @@ readme = "README.md"
 keywords = ["sphinx", "docutils", "directives", "roles", "documentation", "autodoc"]
 dependencies = [
   "sphinx>=8.1",
-  "sphinx-ux-badges==0.0.1a19",
-  "sphinx-ux-autodoc-layout==0.0.1a19",
-  "sphinx-autodoc-typehints-gp==0.0.1a19",
+  "sphinx-ux-badges==0.0.1a20",
+  "sphinx-ux-autodoc-layout==0.0.1a20",
+  "sphinx-autodoc-typehints-gp==0.0.1a20",
 ]
 
 [project.urls]
