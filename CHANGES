@@ -18,6 +18,25 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Fixes
+
+#### `gp-furo-theme` + `sphinx-gp-theme`: Opt remaining inline scripts out of Cloudflare Rocket Loader
+
+Three inline `<script>` blocks in the bundled theme templates were not
+carrying `data-cfasync="false"` and would be deferred by Cloudflare
+Rocket Loader when enabled: the sidebar-projects active-link toggle
+(`sphinx-gp-theme`), Furo's body no-flicker theme bootstrap, and the
+Python `genindex` `COLLAPSE_INDEX` setter (`gp-furo-theme`). The same
+design constraint documented at `gp_sphinx/config.py:730-755`, which
+already motivates the opt-outs on the two FOWT-prevention scripts, now
+covers these as well. Behavior is unchanged when Rocket Loader is off;
+with Rocket Loader on, the sidebar projects section no longer
+blank-flashes, Furo's no-flicker script runs synchronously as designed,
+and the Python module index stays collapsed on first paint. The
+`requestAnimationFrame` + `DOMContentLoaded` backups in the
+FOWT-prevention script in `gp_sphinx/config.py` are kept as
+belt-and-suspenders.
+
 ## gp-sphinx 0.0.1a18 (2026-05-10)
 
 gp-sphinx 0.0.1a18 ships curated autodoc rendering across the docs
