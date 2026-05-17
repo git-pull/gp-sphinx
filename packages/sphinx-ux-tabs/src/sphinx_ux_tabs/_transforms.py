@@ -41,6 +41,7 @@ from sphinx_ux_tabs._nodes import (
     TabInputNode,
     TabItemNode,
     TabLabelNode,
+    TabPanelNode,
     TabSetNode,
 )
 
@@ -313,13 +314,29 @@ def _expand_one_tab_set(tab_set: TabSetNode, set_index: int) -> None:
         label_node.line = item.line
         new_children.append(label_node)
 
-        # Panel: detach from the source item, then re-parent.  Tag with the
-        # panel namespace class so the CSS selectors can target it.
-        panel_classes = list(panel.get("classes", []))
-        if SUT.PANEL not in panel_classes:
-            panel_classes.append(SUT.PANEL)
-        panel["classes"] = panel_classes
-        new_children.append(panel)
+        # Panel: re-parent the source panel's children onto a TabPanelNode.
+        # The dedicated node lets the HTML visitor emit ``data-sync-id`` /
+        # ``data-sync-group`` attributes that CSS attribute selectors and
+        # the prehydrate restore path can address, and carries any
+        # ``:class-container:`` classes alongside the package's own panel
+        # class.
+        panel_classes: list[str] = [
+            c for c in t.cast("list[str]", panel.get("classes", [])) if c != SUT.PANEL
+        ]
+        for extra_class in t.cast("list[str]", item.get("class_container", [])):
+            if extra_class and extra_class not in panel_classes:
+                panel_classes.append(extra_class)
+        tab_panel = TabPanelNode(
+            sync_id=item.get("sync_id", ""),
+            sync_group=item.get("sync_group", ""),
+            classes=panel_classes,
+        )
+        tab_panel.source = panel.source if panel.source else item.source
+        tab_panel.line = panel.line if panel.line is not None else item.line
+        for child in list(panel.children):
+            panel.remove(child)
+            tab_panel += child
+        new_children.append(tab_panel)
 
     tab_set.children = []
     for child in new_children:

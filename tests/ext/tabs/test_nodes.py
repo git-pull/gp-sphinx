@@ -1,6 +1,6 @@
 """Pure docutils-node tests for sphinx_ux_tabs._nodes.
 
-The five custom node types each have a small construction contract;
+The six custom node types each have a small construction contract;
 these tests assert their subclass relationships, default attribute
 values, and that the bundled CSS class names land on every instance.
 """
@@ -18,6 +18,7 @@ from sphinx_ux_tabs._nodes import (
     TabInputNode,
     TabItemNode,
     TabLabelNode,
+    TabPanelNode,
     TabSetNode,
 )
 
@@ -139,6 +140,25 @@ def test_tab_label_node_carries_sync_id() -> None:
     """``sync_id`` propagates onto the node attributes."""
     lbl = TabLabelNode("", "Python", input_id="x", sync_id="lang")
     assert lbl["sync_id"] == "lang"
+
+
+def test_tab_panel_node_subclasses_container() -> None:
+    """TabPanelNode inherits from ``nodes.container``."""
+    assert issubclass(TabPanelNode, nodes.container)
+
+
+def test_tab_panel_node_carries_panel_class() -> None:
+    """A bare TabPanelNode carries the panel class and renders as a div."""
+    panel = TabPanelNode()
+    assert SUT.PANEL in panel["classes"]
+    assert panel["is_div"] is True
+
+
+def test_tab_panel_node_carries_sync_attrs() -> None:
+    """``sync_id`` and ``sync_group`` propagate onto the node attributes."""
+    panel = TabPanelNode(sync_id="bash", sync_group="shell")
+    assert panel["sync_id"] == "bash"
+    assert panel["sync_group"] == "shell"
 
 
 class _NamespaceFixture(t.NamedTuple):

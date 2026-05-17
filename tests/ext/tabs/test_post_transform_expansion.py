@@ -19,6 +19,7 @@ from sphinx_ux_tabs._nodes import (
     TabInputNode,
     TabItemNode,
     TabLabelNode,
+    TabPanelNode,
     TabSetNode,
 )
 from sphinx_ux_tabs._transforms import _expand_tab_sets, _resolve_selected_index
@@ -35,9 +36,14 @@ def _make_tab_item(
     *,
     selected: bool = False,
     sync_id: str = "",
+    class_container: list[str] | None = None,
 ) -> TabItemNode:
     """Build a TabItemNode carrying a label + panel body child."""
-    item = TabItemNode(selected=selected, sync_id=sync_id)
+    item = TabItemNode(
+        selected=selected,
+        sync_id=sync_id,
+        class_container=class_container,
+    )
     item += nodes.label("", label_text)
     panel = nodes.container("", is_div=True)
     panel += nodes.paragraph("", body_text)
@@ -172,12 +178,7 @@ def test_expansion_panel_carries_namespace_class() -> None:
     doc += tab_set
     _expand_tab_sets(doc)
 
-    panels = [
-        c
-        for c in tab_set.children
-        if isinstance(c, nodes.container)
-        and not isinstance(c, (TabInputNode, TabLabelNode))
-    ]
+    panels = [c for c in tab_set.children if isinstance(c, TabPanelNode)]
     assert len(panels) == 1
     assert SUT.PANEL in panels[0]["classes"]
 
@@ -231,6 +232,75 @@ def test_expansion_carries_sync_group_onto_label() -> None:
     assert len(labels) == 2
     assert labels[0]["sync_group"] == "shell"
     assert labels[1]["sync_group"] == "shell"
+
+
+class ClassContainerFixture(t.NamedTuple):
+    """Permutation of ``class_container`` inputs and expected panel classes."""
+
+    test_id: str
+    class_container: list[str]
+    expected_extras: list[str]
+
+
+_CLASS_CONTAINER_FIXTURES: list[ClassContainerFixture] = [
+    ClassContainerFixture(
+        test_id="single-class",
+        class_container=["my-callout"],
+        expected_extras=["my-callout"],
+    ),
+    ClassContainerFixture(
+        test_id="multiple-classes",
+        class_container=["my-callout", "tone-warning"],
+        expected_extras=["my-callout", "tone-warning"],
+    ),
+    ClassContainerFixture(
+        test_id="empty",
+        class_container=[],
+        expected_extras=[],
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(ClassContainerFixture._fields),
+    _CLASS_CONTAINER_FIXTURES,
+    ids=[f.test_id for f in _CLASS_CONTAINER_FIXTURES],
+)
+def test_expansion_class_container_lands_on_panel(
+    test_id: str,
+    class_container: list[str],
+    expected_extras: list[str],
+) -> None:
+    """``:class-container:`` classes land on the rendered panel's classes."""
+    del test_id
+    doc = _make_document()
+    tab_set = _make_tab_set(
+        _make_tab_item("A", "a", class_container=class_container),
+    )
+    doc += tab_set
+    _expand_tab_sets(doc)
+
+    panels = [c for c in tab_set.children if isinstance(c, TabPanelNode)]
+    assert len(panels) == 1
+    classes = panels[0]["classes"]
+    assert SUT.PANEL in classes
+    for extra in expected_extras:
+        assert extra in classes
+
+
+def test_expansion_panel_carries_sync_attributes() -> None:
+    """``sync_id`` / ``sync_group`` are mirrored from the item onto the panel."""
+    doc = _make_document()
+    item = _make_tab_item("Bash", "echo hi", sync_id="bash")
+    item["sync_group"] = "shell"
+    tab_set = _make_tab_set(item)
+    doc += tab_set
+    _expand_tab_sets(doc)
+
+    panels = [c for c in tab_set.children if isinstance(c, TabPanelNode)]
+    assert len(panels) == 1
+    assert panels[0]["sync_id"] == "bash"
+    assert panels[0]["sync_group"] == "shell"
 
 
 def test_expansion_propagates_label_ids_for_cross_references() -> None:

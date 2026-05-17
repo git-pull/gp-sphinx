@@ -37,6 +37,7 @@ if t.TYPE_CHECKING:
         TabInputNode,
         TabItemNode,
         TabLabelNode,
+        TabPanelNode,
         TabSetNode,
     )
 
@@ -151,13 +152,48 @@ def depart_tab_label_html(self: HTML5Translator, node: TabLabelNode) -> None:
     self.body.append("</label>")
 
 
+def visit_tab_panel_html(self: HTML5Translator, node: TabPanelNode) -> None:
+    """Open ``<div class="gp-sphinx-tabs__panel">`` with the sync attributes.
+
+    The ``data-sync-id`` / ``data-sync-group`` attributes are emitted
+    only when the node carries a non-empty ``sync_id`` so plain tab
+    sets stay free of dangling empty attributes.
+
+    Examples
+    --------
+    >>> visit_tab_panel_html.__name__
+    'visit_tab_panel_html'
+    """
+    attrs: dict[str, t.Any] = {}
+    sync_id = node.get("sync_id", "")
+    if sync_id:
+        attrs["data-sync-id"] = sync_id
+        sync_group = node.get("sync_group", "") or "tab"
+        attrs["data-sync-group"] = sync_group
+    self.body.append(self.starttag(node, "div", **attrs))
+
+
+def depart_tab_panel_html(self: HTML5Translator, node: TabPanelNode) -> None:
+    """Close the panel ``</div>``.
+
+    Examples
+    --------
+    >>> depart_tab_panel_html.__name__
+    'depart_tab_panel_html'
+    """
+    del node
+    self.body.append("</div>")
+
+
 __all__ = [
     "depart_tab_input_html",
     "depart_tab_item_html",
     "depart_tab_label_html",
+    "depart_tab_panel_html",
     "depart_tab_set_html",
     "visit_tab_input_html",
     "visit_tab_item_html",
     "visit_tab_label_html",
+    "visit_tab_panel_html",
     "visit_tab_set_html",
 ]

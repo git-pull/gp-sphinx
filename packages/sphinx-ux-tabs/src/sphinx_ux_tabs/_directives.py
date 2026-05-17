@@ -162,8 +162,9 @@ class TabItemDirective(SphinxDirective):
       stay in lockstep (the bundled JS handles this at runtime).
     * ``:name:`` — passed through to ``add_name`` so the tab is
       cross-referenceable.
-    * ``:class-label:`` / ``:class-content:`` — extra CSS classes for
-      the label and content nodes.
+    * ``:class-container:`` / ``:class-label:`` / ``:class-content:`` —
+      extra CSS classes for the panel container, the label, and the
+      content nodes respectively.
 
     Examples
     --------
@@ -181,6 +182,7 @@ class TabItemDirective(SphinxDirective):
         "selected": directives.flag,
         "sync": directives.unchanged_required,
         "name": directives.unchanged,
+        "class-container": directives.class_option,
         "class-label": directives.class_option,
         "class-content": directives.class_option,
     }
@@ -197,6 +199,7 @@ class TabItemDirective(SphinxDirective):
         item = TabItemNode(
             selected="selected" in self.options,
             sync_id=self.options.get("sync", ""),
+            class_container=list(self.options.get("class-container", [])),
         )
         self.set_source_info(item)
 

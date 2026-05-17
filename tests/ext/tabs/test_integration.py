@@ -209,16 +209,64 @@ def test_tabs_emit_no_sphinx_design_classes(
 
 
 @pytest.mark.integration
+def test_non_synced_tabs_emit_no_sync_attributes(
+    tabs_html_result: SharedSphinxResult,
+) -> None:
+    """Tabs without ``:sync:`` / ``:sync-group:`` emit no ``data-sync-*``.
+
+    Guards the conditional emission in the HTML visitor — a regression
+    that emits empty ``data-sync-id=""`` / ``data-sync-group=""`` would
+    let CSS attribute selectors match the wrong panel and break the
+    prehydrate restore on every non-synced page.
+    """
+    html = read_output(tabs_html_result, "page-myst.html")
+    assert "data-sync-id" not in html
+    assert "data-sync-group" not in html
+
+
+@pytest.mark.integration
 def test_sync_group_lands_on_label_data_attribute(
     tabs_html_result: SharedSphinxResult,
 ) -> None:
     """``:sync-group: shell`` on a ``tab-set`` propagates to every label."""
     html = read_output(tabs_html_result, "page-sync.html")
-    # Both labels in the sync set must carry ``data-sync-group="shell"``.
-    assert html.count('data-sync-group="shell"') >= 2
+    # Both labels AND both panels in the sync set carry
+    # ``data-sync-group="shell"`` — 2 labels + 2 panels = 4 occurrences.
+    assert html.count('data-sync-group="shell"') >= 4
     # And each one names its own sync-id (``bash`` / ``zsh``).
     assert 'data-sync-id="bash"' in html
     assert 'data-sync-id="zsh"' in html
+
+
+@pytest.mark.integration
+def test_sync_attributes_land_on_panel_div(
+    tabs_html_result: SharedSphinxResult,
+) -> None:
+    """The panel ``<div>`` carries ``data-sync-id`` / ``data-sync-group`` too.
+
+    The prehydrate restore reads the panel attributes (not the label
+    attributes) so CSS attribute selectors can reveal the right panel
+    before the JS hydrates.
+    """
+    import re
+
+    html = read_output(tabs_html_result, "page-sync.html")
+    # Find every panel <div> that carries the panel class — the bash
+    # and zsh panels must each carry both sync data attributes.  Attribute
+    # ordering is implementation-defined by ``starttag``; assert presence,
+    # not ordering.
+    panel_divs = re.findall(
+        r'<div[^>]*class="[^"]*gp-sphinx-tabs__panel[^"]*"[^>]*>',
+        html,
+    )
+    assert len(panel_divs) == 2, f"expected 2 panel divs, got {len(panel_divs)}"
+    for sync_id in ("bash", "zsh"):
+        match = next(
+            (d for d in panel_divs if f'data-sync-id="{sync_id}"' in d),
+            None,
+        )
+        assert match is not None, f"no panel <div> for sync-id={sync_id!r}"
+        assert 'data-sync-group="shell"' in match
 
 
 @pytest.mark.integration

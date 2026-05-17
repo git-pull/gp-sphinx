@@ -1,6 +1,6 @@
 """Custom docutils nodes for sphinx_ux_tabs.
 
-The package defines five custom nodes covering both the authoring-time
+The package defines six custom nodes covering both the authoring-time
 shape and the expanded HTML-ready shape:
 
 * :class:`TabContainer` — emitted by the ``.. tab::`` directive.  Holds
@@ -13,6 +13,10 @@ shape and the expanded HTML-ready shape:
   participate in the consecutive-sibling grouping pass.
 * :class:`TabInputNode` — void HTML ``<input type="radio">``.
 * :class:`TabLabelNode` — ``<label for="...">`` text element.
+* :class:`TabPanelNode` — ``<div class="gp-sphinx-tabs__panel">``
+  wrapping a single tab's body content.  Carries the sync attributes
+  and any ``:class-container:`` classes so CSS attribute selectors and
+  prehydrate restore can address it.
 
 Examples
 --------
@@ -138,18 +142,25 @@ class TabItemNode(nodes.container):
         checked radio.
     sync_id : str, optional
         Optional sync group id (sphinx-design ``:sync:`` semantics).
-        Currently surfaced as a ``data-sync-id`` attribute on the
-        rendered label.
+        Surfaced as a ``data-sync-id`` attribute on the rendered label
+        and panel.
+    class_container : list[str], optional
+        Extra CSS classes to apply to the rendered panel container —
+        the ``:class-container:`` option on ``.. tab-item::``.
 
     Examples
     --------
     >>> ti = TabItemNode()
-    >>> ti["selected"], ti["sync_id"]
-    (False, '')
+    >>> ti["selected"], ti["sync_id"], ti["class_container"]
+    (False, '', [])
 
     >>> ti2 = TabItemNode(selected=True, sync_id="lang")
     >>> ti2["selected"], ti2["sync_id"]
     (True, 'lang')
+
+    >>> ti3 = TabItemNode(class_container=["my-callout"])
+    >>> ti3["class_container"]
+    ['my-callout']
     """
 
     def __init__(
@@ -158,11 +169,13 @@ class TabItemNode(nodes.container):
         *children: nodes.Node,
         selected: bool = False,
         sync_id: str = "",
+        class_container: list[str] | None = None,
         **attributes: t.Any,
     ) -> None:
         super().__init__(rawsource, *children, **attributes)
         self["selected"] = selected
         self["sync_id"] = sync_id
+        self["class_container"] = list(class_container) if class_container else []
         self["is_div"] = True
 
 
@@ -260,10 +273,63 @@ class TabLabelNode(nodes.TextElement):
                     self["classes"].append(c)
 
 
+class TabPanelNode(nodes.container):
+    """The ``<div class="gp-sphinx-tabs__panel">`` wrapping one tab body.
+
+    The expansion pass re-parents the source ``.. tab-item::`` panel's
+    children onto this node so the HTML visitor can emit
+    ``data-sync-id`` / ``data-sync-group`` attributes that CSS attribute
+    selectors and the prehydrate restore path can address.  Always
+    carries :data:`~sphinx_ux_tabs._css.SUT.PANEL` in ``classes`` —
+    extra ``:class-container:`` classes are appended.
+
+    Parameters
+    ----------
+    sync_id : str, optional
+        Mirrors the parent tab item's ``sync_id`` so the panel can be
+        addressed by attribute selector ``[data-sync-id="bash"]``.
+    sync_group : str, optional
+        Mirrors the parent tab set's resolved ``sync_group``.
+    classes : list[str], optional
+        Initial CSS classes; the panel class is inserted at the front.
+
+    Examples
+    --------
+    >>> p = TabPanelNode()
+    >>> 'gp-sphinx-tabs__panel' in p["classes"]
+    True
+
+    >>> p2 = TabPanelNode(sync_id="bash", sync_group="shell")
+    >>> p2["sync_id"], p2["sync_group"]
+    ('bash', 'shell')
+    """
+
+    def __init__(
+        self,
+        rawsource: str = "",
+        *children: nodes.Node,
+        sync_id: str = "",
+        sync_group: str = "",
+        classes: list[str] | None = None,
+        **attributes: t.Any,
+    ) -> None:
+        super().__init__(rawsource, *children, **attributes)
+        if SUT.PANEL not in self["classes"]:
+            self["classes"].insert(0, SUT.PANEL)
+        if classes:
+            for c in classes:
+                if c and c not in self["classes"]:
+                    self["classes"].append(c)
+        self["sync_id"] = sync_id
+        self["sync_group"] = sync_group
+        self["is_div"] = True
+
+
 __all__ = [
     "TabContainer",
     "TabInputNode",
     "TabItemNode",
     "TabLabelNode",
+    "TabPanelNode",
     "TabSetNode",
 ]

@@ -40,6 +40,7 @@ from sphinx_ux_tabs._nodes import (
     TabInputNode,
     TabItemNode,
     TabLabelNode,
+    TabPanelNode,
     TabSetNode,
 )
 from sphinx_ux_tabs._transforms import TabsPostTransform
@@ -47,10 +48,12 @@ from sphinx_ux_tabs._visitors import (
     depart_tab_input_html,
     depart_tab_item_html,
     depart_tab_label_html,
+    depart_tab_panel_html,
     depart_tab_set_html,
     visit_tab_input_html,
     visit_tab_item_html,
     visit_tab_label_html,
+    visit_tab_panel_html,
     visit_tab_set_html,
 )
 
@@ -62,6 +65,7 @@ __all__ = [
     "TabItemDirective",
     "TabItemNode",
     "TabLabelNode",
+    "TabPanelNode",
     "TabSetDirective",
     "TabSetNode",
     "TabsPostTransform",
@@ -99,6 +103,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_node(TabItemNode, html=(visit_tab_item_html, depart_tab_item_html))
     app.add_node(TabInputNode, html=(visit_tab_input_html, depart_tab_input_html))
     app.add_node(TabLabelNode, html=(visit_tab_label_html, depart_tab_label_html))
+    app.add_node(TabPanelNode, html=(visit_tab_panel_html, depart_tab_panel_html))
 
     app.add_directive("tab", TabDirective)
     app.add_directive("tab-set", TabSetDirective)
