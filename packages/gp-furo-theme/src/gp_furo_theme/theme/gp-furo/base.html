@@ -92,7 +92,7 @@
   </head>
   <body>
     {% block body %}
-    <script>
+    <script data-cfasync="false">
       document.body.dataset.theme = localStorage.getItem("theme") || "auto";
     </script>
     {% endblock %}

@@ -71,6 +71,23 @@ def test_theme_conf_declares_furo_options() -> None:
         assert option in conf, f"theme.conf is missing the {option!r} option"
 
 
+def test_base_html_no_flicker_script_opts_out_of_rocket_loader() -> None:
+    """Furo's body theme bootstrap carries ``data-cfasync="false"``.
+
+    Furo's inline ``<script>document.body.dataset.theme =
+    localStorage.getItem("theme") || "auto";</script>`` runs at the top
+    of ``<body>`` to pre-set the theme attribute before any styled
+    content paints. Under Cloudflare Rocket Loader the script is
+    rewritten and deferred, so first paint can land in the wrong theme.
+    The FOWT-prevention head script in
+    ``packages/gp-sphinx/src/gp_sphinx/config.py:789-808`` is opted out
+    for the same reason; this body script was missed. See
+    ``config.py:730-755`` for the design rationale.
+    """
+    base = (get_theme_path() / "base.html").read_text()
+    assert 'data-cfasync="false"' in base
+
+
 def test_setup_registers_theme() -> None:
     """setup() registers the theme + hooks + post-transform with Sphinx."""
 
