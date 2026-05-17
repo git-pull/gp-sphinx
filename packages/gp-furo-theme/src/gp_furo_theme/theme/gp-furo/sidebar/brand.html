@@ -15,15 +15,19 @@ Hope your day's going well. :)
 <a class="sidebar-brand{% if logo %} centered{% endif %}" href="{{ pathto(master_doc) }}">
   {%- block brand_content %}
   {#- Remember to update the prefetch logic in `block logo_prefetch_links` in base.html #}
+  {#- width/height + decoding + fetchpriority let the browser reserve
+      the box before bytes arrive (CLS = 0) and treat the logo as a
+      critical-path resource (LCP wins). Mirrors sphinx-gp-theme's
+      sidebar/brand.html overlay. -#}
   {%- if logo_url %}
   <div class="sidebar-logo-container">
-    <img class="sidebar-logo" src="{{ logo_url }}" alt="Logo"/>
+    <img class="sidebar-logo" src="{{ logo_url }}" width="200" height="200" decoding="async" fetchpriority="high" alt="Logo"/>
   </div>
   {%- endif %}
   {%- if theme_light_logo and theme_dark_logo %}
   <div class="sidebar-logo-container">
-    <img class="sidebar-logo only-light" src="{{ pathto('_static/' + theme_light_logo, 1) }}" alt="Light Logo"/>
-    <img class="sidebar-logo only-dark" src="{{ pathto('_static/' + theme_dark_logo, 1) }}" alt="Dark Logo"/>
+    <img class="sidebar-logo only-light" src="{{ pathto('_static/' + theme_light_logo, 1) }}" width="200" height="200" decoding="async" fetchpriority="high" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="{{ pathto('_static/' + theme_dark_logo, 1) }}" width="200" height="200" decoding="async" fetchpriority="high" alt="Dark Logo"/>
   </div>
   {%- endif %}
   {% if not theme_sidebar_hide_name %}
