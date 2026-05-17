@@ -18,6 +18,39 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+gp-sphinx 0.0.1a20 closes a Largest-Contentful-Paint regression on
+the sidebar logo across every consumer docs site. Web-Vitals reports
+recorded LCP timings of 2.7 to 6.7 seconds because the bundled theme
+emitted a `<link rel="prefetch" as="image">` hint for the logo URLs
+instead of a `<link rel="preload" as="image" fetchpriority="high">`;
+the prefetch directive is reserved for future-navigation hints that
+browsers defer to idle. Switching the directive to `preload` plus
+`fetchpriority="high"` promotes the logo to the same critical-path
+priority the bundled fonts already use.
+
+### Fixes
+
+#### Sidebar logo loads as a critical-path resource
+
+Sidebar logos were the Largest Contentful Paint element on every
+consumer docs site with timings of 2.7 to 6.7 seconds. The
+`gp-furo-theme` template emitted `<link rel="prefetch">` hints for
+the logo URLs — a low-priority "future navigation" directive that
+browsers defer until idle — even though the logo sits above the
+fold on first paint. The fix switches the directive to
+`<link rel="preload" as="image" fetchpriority="high">`, mirroring
+the pattern already used for the bundled font preloads, and adds a
+matching `fetchpriority="high"` attribute to the `<img>` tag.
+
+Cumulative Layout Shift was already zero on these sites — the
+`<img>` carries `width="200" height="200"` so the browser reserves
+the 200×200 box before bytes arrive. As belt-and-suspenders for any
+consumer using `gp-furo-theme` standalone (without
+`sphinx-gp-theme`'s overlay), the `.sidebar-logo-container` CSS
+gains `aspect-ratio: 1 / 1` and `.sidebar-logo` gains
+`height: auto`, so the box reserves the same square regardless of
+whether the HTML attrs make it through theme customisations. (#40)
+
 ### Documentation
 
 #### Visual identity for the gp-sphinx docs site
