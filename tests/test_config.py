@@ -68,9 +68,9 @@ def test_merge_sphinx_config_remove_extensions() -> None:
         project="test",
         version="1.0",
         copyright="2026",
-        remove_extensions=["sphinx_design", "sphinx_copybutton"],
+        remove_extensions=["sphinx_ux_grid", "sphinx_copybutton"],
     )
-    assert "sphinx_design" not in result["extensions"]
+    assert "sphinx_ux_grid" not in result["extensions"]
     assert "sphinx_copybutton" not in result["extensions"]
     # Others still present
     assert "myst_parser" in result["extensions"]
@@ -676,3 +676,82 @@ def test_merge_sphinx_config_linkcode_auto_added_with_workspace_resolver(
         linkcode_resolve=resolver,
     )
     assert "sphinx.ext.linkcode" in result["extensions"]
+
+
+# ---------------------------------------------------------------------------
+# Legacy extension collision validation
+# ---------------------------------------------------------------------------
+
+
+def test_merge_sphinx_config_rejects_sphinx_design_alongside_first_party() -> None:
+    """sphinx_design in extra_extensions collides with the first-party stack."""
+    from sphinx.errors import ExtensionError
+
+    with pytest.raises(ExtensionError) as excinfo:
+        merge_sphinx_config(
+            project="test",
+            version="1.0",
+            copyright="2026",
+            extra_extensions=["sphinx_design"],
+        )
+    message = str(excinfo.value)
+    assert "sphinx_design" in message
+    assert "sphinx_ux_grid" in message
+    assert "sphinx_ux_octicons" in message
+    assert "extra_extensions" in message
+
+
+def test_merge_sphinx_config_rejects_sphinx_inline_tabs_alongside_first_party() -> None:
+    """sphinx_inline_tabs in extra_extensions collides with sphinx_ux_tabs."""
+    from sphinx.errors import ExtensionError
+
+    with pytest.raises(ExtensionError) as excinfo:
+        merge_sphinx_config(
+            project="test",
+            version="1.0",
+            copyright="2026",
+            extra_extensions=["sphinx_inline_tabs"],
+        )
+    message = str(excinfo.value)
+    assert "sphinx_inline_tabs" in message
+    assert "sphinx_ux_tabs" in message
+
+
+def test_merge_sphinx_config_reports_all_legacy_collisions_at_once() -> None:
+    """Multiple legacy extensions surface in a single ExtensionError."""
+    from sphinx.errors import ExtensionError
+
+    with pytest.raises(ExtensionError) as excinfo:
+        merge_sphinx_config(
+            project="test",
+            version="1.0",
+            copyright="2026",
+            extra_extensions=["sphinx_design", "sphinx_inline_tabs"],
+        )
+    message = str(excinfo.value)
+    assert "sphinx_design" in message
+    assert "sphinx_inline_tabs" in message
+
+
+def test_merge_sphinx_config_clean_merge_does_not_raise() -> None:
+    """A default merge without legacy extensions does not raise."""
+    merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+
+
+def test_merge_sphinx_config_legacy_alone_does_not_raise() -> None:
+    """Legacy extension without its first-party replacement does not raise.
+
+    A consumer that removes the new packages and reinstates a legacy one is
+    free to do so — the collision check only fires when both names coexist.
+    """
+    merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        extra_extensions=["sphinx_design"],
+        remove_extensions=["sphinx_ux_grid", "sphinx_ux_octicons"],
+    )
