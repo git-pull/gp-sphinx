@@ -9,6 +9,7 @@ extensions/sphinx-autodoc-sphinx packages/sphinx-autodoc-sphinx
 extensions/sphinx-autodoc-api-style packages/sphinx-autodoc-api-style
 extensions/sphinx-ux-badges packages/sphinx-ux-badges
 extensions/sphinx-ux-octicons packages/sphinx-ux-octicons
+extensions/sphinx-ux-grid packages/sphinx-ux-grid
 extensions/sphinx-autodoc-fastmcp packages/sphinx-autodoc-fastmcp
 extensions/sphinx-ux-autodoc-layout packages/sphinx-ux-autodoc-layout
 extensions/sphinx-fonts packages/sphinx-fonts

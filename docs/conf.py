@@ -52,6 +52,10 @@ sys.path.insert(
 )
 sys.path.insert(
     0,
+    str(project_root / "packages" / "sphinx-ux-grid" / "src"),
+)
+sys.path.insert(
+    0,
     str(project_root / "packages" / "sphinx-autodoc-fastmcp" / "src"),
 )
 sys.path.insert(

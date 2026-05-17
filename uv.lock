@@ -29,6 +29,7 @@ members = [
     "sphinx-gp-theme",
     "sphinx-ux-autodoc-layout",
     "sphinx-ux-badges",
+    "sphinx-ux-grid",
     "sphinx-ux-octicons",
     "sphinx-vite-builder",
 ]
@@ -548,6 +549,7 @@ dev = [
     { name = "sphinx-gp-sitemap" },
     { name = "sphinx-ux-autodoc-layout" },
     { name = "sphinx-ux-badges" },
+    { name = "sphinx-ux-grid" },
     { name = "sphinx-ux-octicons" },
     { name = "sphinx-vite-builder" },
     { name = "syrupy" },
@@ -588,6 +590,7 @@ dev = [
     { name = "sphinx-gp-sitemap", editable = "packages/sphinx-gp-sitemap" },
     { name = "sphinx-ux-autodoc-layout", editable = "packages/sphinx-ux-autodoc-layout" },
     { name = "sphinx-ux-badges", editable = "packages/sphinx-ux-badges" },
+    { name = "sphinx-ux-grid", editable = "packages/sphinx-ux-grid" },
     { name = "sphinx-ux-octicons", editable = "packages/sphinx-ux-octicons" },
     { name = "sphinx-vite-builder", editable = "packages/sphinx-vite-builder" },
     { name = "syrupy", specifier = ">=5.1.0" },
@@ -1875,6 +1878,18 @@ requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
 name = "sphinx-ux-badges"
 version = "0.0.1a20"
 source = { editable = "packages/sphinx-ux-badges" }
+dependencies = [
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
+
+[[package]]
+name = "sphinx-ux-grid"
+version = "0.0.1a18"
+source = { editable = "packages/sphinx-ux-grid" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
