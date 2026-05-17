@@ -18,24 +18,32 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+gp-sphinx 0.0.1a19 closes the gap on Cloudflare Rocket Loader
+compatibility by annotating every inline `<script>` block the bundled
+theme templates emit with `data-cfasync="false"`. The fix is
+invisible when Rocket Loader is off; with it on, the sidebar projects
+section stops blank-flashing on navigation, Furo's body theme
+bootstrap script runs synchronously as designed, and the Python
+module index stays collapsed on the first frame.
+
 ### Fixes
 
-#### `gp-furo-theme` + `sphinx-gp-theme`: Opt remaining inline scripts out of Cloudflare Rocket Loader
+#### Cloudflare Rocket Loader compatibility on bundled theme scripts
 
-Three inline `<script>` blocks in the bundled theme templates were not
-carrying `data-cfasync="false"` and would be deferred by Cloudflare
-Rocket Loader when enabled: the sidebar-projects active-link toggle
-(`sphinx-gp-theme`), Furo's body no-flicker theme bootstrap, and the
-Python `genindex` `COLLAPSE_INDEX` setter (`gp-furo-theme`). The same
-design constraint documented at `gp_sphinx/config.py:730-755`, which
-already motivates the opt-outs on the two FOWT-prevention scripts, now
-covers these as well. Behavior is unchanged when Rocket Loader is off;
-with Rocket Loader on, the sidebar projects section no longer
-blank-flashes, Furo's no-flicker script runs synchronously as designed,
-and the Python module index stays collapsed on first paint. The
-`requestAnimationFrame` + `DOMContentLoaded` backups in the
-FOWT-prevention script in `gp_sphinx/config.py` are kept as
-belt-and-suspenders.
+Three inline `<script>` blocks in the bundled theme templates lacked
+the `data-cfasync="false"` opt-out: the `sphinx-gp-theme`
+sidebar-projects active-link toggle, Furo's body no-flicker theme
+bootstrap (`gp-furo-theme`), and the Python `genindex`
+`COLLAPSE_INDEX` setter (`gp-furo-theme`). With Rocket Loader
+enabled by a consumer's CDN configuration, these scripts would run
+too late and produce visible artifacts — a brief blank flash in the
+sidebar projects section, a flash-of-wrong-theme during the body
+bootstrap window, and an expanded `genindex` on first paint. Each
+script now carries the same opt-out the two flash-of-wrong-theme
+prevention scripts in `gp_sphinx/config.py` already use. A local
+copy of the sidebar projects template in this repository's
+`docs/_templates/sidebar/projects.html` is synced so the workspace's
+own site renders the fix on every build. (#39)
 
 ## gp-sphinx 0.0.1a18 (2026-05-10)
 
