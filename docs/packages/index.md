@@ -15,6 +15,7 @@ and independently installable.
 The rendering pipeline every autodoc extension consumes:
 
 - [`sphinx-ux-badges`](sphinx-ux-badges/index.md) — badge primitives and colour palette
+- [`sphinx-ux-octicons`](sphinx-ux-octicons/index.md) — curated GitHub Octicons as a Sphinx `{octicon}` role
 - [`sphinx-ux-autodoc-layout`](sphinx-ux-autodoc-layout/index.md) — structural presenter for `api-*` entry components
 - [`sphinx-autodoc-typehints-gp`](sphinx-autodoc-typehints-gp/index.md) — annotation normalization and type rendering
 - [`sphinx-fonts`](sphinx-fonts/index.md) — IBM Plex font preloading

@@ -200,6 +200,7 @@ _CLUSTER_FOR_NAME: dict[str, str] = {
     "@gp-sphinx/serene-tokens": "tokens",
     "sphinx-fonts": "tokens",
     "sphinx-ux-badges": "ux",
+    "sphinx-ux-octicons": "ux",
     "sphinx-ux-autodoc-layout": "ux",
     "sphinx-vite-builder": "build-seo",
     "sphinx-gp-opengraph": "build-seo",

@@ -1,0 +1,14 @@
+/* sphinx_ux_octicons — inline SVG icon defaults.
+ *
+ * Class selectors live under the ``gp-sphinx-octicon`` namespace and stay
+ * inside ``@layer gp-sphinx`` so precedence is declarative against Furo's
+ * own layered styles. ``currentColor`` lets the icon inherit colour from
+ * the surrounding text — callers don't need to thread CSS variables.
+ */
+@layer gp-sphinx {
+  .gp-sphinx-octicon {
+    display: inline-block;
+    vertical-align: text-top;
+    fill: currentColor;
+  }
+}
