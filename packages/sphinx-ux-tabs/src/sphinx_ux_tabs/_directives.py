@@ -44,6 +44,52 @@ _LOGGER = getLogger(__name__)
 _WARNING_TYPE = "gp-sphinx-tabs"
 
 
+def _raw_class_option(argument: str | None) -> list[str]:
+    """Parse a ``:class:`` option without docutils' identifier normalisation.
+
+    docutils' built-in :func:`directives.class_option` runs every token
+    through :func:`nodes.make_id`, which collapses ``--`` to ``-`` and
+    strips other identifier-unsafe characters.  The workspace CSS
+    standard uses BEM modifier syntax (``gp-sphinx-tabs--large``), so
+    the raw author input must survive verbatim to reach the CSS
+    selectors.  This option parser splits on whitespace and keeps each
+    token as written.
+
+    Parameters
+    ----------
+    argument : str or None
+        The raw value of the ``:class:`` option, or ``None`` when the
+        option was supplied without a value (treated as an error by
+        docutils' option machinery, matching ``class_option``).
+
+    Returns
+    -------
+    list[str]
+        The class names exactly as the author wrote them.
+
+    Examples
+    --------
+    >>> _raw_class_option("gp-sphinx-tabs--large")
+    ['gp-sphinx-tabs--large']
+
+    >>> _raw_class_option("foo  bar")
+    ['foo', 'bar']
+
+    >>> _raw_class_option("")
+    []
+
+    >>> try:
+    ...     _raw_class_option(None)
+    ... except ValueError as exc:
+    ...     str(exc)
+    'argument required but none supplied'
+    """
+    if argument is None:
+        msg = "argument required but none supplied"
+        raise ValueError(msg)
+    return argument.split()
+
+
 class TabDirective(SphinxDirective):
     """The ``.. tab::`` directive — sphinx-inline-tabs compatible.
 
@@ -113,7 +159,7 @@ class TabSetDirective(SphinxDirective):
     has_content = True
     option_spec: t.ClassVar[dict[str, t.Callable[..., t.Any]]] = {
         "sync-group": directives.unchanged_required,
-        "class": directives.class_option,
+        "class": _raw_class_option,
     }
 
     def run(self) -> list[nodes.Node]:

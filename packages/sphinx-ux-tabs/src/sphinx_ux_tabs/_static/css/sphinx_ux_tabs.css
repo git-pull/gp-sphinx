@@ -5,23 +5,27 @@
  * flat sequence of [input, label, panel] triples per tab.  The
  * :checked + label + .__panel adjacency selectors drive the active
  * styling and panel visibility without any JavaScript.
+ *
+ * Colours come directly from Furo's --color-* tokens so the light/dark
+ * flip travels through without per-mode rules.  The label row picks up
+ * a color-mix tint of --color-background-secondary; the active panel
+ * "punches out" the tint with --color-background-primary.
  */
 
 @layer gp-sphinx {
   .gp-sphinx-tabs {
-    --gp-sphinx-tabs-border: var(--color-background-border, #d0d7de);
-    --gp-sphinx-tabs-active-color: var(--color-brand-primary, #0969da);
-    --gp-sphinx-tabs-inactive-color: var(--color-foreground-muted, #57606a);
-    --gp-sphinx-tabs-panel-bg: var(--color-background-secondary, transparent);
-    --gp-sphinx-tabs-label-gap: 1.25rem;
-    --gp-sphinx-tabs-label-padding-y: 0.4rem;
-    --gp-sphinx-tabs-label-padding-x: 0.2rem;
-
     display: flex;
     flex-wrap: wrap;
     position: relative;
     margin: 1rem 0;
-    border-bottom: 1px solid var(--gp-sphinx-tabs-border);
+    font-size: 0.95em;
+    background: color-mix(
+      in srgb,
+      var(--color-background-secondary) 60%,
+      var(--color-background-primary)
+    );
+    border-bottom: 1px solid
+      var(--color-background-border, var(--color-foreground-border, currentColor));
   }
 
   /* Hide the underlying radio inputs — labels carry the affordance. */
@@ -38,27 +42,32 @@
 
   .gp-sphinx-tabs__label {
     order: 1;
-    margin: 0 var(--gp-sphinx-tabs-label-gap) -1px 0;
-    padding: var(--gp-sphinx-tabs-label-padding-y)
-             var(--gp-sphinx-tabs-label-padding-x);
-    cursor: pointer;
-    color: var(--gp-sphinx-tabs-inactive-color);
-    font-weight: 500;
+    appearance: none;
+    background: transparent;
+    border: 0;
     border-bottom: 2px solid transparent;
-    transition: color 120ms ease, border-color 120ms ease;
+    color: var(--color-foreground-muted);
+    cursor: pointer;
+    font: inherit;
+    padding: 0.45rem 0.9rem;
+    margin: 0;
+    white-space: nowrap;
+    transition:
+      color 120ms ease,
+      border-color 120ms ease,
+      background-color 120ms ease;
   }
 
   .gp-sphinx-tabs__label:hover {
-    color: var(--gp-sphinx-tabs-active-color);
+    color: var(--color-foreground-primary);
+    background: var(--color-background-hover, rgba(0, 0, 0, 0.04));
   }
 
-  /* Panels sit below the labels (flex order 2) and stay hidden by default. */
-  .gp-sphinx-tabs__panel {
-    order: 2;
-    width: 100%;
-    display: none;
-    padding: 1rem 0 0;
-    background: var(--gp-sphinx-tabs-panel-bg);
+  /* Focus ring shows on keyboard navigation only — :focus-visible
+   * keeps pointer clicks from painting an outline. */
+  .gp-sphinx-tabs__input:focus-visible + .gp-sphinx-tabs__label {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: -2px;
   }
 
   /*
@@ -67,26 +76,26 @@
    * (+) connects each checked input to its label and panel.
    */
   .gp-sphinx-tabs__input:checked + .gp-sphinx-tabs__label {
-    color: var(--gp-sphinx-tabs-active-color);
-    border-bottom-color: var(--gp-sphinx-tabs-active-color);
+    color: var(--color-brand-primary);
+    border-bottom-color: var(--color-brand-primary);
+    background: var(--color-background-primary);
+  }
+
+  /* Panels sit below the labels (flex order 2) and stay hidden by default.
+   * The active panel paints --color-background-primary, "punching out" the
+   * label-row tint so the active body reads as a raised surface. */
+  .gp-sphinx-tabs__panel {
+    order: 2;
+    width: 100%;
+    display: none;
+    padding: 0.9rem 1rem;
+    background: var(--color-background-primary);
   }
 
   .gp-sphinx-tabs__input:checked
     + .gp-sphinx-tabs__label
     + .gp-sphinx-tabs__panel {
     display: block;
-  }
-
-  /* Focus ring on labels matches workspace focus styling. */
-  .gp-sphinx-tabs__input:focus-visible + .gp-sphinx-tabs__label {
-    outline: 2px solid var(--gp-sphinx-tabs-active-color);
-    outline-offset: 2px;
-    border-radius: 0.125rem;
-  }
-
-  /* Last label loses its right gap so the underline tracks neatly. */
-  .gp-sphinx-tabs__label:last-of-type {
-    margin-right: 0;
   }
 
   /* Tighten code blocks living inside a panel so they don't double-pad. */
@@ -97,4 +106,15 @@
   .gp-sphinx-tabs__panel > :last-child {
     margin-bottom: 0;
   }
-}
+
+  /* --large size modifier: bigger labels and roomier panel padding.
+   * Authors opt in with `:class: gp-sphinx-tabs--large` on a tab-set. */
+  .gp-sphinx-tabs.gp-sphinx-tabs--large .gp-sphinx-tabs__label {
+    padding: 0.65rem 1.15rem;
+    font-size: 1em;
+  }
+
+  .gp-sphinx-tabs.gp-sphinx-tabs--large .gp-sphinx-tabs__panel {
+    padding: 1.1rem 1.25rem 0;
+  }
+}  /* end @layer gp-sphinx */

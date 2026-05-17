@@ -108,6 +108,25 @@ _PAGE_REF_MD = textwrap.dedent(
     """,
 )
 
+_PAGE_LARGE_MD = textwrap.dedent(
+    """\
+    # Tabs large demo
+
+    ::::{tab-set}
+    :class: gp-sphinx-tabs--large
+
+    :::{tab-item} Python
+    Python body.
+    :::
+
+    :::{tab-item} Rust
+    Rust body.
+    :::
+
+    ::::
+    """,
+)
+
 
 @pytest.fixture(scope="module")
 def tabs_html_result(
@@ -123,6 +142,7 @@ def tabs_html_result(
             ScenarioFile("page-myst.md", _PAGE_MYST_MD),
             ScenarioFile("page-sync.md", _PAGE_SYNC_MD),
             ScenarioFile("page-ref.md", _PAGE_REF_MD),
+            ScenarioFile("page-large.md", _PAGE_LARGE_MD),
         ),
     )
     return build_shared_sphinx_result(cache_root, scenario)
@@ -267,6 +287,32 @@ def test_sync_attributes_land_on_panel_div(
         )
         assert match is not None, f"no panel <div> for sync-id={sync_id!r}"
         assert 'data-sync-group="shell"' in match
+
+
+@pytest.mark.integration
+def test_large_modifier_class_survives_class_option_round_trip(
+    tabs_html_result: SharedSphinxResult,
+) -> None:
+    """``:class: gp-sphinx-tabs--large`` lands on the rendered tab-set div.
+
+    The modifier class must be present alongside the default
+    ``gp-sphinx-tabs`` class so the size-variant CSS selectors
+    (``.gp-sphinx-tabs.gp-sphinx-tabs--large .gp-sphinx-tabs__label``)
+    actually match.
+    """
+    import re
+
+    html = read_output(tabs_html_result, "page-large.html")
+    # Locate the tab-set wrapper <div> and grab its class attribute.
+    match = re.search(
+        r'<div[^>]*class="([^"]*gp-sphinx-tabs[^"]*)"',
+        html,
+    )
+    assert match is not None, "tab-set <div> with gp-sphinx-tabs class not found"
+    class_attr = match.group(1)
+    classes = class_attr.split()
+    assert "gp-sphinx-tabs" in classes
+    assert "gp-sphinx-tabs--large" in classes
 
 
 @pytest.mark.integration
