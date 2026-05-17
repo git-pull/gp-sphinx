@@ -202,6 +202,7 @@ _CLUSTER_FOR_NAME: dict[str, str] = {
     "sphinx-ux-badges": "ux",
     "sphinx-ux-octicons": "ux",
     "sphinx-ux-grid": "ux",
+    "sphinx-ux-tabs": "ux",
     "sphinx-ux-autodoc-layout": "ux",
     "sphinx-vite-builder": "build-seo",
     "sphinx-gp-opengraph": "build-seo",

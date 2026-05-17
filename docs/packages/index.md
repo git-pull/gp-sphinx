@@ -17,6 +17,7 @@ The rendering pipeline every autodoc extension consumes:
 - [`sphinx-ux-badges`](sphinx-ux-badges/index.md) — badge primitives and colour palette
 - [`sphinx-ux-octicons`](sphinx-ux-octicons/index.md) — curated GitHub Octicons as a Sphinx `{octicon}` role
 - [`sphinx-ux-grid`](sphinx-ux-grid/index.md) — CSS-Grid `{grid}` and `{grid-item-card}` directives
+- [`sphinx-ux-tabs`](sphinx-ux-tabs/index.md) — drop-in tabs replacement for sphinx-inline-tabs and sphinx-design
 - [`sphinx-ux-autodoc-layout`](sphinx-ux-autodoc-layout/index.md) — structural presenter for `api-*` entry components
 - [`sphinx-autodoc-typehints-gp`](sphinx-autodoc-typehints-gp/index.md) — annotation normalization and type rendering
 - [`sphinx-fonts`](sphinx-fonts/index.md) — IBM Plex font preloading

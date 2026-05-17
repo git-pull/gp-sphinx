@@ -1,0 +1,100 @@
+/*
+ * sphinx-ux-tabs — CSS-only tab switching under @layer gp-sphinx.
+ *
+ * Each tab set is a single <div class="gp-sphinx-tabs"> containing a
+ * flat sequence of [input, label, panel] triples per tab.  The
+ * :checked + label + .__panel adjacency selectors drive the active
+ * styling and panel visibility without any JavaScript.
+ */
+
+@layer gp-sphinx {
+  .gp-sphinx-tabs {
+    --gp-sphinx-tabs-border: var(--color-background-border, #d0d7de);
+    --gp-sphinx-tabs-active-color: var(--color-brand-primary, #0969da);
+    --gp-sphinx-tabs-inactive-color: var(--color-foreground-muted, #57606a);
+    --gp-sphinx-tabs-panel-bg: var(--color-background-secondary, transparent);
+    --gp-sphinx-tabs-label-gap: 1.25rem;
+    --gp-sphinx-tabs-label-padding-y: 0.4rem;
+    --gp-sphinx-tabs-label-padding-x: 0.2rem;
+
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    margin: 1rem 0;
+    border-bottom: 1px solid var(--gp-sphinx-tabs-border);
+  }
+
+  /* Hide the underlying radio inputs — labels carry the affordance. */
+  .gp-sphinx-tabs__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    border: 0;
+  }
+
+  .gp-sphinx-tabs__label {
+    order: 1;
+    margin: 0 var(--gp-sphinx-tabs-label-gap) -1px 0;
+    padding: var(--gp-sphinx-tabs-label-padding-y)
+             var(--gp-sphinx-tabs-label-padding-x);
+    cursor: pointer;
+    color: var(--gp-sphinx-tabs-inactive-color);
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    transition: color 120ms ease, border-color 120ms ease;
+  }
+
+  .gp-sphinx-tabs__label:hover {
+    color: var(--gp-sphinx-tabs-active-color);
+  }
+
+  /* Panels sit below the labels (flex order 2) and stay hidden by default. */
+  .gp-sphinx-tabs__panel {
+    order: 2;
+    width: 100%;
+    display: none;
+    padding: 1rem 0 0;
+    background: var(--gp-sphinx-tabs-panel-bg);
+  }
+
+  /*
+   * The checked input is a sibling of the matching label and panel in
+   * source order: input → label → panel.  Adjacent-sibling combinator
+   * (+) connects each checked input to its label and panel.
+   */
+  .gp-sphinx-tabs__input:checked + .gp-sphinx-tabs__label {
+    color: var(--gp-sphinx-tabs-active-color);
+    border-bottom-color: var(--gp-sphinx-tabs-active-color);
+  }
+
+  .gp-sphinx-tabs__input:checked
+    + .gp-sphinx-tabs__label
+    + .gp-sphinx-tabs__panel {
+    display: block;
+  }
+
+  /* Focus ring on labels matches workspace focus styling. */
+  .gp-sphinx-tabs__input:focus-visible + .gp-sphinx-tabs__label {
+    outline: 2px solid var(--gp-sphinx-tabs-active-color);
+    outline-offset: 2px;
+    border-radius: 0.125rem;
+  }
+
+  /* Last label loses its right gap so the underline tracks neatly. */
+  .gp-sphinx-tabs__label:last-of-type {
+    margin-right: 0;
+  }
+
+  /* Tighten code blocks living inside a panel so they don't double-pad. */
+  .gp-sphinx-tabs__panel > :first-child {
+    margin-top: 0;
+  }
+
+  .gp-sphinx-tabs__panel > :last-child {
+    margin-bottom: 0;
+  }
+}

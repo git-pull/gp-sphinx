@@ -28,6 +28,7 @@ def test_workspace_packages_lists_publishable_packages() -> None:
         "sphinx-ux-badges",
         "sphinx-ux-octicons",
         "sphinx-ux-grid",
+        "sphinx-ux-tabs",
         "sphinx-autodoc-docutils",
         "sphinx-autodoc-fastmcp",
         "sphinx-ux-autodoc-layout",

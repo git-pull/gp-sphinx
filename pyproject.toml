@@ -29,6 +29,7 @@ sphinx-autodoc-typehints-gp = { workspace = true }
 sphinx-ux-badges = { workspace = true }
 sphinx-ux-octicons = { workspace = true }
 sphinx-ux-grid = { workspace = true }
+sphinx-ux-tabs = { workspace = true }
 sphinx-ux-autodoc-layout = { workspace = true }
 sphinx-gp-opengraph = { workspace = true }
 sphinx-gp-sitemap = { workspace = true }
@@ -48,6 +49,7 @@ dev = [
   "sphinx-ux-badges",
   "sphinx-ux-octicons",
   "sphinx-ux-grid",
+  "sphinx-ux-tabs",
   "sphinx-ux-autodoc-layout",
   "sphinx-gp-opengraph",
   "sphinx-gp-sitemap",
@@ -173,6 +175,7 @@ known-first-party = [
   "sphinx_ux_badges",
   "sphinx_ux_octicons",
   "sphinx_ux_grid",
+  "sphinx_ux_tabs",
   "sphinx_ux_autodoc_layout",
   "sphinx_gp_opengraph",
   "sphinx_gp_sitemap",
@@ -225,6 +228,7 @@ testpaths = [
   "packages/sphinx-ux-badges/src",
   "packages/sphinx-ux-octicons/src",
   "packages/sphinx-ux-grid/src",
+  "packages/sphinx-ux-tabs/src",
   "packages/sphinx-gp-opengraph/src",
   "packages/sphinx-gp-sitemap/src",
   "packages/sphinx-vite-builder/src",

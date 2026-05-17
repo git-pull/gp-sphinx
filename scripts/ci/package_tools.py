@@ -704,6 +704,30 @@ def smoke_sphinx_ux_grid(dist_dir: pathlib.Path, version: str) -> None:
         )
 
 
+def smoke_sphinx_ux_tabs(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the ux-tabs extension installs, imports, and exposes the directives."""
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(
+            python_path,
+            *_workspace_wheel_requirements(dist_dir),
+        )
+        _run_python(
+            python_path,
+            (
+                "import sphinx_ux_tabs; "
+                "from sphinx_ux_tabs import (TabDirective, TabSetDirective, "
+                "TabItemDirective, TabsPostTransform, SUT, setup); "
+                "assert callable(setup); "
+                "assert SUT.TABS == 'gp-sphinx-tabs'; "
+                "assert TabDirective.has_content; "
+                "assert TabSetDirective.has_content; "
+                "assert TabItemDirective.has_content; "
+                "assert 'html' in TabsPostTransform.formats"
+            ),
+        )
+
+
 def smoke_sphinx_ux_autodoc_layout(dist_dir: pathlib.Path, version: str) -> None:
     """Verify the ux-autodoc-layout extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
@@ -893,6 +917,7 @@ _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-ux-badges": smoke_sphinx_ux_badges,
     "sphinx-ux-octicons": smoke_sphinx_ux_octicons,
     "sphinx-ux-grid": smoke_sphinx_ux_grid,
+    "sphinx-ux-tabs": smoke_sphinx_ux_tabs,
     "sphinx-autodoc-docutils": smoke_sphinx_autodoc_docutils,
     "sphinx-autodoc-fastmcp": smoke_sphinx_autodoc_fastmcp,
     "sphinx-ux-autodoc-layout": smoke_sphinx_ux_autodoc_layout,
