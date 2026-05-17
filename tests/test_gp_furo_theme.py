@@ -88,6 +88,21 @@ def test_base_html_no_flicker_script_opts_out_of_rocket_loader() -> None:
     assert 'data-cfasync="false"' in base
 
 
+def test_domainindex_collapse_index_script_opts_out_of_rocket_loader() -> None:
+    """``COLLAPSE_INDEX`` setter carries ``data-cfasync="false"``.
+
+    The Python ``genindex`` template injects
+    ``<script>DOCUMENTATION_OPTIONS.COLLAPSE_INDEX = true</script>``
+    when ``collapse_index`` is configured. Without an opt-out, Rocket
+    Loader defers the assignment past the point where ``doctools.js``
+    reads ``COLLAPSE_INDEX``, so the index renders expanded on first
+    paint and re-collapses later. Opting out keeps the assignment
+    synchronous in document order.
+    """
+    tpl = (get_theme_path() / "domainindex.html").read_text()
+    assert 'data-cfasync="false"' in tpl
+
+
 def test_setup_registers_theme() -> None:
     """setup() registers the theme + hooks + post-transform with Sphinx."""
 
