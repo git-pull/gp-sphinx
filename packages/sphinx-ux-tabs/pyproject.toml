@@ -38,3 +38,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sphinx_ux_tabs"]
+
+[tool.gp-sphinx.docs]
+# Surface workspace packages that use ``.. tab::`` /
+# ``{tab-set}`` from this package's landing.
+showcase = ["dependents"]

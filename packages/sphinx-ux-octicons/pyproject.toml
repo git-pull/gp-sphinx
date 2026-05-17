@@ -38,3 +38,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sphinx_ux_octicons"]
+
+[tool.gp-sphinx.docs]
+# Surface which workspace packages emit ``{octicon}`` roles so consumers
+# can navigate from the landing to the actual usage.
+showcase = ["dependents"]

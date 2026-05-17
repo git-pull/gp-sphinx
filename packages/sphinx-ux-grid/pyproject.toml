@@ -38,3 +38,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sphinx_ux_grid"]
+
+[tool.gp-sphinx.docs]
+# Surface which workspace packages render via ``{grid}`` /
+# ``{grid-item-card}`` so the fan-out is discoverable from the landing.
+showcase = ["dependents"]
