@@ -32,6 +32,7 @@ from sphinx_ux_badges._builders import (
 )
 from sphinx_ux_badges._css import SAB
 from sphinx_ux_badges._nodes import BadgeNode
+from sphinx_ux_badges._roles import register_bdg_roles
 from sphinx_ux_badges._visitors import depart_badge_html, visit_badge_html
 
 __all__ = [
@@ -43,6 +44,7 @@ __all__ = [
     "build_badge_group",
     "build_badge_group_from_specs",
     "build_toolbar",
+    "register_bdg_roles",
     "setup",
 ]
 
@@ -81,6 +83,8 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.connect("builder-inited", _add_static_path)
     app.add_css_file("css/sphinx_ux_badges.css")
     app.add_css_file("css/sab_palettes.css")
+
+    register_bdg_roles(app)
 
     return {
         "version": _EXTENSION_VERSION,

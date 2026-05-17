@@ -126,6 +126,51 @@
 
   --gp-sphinx-badge-meta-link-fg:      #6b7280;
   --gp-sphinx-badge-meta-link-border:  #d1d5db;
+
+  /* ── Semantic colour palette (drives {bdg-*} roles) ─── */
+  --gp-sphinx-badge-color-primary-bg:     #0d6efd;
+  --gp-sphinx-badge-color-primary-fg:     #ffffff;
+  --gp-sphinx-badge-color-primary-border: #0d6efd;
+
+  --gp-sphinx-badge-color-secondary-bg:     #6c757d;
+  --gp-sphinx-badge-color-secondary-fg:     #ffffff;
+  --gp-sphinx-badge-color-secondary-border: #6c757d;
+
+  --gp-sphinx-badge-color-success-bg:     #198754;
+  --gp-sphinx-badge-color-success-fg:     #ffffff;
+  --gp-sphinx-badge-color-success-border: #198754;
+
+  --gp-sphinx-badge-color-info-bg:     #0dcaf0;
+  --gp-sphinx-badge-color-info-fg:     #1f2937;
+  --gp-sphinx-badge-color-info-border: #0dcaf0;
+
+  --gp-sphinx-badge-color-warning-bg:     #ffc107;
+  --gp-sphinx-badge-color-warning-fg:     #1f2937;
+  --gp-sphinx-badge-color-warning-border: #ffc107;
+
+  --gp-sphinx-badge-color-danger-bg:     #dc3545;
+  --gp-sphinx-badge-color-danger-fg:     #ffffff;
+  --gp-sphinx-badge-color-danger-border: #dc3545;
+
+  --gp-sphinx-badge-color-light-bg:     #f8f9fa;
+  --gp-sphinx-badge-color-light-fg:     #1f2937;
+  --gp-sphinx-badge-color-light-border: #d1d5db;
+
+  --gp-sphinx-badge-color-muted-bg:     #adb5bd;
+  --gp-sphinx-badge-color-muted-fg:     #1f2937;
+  --gp-sphinx-badge-color-muted-border: #adb5bd;
+
+  --gp-sphinx-badge-color-dark-bg:     #212529;
+  --gp-sphinx-badge-color-dark-fg:     #ffffff;
+  --gp-sphinx-badge-color-dark-border: #212529;
+
+  --gp-sphinx-badge-color-white-bg:     #ffffff;
+  --gp-sphinx-badge-color-white-fg:     #1f2937;
+  --gp-sphinx-badge-color-white-border: #d1d5db;
+
+  --gp-sphinx-badge-color-black-bg:     #000000;
+  --gp-sphinx-badge-color-black-fg:     #ffffff;
+  --gp-sphinx-badge-color-black-border: #000000;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -233,6 +278,51 @@
 
     --gp-sphinx-badge-meta-link-fg:      #9ca3af;
     --gp-sphinx-badge-meta-link-border:  #4b5563;
+
+    /* ── Semantic colour palette (drives {bdg-*} roles) ─── */
+    --gp-sphinx-badge-color-primary-bg:     #3b82f6;
+    --gp-sphinx-badge-color-primary-fg:     #ffffff;
+    --gp-sphinx-badge-color-primary-border: #3b82f6;
+
+    --gp-sphinx-badge-color-secondary-bg:     #94a3b8;
+    --gp-sphinx-badge-color-secondary-fg:     #0f172a;
+    --gp-sphinx-badge-color-secondary-border: #94a3b8;
+
+    --gp-sphinx-badge-color-success-bg:     #22c55e;
+    --gp-sphinx-badge-color-success-fg:     #052e16;
+    --gp-sphinx-badge-color-success-border: #22c55e;
+
+    --gp-sphinx-badge-color-info-bg:     #22d3ee;
+    --gp-sphinx-badge-color-info-fg:     #083344;
+    --gp-sphinx-badge-color-info-border: #22d3ee;
+
+    --gp-sphinx-badge-color-warning-bg:     #fbbf24;
+    --gp-sphinx-badge-color-warning-fg:     #1f2937;
+    --gp-sphinx-badge-color-warning-border: #fbbf24;
+
+    --gp-sphinx-badge-color-danger-bg:     #f87171;
+    --gp-sphinx-badge-color-danger-fg:     #1f2937;
+    --gp-sphinx-badge-color-danger-border: #f87171;
+
+    --gp-sphinx-badge-color-light-bg:     #e5e7eb;
+    --gp-sphinx-badge-color-light-fg:     #1f2937;
+    --gp-sphinx-badge-color-light-border: #9ca3af;
+
+    --gp-sphinx-badge-color-muted-bg:     #6b7280;
+    --gp-sphinx-badge-color-muted-fg:     #f3f4f6;
+    --gp-sphinx-badge-color-muted-border: #6b7280;
+
+    --gp-sphinx-badge-color-dark-bg:     #374151;
+    --gp-sphinx-badge-color-dark-fg:     #ffffff;
+    --gp-sphinx-badge-color-dark-border: #374151;
+
+    --gp-sphinx-badge-color-white-bg:     #f9fafb;
+    --gp-sphinx-badge-color-white-fg:     #1f2937;
+    --gp-sphinx-badge-color-white-border: #9ca3af;
+
+    --gp-sphinx-badge-color-black-bg:     #111827;
+    --gp-sphinx-badge-color-black-fg:     #f9fafb;
+    --gp-sphinx-badge-color-black-border: #111827;
   }
 }
 
@@ -341,6 +431,51 @@ body[data-theme="dark"] {
 
   --gp-sphinx-badge-meta-link-fg:      #9ca3af;
   --gp-sphinx-badge-meta-link-border:  #4b5563;
+
+  /* ── Semantic colour palette (drives {bdg-*} roles) ─── */
+  --gp-sphinx-badge-color-primary-bg:     #3b82f6;
+  --gp-sphinx-badge-color-primary-fg:     #ffffff;
+  --gp-sphinx-badge-color-primary-border: #3b82f6;
+
+  --gp-sphinx-badge-color-secondary-bg:     #94a3b8;
+  --gp-sphinx-badge-color-secondary-fg:     #0f172a;
+  --gp-sphinx-badge-color-secondary-border: #94a3b8;
+
+  --gp-sphinx-badge-color-success-bg:     #22c55e;
+  --gp-sphinx-badge-color-success-fg:     #052e16;
+  --gp-sphinx-badge-color-success-border: #22c55e;
+
+  --gp-sphinx-badge-color-info-bg:     #22d3ee;
+  --gp-sphinx-badge-color-info-fg:     #083344;
+  --gp-sphinx-badge-color-info-border: #22d3ee;
+
+  --gp-sphinx-badge-color-warning-bg:     #fbbf24;
+  --gp-sphinx-badge-color-warning-fg:     #1f2937;
+  --gp-sphinx-badge-color-warning-border: #fbbf24;
+
+  --gp-sphinx-badge-color-danger-bg:     #f87171;
+  --gp-sphinx-badge-color-danger-fg:     #1f2937;
+  --gp-sphinx-badge-color-danger-border: #f87171;
+
+  --gp-sphinx-badge-color-light-bg:     #e5e7eb;
+  --gp-sphinx-badge-color-light-fg:     #1f2937;
+  --gp-sphinx-badge-color-light-border: #9ca3af;
+
+  --gp-sphinx-badge-color-muted-bg:     #6b7280;
+  --gp-sphinx-badge-color-muted-fg:     #f3f4f6;
+  --gp-sphinx-badge-color-muted-border: #6b7280;
+
+  --gp-sphinx-badge-color-dark-bg:     #374151;
+  --gp-sphinx-badge-color-dark-fg:     #ffffff;
+  --gp-sphinx-badge-color-dark-border: #374151;
+
+  --gp-sphinx-badge-color-white-bg:     #f9fafb;
+  --gp-sphinx-badge-color-white-fg:     #1f2937;
+  --gp-sphinx-badge-color-white-border: #9ca3af;
+
+  --gp-sphinx-badge-color-black-bg:     #111827;
+  --gp-sphinx-badge-color-black-fg:     #f9fafb;
+  --gp-sphinx-badge-color-black-border: #111827;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -404,3 +539,21 @@ body[data-theme="dark"] {
 .gp-sphinx-badge--meta-alpha { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-meta-alpha-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-meta-alpha-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-meta-alpha-border); }
 .gp-sphinx-badge--meta-beta  { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-meta-beta-bg);  --gp-sphinx-badge-fg: var(--gp-sphinx-badge-meta-beta-fg);  --gp-sphinx-badge-border: var(--gp-sphinx-badge-meta-beta-border); }
 .gp-sphinx-badge--meta-link  { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-meta-link-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-meta-link-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — semantic palette (drives {bdg-*} roles)
+ * Bound to the same --gp-sphinx-badge-{bg,fg,border} tokens the base
+ * badge consumes; the --outline modifier already swaps the bg to
+ * transparent via the .gp-sphinx-badge--outline rule.
+ * ══════════════════════════════════════════════════════════ */
+.gp-sphinx-badge--color-primary   { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-color-primary-bg);   --gp-sphinx-badge-fg: var(--gp-sphinx-badge-color-primary-fg);   --gp-sphinx-badge-border: var(--gp-sphinx-badge-color-primary-border); }
+.gp-sphinx-badge--color-secondary { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-color-secondary-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-color-secondary-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-color-secondary-border); }
+.gp-sphinx-badge--color-success   { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-color-success-bg);   --gp-sphinx-badge-fg: var(--gp-sphinx-badge-color-success-fg);   --gp-sphinx-badge-border: var(--gp-sphinx-badge-color-success-border); }
+.gp-sphinx-badge--color-info      { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-color-info-bg);      --gp-sphinx-badge-fg: var(--gp-sphinx-badge-color-info-fg);      --gp-sphinx-badge-border: var(--gp-sphinx-badge-color-info-border); }
+.gp-sphinx-badge--color-warning   { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-color-warning-bg);   --gp-sphinx-badge-fg: var(--gp-sphinx-badge-color-warning-fg);   --gp-sphinx-badge-border: var(--gp-sphinx-badge-color-warning-border); }
+.gp-sphinx-badge--color-danger    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-color-danger-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-color-danger-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-color-danger-border); }
+.gp-sphinx-badge--color-light     { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-color-light-bg);     --gp-sphinx-badge-fg: var(--gp-sphinx-badge-color-light-fg);     --gp-sphinx-badge-border: var(--gp-sphinx-badge-color-light-border); }
+.gp-sphinx-badge--color-muted     { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-color-muted-bg);     --gp-sphinx-badge-fg: var(--gp-sphinx-badge-color-muted-fg);     --gp-sphinx-badge-border: var(--gp-sphinx-badge-color-muted-border); }
+.gp-sphinx-badge--color-dark      { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-color-dark-bg);      --gp-sphinx-badge-fg: var(--gp-sphinx-badge-color-dark-fg);      --gp-sphinx-badge-border: var(--gp-sphinx-badge-color-dark-border); }
+.gp-sphinx-badge--color-white     { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-color-white-bg);     --gp-sphinx-badge-fg: var(--gp-sphinx-badge-color-white-fg);     --gp-sphinx-badge-border: var(--gp-sphinx-badge-color-white-border); }
+.gp-sphinx-badge--color-black     { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-color-black-bg);     --gp-sphinx-badge-fg: var(--gp-sphinx-badge-color-black-fg);     --gp-sphinx-badge-border: var(--gp-sphinx-badge-color-black-border); }
