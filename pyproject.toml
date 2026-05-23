@@ -1,6 +1,6 @@
 [project]
 name = "gp-sphinx-workspace"
-version = "0.0.1a20"
+version = "0.0.1a21"
 description = "Workspace root for gp-sphinx packages"
 requires-python = ">=3.10,<4.0"
 authors = [
@@ -9,7 +9,7 @@ authors = [
 license = { text = "MIT" }
 readme = "README.md"
 dependencies = [
-  "gp-sphinx==0.0.1a20",
+  "gp-sphinx==0.0.1a21",
 ]
 
 [tool.uv.workspace]

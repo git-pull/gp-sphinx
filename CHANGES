@@ -14,9 +14,19 @@ $ pip install --user --upgrade --pre gp-sphinx
 $ uv add gp-sphinx --prerelease allow
 ```
 
-## gp-sphinx 0.0.1a21 (unreleased)
+## gp-sphinx 0.0.1a22 (unreleased)
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
+
+## gp-sphinx 0.0.1a21 (2026-05-23)
+
+### Fixes
+
+#### `sphinx-ux-autodoc-layout`: Collapsed API sections expand on SPA navigation
+
+Cross-page links with hash fragments left collapsed ancestors and
+signature panels closed during SPA navigation because
+`history.pushState()` does not fire `hashchange`. (#44)
 
 ## gp-sphinx 0.0.1a20 (2026-05-17)
 
