@@ -114,4 +114,5 @@
 
   document.addEventListener('DOMContentLoaded', expandForHash);
   window.addEventListener('hashchange', expandForHash);
+  document.addEventListener('gp-sphinx:navigated', expandForHash);
 })();
