@@ -225,7 +225,7 @@ def test_merge_sphinx_config_default_fonts() -> None:
     )
     assert len(result["sphinx_fonts"]) == 2
     assert result["sphinx_fonts"][0]["family"] == "IBM Plex Sans"
-    assert len(result["sphinx_font_preload"]) == 7
+    assert len(result["sphinx_font_preload"]) == 8
     assert len(result["sphinx_font_fallbacks"]) == 2
     assert "--font-stack" in result["sphinx_font_css_variables"]
 
