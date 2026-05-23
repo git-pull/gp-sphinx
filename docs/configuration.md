@@ -83,12 +83,15 @@ already present.
 ## Injected `setup(app)`
 
 The returned config includes a `setup(app)` function from
-{py:func}`gp_sphinx.config.setup`. It does two things:
+{py:func}`gp_sphinx.config.setup`. It wires the runtime hooks that the
+shared config depends on:
 
 | Action | Effect |
 | --- | --- |
 | `app.add_js_file("js/spa-nav.js", loading_method="defer")` | Registers the bundled SPA navigation script from `sphinx-gp-theme` |
-| `app.connect("build-finished", remove_tabs_js)` | Removes `_static/tabs.js` after HTML builds as a `sphinx-inline-tabs` workaround |
+| `app.connect("html-page-context", _inject_copybutton_bridge)` | Exposes `copybutton_selector` as a window global for `spa-nav.js` |
+| `app.connect("html-page-context", _inject_fowt_prevention)` | Injects the FOWT-prevention head snippet to suppress flash-of-wrong-theme |
+| `app.add_lexer("myst", MystLexer)` / `("myst-md", MystLexer)` | Registers the MyST source-block lexer aliases |
 
 ## Always-set coordinator values
 
@@ -111,7 +114,7 @@ These are injected even though they are not exposed as `DEFAULT_*` constants:
 
 | Constant | Value |
 | --- | --- |
-| `DEFAULT_EXTENSIONS` | `["sphinx.ext.autodoc", "sphinx_fonts", "sphinx.ext.intersphinx", "sphinx_autodoc_typehints_gp", "sphinx.ext.todo", "sphinx_inline_tabs", "sphinx_copybutton", "sphinx_gp_opengraph", "sphinx_gp_sitemap", "sphinxext.rediraffe", "sphinx_design", "myst_parser", "linkify_issues"]` |
+| `DEFAULT_EXTENSIONS` | `["sphinx.ext.autodoc", "sphinx_fonts", "sphinx.ext.intersphinx", "sphinx_autodoc_typehints_gp", "sphinx.ext.todo", "sphinx_ux_tabs", "sphinx_copybutton", "sphinx_gp_opengraph", "sphinx_gp_sitemap", "sphinxext.rediraffe", "sphinx_ux_grid", "sphinx_ux_octicons", "sphinx_ux_badges", "myst_parser", "linkify_issues"]` |
 | `DEFAULT_SOURCE_SUFFIX` | `{".rst": "restructuredtext", ".md": "markdown"}` |
 | `DEFAULT_MYST_EXTENSIONS` | `["colon_fence", "substitution", "replacements", "strikethrough", "linkify"]` |
 | `DEFAULT_MYST_HEADING_ANCHORS` | `4` |
@@ -138,7 +141,7 @@ These are injected even though they are not exposed as `DEFAULT_*` constants:
 
 | Constant | Value |
 | --- | --- |
-| `DEFAULT_PYGMENTS_STYLE` | `"monokai"` |
+| `DEFAULT_PYGMENTS_STYLE` | `"gp-sphinx-light"` |
 | `DEFAULT_PYGMENTS_DARK_STYLE` | `"monokai"` |
 | `DEFAULT_COPYBUTTON_PROMPT_TEXT` | regex matching Python, shell, and IPython prompts |
 | `DEFAULT_COPYBUTTON_PROMPT_IS_REGEXP` | `True` |

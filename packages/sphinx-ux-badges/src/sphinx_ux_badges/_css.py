@@ -34,6 +34,12 @@ Examples
 
 >>> SAB.TYPE_CONFIG
 'gp-sphinx-badge--type-config'
+
+>>> SAB.COLOR_PRIMARY
+'gp-sphinx-badge--color-primary'
+
+>>> SAB.COLOR_BLACK
+'gp-sphinx-badge--color-black'
 """
 
 from __future__ import annotations
@@ -166,6 +172,19 @@ class SAB:
     META_ALPHA = "gp-sphinx-badge--meta-alpha"
     META_BETA = "gp-sphinx-badge--meta-beta"
     META_LINK = "gp-sphinx-badge--meta-link"
+
+    # ── Semantic colour palette (drives {bdg-*} roles) ────
+    COLOR_PRIMARY = "gp-sphinx-badge--color-primary"
+    COLOR_SECONDARY = "gp-sphinx-badge--color-secondary"
+    COLOR_SUCCESS = "gp-sphinx-badge--color-success"
+    COLOR_INFO = "gp-sphinx-badge--color-info"
+    COLOR_WARNING = "gp-sphinx-badge--color-warning"
+    COLOR_DANGER = "gp-sphinx-badge--color-danger"
+    COLOR_LIGHT = "gp-sphinx-badge--color-light"
+    COLOR_MUTED = "gp-sphinx-badge--color-muted"
+    COLOR_DARK = "gp-sphinx-badge--color-dark"
+    COLOR_WHITE = "gp-sphinx-badge--color-white"
+    COLOR_BLACK = "gp-sphinx-badge--color-black"
 
     @staticmethod
     def obj_type(name: str) -> str:

@@ -1,0 +1,378 @@
+/* sphinx_ux_grid — CSS-Grid layout for {grid} and {grid-item-card}.
+ *
+ * Selectors live under the ``gp-sphinx-grid*`` namespace and stay inside
+ * ``@layer gp-sphinx`` so precedence is declarative against Furo's own
+ * layered styles. Per-directive overrides arrive as inline CSS custom
+ * properties on the container's ``style`` attribute — the rules below
+ * read those properties with sensible fallbacks so a grid without
+ * explicit options still renders.
+ */
+@layer gp-sphinx {
+  .gp-sphinx-grid {
+    display: grid;
+    gap: var(--gp-sphinx-grid-gutter, 1rem);
+    grid-template-columns: repeat(
+      var(--gp-sphinx-grid-cols-xs, 1),
+      minmax(0, 1fr)
+    );
+    margin: var(--gp-sphinx-grid-margin-xs, 0 0 1rem 0);
+    padding: var(--gp-sphinx-grid-padding-xs, 0);
+  }
+
+  @media (min-width: 576px) {
+    .gp-sphinx-grid {
+      grid-template-columns: repeat(
+        var(--gp-sphinx-grid-cols-sm, var(--gp-sphinx-grid-cols-xs, 1)),
+        minmax(0, 1fr)
+      );
+      margin: var(
+        --gp-sphinx-grid-margin-sm,
+        var(--gp-sphinx-grid-margin-xs, 0 0 1rem 0)
+      );
+      padding: var(
+        --gp-sphinx-grid-padding-sm,
+        var(--gp-sphinx-grid-padding-xs, 0)
+      );
+    }
+  }
+
+  @media (min-width: 768px) {
+    .gp-sphinx-grid {
+      grid-template-columns: repeat(
+        var(--gp-sphinx-grid-cols-md, var(--gp-sphinx-grid-cols-sm, 1)),
+        minmax(0, 1fr)
+      );
+      margin: var(
+        --gp-sphinx-grid-margin-md,
+        var(--gp-sphinx-grid-margin-sm, var(--gp-sphinx-grid-margin-xs, 0 0 1rem 0))
+      );
+      padding: var(
+        --gp-sphinx-grid-padding-md,
+        var(--gp-sphinx-grid-padding-sm, var(--gp-sphinx-grid-padding-xs, 0))
+      );
+    }
+  }
+
+  @media (min-width: 992px) {
+    .gp-sphinx-grid {
+      grid-template-columns: repeat(
+        var(--gp-sphinx-grid-cols-lg, var(--gp-sphinx-grid-cols-md, 1)),
+        minmax(0, 1fr)
+      );
+      margin: var(
+        --gp-sphinx-grid-margin-lg,
+        var(
+          --gp-sphinx-grid-margin-md,
+          var(--gp-sphinx-grid-margin-sm, var(--gp-sphinx-grid-margin-xs, 0 0 1rem 0))
+        )
+      );
+      padding: var(
+        --gp-sphinx-grid-padding-lg,
+        var(
+          --gp-sphinx-grid-padding-md,
+          var(--gp-sphinx-grid-padding-sm, var(--gp-sphinx-grid-padding-xs, 0))
+        )
+      );
+    }
+  }
+
+  .gp-sphinx-grid--reverse {
+    direction: rtl;
+  }
+
+  .gp-sphinx-grid--reverse > * {
+    direction: ltr;
+  }
+
+  .gp-sphinx-grid--outline {
+    padding: 0.5rem;
+    border: 1px solid var(--color-foreground-border, currentColor);
+    border-radius: 0.25rem;
+  }
+
+  /* ── Grid item ──────────────────────────────────────── */
+  .gp-sphinx-grid__item {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    grid-column: span var(--gp-sphinx-grid-item-span-xs, 1);
+    margin: var(--gp-sphinx-grid-margin-xs, 0);
+    padding: var(--gp-sphinx-grid-padding-xs, 0);
+  }
+
+  @media (min-width: 576px) {
+    .gp-sphinx-grid__item {
+      grid-column: span
+        var(
+          --gp-sphinx-grid-item-span-sm,
+          var(--gp-sphinx-grid-item-span-xs, 1)
+        );
+      margin: var(
+        --gp-sphinx-grid-margin-sm,
+        var(--gp-sphinx-grid-margin-xs, 0)
+      );
+      padding: var(
+        --gp-sphinx-grid-padding-sm,
+        var(--gp-sphinx-grid-padding-xs, 0)
+      );
+    }
+  }
+
+  @media (min-width: 768px) {
+    .gp-sphinx-grid__item {
+      grid-column: span
+        var(
+          --gp-sphinx-grid-item-span-md,
+          var(--gp-sphinx-grid-item-span-sm, 1)
+        );
+      margin: var(
+        --gp-sphinx-grid-margin-md,
+        var(--gp-sphinx-grid-margin-sm, var(--gp-sphinx-grid-margin-xs, 0))
+      );
+      padding: var(
+        --gp-sphinx-grid-padding-md,
+        var(--gp-sphinx-grid-padding-sm, var(--gp-sphinx-grid-padding-xs, 0))
+      );
+    }
+  }
+
+  @media (min-width: 992px) {
+    .gp-sphinx-grid__item {
+      grid-column: span
+        var(
+          --gp-sphinx-grid-item-span-lg,
+          var(--gp-sphinx-grid-item-span-md, 1)
+        );
+      margin: var(
+        --gp-sphinx-grid-margin-lg,
+        var(
+          --gp-sphinx-grid-margin-md,
+          var(--gp-sphinx-grid-margin-sm, var(--gp-sphinx-grid-margin-xs, 0))
+        )
+      );
+      padding: var(
+        --gp-sphinx-grid-padding-lg,
+        var(
+          --gp-sphinx-grid-padding-md,
+          var(--gp-sphinx-grid-padding-sm, var(--gp-sphinx-grid-padding-xs, 0))
+        )
+      );
+    }
+  }
+
+  .gp-sphinx-grid__item--direction-row {
+    flex-direction: row;
+  }
+
+  .gp-sphinx-grid__item--direction-column {
+    flex-direction: column;
+  }
+
+  .gp-sphinx-grid__item--align-start {
+    justify-content: flex-start;
+  }
+
+  .gp-sphinx-grid__item--align-end {
+    justify-content: flex-end;
+  }
+
+  .gp-sphinx-grid__item--align-center {
+    justify-content: center;
+  }
+
+  .gp-sphinx-grid__item--align-justify {
+    justify-content: space-between;
+  }
+
+  .gp-sphinx-grid__item--align-spaced {
+    justify-content: space-around;
+  }
+
+  .gp-sphinx-grid__item--outline {
+    border: 1px solid var(--color-foreground-border, currentColor);
+    border-radius: 0.25rem;
+  }
+
+  /* ── Grid item card ─────────────────────────────────── */
+  .gp-sphinx-grid-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 0;
+    background: var(--color-background-secondary, transparent);
+    border: 1px solid var(--color-background-border, currentColor);
+    border-radius: 0.375rem;
+    overflow: hidden;
+    margin: var(--gp-sphinx-grid-margin-xs, 0);
+    padding: var(--gp-sphinx-grid-padding-xs, 0);
+  }
+
+  @media (min-width: 576px) {
+    .gp-sphinx-grid-card {
+      margin: var(
+        --gp-sphinx-grid-margin-sm,
+        var(--gp-sphinx-grid-margin-xs, 0)
+      );
+      padding: var(
+        --gp-sphinx-grid-padding-sm,
+        var(--gp-sphinx-grid-padding-xs, 0)
+      );
+    }
+  }
+
+  @media (min-width: 768px) {
+    .gp-sphinx-grid-card {
+      margin: var(
+        --gp-sphinx-grid-margin-md,
+        var(--gp-sphinx-grid-margin-sm, var(--gp-sphinx-grid-margin-xs, 0))
+      );
+      padding: var(
+        --gp-sphinx-grid-padding-md,
+        var(--gp-sphinx-grid-padding-sm, var(--gp-sphinx-grid-padding-xs, 0))
+      );
+    }
+  }
+
+  @media (min-width: 992px) {
+    .gp-sphinx-grid-card {
+      margin: var(
+        --gp-sphinx-grid-margin-lg,
+        var(
+          --gp-sphinx-grid-margin-md,
+          var(--gp-sphinx-grid-margin-sm, var(--gp-sphinx-grid-margin-xs, 0))
+        )
+      );
+      padding: var(
+        --gp-sphinx-grid-padding-lg,
+        var(
+          --gp-sphinx-grid-padding-md,
+          var(--gp-sphinx-grid-padding-sm, var(--gp-sphinx-grid-padding-xs, 0))
+        )
+      );
+    }
+  }
+
+  .gp-sphinx-grid-card--outline {
+    border-width: 2px;
+  }
+
+  .gp-sphinx-grid-card--shadow-sm {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+
+  .gp-sphinx-grid-card--shadow-md {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  .gp-sphinx-grid-card--shadow-lg {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .gp-sphinx-grid-card--hover {
+    transition:
+      transform 120ms ease-out,
+      box-shadow 120ms ease-out;
+  }
+
+  .gp-sphinx-grid-card--hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+  }
+
+  .gp-sphinx-grid-card--text-left {
+    text-align: left;
+  }
+
+  .gp-sphinx-grid-card--text-right {
+    text-align: right;
+  }
+
+  .gp-sphinx-grid-card--text-center {
+    text-align: center;
+  }
+
+  .gp-sphinx-grid-card--text-justify {
+    text-align: justify;
+  }
+
+  .gp-sphinx-grid-card--width-auto {
+    width: auto;
+  }
+
+  .gp-sphinx-grid-card--width-25 {
+    width: 25%;
+  }
+
+  .gp-sphinx-grid-card--width-50 {
+    width: 50%;
+  }
+
+  .gp-sphinx-grid-card--width-75 {
+    width: 75%;
+  }
+
+  .gp-sphinx-grid-card--width-100 {
+    width: 100%;
+  }
+
+  .gp-sphinx-grid-card__header,
+  .gp-sphinx-grid-card__footer {
+    padding: 0.5rem 1rem;
+    background: var(--color-background-hover, transparent);
+    border-bottom: 1px solid var(--color-background-border, currentColor);
+  }
+
+  .gp-sphinx-grid-card__footer {
+    border-bottom: 0;
+    border-top: 1px solid var(--color-background-border, currentColor);
+    margin-top: auto;
+  }
+
+  .gp-sphinx-grid-card__body {
+    flex: 1 1 auto;
+    padding: 1rem;
+  }
+
+  .gp-sphinx-grid-card__title {
+    font-weight: 600;
+    margin-block-end: 0.5rem;
+  }
+
+  .gp-sphinx-grid-card__img-top,
+  .gp-sphinx-grid-card__img-bottom {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .gp-sphinx-grid-card__img-background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  .gp-sphinx-grid-card__overlay {
+    position: relative;
+    z-index: 1;
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+  }
+
+  .gp-sphinx-grid-card__link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    text-indent: -9999px;
+    overflow: hidden;
+  }
+
+  .gp-sphinx-grid-card .gp-sphinx-grid-card__link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+}

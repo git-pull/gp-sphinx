@@ -31,12 +31,10 @@ dependencies = [
   "myst-parser",
   "docutils",
   "sphinx-autodoc-typehints-gp==0.0.1a20",
-  "sphinx-inline-tabs",
   "sphinx-copybutton",
   "sphinx-gp-opengraph==0.0.1a20",
   "sphinx-gp-sitemap==0.0.1a20",
   "sphinxext-rediraffe",
-  "sphinx-design",
   "linkify-it-py",
   "gp-libs",
 ]

@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import textwrap
+import typing as t
+
 import pytest
 from docutils import nodes
 
@@ -15,6 +18,14 @@ from sphinx_ux_badges import (
     build_toolbar,
 )
 from sphinx_ux_badges._css import SAB
+from sphinx_ux_badges._roles import _BDG_COLORS, _make_bdg_role
+from tests._sphinx_scenarios import (
+    ScenarioFile,
+    SharedSphinxResult,
+    SphinxScenario,
+    build_shared_sphinx_result,
+    read_output,
+)
 
 
 def test_badge_node_is_inline_subclass() -> None:
@@ -222,3 +233,180 @@ def test_css_constants() -> None:
     assert SAB.MD == "gp-sphinx-badge--size-md"
     assert SAB.LG == "gp-sphinx-badge--size-lg"
     assert SAB.XL == "gp-sphinx-badge--size-xl"
+
+
+def test_css_color_constants() -> None:
+    """SAB exposes a COLOR_<NAME> constant for every {bdg-*} colour."""
+    for color in _BDG_COLORS:
+        attr = f"COLOR_{color.upper()}"
+        assert hasattr(SAB, attr), f"SAB.{attr} missing"
+        assert getattr(SAB, attr) == f"gp-sphinx-badge--color-{color}"
+
+
+# ── {bdg-*} role registration ────────────────────────────────
+
+
+class BdgRoleRegistrationFixture(t.NamedTuple):
+    """Single parametrized case for {bdg-*} role registration."""
+
+    test_id: str
+    role_name: str
+
+
+_BDG_ROLE_FIXTURES: list[BdgRoleRegistrationFixture] = [
+    BdgRoleRegistrationFixture(test_id=f"bdg-{c}", role_name=f"bdg-{c}")
+    for c in _BDG_COLORS
+] + [
+    BdgRoleRegistrationFixture(test_id=f"bdg-{c}-line", role_name=f"bdg-{c}-line")
+    for c in _BDG_COLORS
+]
+
+
+@pytest.mark.parametrize(
+    list(BdgRoleRegistrationFixture._fields),
+    _BDG_ROLE_FIXTURES,
+    ids=[f.test_id for f in _BDG_ROLE_FIXTURES],
+)
+def test_bdg_role_registration(test_id: str, role_name: str) -> None:
+    """Every {bdg-<color>}{,-line} role registers when setup() runs."""
+    from sphinx.util.docutils import docutils_namespace, is_role_registered
+
+    from sphinx_ux_badges._roles import register_bdg_roles
+
+    class _StubApp:
+        """Minimal app surface required by register_bdg_roles."""
+
+        def __init__(self) -> None:
+            self.added: list[tuple[str, t.Any]] = []
+
+        def add_role(self, name: str, role: t.Any) -> None:
+            self.added.append((name, role))
+            # Mirror Sphinx behaviour so is_role_registered can see it.
+            from docutils.parsers.rst import roles as _roles
+
+            _roles.register_local_role(name, role)
+
+    with docutils_namespace():
+        app = _StubApp()
+        register_bdg_roles(app)  # type: ignore[arg-type]
+        registered_names = [name for name, _ in app.added]
+        assert role_name in registered_names
+        assert is_role_registered(role_name)
+
+
+# ── {bdg-*} role factory invocation ──────────────────────────
+
+
+class BdgFactoryFixture(t.NamedTuple):
+    """Single parametrized case for direct role-factory invocation."""
+
+    test_id: str
+    color: str
+    outline: bool
+    text: str
+    fill_class: str
+
+
+_BDG_FACTORY_FIXTURES: list[BdgFactoryFixture] = [
+    BdgFactoryFixture(
+        test_id=f"{c}-filled",
+        color=c,
+        outline=False,
+        text=f"{c.title()} Label",
+        fill_class=SAB.FILLED,
+    )
+    for c in _BDG_COLORS
+] + [
+    BdgFactoryFixture(
+        test_id=f"{c}-outline",
+        color=c,
+        outline=True,
+        text=f"{c.title()} Outline",
+        fill_class=SAB.OUTLINE,
+    )
+    for c in _BDG_COLORS
+]
+
+
+@pytest.mark.parametrize(
+    "case",
+    _BDG_FACTORY_FIXTURES,
+    ids=lambda c: c.test_id,
+)
+def test_bdg_role_invocation(case: BdgFactoryFixture) -> None:
+    """The role factory produces a BadgeNode with the expected classes."""
+    role = _make_bdg_role(case.color, outline=case.outline)
+    role_name = f"bdg-{case.color}{'-line' if case.outline else ''}"
+    nodes_, messages = role(
+        role_name,
+        f"{{{role_name}}}`{case.text}`",
+        case.text,
+        0,
+        None,  # type: ignore[arg-type]
+    )
+
+    assert messages == []
+    assert len(nodes_) == 1
+    badge = nodes_[0]
+    assert isinstance(badge, BadgeNode)
+    assert badge.astext() == case.text
+
+    classes = badge["classes"]
+    assert SAB.BADGE in classes
+    assert f"gp-sphinx-badge--color-{case.color}" in classes
+    assert case.fill_class in classes
+
+
+# ── {bdg-*} integration build ────────────────────────────────
+
+
+_BDG_CONF_PY = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    extensions = [
+        "myst_parser",
+        "sphinx_ux_badges",
+    ]
+    """
+)
+
+_BDG_INDEX_MD = textwrap.dedent(
+    """\
+    # Demo
+
+    Filled: {bdg-primary}`Alpha` and outlined: {bdg-danger-line}`Hot`.
+    """
+)
+
+
+@pytest.fixture(scope="module")
+def bdg_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a MyST project that exercises {bdg-primary} and {bdg-danger-line}."""
+    cache_root = tmp_path_factory.mktemp("bdg-html")
+    scenario = SphinxScenario(
+        buildername="html",
+        files=(
+            ScenarioFile("conf.py", _BDG_CONF_PY),
+            ScenarioFile("index.md", _BDG_INDEX_MD),
+        ),
+    )
+    return build_shared_sphinx_result(cache_root, scenario)
+
+
+@pytest.mark.integration
+def test_bdg_role_html_emits_expected_classes(
+    bdg_html_result: SharedSphinxResult,
+) -> None:
+    """End-to-end HTML build renders gp-sphinx-badge--color-* classes."""
+    html = read_output(bdg_html_result, "index.html")
+
+    assert "gp-sphinx-badge--color-primary" in html
+    assert "gp-sphinx-badge--filled" in html
+    assert "Alpha" in html
+
+    assert "gp-sphinx-badge--color-danger" in html
+    assert "gp-sphinx-badge--outline" in html
+    assert "Hot" in html

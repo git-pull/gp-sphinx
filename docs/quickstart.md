@@ -94,7 +94,7 @@ conf = merge_sphinx_config(
 ```python
 conf = merge_sphinx_config(
     # ...
-    remove_extensions=["sphinx_design"],
+    remove_extensions=["sphinx_copybutton"],
 )
 ```
 

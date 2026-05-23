@@ -2,6 +2,72 @@
 
 # API Reference
 
+## `{bdg-*}` MyST roles
+
+The extension registers a family of 22 MyST roles for inline badges
+using semantic colour names. Each colour comes in a filled variant
+(`{bdg-<colour>}`) and an outline variant (`{bdg-<colour>-line}`).
+
+```{list-table}
+:header-rows: 1
+:widths: 22 14 32 32
+
+* - Colour
+  - Filled
+  - Filled example
+  - Outline example
+* - `primary`
+  - `` {bdg-primary}`text` ``
+  - {bdg-primary}`primary`
+  - {bdg-primary-line}`primary`
+* - `secondary`
+  - `` {bdg-secondary}`text` ``
+  - {bdg-secondary}`secondary`
+  - {bdg-secondary-line}`secondary`
+* - `success`
+  - `` {bdg-success}`text` ``
+  - {bdg-success}`success`
+  - {bdg-success-line}`success`
+* - `info`
+  - `` {bdg-info}`text` ``
+  - {bdg-info}`info`
+  - {bdg-info-line}`info`
+* - `warning`
+  - `` {bdg-warning}`text` ``
+  - {bdg-warning}`warning`
+  - {bdg-warning-line}`warning`
+* - `danger`
+  - `` {bdg-danger}`text` ``
+  - {bdg-danger}`danger`
+  - {bdg-danger-line}`danger`
+* - `light`
+  - `` {bdg-light}`text` ``
+  - {bdg-light}`light`
+  - {bdg-light-line}`light`
+* - `muted`
+  - `` {bdg-muted}`text` ``
+  - {bdg-muted}`muted`
+  - {bdg-muted-line}`muted`
+* - `dark`
+  - `` {bdg-dark}`text` ``
+  - {bdg-dark}`dark`
+  - {bdg-dark-line}`dark`
+* - `white`
+  - `` {bdg-white}`text` ``
+  - {bdg-white}`white`
+  - {bdg-white-line}`white`
+* - `black`
+  - `` {bdg-black}`text` ``
+  - {bdg-black}`black`
+  - {bdg-black-line}`black`
+```
+
+The roles emit a `BadgeNode` carrying `gp-sphinx-badge`,
+`gp-sphinx-badge--color-<colour>`, and either `gp-sphinx-badge--filled`
+or `gp-sphinx-badge--outline`. Colour values are defined as CSS
+custom-property triples (`-bg`, `-fg`, `-border`) in
+`sab_palettes.css` and have dedicated dark-mode overrides.
+
 ## Colour palette
 
 All semantic badge colours live in `sab_palettes.css` (registered by

@@ -48,6 +48,18 @@ sys.path.insert(
 )
 sys.path.insert(
     0,
+    str(project_root / "packages" / "sphinx-ux-octicons" / "src"),
+)
+sys.path.insert(
+    0,
+    str(project_root / "packages" / "sphinx-ux-grid" / "src"),
+)
+sys.path.insert(
+    0,
+    str(project_root / "packages" / "sphinx-ux-tabs" / "src"),
+)
+sys.path.insert(
+    0,
     str(project_root / "packages" / "sphinx-autodoc-fastmcp" / "src"),
 )
 sys.path.insert(
@@ -92,7 +104,6 @@ conf = merge_sphinx_config(
         "package_reference",
         "sab_demo",
         "sab_meta",
-        "sphinx_ux_badges",
         "sphinx_autodoc_api_style",
         "sphinx_autodoc_pytest_fixtures",
         "sphinx_autodoc_docutils",

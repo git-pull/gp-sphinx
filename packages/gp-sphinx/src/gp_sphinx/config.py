@@ -25,7 +25,6 @@ True
 
 from __future__ import annotations
 
-import contextlib
 import copy
 import inspect
 import json
@@ -73,6 +72,67 @@ if t.TYPE_CHECKING:
 from gp_sphinx.myst_lexer import MystLexer
 
 logger = logging.getLogger(__name__)
+
+
+_LEGACY_EXTENSION_REPLACEMENTS: dict[str, str] = {
+    "sphinx_inline_tabs": "sphinx_ux_tabs",
+    "sphinx_design": "sphinx_ux_grid, sphinx_ux_octicons",
+}
+"""Map legacy third-party extension names to their first-party replacements.
+
+The keys are the third-party extensions that gp-sphinx previously listed in
+:data:`~gp_sphinx.defaults.DEFAULT_EXTENSIONS`; the values are the
+first-party replacements that now own the same directives and roles. When a
+downstream consumer's ``extra_extensions`` brings back a legacy entry, the
+new and old extensions race to register the same directive names — Sphinx
+resolves that race last-registered-wins, which produces order-dependent
+rendering. The validation in :func:`merge_sphinx_config` rejects that state
+up front with an actionable migration message.
+"""
+
+
+def _check_legacy_extension_collisions(ext_list: list[str]) -> None:
+    """Raise :class:`~sphinx.errors.ExtensionError` if legacy and new collide.
+
+    Walks *ext_list* and surfaces every entry from
+    :data:`_LEGACY_EXTENSION_REPLACEMENTS` whose replacement is also present.
+    All collisions are reported in a single error so the migration story
+    is not drip-fed across multiple build retries.
+
+    Parameters
+    ----------
+    ext_list : list[str]
+        The final, merged extension list as it will be handed to Sphinx.
+
+    Raises
+    ------
+    sphinx.errors.ExtensionError
+        If at least one ``(legacy, replacement)`` pair both appear in
+        *ext_list*.
+    """
+    from sphinx.errors import ExtensionError
+
+    ext_set = set(ext_list)
+    collisions: list[tuple[str, str]] = []
+    for legacy, replacement in _LEGACY_EXTENSION_REPLACEMENTS.items():
+        if legacy not in ext_set:
+            continue
+        replacement_names = [name.strip() for name in replacement.split(",")]
+        if any(name in ext_set for name in replacement_names):
+            collisions.append((legacy, replacement))
+
+    if not collisions:
+        return
+
+    messages = [
+        (
+            f"{legacy} is no longer part of DEFAULT_EXTENSIONS; "
+            f"remove it from extra_extensions. "
+            f"The first-party replacement is {replacement}."
+        )
+        for legacy, replacement in collisions
+    ]
+    raise ExtensionError("\n".join(messages))
 
 
 def deep_merge(base: dict[str, t.Any], override: dict[str, t.Any]) -> dict[str, t.Any]:
@@ -360,7 +420,7 @@ def merge_sphinx_config(
     extra_extensions : list[str] | None
         Add extensions to the defaults (e.g., ``["sphinx_autodoc_argparse.exemplar"]``).
     remove_extensions : list[str] | None
-        Remove specific defaults (e.g., ``["sphinx_design"]``).
+        Remove specific defaults (e.g., ``["sphinx_copybutton"]``).
     theme_options : dict | None
         Deep-merged with default theme options.
     source_repository : str | None
@@ -432,9 +492,9 @@ def merge_sphinx_config(
     ...     project="test",
     ...     version="1.0",
     ...     copyright="2026",
-    ...     remove_extensions=["sphinx_design"],
+    ...     remove_extensions=["sphinx_ux_grid"],
     ... )
-    >>> "sphinx_design" in conf["extensions"]
+    >>> "sphinx_ux_grid" in conf["extensions"]
     False
 
     Auto-computed values from source_repository and docs_url:
@@ -608,27 +668,13 @@ def merge_sphinx_config(
     if "linkcode_resolve" in conf and "sphinx.ext.linkcode" not in conf["extensions"]:
         conf["extensions"].append("sphinx.ext.linkcode")
 
+    # Surface legacy/first-party extension collisions before Sphinx loads any
+    # of them — the directive registries are last-wins, so a colliding pair
+    # would silently produce order-dependent rendering.
+    _check_legacy_extension_collisions(conf["extensions"])
+
     logger.debug("sphinx config merged for %s", project)
     return conf
-
-
-def remove_tabs_js(app: Sphinx, exc: Exception | None) -> None:
-    """Remove ``tabs.js`` from ``_static`` after build.
-
-    Workaround for ``sphinx-inline-tabs#18``. The extension ships a
-    ``tabs.js`` that conflicts with SPA navigation.
-
-    Parameters
-    ----------
-    app : Sphinx
-        The Sphinx application object.
-    exc : Exception | None
-        Build exception, if any.
-    """
-    if app.builder.format == "html" and not exc:
-        tabs_js = pathlib.Path(app.builder.outdir) / "_static" / "tabs.js"
-        with contextlib.suppress(FileNotFoundError):
-            tabs_js.unlink()
 
 
 def _inject_copybutton_bridge(
@@ -766,8 +812,8 @@ def setup(app: Sphinx) -> None:
     """Configure Sphinx app hooks for gp-sphinx workarounds.
 
     Registers the bundled ``spa-nav.js`` script, wires the copy-button
-    configuration bridge, the FOWT-prevention head snippet, and
-    connects the ``remove_tabs_js`` post-build hook.
+    configuration bridge and the FOWT-prevention head snippet, and
+    installs the MyST lexer aliases.
 
     Parameters
     ----------
@@ -777,6 +823,5 @@ def setup(app: Sphinx) -> None:
     app.add_js_file("js/spa-nav.js", loading_method="defer")
     app.connect("html-page-context", _inject_copybutton_bridge)
     app.connect("html-page-context", _inject_fowt_prevention)
-    app.connect("build-finished", remove_tabs_js)
     app.add_lexer("myst", MystLexer)
     app.add_lexer("myst-md", MystLexer)
