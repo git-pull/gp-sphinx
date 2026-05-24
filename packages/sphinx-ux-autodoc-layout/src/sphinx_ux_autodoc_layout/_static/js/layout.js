@@ -97,7 +97,8 @@
     expandSignatureForTarget(target);
 
     setTimeout(function () {
-      target.scrollIntoView({ block: 'center' });
+      // No block option: respect CSS scroll-margin-top from the theme.
+      target.scrollIntoView();
     }, 50);
   }
 

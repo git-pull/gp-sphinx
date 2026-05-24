@@ -18,6 +18,14 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Fixes
+
+#### `sphinx-ux-autodoc-layout`: Anchor targets scroll to viewport top, not center
+
+Hash navigation positioned the target element in the middle of the
+viewport instead of near the top, overriding the theme's
+`scroll-margin-top` rules. (#45)
+
 ## gp-sphinx 0.0.1a21 (2026-05-23)
 
 ### Fixes
