@@ -96,6 +96,7 @@ packages/index
 api
 project/index
 history
+GitHub <https://github.com/git-pull/gp-sphinx>
 ```
 
 ```{cluster-toctree} autodoc
