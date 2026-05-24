@@ -48,7 +48,7 @@ __all__ = [
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
-_EXTENSION_VERSION = "0.0.1a22"
+_EXTENSION_VERSION = "0.0.1a23"
 
 
 def setup(app: Sphinx) -> dict[str, t.Any]:
