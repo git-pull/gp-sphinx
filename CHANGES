@@ -14,9 +14,11 @@ $ pip install --user --upgrade --pre gp-sphinx
 $ uv add gp-sphinx --prerelease allow
 ```
 
-## gp-sphinx 0.0.1a22 (unreleased)
+## gp-sphinx 0.0.1a23 (unreleased)
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
+
+## gp-sphinx 0.0.1a22 (2026-05-24)
 
 ### Fixes
 
