@@ -14,15 +14,43 @@ $ pip install --user --upgrade --pre gp-sphinx
 $ uv add gp-sphinx --prerelease allow
 ```
 
-## gp-sphinx 0.0.1a24 (unreleased)
+## gp-sphinx 0.0.1a25 (unreleased)
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
+
+## gp-sphinx 0.0.1a24 (2026-05-25)
+
+gp-sphinx 0.0.1a24 ships LLM-friendly documentation outputs for every
+consumer docs site.  A new extension generates `llms.txt`,
+`llms-full.txt`, `docs.json`, and per-page `.md` twins during the
+standard HTML build, following conventions from llmstxt.org,
+Cloudflare, Mintlify, and Lakebed.  The page footer links all
+machine-readable formats alongside the existing raw-source link.
 
 ### What's new
 
 #### Source-file path in page footer
 
-Each page footer shows the source path and a raw-source link to GitHub. (#46)
+Each page footer shows the source path and a raw-source link to
+GitHub. (#46)
+
+#### LLM-friendly documentation outputs
+
+New workspace package `sphinx-gp-llms` generates four output formats
+during the standard HTML Sphinx build: `llms.txt` (structured Markdown
+index per the [llmstxt.org](https://llmstxt.org/) spec), `llms-full.txt`
+(concatenated full-content Markdown), `docs.json` (agent-oriented
+manifest with per-page headings), and per-page `.md` twin files.  Added
+to {py:data}`~gp_sphinx.defaults.DEFAULT_EXTENSIONS` so all consumer
+projects get LLM outputs automatically when `docs_url` is configured.
+The footer's "Machine-readable" line links every enabled format. (#47)
+
+#### `autoconfigvalues` `:exclude:` option
+
+The `autoconfigvalues` directive now accepts an `:exclude:` option to
+skip specific config values from the rendered output — useful when two
+extensions register the same value and Sphinx warns on the duplicate
+`confval`. (#48)
 
 ## gp-sphinx 0.0.1a23 (2026-05-24)
 
