@@ -30,6 +30,7 @@ sphinx-ux-badges = { workspace = true }
 sphinx-ux-autodoc-layout = { workspace = true }
 sphinx-gp-opengraph = { workspace = true }
 sphinx-gp-sitemap = { workspace = true }
+sphinx-gp-llms = { workspace = true }
 gp-furo-theme = { workspace = true }
 gp-sphinx = { workspace = true }
 sphinx-vite-builder = { workspace = true }
@@ -47,6 +48,7 @@ dev = [
   "sphinx-ux-autodoc-layout",
   "sphinx-gp-opengraph",
   "sphinx-gp-sitemap",
+  "sphinx-gp-llms",
   "gp-furo-theme",
   "sphinx-vite-builder",
   # Docs
@@ -170,6 +172,7 @@ known-first-party = [
   "sphinx_ux_autodoc_layout",
   "sphinx_gp_opengraph",
   "sphinx_gp_sitemap",
+  "sphinx_gp_llms",
 ]
 combine-as-imports = true
 required-imports = [
@@ -219,6 +222,7 @@ testpaths = [
   "packages/sphinx-ux-badges/src",
   "packages/sphinx-gp-opengraph/src",
   "packages/sphinx-gp-sitemap/src",
+  "packages/sphinx-gp-llms/src",
   "packages/sphinx-vite-builder/src",
 ]
 filterwarnings = [

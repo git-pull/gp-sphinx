@@ -22,6 +22,7 @@ def test_workspace_packages_lists_publishable_packages() -> None:
         "gp-furo-theme",
         "sphinx-gp-opengraph",
         "sphinx-gp-sitemap",
+        "sphinx-gp-llms",
         "gp-sphinx",
         "sphinx-autodoc-argparse",
         "sphinx-autodoc-api-style",

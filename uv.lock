@@ -24,6 +24,7 @@ members = [
     "sphinx-autodoc-sphinx",
     "sphinx-autodoc-typehints-gp",
     "sphinx-fonts",
+    "sphinx-gp-llms",
     "sphinx-gp-opengraph",
     "sphinx-gp-sitemap",
     "sphinx-gp-theme",
@@ -543,6 +544,7 @@ dev = [
     { name = "sphinx-autodoc-fastmcp" },
     { name = "sphinx-autodoc-pytest-fixtures" },
     { name = "sphinx-autodoc-sphinx" },
+    { name = "sphinx-gp-llms" },
     { name = "sphinx-gp-opengraph" },
     { name = "sphinx-gp-sitemap" },
     { name = "sphinx-ux-autodoc-layout" },
@@ -582,6 +584,7 @@ dev = [
     { name = "sphinx-autodoc-fastmcp", editable = "packages/sphinx-autodoc-fastmcp" },
     { name = "sphinx-autodoc-pytest-fixtures", editable = "packages/sphinx-autodoc-pytest-fixtures" },
     { name = "sphinx-autodoc-sphinx", editable = "packages/sphinx-autodoc-sphinx" },
+    { name = "sphinx-gp-llms", editable = "packages/sphinx-gp-llms" },
     { name = "sphinx-gp-opengraph", editable = "packages/sphinx-gp-opengraph" },
     { name = "sphinx-gp-sitemap", editable = "packages/sphinx-gp-sitemap" },
     { name = "sphinx-ux-autodoc-layout", editable = "packages/sphinx-ux-autodoc-layout" },
@@ -1815,6 +1818,18 @@ wheels = [
 name = "sphinx-fonts"
 version = "0.0.1a23"
 source = { editable = "packages/sphinx-fonts" }
+dependencies = [
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "sphinx", specifier = ">=8.1" }]
+
+[[package]]
+name = "sphinx-gp-llms"
+version = "0.0.1a23"
+source = { editable = "packages/sphinx-gp-llms" }
 dependencies = [
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },

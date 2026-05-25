@@ -86,6 +86,7 @@ DEFAULT_EXTENSIONS: list[str] = [
     "sphinx_copybutton",
     "sphinx_gp_opengraph",
     "sphinx_gp_sitemap",
+    "sphinx_gp_llms",
     "sphinxext.rediraffe",
     "sphinx_design",
     "myst_parser",
@@ -96,7 +97,7 @@ DEFAULT_EXTENSIONS: list[str] = [
 Examples
 --------
 >>> len(DEFAULT_EXTENSIONS)
-13
+14
 
 >>> DEFAULT_EXTENSIONS[0]
 'sphinx.ext.autodoc'
