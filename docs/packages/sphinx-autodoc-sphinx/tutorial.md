@@ -19,3 +19,13 @@ Render every config value from an extension module:
 .. autoconfigvalues:: sphinx_config_demo
 ```
 ````
+
+Exclude specific config values (useful when two extensions register
+the same value and Sphinx warns on the duplicate ``confval``):
+
+````myst
+```{eval-rst}
+.. autoconfigvalues:: sphinx_gp_llms
+   :exclude: site_url
+```
+````

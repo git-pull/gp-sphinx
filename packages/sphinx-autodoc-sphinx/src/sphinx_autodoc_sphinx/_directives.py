@@ -434,18 +434,40 @@ class AutoconfigvalueDirective(SphinxDirective):
         )
 
 
+def _parse_exclude(raw: str) -> frozenset[str]:
+    """Parse a comma/whitespace-separated list of config value names.
+
+    Examples
+    --------
+    >>> sorted(_parse_exclude("site_url, html_baseurl"))
+    ['html_baseurl', 'site_url']
+
+    >>> _parse_exclude("")
+    frozenset()
+    """
+    return frozenset(
+        name.strip() for name in raw.replace(",", " ").split() if name.strip()
+    )
+
+
 class AutoconfigvaluesDirective(SphinxDirective):
     """Render all config values registered by one extension module."""
 
     required_arguments = 1
     has_content = False
-    option_spec: t.ClassVar[OptionSpec] = {"no-index": directives.flag}
+    option_spec: t.ClassVar[OptionSpec] = {
+        "no-index": directives.flag,
+        "exclude": directives.unchanged,
+    }
 
     def run(self) -> list[nodes.Node]:
         module_name = self.arguments[0]
         no_index = "no-index" in self.options
+        exclude = _parse_exclude(self.options.get("exclude", ""))
         result: list[nodes.Node] = []
         for value in discover_config_values(module_name):
+            if value.name in exclude:
+                continue
             result.extend(
                 _render_config_value_nodes(self, value, no_index=no_index),
             )

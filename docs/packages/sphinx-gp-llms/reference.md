@@ -9,4 +9,5 @@ Generated from `app.add_config_value()` registrations in
 
 ```{eval-rst}
 .. autoconfigvalues:: sphinx_gp_llms
+   :exclude: site_url
 ```
