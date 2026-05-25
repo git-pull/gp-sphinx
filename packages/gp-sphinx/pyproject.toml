@@ -35,6 +35,7 @@ dependencies = [
   "sphinx-copybutton",
   "sphinx-gp-opengraph==0.0.1a24",
   "sphinx-gp-sitemap==0.0.1a24",
+  "sphinx-gp-llms==0.0.1a24",
   "sphinxext-rediraffe",
   "sphinx-design",
   "linkify-it-py",
