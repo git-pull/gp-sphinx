@@ -153,7 +153,7 @@
   // --- DOM swap ---
 
   function swap(doc) {
-    [".article-container", ".sidebar-tree", ".toc-drawer"].forEach(
+    [".article-container", ".sidebar-tree", ".toc-drawer", "footer"].forEach(
       function (sel) {
         var fresh = doc.querySelector(sel);
         var stale = document.querySelector(sel);
