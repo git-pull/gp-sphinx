@@ -208,7 +208,11 @@ def _inject_llms_context(
     if not site_url:
         return
 
-    context["llms_md_url"] = pagename + ".md"
-    context["llms_txt_url"] = app.config.llms_txt_filename
-    context["llms_full_url"] = app.config.llms_full_filename
-    context["llms_json_url"] = app.config.llms_json_filename
+    if app.config.llms_generate_md_twins:
+        context["llms_md_url"] = pagename + ".md"
+    if app.config.llms_generate_txt:
+        context["llms_txt_url"] = app.config.llms_txt_filename
+    if app.config.llms_generate_full:
+        context["llms_full_url"] = app.config.llms_full_filename
+    if app.config.llms_generate_json:
+        context["llms_json_url"] = app.config.llms_json_filename
