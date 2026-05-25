@@ -88,6 +88,11 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/gp_sphinx_workspace"]
 
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "packages/gp-furo-theme/src/gp_furo_theme/theme/gp-furo/static/",
+]
+
 [tool.mypy]
 strict = true
 python_version = "3.10"
