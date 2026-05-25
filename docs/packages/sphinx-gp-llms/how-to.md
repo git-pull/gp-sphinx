@@ -37,7 +37,7 @@ the site's content:
 
 Concatenated full-content Markdown of every documentation page,
 following the community convention adopted by Anthropic, Cloudflare,
-Mintlify, and GitBook. Each page appears under a title header with
+and GitBook. Each page appears under a title header with
 a source URL, separated by `---` dividers. Source files are included
 as-is — MyST pages are already Markdown; RST pages are included
 verbatim.
@@ -57,7 +57,7 @@ machine consumption:
 ### Per-page `.md` twins
 
 Source file copies alongside each HTML page, following the
-"Markdown for Agents" convention (Cloudflare, Mintlify, Stripe,
+"Markdown for Agents" convention (Cloudflare, Stripe, Anthropic,
 Vercel). Every HTML page at `/path/page.html` gets a sibling at
 `/path/page.md` containing the original source content.
 

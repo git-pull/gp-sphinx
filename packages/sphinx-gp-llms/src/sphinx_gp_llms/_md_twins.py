@@ -1,7 +1,7 @@
 """Generate per-page ``.md`` twin files alongside HTML output.
 
 Implements the per-page Markdown endpoint convention popularized by
-Mintlify, Cloudflare ("Markdown for Agents"), Stripe, and Vercel.
+Cloudflare ("Markdown for Agents"), Stripe, Anthropic, and Vercel.
 Each HTML page at ``/path/page.html`` gets a Markdown sibling at
 ``/path/page.md`` containing the original source content.
 

@@ -3,7 +3,7 @@
 Generates ``llms.txt``, ``llms-full.txt``, ``docs.json``, and per-page
 ``.md`` twin files during the standard HTML build, following conventions
 established by llmstxt.org (Jeremy Howard / Answer.AI), Cloudflare
-("Markdown for Agents"), Mintlify, and Lakebed (Ping).
+("Markdown for Agents"), and Lakebed (Ping).
 
 The extension hooks into ``build-finished`` to write output files and
 ``html-page-context`` to inject footer link variables into the template

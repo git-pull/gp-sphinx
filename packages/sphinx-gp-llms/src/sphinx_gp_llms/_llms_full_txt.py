@@ -1,6 +1,6 @@
 """Generate ``llms-full.txt`` — concatenated full-content Markdown.
 
-Community convention adopted by Anthropic, Cloudflare, Mintlify, and
+Community convention adopted by Anthropic, Cloudflare, and
 GitBook.  Each page's source content is included under a title header
 with a source URL reference, separated by ``---`` dividers.
 

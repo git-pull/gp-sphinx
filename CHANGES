@@ -38,7 +38,7 @@ gp-sphinx 0.0.1a24 ships LLM-friendly documentation outputs for every
 consumer docs site.  A new extension generates `llms.txt`,
 `llms-full.txt`, `docs.json`, and per-page `.md` twins during the
 standard HTML build, following conventions from llmstxt.org,
-Cloudflare, Mintlify, and Lakebed.  The page footer links all
+Cloudflare, Anthropic, and Lakebed.  The page footer links all
 machine-readable formats alongside the existing raw-source link.
 
 ### What's new
