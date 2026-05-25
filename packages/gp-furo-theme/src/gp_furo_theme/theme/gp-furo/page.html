@@ -184,9 +184,20 @@
             {%- endif -%}
             <div class="page-source">
               Source: <code>{{ _docpath }}</code>
-              {%- if theme_source_branch %}
+              {%- if theme_source_branch or llms_md_url is defined %}
               &#183;
-              Machine-readable: <a class="muted-link" href="{{ _repo }}/raw/{{ theme_source_branch }}/{{ _docpath }}">Raw source</a>
+              Machine-readable:
+              {%- if llms_md_url is defined %}
+              <a class="muted-link" href="{{ pathto(llms_md_url, 1) }}">Markdown</a>,
+              {%- endif %}
+              {%- if theme_source_branch %}
+              <a class="muted-link" href="{{ _repo }}/raw/{{ theme_source_branch }}/{{ _docpath }}">raw source</a>{%- if llms_json_url is defined %},{%- endif %}
+              {%- endif %}
+              {%- if llms_json_url is defined %}
+              <a class="muted-link" href="{{ pathto(llms_json_url, 1) }}">docs.json</a>,
+              <a class="muted-link" href="{{ pathto(llms_txt_url, 1) }}">llms.txt</a>,
+              <a class="muted-link" href="{{ pathto(llms_full_url, 1) }}">llms-full.txt</a>
+              {%- endif %}
               {%- endif %}
             </div>
             {%- endif %}
