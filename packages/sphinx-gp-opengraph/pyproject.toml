@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-gp-opengraph"
-version = "0.0.1a25"
+version = "0.0.1a26"
 description = "OpenGraph and Twitter meta-tag emission for Sphinx — matplotlib-free"
 requires-python = ">=3.10,<4.0"
 authors = [

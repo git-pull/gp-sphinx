@@ -14,9 +14,16 @@ $ pip install --user --upgrade --pre gp-sphinx
 $ uv add gp-sphinx --prerelease allow
 ```
 
-## gp-sphinx 0.0.1a26 (unreleased)
+## gp-sphinx 0.0.1a27 (unreleased)
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
+
+## gp-sphinx 0.0.1a26 (2026-05-25)
+
+### Fixes
+
+- Footer (source path, machine-readable links, next/prev) now updates
+  on SPA navigation instead of staying stale from the initial page load.
 
 ## gp-sphinx 0.0.1a25 (2026-05-25)
 

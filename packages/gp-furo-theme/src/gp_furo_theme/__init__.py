@@ -39,7 +39,7 @@ from sphinx.transforms.post_transforms import SphinxPostTransform
 
 from .navigation import get_navigation_tree
 
-__version__ = "0.0.1a25"
+__version__ = "0.0.1a26"
 
 THEME_NAME = "gp-furo"
 THEME_PATH = (pathlib.Path(__file__).parent / "theme" / THEME_NAME).resolve()

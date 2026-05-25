@@ -47,7 +47,7 @@ if t.TYPE_CHECKING:
 
     from sphinx.util.typing import ExtensionMetadata
 
-_EXTENSION_VERSION = "0.0.1a25"
+_EXTENSION_VERSION = "0.0.1a26"
 _SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9"
 _XHTML_NS = "http://www.w3.org/1999/xhtml"
 
