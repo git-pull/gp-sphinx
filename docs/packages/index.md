@@ -44,12 +44,13 @@ Shared Sphinx configuration and presentation assets:
 - [`sphinx-gp-theme`](sphinx-gp-theme/index.md) — Furo child theme with the gp-sphinx default palette
 - [`gp-furo-theme`](gp-furo-theme/index.md) — Tailwind v4 port of upstream Furo for git-pull projects
 
-## SEO
+## SEO and agent formats
 
-Meta-tag and crawlability extensions auto-loaded by `gp-sphinx` when `docs_url` is set:
+Meta-tag, crawlability, and LLM-friendly output extensions auto-loaded by `gp-sphinx` when `docs_url` is set:
 
 - [`sphinx-gp-opengraph`](sphinx-gp-opengraph/index.md) — Open Graph + Twitter Card meta tags
 - [`sphinx-gp-sitemap`](sphinx-gp-sitemap/index.md) — `sitemap.xml` for crawl indexing
+- [`sphinx-gp-llms`](sphinx-gp-llms/index.md) — `llms.txt`, `llms-full.txt`, `docs.json`, per-page `.md` twins
 
 ## Design philosophy
 
