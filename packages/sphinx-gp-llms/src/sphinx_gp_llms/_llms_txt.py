@@ -66,7 +66,10 @@ def write_llms_txt(app: Sphinx, site_url: str) -> None:
             uri = app.builder.get_target_uri(docname)
             if _is_excluded(uri, excludes):
                 continue
-            title = app.env.titles[docname].astext()
+            title_node = app.env.titles.get(docname)
+            if title_node is None:
+                continue
+            title = title_node.astext()
             url = site_url + uri
             page_desc = get_first_paragraph(
                 app, docname, app.config.llms_description_length

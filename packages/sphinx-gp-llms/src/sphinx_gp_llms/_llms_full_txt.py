@@ -49,7 +49,8 @@ def write_llms_full_txt(app: Sphinx, site_url: str) -> None:
         if _is_excluded(uri, excludes):
             continue
 
-        title = app.env.titles[docname].astext()
+        title_node = app.env.titles.get(docname)
+        title = title_node.astext() if title_node is not None else docname
         url = site_url + uri
         source_path = pathlib.Path(app.env.doc2path(docname))
 

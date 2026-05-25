@@ -93,7 +93,10 @@ def write_docs_json(app: Sphinx, site_url: str) -> None:
         if _is_excluded(uri, excludes):
             continue
 
-        title = app.env.titles[docname].astext()
+        title_node = app.env.titles.get(docname)
+        if title_node is None:
+            continue
+        title = title_node.astext()
         desc = get_first_paragraph(app, docname, app.config.llms_description_length)
         headings = _extract_headings(app, docname)
 
