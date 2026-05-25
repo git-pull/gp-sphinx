@@ -14,9 +14,16 @@ $ pip install --user --upgrade --pre gp-sphinx
 $ uv add gp-sphinx --prerelease allow
 ```
 
-## gp-sphinx 0.0.1a25 (unreleased)
+## gp-sphinx 0.0.1a26 (unreleased)
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
+
+## gp-sphinx 0.0.1a25 (2026-05-25)
+
+### Fixes
+
+- Add `sphinx-gp-llms` to `gp-sphinx` runtime dependencies so consumer
+  projects get it automatically when installing `gp-sphinx`.
 
 ## gp-sphinx 0.0.1a24 (2026-05-25)
 
