@@ -41,6 +41,19 @@
     font-size: var(--font-size--small);
   }
 
+  .bottom-of-page .page-source {
+    margin-top: 0.25rem;
+    font-size: var(--font-size--small);
+  }
+
+  .bottom-of-page .page-source code {
+    font-family: var(--font-stack--monospace);
+    font-size: 0.875em;
+    padding: 0.1em 0.25em;
+    background: var(--color-background-secondary);
+    border-radius: 0.2em;
+  }
+
   .bottom-of-page .right-details {
     display: flex;
     flex-direction: column;

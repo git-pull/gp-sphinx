@@ -173,6 +173,23 @@
               {%- endtrans -%}
             </div>
             {%- endif %}
+            {%- if theme_source_repository and page_source_suffix -%}
+            {%- set _repo = theme_source_repository.rstrip("/") -%}
+            {%- set _subdir = theme_source_directory.rstrip("/") if theme_source_directory else "" -%}
+            {%- set _relpath = pagename + page_source_suffix -%}
+            {%- if _subdir -%}
+              {%- set _docpath = _subdir + "/" + _relpath -%}
+            {%- else -%}
+              {%- set _docpath = _relpath -%}
+            {%- endif -%}
+            <div class="page-source">
+              Source: <code>{{ _docpath }}</code>
+              {%- if theme_source_branch %}
+              &#183;
+              Machine-readable: <a class="muted-link" href="{{ _repo }}/raw/{{ theme_source_branch }}/{{ _docpath }}">Raw source</a>
+              {%- endif %}
+            </div>
+            {%- endif %}
           </div>
           <div class="right-details">
             {% if theme_footer_icons or READTHEDOCS -%}

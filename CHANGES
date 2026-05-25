@@ -18,6 +18,12 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### What's new
+
+#### Source-file path in page footer
+
+Each page footer shows the source path and a raw-source link to GitHub. (#46)
+
 ## gp-sphinx 0.0.1a23 (2026-05-24)
 
 ## gp-sphinx 0.0.1a22 (2026-05-24)
