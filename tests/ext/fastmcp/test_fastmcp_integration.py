@@ -120,7 +120,7 @@ def test_fastmcp_tool_cards_use_shared_layout(
         in html
     )
     assert 'class="headerlink gp-sphinx-api-link"' in html
-    assert 'class="reference internal" href="#list-sessions"' in html
+    assert 'class="reference internal" href="#fastmcp-tool-list-sessions"' in html
     assert "Parameters" in html
     assert "readonly" in html
     assert "tool" in html
@@ -215,7 +215,7 @@ def fastmcp_heading_collision_result(
 
 
 class CollisionRenderFixture(t.NamedTuple):
-    """HTML fragment that must render regardless of the duplicate-ID bug."""
+    """HTML fragment that must render when a heading shares the tool's slug."""
 
     test_id: str
     needle: str
@@ -254,21 +254,15 @@ def test_heading_collision_card_renders(
 
 
 @pytest.mark.integration
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason="#48: tool card pushes the bare alias into section['ids'], "
-    "colliding with the same-slug page heading",
-)
 def test_heading_collision_emits_no_duplicate_id_diagnostic(
     fastmcp_heading_collision_result: SharedSphinxResult,
 ) -> None:
-    """A same-slug heading + tool card must not produce duplicate IDs."""
+    """A same-slug heading + tool card produces no duplicate IDs (#48)."""
     assert "Duplicate ID" not in fastmcp_heading_collision_result.warnings
 
 
 class CollisionAnchorFixture(t.NamedTuple):
-    """Expected occurrence count for an anchor fragment after the #48 fix."""
+    """Expected occurrence count for an anchor fragment under a slug collision."""
 
     test_id: str
     needle: str
@@ -295,12 +289,6 @@ _COLLISION_ANCHOR_FIXTURES: list[CollisionAnchorFixture] = [
 
 
 @pytest.mark.integration
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason="#48: bare alias doubles as a physical HTML id, so the heading "
-    "and the tool card share an anchor and links resolve ambiguously",
-)
 @pytest.mark.parametrize(
     list(CollisionAnchorFixture._fields),
     _COLLISION_ANCHOR_FIXTURES,
@@ -312,6 +300,6 @@ def test_heading_collision_anchor_counts(
     needle: str,
     expected_count: int,
 ) -> None:
-    """The heading owns the bare anchor; tool links target the canonical id."""
+    """The heading owns the bare anchor; tool links target the canonical id (#48)."""
     html = read_output(fastmcp_heading_collision_result, "index.html")
     assert html.count(needle) == expected_count
