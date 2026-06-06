@@ -18,6 +18,28 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Fixes
+
+#### `sphinx-autodoc-fastmcp`: No duplicate IDs when a page heading matches a tool slug
+
+A heading whose slug matched a tool's bare cross-reference alias
+produced docutils duplicate-ID warnings and an ambiguous HTML anchor.
+Tool cards now expose a single canonical `fastmcp-tool-<slug>` anchor;
+bare `{ref}` and tool-role links keep resolving and target the
+canonical anchor — scrolling the reader to the tool card instead of
+the page heading. (#49)
+
+```text
++------------------------------------------+
+| # Delete buffer                     (H1) |  <- #delete-buffer
+|                                          |     heading links & old URLs land here
+|  +------------------------------------+  |
+|  | delete_buffer    [mutating] [tool] |  |  <- #fastmcp-tool-delete-buffer
+|  | Delete an MCP-owned buffer.        |  |     tool links land here
+|  +------------------------------------+  |
++------------------------------------------+
+```
+
 ## gp-sphinx 0.0.1a26 (2026-05-25)
 
 ### Fixes

@@ -81,14 +81,16 @@ def _register_section_label(
 
 
 def _component_ids(kind: str, name: str) -> tuple[str, list[str]]:
-    """Derive canonical section id + back-compat aliases for a component.
+    """Derive canonical section id + back-compat label aliases for a component.
 
     Canonical IDs always namespace by kind so a tool ``status`` and a
     prompt ``status`` cannot collide in ``std.labels``. Tools additionally
-    keep the bare slug as an alias because their unprefixed IDs were the
-    public ``{ref}`` shape on ``main`` and live in downstream user docs;
-    prompts/resources/templates are new in this branch and have no such
-    history, so they get the canonical ID only.
+    keep the bare slug as a label alias because their unprefixed names were
+    the public ``{ref}`` shape on ``main`` and live in downstream user docs;
+    the alias resolves to the canonical ID and never becomes a physical
+    HTML id, so it cannot collide with a same-slug page heading.
+    Prompts/resources/templates have no such history, so they get the
+    canonical ID only.
 
     Examples
     --------
@@ -109,10 +111,11 @@ def _register_alias_if_free(
     env: BuildEnvironment,
     *,
     alias: str,
+    target_id: str,
     display_name: str,
     kind: str,
 ) -> bool:
-    """Register a bare-slug alias in std.labels iff currently unclaimed.
+    """Register a bare-slug label alias for *target_id* iff unclaimed.
 
     Aliases are tool-only by policy (back-compat with v1 ``{ref}`` URLs).
     Calling this for any other kind is a programming error — raises
@@ -120,12 +123,31 @@ def _register_alias_if_free(
     target, log WARNING and return ``False`` (canonical-only, no
     silent overwrite).
 
-    The alias maps to itself (``std.labels[alias] = (docname, alias, ...)``);
-    the bare slug is also pushed onto ``section["ids"]`` so the alias
-    resolves to a real HTML anchor without forcing existing ``:ref:``
-    consumers to update href fragments.
+    The alias is a pure label: it points at the canonical section ID
+    (``std.labels[alias] = (docname, target_id, ...)``) and never becomes
+    a physical HTML id of its own, so a same-slug page heading keeps sole
+    ownership of the bare anchor (#48).
 
     Returns True if the alias was registered, False if skipped.
+
+    Examples
+    --------
+    >>> import types
+    >>> std = types.SimpleNamespace(labels={}, anonlabels={})
+    >>> domains = types.SimpleNamespace(standard_domain=std)
+    >>> env = types.SimpleNamespace(docname="api", domains=domains)
+    >>> _register_alias_if_free(
+    ...     env,
+    ...     alias="delete-buffer",
+    ...     target_id="fastmcp-tool-delete-buffer",
+    ...     display_name="delete_buffer",
+    ...     kind="tool",
+    ... )
+    True
+    >>> std.labels["delete-buffer"]
+    ('api', 'fastmcp-tool-delete-buffer', 'delete_buffer')
+    >>> std.anonlabels["delete-buffer"]
+    ('api', 'fastmcp-tool-delete-buffer')
     """
     if kind != "tool":
         msg = f"alias registration not permitted for kind={kind!r}"
@@ -136,7 +158,7 @@ def _register_alias_if_free(
     if existing is not None:
         existing_doc = existing[0]
         existing_id = existing[1]
-        if (existing_doc, existing_id) != (env.docname, alias):
+        if (existing_doc, existing_id) != (env.docname, target_id):
             logger.warning(
                 "sphinx_autodoc_fastmcp: bare alias %r for %s already claimed "
                 "by %s#%s; using canonical id only",
@@ -147,8 +169,8 @@ def _register_alias_if_free(
             )
             return False
 
-    std.anonlabels[alias] = (env.docname, alias)
-    std.labels[alias] = (env.docname, alias, display_name)
+    std.anonlabels[alias] = (env.docname, target_id)
+    std.labels[alias] = (env.docname, target_id, display_name)
     return True
 
 
@@ -157,8 +179,8 @@ class FastMCPToolDirective(SphinxDirective):
 
     Supports the standard Sphinx ``:no-index:`` flag (mirrors
     :func:`autofunction`/:func:`autoclass` semantics): when set, the card
-    still renders in full but its canonical section ID and bare-slug alias
-    are not registered in :class:`StandardDomain` ``labels`` /
+    still renders in full but its canonical section ID and bare-slug label
+    alias are not registered in :class:`StandardDomain` ``labels`` /
     ``anonlabels``. Use it when a tool needs to appear visually on more
     than one page (e.g. a gallery demo + a reference page) — exactly one
     invocation per tool should omit ``:no-index:`` so cross-references
@@ -200,7 +222,6 @@ class FastMCPToolDirective(SphinxDirective):
 
         section = nodes.section()
         section["ids"].append(section_id)
-        section["ids"].extend(aliases)
         section["classes"].extend((_CSS.TOOL_SECTION, API.CARD_SHELL))
         if no_index:
             # Marker consumed by ``register_tool_labels`` in _transforms.py
@@ -208,13 +229,19 @@ class FastMCPToolDirective(SphinxDirective):
             section["fastmcp_no_index"] = True
         else:
             _register_section_label(self.env, section_id, tool.name)
-            for alias in aliases:
-                _register_alias_if_free(
+            # Marker consumed by ``register_tool_labels`` so incremental
+            # rebuilds restore the same alias labels from the doctree cache.
+            section["fastmcp_alias_labels"] = [
+                alias
+                for alias in aliases
+                if _register_alias_if_free(
                     self.env,
                     alias=alias,
+                    target_id=section_id,
                     display_name=tool.name,
                     kind="tool",
                 )
+            ]
             document.note_explicit_target(section)
 
         title_node = nodes.title("", "")
@@ -401,7 +428,7 @@ class FastMCPToolSummaryDirective(SphinxDirective):
             for tool in sorted(tier_tools, key=lambda x: x.name):
                 first_line = first_paragraph(tool.docstring)
                 ref = nodes.reference("", "", internal=True)
-                ref["refuri"] = f"{tool.area}/#{tool.name.replace('_', '-')}"
+                ref["refuri"] = f"{tool.area}/#{_component_ids('tool', tool.name)[0]}"
                 ref += nodes.literal("", tool.name)
                 rows.append(
                     [

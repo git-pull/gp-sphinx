@@ -68,11 +68,12 @@ def collect_tool_section_content(app: Sphinx, doctree: nodes.document) -> None:
 def register_tool_labels(app: Sphinx, doctree: nodes.document) -> None:
     """Mirror autosectionlabel for fastmcp card sections (``{ref}`<id>```).
 
-    Re-registers labels for every id on each card section (canonical AND
-    any back-compat aliases), so incremental Sphinx rebuilds — which
-    purge labels when a doc changes — restore both shapes from the
-    doctree cache without re-running the directive's parse-time
-    registration.
+    Re-registers labels for every id on each card section, plus the
+    back-compat bare-slug aliases stored in the section's
+    ``fastmcp_alias_labels`` attribute (pointing at the canonical id),
+    so incremental Sphinx rebuilds — which purge labels when a doc
+    changes — restore both shapes from the doctree cache without
+    re-running the directive's parse-time registration.
     """
     domain = app.env.domains.standard_domain
     docname = app.env.docname
@@ -97,6 +98,11 @@ def register_tool_labels(app: Sphinx, doctree: nodes.document) -> None:
         for section_id in section["ids"]:
             domain.anonlabels[section_id] = (docname, section_id)
             domain.labels[section_id] = (docname, section_id, tool_name)
+        canonical_id = section["ids"][0]
+        aliases: list[str] = section.get("fastmcp_alias_labels", [])
+        for alias in aliases:
+            domain.anonlabels[alias] = (docname, canonical_id)
+            domain.labels[alias] = (docname, canonical_id, tool_name)
 
 
 def add_section_badges(
