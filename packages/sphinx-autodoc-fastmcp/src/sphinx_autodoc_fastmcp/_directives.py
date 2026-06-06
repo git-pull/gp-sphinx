@@ -179,8 +179,8 @@ class FastMCPToolDirective(SphinxDirective):
 
     Supports the standard Sphinx ``:no-index:`` flag (mirrors
     :func:`autofunction`/:func:`autoclass` semantics): when set, the card
-    still renders in full but its canonical section ID and bare-slug alias
-    are not registered in :class:`StandardDomain` ``labels`` /
+    still renders in full but its canonical section ID and bare-slug label
+    alias are not registered in :class:`StandardDomain` ``labels`` /
     ``anonlabels``. Use it when a tool needs to appear visually on more
     than one page (e.g. a gallery demo + a reference page) — exactly one
     invocation per tool should omit ``:no-index:`` so cross-references
