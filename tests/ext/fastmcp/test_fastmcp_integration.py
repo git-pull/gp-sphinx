@@ -179,7 +179,8 @@ _COLLISION_INDEX_RST = textwrap.dedent(
     Delete buffer
     =============
 
-    Use :toolref:`delete_buffer` for an inline link.
+    Use :toolref:`delete_buffer` for an inline link, or
+    :ref:`delete-buffer` for a bare label reference.
 
     .. fastmcp-tool:: buffer_tools.delete_buffer
 
@@ -275,9 +276,17 @@ _COLLISION_ANCHOR_FIXTURES: list[CollisionAnchorFixture] = [
         needle='id="delete-buffer"',
         expected_count=1,
     ),
+    # The toolref link wraps the tool name in <code>; the bare {ref}
+    # link wraps the label title in <span class="std std-ref"> — the
+    # trailing tag disambiguates the two resolution paths.
     CollisionAnchorFixture(
         test_id="toolref-targets-canonical-anchor",
-        needle='class="reference internal" href="#fastmcp-tool-delete-buffer"',
+        needle='class="reference internal" href="#fastmcp-tool-delete-buffer"><code',
+        expected_count=1,
+    ),
+    CollisionAnchorFixture(
+        test_id="bare-ref-targets-canonical-anchor",
+        needle='class="reference internal" href="#fastmcp-tool-delete-buffer"><span',
         expected_count=1,
     ),
     CollisionAnchorFixture(
