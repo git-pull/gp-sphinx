@@ -425,3 +425,17 @@ def test_config_registered_by_fact_is_linked() -> None:
     xref = next(iter(registered_row.body.findall(addnodes.pending_xref)))
     assert xref["reftarget"] == "demo_ext.setup"
     assert xref.astext() == "demo_ext.setup()"
+
+
+def test_config_type_fact_plain_without_env() -> None:
+    """Without an environment the Type fact stays a literal rendering."""
+    from sphinx_autodoc_sphinx._directives import (
+        SphinxConfigValue,
+        _config_fact_rows,
+    )
+
+    value = SphinxConfigValue("demo_ext", "demo_option", True, "html", (bool,))
+    rows = _config_fact_rows(value)
+    type_row = next(row for row in rows if row.label == "Type")
+    assert type_row.body.astext() == "bool"
+    assert not list(type_row.body.findall(addnodes.pending_xref))

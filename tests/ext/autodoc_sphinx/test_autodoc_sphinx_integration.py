@@ -187,3 +187,23 @@ def test_autodoc_sphinx_domain_entries(
     assert ">recipe<" in html
     # Literal body text splits into per-word <span class="pre"> chunks.
     assert ">recipes<" in html
+
+
+@pytest.mark.integration
+def test_config_type_fact_links_with_env(
+    autodoc_sphinx_html_result: SharedSphinxResult,
+) -> None:
+    """With a live environment the Type fact carries py-domain xrefs."""
+    from sphinx import addnodes
+
+    from sphinx_autodoc_sphinx._directives import (
+        SphinxConfigValue,
+        _config_fact_rows,
+    )
+
+    value = SphinxConfigValue("demo_ext", "demo_option", True, "html", (bool,))
+    rows = _config_fact_rows(value, env=autodoc_sphinx_html_result.app.env)
+    type_row = next(row for row in rows if row.label == "Type")
+    xref = next(iter(type_row.body.findall(addnodes.pending_xref)))
+    assert xref["reftarget"] == "bool"
+    assert type_row.body.astext() == "bool"
