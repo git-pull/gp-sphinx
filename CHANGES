@@ -20,50 +20,37 @@ $ uv add gp-sphinx --prerelease allow
 
 ### What's new
 
-#### Component autodoc for every docutils extension point
+gp-sphinx 0.0.1a29 extends component autodoc to the whole docutils and
+Sphinx extension family. Transforms, readers, parsers, writers, custom
+nodes, translators, builders, and domains now get the same polished
+reference cards that directives, roles, and config values already had —
+and documented components cross-link to the APIs they reference.
 
-`sphinx-autodoc-docutils` now documents the full docutils component
-family with the same single + bulk-by-module pattern that
-`autodirective`/`autodirectives` established: `autotransform(s)`,
-`autoreader(s)`, `autoparser(s)`, `autowriter(s)`, `autonode(s)`, and
-`autotranslator(s)`. Each entry renders with the shared card layout, a
-per-type kind badge, and registry-aware facts — a transform's
-`default_priority` and registration phase, a writer's resolved
-translator class, a node's element categories and per-builder
-visit/depart handlers, a translator's own handler overrides.
-List-valued facts render as individual chips, and names with
-documented py-domain targets — Python paths, translator classes,
-transform sets, handler overrides, config value types and their
-registering `setup()` entry points — become cross-reference links,
-degrading to plain chips when no target exists. Container config-value
-defaults (dicts, lists) render as Pygments-highlighted Python blocks.
-Bulk
-forms replay a package's `setup()` so Sphinx-side registrations
-(`add_transform`, `add_node`, `add_source_parser`, `set_translator`)
-surface with their real metadata, and fall back to module scans for
-components that are instantiated directly — discovery never breaks the
-build when a component needs framework state to construct. See
+#### Autodoc for docutils components
+
+`sphinx-autodoc-docutils` now documents transforms, readers, parsers,
+writers, custom nodes, and translators. Each type gets a single
+directive and a bulk-by-module form (`autotransform` /
+`autotransforms`, and siblings), rendering the shared reference card
+with a type badge and the component's registry metadata. See
 {ref}`sphinx-autodoc-docutils-examples` for live demos. (#53)
 
-#### Builder and domain autodoc
+#### Autodoc for Sphinx builders and domains
 
-`sphinx-autodoc-sphinx` gains `autobuilder(s)` and `autodomain(s)`,
-documenting `sphinx.builders.Builder` and `sphinx.domains.Domain`
-subclasses beside the config values it already covers. Builder entries
-surface the CLI name, output format, supported image types, default
-translator, and parallel-safety; domain entries surface the registered
-name, label, object types, roles, directives, and indices. See
-{ref}`sphinx-autodoc-sphinx-examples` for live demos. (#53)
+`sphinx-autodoc-sphinx` adds `autobuilder` and `autodomain` (with bulk
+forms) alongside its config-value support, documenting `Builder` and
+`Domain` subclasses with their registered names, output formats, and
+extension surfaces. See {ref}`sphinx-autodoc-sphinx-examples` for live
+demos. (#53)
 
 #### Cross-reference roles for documented components
 
-Two new Sphinx domains make every component entry linkable: the
-`docutils` domain (`` {docutils:transform}`SanitizeTransform` `` and
-siblings for readers, parsers, writers, nodes, and translators) and
-the `sphinxext` domain (`` {sphinxext:builder}`...` ``,
-`` {sphinxext:domain}`...` ``). Targets accept fully-qualified dotted
-paths or unambiguous bare class names, dangling references warn at
-build time, and each domain ships a grouped components index. See
+Two Sphinx domains — `docutils` and `sphinxext` — make every documented
+component linkable from prose, e.g. {docutils:transform}`SanitizeTransform`,
+with a grouped component index per domain. Component facts (Python
+paths, translator classes, config types, registering entry points)
+become links to their APIs where a target exists, and unresolved
+references warn at build time. See
 {ref}`sphinx-autodoc-docutils-reference` for the role tables. (#53)
 
 ### Fixes
