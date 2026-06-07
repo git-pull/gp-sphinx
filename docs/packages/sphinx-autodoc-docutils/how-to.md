@@ -11,3 +11,17 @@ extensions = ["sphinx_autodoc_docutils"]
 `sphinx_autodoc_docutils` automatically registers `sphinx_ux_badges`,
 `sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via `app.setup_extension()`.
 You do not need to add them separately to your `extensions` list.
+
+## Cross-reference documented components
+
+Component entries register targets in the `docutils` domain, so prose
+anywhere in the project can link to them:
+
+```md
+See {docutils:transform}`SanitizeTransform` for the cleanup pass.
+```
+
+The entry being linked must be rendered **without** `:no-index:` —
+no-index entries create no cross-reference target. Use the
+fully-qualified dotted path when two components share a bare class
+name.

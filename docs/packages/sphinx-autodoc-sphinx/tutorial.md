@@ -29,3 +29,22 @@ the same value and Sphinx warns on the duplicate ``confval``):
    :exclude: site_url
 ```
 ````
+
+Builders and domains follow the same single/bulk pattern:
+
+````myst
+```{eval-rst}
+.. autobuilder:: my_project.builders.ZipBuilder
+```
+````
+
+````myst
+```{eval-rst}
+.. autodomains:: my_project
+```
+````
+
+Bulk forms accept either an extension package (its `setup()` is
+replayed so `app.add_builder()` / `app.add_domain()` registrations
+surface) or a plain module (scanned for `Builder` / `Domain`
+subclasses).
