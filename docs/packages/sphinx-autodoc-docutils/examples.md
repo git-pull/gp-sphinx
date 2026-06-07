@@ -59,12 +59,32 @@ demo module's `app.add_transform()` call:
    :no-index:
 ```
 
+### Document one demo reader
+
+Readers have no Sphinx registration call, so the single form imports
+the class and surfaces its formats, config section, and transform set:
+
+```{eval-rst}
+.. autoreader:: docutils_demo_components.DemoArticleReader
+```
+
+### Bulk readers demo
+
+Renders every reader class a module defines:
+
+```{eval-rst}
+.. autoreaders:: docutils_demo_components
+   :no-index:
+```
+
 ### Cross-referencing components
 
 Component entries register targets in the `docutils` domain, so prose
 can link to them: {docutils:transform}`DemoReorderTransform` resolves
 to the entry above, and {docutils:transform}`docutils_demo_components.DemoReorderTransform`
-spells out the full path.
+spells out the full path. Every component type has a matching role —
+{docutils:reader}`DemoArticleReader` links the reader entry the same
+way.
 
 The extension itself registers directives, not docutils roles or Sphinx config
 values. The generated package reference below lists its registered surface from

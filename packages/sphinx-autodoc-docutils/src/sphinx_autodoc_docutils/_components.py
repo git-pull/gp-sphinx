@@ -214,6 +214,32 @@ def render_component_nodes(
     return node_list
 
 
+def safe_transform_names(component_cls: type) -> list[str]:
+    """Return transform class names from ``cls().get_transforms()``, guarded.
+
+    Readers and writers expose their transform set through
+    ``get_transforms()`` on an *instance*; real-world components (e.g.
+    django-docutils) may need framework state to instantiate or to
+    resolve their transform list, so any failure degrades to ``[]``
+    rather than breaking the docs build.
+
+    Examples
+    --------
+    >>> from docutils.readers.standalone import Reader
+    >>> names = safe_transform_names(Reader)
+    >>> "Transitions" in names
+    True
+
+    >>> safe_transform_names(object)
+    []
+    """
+    try:
+        transforms = component_cls().get_transforms()
+    except Exception:  # noqa: BLE001 — degrade to no facts on any component error
+        return []
+    return [cls.__name__ for cls in transforms]
+
+
 def import_component(path: str) -> type:
     """Import one component class from a dotted ``module.ClassName`` path.
 

@@ -13,6 +13,7 @@ _KIND_CLASSES: dict[str, str] = {
     "role": SAB.TYPE_ROLE,
     "option": SAB.TYPE_OPTION,
     "transform": SAB.TYPE_TRANSFORM,
+    "reader": SAB.TYPE_READER,
 }
 
 

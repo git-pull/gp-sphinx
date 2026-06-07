@@ -15,6 +15,7 @@ from __future__ import annotations
 import typing as t
 
 from docutils import nodes
+from docutils.readers import standalone
 from docutils.transforms import Transform
 
 if t.TYPE_CHECKING:
@@ -38,6 +39,21 @@ class DemoReorderTransform(Transform):
                 parent = paragraph.parent
                 parent.remove(paragraph)
                 parent.insert(0, paragraph)
+
+
+class DemoArticleReader(standalone.Reader):  # type: ignore[type-arg]
+    """Read standalone article sources with the demo transform applied.
+
+    Extends the stock standalone reader's transform set with
+    :class:`DemoReorderTransform` so demo badges surface first.
+    """
+
+    supported = ("demo-article",)
+    config_section = "demo article reader"
+
+    def get_transforms(self) -> list[type[Transform]]:
+        """Return the standalone transforms plus the demo reorderer."""
+        return [*super().get_transforms(), DemoReorderTransform]
 
 
 def setup(app: Sphinx) -> ExtensionMetadata:

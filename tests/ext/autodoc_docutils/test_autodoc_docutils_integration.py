@@ -21,6 +21,7 @@ _MODULE_SOURCE = textwrap.dedent(
 
     from docutils import nodes
     from docutils.parsers.rst import Directive, directives
+    from docutils.readers import Reader
     from docutils.transforms import Transform
 
 
@@ -60,6 +61,16 @@ _MODULE_SOURCE = textwrap.dedent(
             pass
 
 
+    class DemoReader(Reader):
+        \"\"\"Read demo article sources.\"\"\"
+
+        supported = ("demo-article",)
+        config_section = "demo reader"
+
+        def get_transforms(self):
+            return [*super().get_transforms(), DemoTransform]
+
+
     def setup(app):
         app.add_transform(DemoTransform)
     """
@@ -92,6 +103,8 @@ _INDEX_RST = textwrap.dedent(
 
     .. autotransforms:: demo_docutils_objects
        :no-index:
+
+    .. autoreader:: demo_docutils_objects.DemoReader
     """
 )
 
@@ -156,3 +169,17 @@ def test_autodoc_docutils_transform_entries(
     assert ">765<" in html
     assert "Default priority" in html
     assert "app.add_transform()" in html
+
+
+@pytest.mark.integration
+def test_autodoc_docutils_reader_entries(
+    autodoc_docutils_html_result: SharedSphinxResult,
+) -> None:
+    """autoreader entries render with profile, badge, and facts."""
+    html = read_output(autodoc_docutils_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--docutils-reader" in html
+    assert ">reader<" in html
+    assert "Supported formats" in html
+    assert "demo-article" in html
+    assert "DemoTransform" in html

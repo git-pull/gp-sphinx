@@ -23,6 +23,11 @@ from sphinx_autodoc_docutils._components import (
     inject_component_badges,
     normalize_component_nodes,
 )
+from sphinx_autodoc_docutils._readers_doc import (
+    _reader_fact_rows,
+    discover_reader,
+    discover_readers,
+)
 from sphinx_autodoc_docutils._transforms_doc import (
     TransformInfo,
     _transform_fact_rows,
@@ -296,3 +301,56 @@ def test_transform_fact_rows_without_priority() -> None:
     by_label = {row.label: row.body.astext() for row in rows}
     assert by_label["Default priority"] == "—"
     assert "Registered via" not in by_label
+
+
+# ---------------------------------------------------------------------------
+# Readers
+# ---------------------------------------------------------------------------
+
+
+def test_discover_readers_scans_module() -> None:
+    """discover_readers finds reader subclasses defined in a module."""
+    readers = discover_readers("docutils.readers.standalone")
+    assert [cls.__name__ for cls in readers] == ["Reader"]
+
+
+def test_discover_readers_empty_for_module_without_readers() -> None:
+    """discover_readers returns [] for modules without readers."""
+    assert discover_readers("sphinx_fonts") == []
+
+
+def test_discover_reader_single_path() -> None:
+    """discover_reader imports one reader from a dotted path."""
+    cls = discover_reader("docutils.readers.standalone.Reader")
+    assert cls.supported == ("standalone",)
+
+
+def test_reader_fact_rows_surface_formats_and_transforms() -> None:
+    """Reader fact rows include formats, config section, and transforms."""
+    from docutils.readers.standalone import Reader
+
+    rows = _reader_fact_rows(Reader)
+    by_label = {row.label: row.body.astext() for row in rows}
+    assert by_label["Python path"] == "docutils.readers.standalone.Reader"
+    assert by_label["Supported formats"] == "standalone"
+    assert by_label["Config section"] == "standalone reader"
+    assert "Transitions" in by_label["Transforms"]
+
+
+def test_reader_fact_rows_dash_for_empty_metadata() -> None:
+    """Readers without formats or instantiable transforms degrade to dashes."""
+    from docutils.readers import Reader as BaseReader
+
+    class _OpaqueReader(BaseReader):  # type: ignore[type-arg]
+        """Reader whose transform set cannot be resolved."""
+
+        config_section = ""
+
+        def get_transforms(self) -> list[type]:
+            raise RuntimeError("needs framework state")
+
+    rows = _reader_fact_rows(_OpaqueReader)
+    by_label = {row.label: row.body.astext() for row in rows}
+    assert by_label["Supported formats"] == "—"
+    assert by_label["Config section"] == "—"
+    assert by_label["Transforms"] == "—"
