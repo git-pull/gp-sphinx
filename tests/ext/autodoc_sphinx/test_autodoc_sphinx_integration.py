@@ -20,6 +20,8 @@ _MODULE_SOURCE = textwrap.dedent(
     from __future__ import annotations
 
     from sphinx.builders import Builder
+    from sphinx.domains import Domain, ObjType
+    from sphinx.roles import XRefRole
 
 
     class DemoZipBuilder(Builder):
@@ -43,7 +45,17 @@ _MODULE_SOURCE = textwrap.dedent(
             pass
 
 
+    class DemoRecipeDomain(Domain):
+        \"\"\"Describe demo recipes.\"\"\"
+
+        name = "demorecipe"
+        label = "Demo recipes"
+        object_types = {"recipe": ObjType("recipe", "recipe")}
+        roles = {"recipe": XRefRole()}
+
+
     def setup(app):
+        app.add_domain(DemoRecipeDomain)
         app.add_config_value(
             "demo_option",
             True,
@@ -89,6 +101,8 @@ _INDEX_RST = textwrap.dedent(
     .. autoconfigvalues:: demo_sphinx_ext
 
     .. autobuilder:: demo_sphinx_ext.DemoZipBuilder
+
+    .. autodomain:: demo_sphinx_ext.DemoRecipeDomain
     """
 )
 
@@ -156,3 +170,20 @@ def test_autodoc_sphinx_builder_entries(
     assert "demo-zip" in html
     assert "image/png" in html
     assert "Parallel-safe" in html
+
+
+@pytest.mark.integration
+def test_autodoc_sphinx_domain_entries(
+    autodoc_sphinx_html_result: SharedSphinxResult,
+) -> None:
+    """autodomain entries render with profile, badges, and facts."""
+    html = read_output(autodoc_sphinx_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--sphinxext-domain" in html
+    assert ">domain<" in html
+    assert "gp-sphinx-badge--mod-domain-name" in html
+    assert ">demorecipe<" in html
+    assert "Object types" in html
+    assert ">recipe<" in html
+    # Literal body text splits into per-word <span class="pre"> chunks.
+    assert ">recipes<" in html

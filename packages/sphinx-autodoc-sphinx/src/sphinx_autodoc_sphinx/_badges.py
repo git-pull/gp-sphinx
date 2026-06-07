@@ -46,6 +46,49 @@ def build_config_badge_group(value: SphinxConfigValue) -> nodes.inline:
     )
 
 
+def build_domain_badge_group(domain_name: str = "") -> nodes.inline:
+    """Return header badges for one documented Sphinx domain.
+
+    Parameters
+    ----------
+    domain_name : str
+        The domain's registered name (its role prefix); rendered as an
+        outlined secondary badge when non-empty.
+
+    Returns
+    -------
+    nodes.inline
+        Badge group for the entry header.
+
+    Examples
+    --------
+    >>> group = build_domain_badge_group("argparse")
+    >>> "domain" in group.astext()
+    True
+    >>> "argparse" in group.astext()
+    True
+    >>> build_domain_badge_group("").astext()
+    'domain'
+    """
+    specs = [
+        BadgeSpec(
+            "domain",
+            tooltip="Sphinx domain",
+            classes=(SAB.TYPE_DOMAIN,),
+        ),
+    ]
+    if domain_name:
+        specs.append(
+            BadgeSpec(
+                domain_name,
+                tooltip=f"Domain name: {domain_name}",
+                classes=(SAB.MOD_DOMAIN_NAME,),
+                fill="outline",
+            ),
+        )
+    return build_badge_group_from_specs(specs, classes=[_GROUP_CLASS])
+
+
 def build_builder_badge_group(output_format: str = "") -> nodes.inline:
     """Return header badges for one documented Sphinx builder.
 

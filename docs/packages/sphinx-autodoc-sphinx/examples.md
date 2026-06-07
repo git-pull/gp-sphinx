@@ -41,8 +41,27 @@ Renders every builder a module registers via `setup()`:
    :no-index:
 ```
 
+### Document one demo domain
+
+Domains surface their registered name, label, object types, roles, and
+indices:
+
+```{eval-rst}
+.. autodomain:: sphinx_demo_builder.DemoTopicDomain
+```
+
+### Bulk domains demo
+
+The bulk form replays a package's `setup()` — here documenting the
+`docutils` domain that `sphinx-autodoc-docutils` itself registers:
+
+```{eval-rst}
+.. autodomains:: sphinx_autodoc_docutils
+   :no-index:
+```
+
 ### Cross-referencing components
 
 Component entries register targets in the `sphinxext` domain, so prose
-can link to them: {sphinxext:builder}`DemoArchiveBuilder` resolves to
-the entry above.
+can link to them: {sphinxext:builder}`DemoArchiveBuilder` and
+{sphinxext:domain}`DemoTopicDomain` resolve to the entries above.

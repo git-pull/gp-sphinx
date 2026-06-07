@@ -16,6 +16,9 @@ from __future__ import annotations
 import typing as t
 
 from sphinx.builders import Builder
+from sphinx.domains import Domain, ObjType
+from sphinx.locale import _
+from sphinx.roles import XRefRole
 
 if t.TYPE_CHECKING:
     from collections.abc import Iterator, Set
@@ -53,6 +56,21 @@ class DemoArchiveBuilder(Builder):
         """Skip per-document output; the demo archives nothing."""
 
 
+class DemoTopicDomain(Domain):
+    """Describe demo topics with one object type and matching role."""
+
+    name = "demotopic"
+    label = "Demo topics"
+
+    object_types = {  # noqa: RUF012 — matches upstream sphinx.domains.Domain shape
+        "topic": ObjType(_("topic"), "topic"),
+    }
+
+    roles = {  # noqa: RUF012 — XRefRole instances are safe to share across domains
+        "topic": XRefRole(),
+    }
+
+
 def setup(app: Sphinx) -> ExtensionMetadata:
     """Register the demo extension components with Sphinx.
 
@@ -63,14 +81,19 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     ...         self.calls: list[tuple[str, object]] = []
     ...     def add_builder(self, cls: object) -> None:
     ...         self.calls.append(("add_builder", cls))
+    ...     def add_domain(self, cls: object) -> None:
+    ...         self.calls.append(("add_domain", cls))
     >>> fake = FakeApp()
     >>> metadata = setup(fake)  # type: ignore[arg-type]
     >>> ("add_builder", DemoArchiveBuilder) in fake.calls
+    True
+    >>> ("add_domain", DemoTopicDomain) in fake.calls
     True
     >>> metadata["parallel_read_safe"]
     True
     """
     app.add_builder(DemoArchiveBuilder)
+    app.add_domain(DemoTopicDomain)
     return {
         "version": "0.0.0",
         "parallel_read_safe": True,

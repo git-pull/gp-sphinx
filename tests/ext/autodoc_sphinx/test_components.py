@@ -32,6 +32,13 @@ from sphinx_autodoc_sphinx._components import (
     normalize_component_nodes,
     replay_setup,
 )
+from sphinx_autodoc_sphinx._domains_doc import (
+    DomainInfo,
+    _domain_fact_rows,
+    _domains_from_calls,
+    discover_domain,
+    discover_domains,
+)
 from sphinx_ux_autodoc_layout import ApiFactRow
 from sphinx_ux_autodoc_layout._nodes import api_component
 
@@ -286,3 +293,84 @@ def test_builder_fact_rows_dash_for_base_metadata() -> None:
     assert by_label["Builder name"] == "—"
     assert by_label["Output format"] == "—"
     assert by_label["Supported image types"] == "—"
+
+
+# ---------------------------------------------------------------------------
+# Domains
+# ---------------------------------------------------------------------------
+
+
+def test_domains_from_calls_filters_domain_classes() -> None:
+    """_domains_from_calls keeps only Domain subclasses, deduped."""
+    from sphinx_autodoc_argparse.domain import ArgparseDomain
+
+    infos = _domains_from_calls(
+        [
+            ("add_domain", (ArgparseDomain,), {}),
+            ("add_domain", (ArgparseDomain,), {"override": True}),
+            ("add_domain", (object,), {}),
+            ("add_directive", ("noise", object), {}),
+        ],
+    )
+    assert [(info.cls.__name__, info.registered) for info in infos] == [
+        ("ArgparseDomain", True),
+    ]
+
+
+def test_discover_domains_via_setup_registration() -> None:
+    """discover_domains surfaces domains a package's setup() registers."""
+    infos = discover_domains("sphinx_autodoc_docutils")
+    assert [(info.cls.__name__, info.registered) for info in infos] == [
+        ("DocutilsDomain", True),
+    ]
+
+
+def test_discover_domains_scan_fallback() -> None:
+    """discover_domains scans modules without a registering setup()."""
+    infos = discover_domains("sphinx_autodoc_argparse.domain")
+    assert [(info.cls.__name__, info.registered) for info in infos] == [
+        ("ArgparseDomain", False),
+    ]
+
+
+def test_discover_domains_empty_for_module_without_domains() -> None:
+    """discover_domains returns [] for modules without domains."""
+    assert discover_domains("sphinx_fonts") == []
+
+
+def test_discover_domain_single_path() -> None:
+    """discover_domain imports one domain from a dotted path."""
+    info = discover_domain("sphinx_autodoc_argparse.domain.ArgparseDomain")
+    assert info.domain_name == "argparse"
+
+
+def test_domain_fact_rows_surface_metadata() -> None:
+    """Domain fact rows include name, label, surface dicts, and indices."""
+    from sphinx_autodoc_argparse.domain import ArgparseDomain
+
+    rows = _domain_fact_rows(DomainInfo(cls=ArgparseDomain))
+    by_label = {row.label: row.body.astext() for row in rows}
+    assert by_label["Domain name"] == "argparse"
+    assert by_label["Label"] == "Argparse CLI"
+    assert by_label["Object types"] == "option, positional, program, subcommand"
+    assert by_label["Roles"] == "option, positional, program, subcommand"
+    assert by_label["Directives"] == "—"
+    assert by_label["Indices"] == "programsindex, optionsindex"
+
+
+def test_domain_fact_rows_dash_for_bare_domain() -> None:
+    """Domains without surface registrations degrade to dashes."""
+    from sphinx.domains import Domain as BaseDomain
+
+    class _BareDomain(BaseDomain):
+        """Domain leaving every base attribute untouched."""
+
+        name = "bare"
+        label = "Bare"
+
+    rows = _domain_fact_rows(DomainInfo(cls=_BareDomain))
+    by_label = {row.label: row.body.astext() for row in rows}
+    assert by_label["Object types"] == "—"
+    assert by_label["Roles"] == "—"
+    assert by_label["Directives"] == "—"
+    assert by_label["Indices"] == "—"

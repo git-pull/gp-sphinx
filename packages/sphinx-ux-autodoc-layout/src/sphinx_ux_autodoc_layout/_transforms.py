@@ -86,7 +86,7 @@ _MANAGED_DOCUTILS_OBJTYPES: tuple[str, ...] = (
     "translator",
 )
 
-_MANAGED_SPHINXEXT_OBJTYPES: tuple[str, ...] = ("builder",)
+_MANAGED_SPHINXEXT_OBJTYPES: tuple[str, ...] = ("builder", "domain")
 
 
 @dataclasses.dataclass(frozen=True, slots=True)

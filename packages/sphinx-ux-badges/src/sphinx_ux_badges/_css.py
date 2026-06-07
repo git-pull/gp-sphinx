@@ -175,9 +175,11 @@ class SAB:
 
     # ── Sphinx extension components (filled) ─────────────
     TYPE_BUILDER = "gp-sphinx-badge--type-builder"
+    TYPE_DOMAIN = "gp-sphinx-badge--type-domain"
 
     # ── Sphinx extension component modifiers (outlined) ──
     MOD_FORMAT = "gp-sphinx-badge--mod-format"
+    MOD_DOMAIN_NAME = "gp-sphinx-badge--mod-domain-name"
 
     # ── Package metadata (maturity + links) ───────────────
     META_ALPHA = "gp-sphinx-badge--meta-alpha"

@@ -17,6 +17,13 @@ from sphinx_autodoc_sphinx._directives import (
     AutoconfigvalueDirective,
     AutoconfigvaluesDirective,
 )
+from sphinx_autodoc_sphinx._domains_doc import (
+    AutoDomain,
+    AutoDomains,
+    DomainInfo,
+    discover_domain,
+    discover_domains,
+)
 from sphinx_autodoc_sphinx.domain import (
     SphinxExtComponentIndex,
     SphinxExtDomain,
@@ -25,13 +32,18 @@ from sphinx_autodoc_sphinx.domain import (
 __all__ = [
     "AutoBuilder",
     "AutoBuilders",
+    "AutoDomain",
+    "AutoDomains",
     "AutoconfigvalueDirective",
     "AutoconfigvaluesDirective",
     "BuilderInfo",
+    "DomainInfo",
     "SphinxExtComponentIndex",
     "SphinxExtDomain",
     "discover_builder",
     "discover_builders",
+    "discover_domain",
+    "discover_domains",
     "setup",
 ]
 
@@ -81,6 +93,8 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.add_directive("autoconfigvalues", AutoconfigvaluesDirective)
     app.add_directive("autobuilder", AutoBuilder)
     app.add_directive("autobuilders", AutoBuilders)
+    app.add_directive("autodomain", AutoDomain)
+    app.add_directive("autodomains", AutoDomains)
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
 
