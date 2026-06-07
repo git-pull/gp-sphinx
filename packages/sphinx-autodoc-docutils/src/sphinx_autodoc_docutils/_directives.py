@@ -272,24 +272,6 @@ def _registered_name(name: str) -> str:
     return name.removesuffix("Directive").lower()
 
 
-def _option_rows(option_spec: OptionSpec | None) -> list[str]:
-    """Return table rows describing a directive or role option spec.
-
-    Examples
-    --------
-    >>> rows = _option_rows({"class": str})
-    >>> rows[0]
-    '| `class` | `str` |'
-    """
-    if not isinstance(option_spec, dict) or not option_spec:
-        return []
-    rows = []
-    for name, converter in sorted(option_spec.items()):
-        converter_name = getattr(converter, "__name__", type(converter).__name__)
-        rows.append(f"| `{name}` | `{converter_name}` |")
-    return rows
-
-
 def _literal_paragraph(text: str) -> nodes.paragraph:
     """Return a paragraph containing one literal node."""
     paragraph = nodes.paragraph()
@@ -525,19 +507,31 @@ def _directive_markup(
         "",
         f"   {_summary(directive_cls) or 'Autodocumented directive class.'}",
     ]
-    option_rows = _option_rows(getattr(directive_cls, "option_spec", None))
-    if option_rows:
+    option_spec = getattr(directive_cls, "option_spec", None)
+    if isinstance(option_spec, dict) and option_spec:
         lines.extend(["", "   Options:", ""])
-        for row in option_rows:
-            option_name, converter_name = row.split("|")[1:3]
-            clean_option_name = option_name.strip().strip("`")
-            clean_converter_name = converter_name.strip().strip("`")
+        for option_name, converter in sorted(option_spec.items()):
+            converter_name = getattr(
+                converter,
+                "__name__",
+                type(converter).__name__,
+            )
+            target = _converter_target(converter)
+            # A :py:obj: with an explicit target links to the converter
+            # when its inventory is mapped and renders as plain text
+            # otherwise (the build is not nitpicky), matching the
+            # role-option validator treatment.
+            validator = (
+                f":py:obj:`{converter_name} <{target}>`"
+                if target
+                else f"``{converter_name}``"
+            )
             lines.extend(
                 [
-                    f"   .. rst:directive:option:: {clean_option_name}",
+                    f"   .. rst:directive:option:: {option_name}",
                     "      :no-index:" if no_index else "",
                     "",
-                    f"      Validator: ``{clean_converter_name}``.",
+                    f"      Validator: {validator}.",
                     "",
                 ]
             )
