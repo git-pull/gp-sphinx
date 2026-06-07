@@ -70,6 +70,41 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  js:
+    runs-on: ubuntu-latest
+    # The JS workspace's own guards — vitest (runtime + typecheck mode)
+    # and tsc — run nowhere else in CI. The vite production build is
+    # already exercised on every push by the docs and packages jobs,
+    # whose editable/wheel installs route through
+    # `sphinx_vite_builder.build`; this job covers what those builds
+    # don't: the Furo token contract tests, the type-level locks, and
+    # the zod schema validators.
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install JS workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check @gp-sphinx/furo-tokens
+        run: pnpm --filter @gp-sphinx/furo-tokens type-check
+
+      - name: Test @gp-sphinx/furo-tokens
+        run: pnpm --filter @gp-sphinx/furo-tokens test
+
+      - name: Type-check @gp-sphinx/furo-theme-web
+        run: pnpm --filter @gp-sphinx/furo-theme-web type-check
+
   docs:
     runs-on: ubuntu-latest
     needs: qa
