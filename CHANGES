@@ -18,6 +18,16 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Fixes
+
+#### Type chips in parameter lists regain their padding
+
+Standalone type annotations in autodoc parameter and return lists — a
+plain `str`, a `pathlib.Path`, the members of a union — rendered cramped
+against the edge of their chip background. They now get their horizontal
+breathing room back, while compound expressions such as `list[str]` and
+`dict[str, Any]` still render flush at their brackets. (#54)
+
 ## gp-sphinx 0.0.1a29 (2026-06-07)
 
 ### What's new
