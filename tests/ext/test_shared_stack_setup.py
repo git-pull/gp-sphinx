@@ -96,6 +96,7 @@ def test_shared_stack_setup_autoloads_expected_extensions(case: _SetupCase) -> N
         add_autodocumenter=lambda *args, **kwargs: None,
         add_crossref_type=lambda *args, **kwargs: None,
         add_node=lambda *args, **kwargs: None,
+        add_domain=lambda *args, **kwargs: None,
     )
 
     metadata = case.setup(t.cast(Sphinx, app))

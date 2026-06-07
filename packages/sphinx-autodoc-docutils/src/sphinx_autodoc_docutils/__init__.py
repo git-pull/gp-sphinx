@@ -14,12 +14,18 @@ from sphinx_autodoc_docutils._directives import (
     SetupRecorder,
     replay_setup,
 )
+from sphinx_autodoc_docutils.domain import (
+    DocutilsComponentIndex,
+    DocutilsDomain,
+)
 
 __all__ = [
     "AutoDirective",
     "AutoDirectives",
     "AutoRole",
     "AutoRoles",
+    "DocutilsComponentIndex",
+    "DocutilsDomain",
     "SetupRecorder",
     "replay_setup",
     "setup",
@@ -44,6 +50,8 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     ...         self.calls.append(("setup_extension", name))
     ...     def add_directive(self, name: str, directive: object) -> None:
     ...         self.calls.append(("add_directive", name))
+    ...     def add_domain(self, domain: object) -> None:
+    ...         self.calls.append(("add_domain", domain))
     ...     def connect(self, event: str, handler: object) -> None:
     ...         self.calls.append(("connect", event))
     ...     def add_css_file(self, filename: str) -> None:
@@ -51,6 +59,8 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     >>> fake = FakeApp()
     >>> metadata = setup(fake)  # type: ignore[arg-type]
     >>> ("add_directive", "autodirective") in fake.calls
+    True
+    >>> ("add_domain", DocutilsDomain) in fake.calls
     True
     >>> ("setup_extension", "sphinx_ux_autodoc_layout") in fake.calls
     True
@@ -62,6 +72,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.setup_extension("sphinx_ux_badges")
     app.setup_extension("sphinx_ux_autodoc_layout")
     app.setup_extension("sphinx_autodoc_typehints_gp")
+    app.add_domain(DocutilsDomain)
     app.add_directive("autodirective", AutoDirective)
     app.add_directive("autodirectives", AutoDirectives)
     app.add_directive("autorole", AutoRole)
