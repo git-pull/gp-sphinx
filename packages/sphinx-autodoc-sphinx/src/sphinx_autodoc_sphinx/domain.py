@@ -226,8 +226,8 @@ class SphinxExtDomain(Domain):
     }
 
     roles = {  # noqa: RUF012 — XRefRole instances are safe to share across domains
-        BUILDER: XRefRole(),
-        DOMAIN: XRefRole(),
+        BUILDER: XRefRole(warn_dangling=True),
+        DOMAIN: XRefRole(warn_dangling=True),
     }
 
     indices = [  # noqa: RUF012 — matches upstream sphinx.domains.Domain shape

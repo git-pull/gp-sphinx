@@ -21,6 +21,7 @@ _MODULE_SOURCE = textwrap.dedent(
 
     from docutils import nodes
     from docutils.parsers.rst import Directive, directives
+    from docutils.transforms import Transform
 
 
     class DemoDirective(Directive):
@@ -48,6 +49,19 @@ _MODULE_SOURCE = textwrap.dedent(
 
     demo_role.options = {"class": directives.class_option}
     demo_role.content = True
+
+
+    class DemoTransform(Transform):
+        \"\"\"Reorder demo paragraphs after parsing.\"\"\"
+
+        default_priority = 765
+
+        def apply(self):
+            pass
+
+
+    def setup(app):
+        app.add_transform(DemoTransform)
     """
 )
 
@@ -73,6 +87,11 @@ _INDEX_RST = textwrap.dedent(
     .. autodirective:: demo_docutils_objects.DemoDirective
 
     .. autorole:: demo_docutils_objects.demo_role
+
+    .. autotransform:: demo_docutils_objects.DemoTransform
+
+    .. autotransforms:: demo_docutils_objects
+       :no-index:
     """
 )
 
@@ -122,3 +141,18 @@ def test_autodoc_docutils_entries_use_shared_layout(
     assert ">option<" in html
     assert ">role<" in html
     assert "Python path" in html
+
+
+@pytest.mark.integration
+def test_autodoc_docutils_transform_entries(
+    autodoc_docutils_html_result: SharedSphinxResult,
+) -> None:
+    """autotransform entries render with profile, badges, and facts."""
+    html = read_output(autodoc_docutils_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--docutils-transform" in html
+    assert ">transform<" in html
+    assert "gp-sphinx-badge--mod-priority" in html
+    assert ">765<" in html
+    assert "Default priority" in html
+    assert "app.add_transform()" in html

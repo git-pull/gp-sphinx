@@ -12,6 +12,7 @@ _KIND_CLASSES: dict[str, str] = {
     "directive": SAB.TYPE_DIRECTIVE,
     "role": SAB.TYPE_ROLE,
     "option": SAB.TYPE_OPTION,
+    "transform": SAB.TYPE_TRANSFORM,
 }
 
 
@@ -39,3 +40,46 @@ def build_kind_badge_group(kind: str) -> nodes.inline:
         ],
         classes=[_GROUP_CLASS],
     )
+
+
+def build_transform_badge_group(priority: int | None = None) -> nodes.inline:
+    """Return header badges for one documented docutils transform.
+
+    Parameters
+    ----------
+    priority : int | None
+        The transform's ``default_priority``; rendered as an outlined
+        secondary badge when set.
+
+    Returns
+    -------
+    nodes.inline
+        Badge group for the entry header.
+
+    Examples
+    --------
+    >>> group = build_transform_badge_group(830)
+    >>> "transform" in group.astext()
+    True
+    >>> "priority 830" in group.astext()
+    True
+    >>> "priority" in build_transform_badge_group(None).astext()
+    False
+    """
+    specs = [
+        BadgeSpec(
+            "transform",
+            tooltip="Docutils transform",
+            classes=(SAB.TYPE_TRANSFORM,),
+        ),
+    ]
+    if priority is not None:
+        specs.append(
+            BadgeSpec(
+                f"priority {priority}",
+                tooltip="Transform default_priority",
+                classes=(SAB.MOD_PRIORITY,),
+                fill="outline",
+            ),
+        )
+    return build_badge_group_from_specs(specs, classes=[_GROUP_CLASS])

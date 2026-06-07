@@ -253,12 +253,12 @@ class DocutilsDomain(Domain):
     }
 
     roles = {  # noqa: RUF012 — XRefRole instances are safe to share across domains
-        TRANSFORM: XRefRole(),
-        READER: XRefRole(),
-        PARSER: XRefRole(),
-        WRITER: XRefRole(),
-        NODE: XRefRole(),
-        TRANSLATOR: XRefRole(),
+        TRANSFORM: XRefRole(warn_dangling=True),
+        READER: XRefRole(warn_dangling=True),
+        PARSER: XRefRole(warn_dangling=True),
+        WRITER: XRefRole(warn_dangling=True),
+        NODE: XRefRole(warn_dangling=True),
+        TRANSLATOR: XRefRole(warn_dangling=True),
     }
 
     indices = [  # noqa: RUF012 — matches upstream sphinx.domains.Domain shape

@@ -40,6 +40,32 @@ Renders all role callables in a module at once:
    :no-index:
 ```
 
+### Document one demo transform
+
+The single form imports the class directly and surfaces its
+`default_priority` and registration phase:
+
+```{eval-rst}
+.. autotransform:: docutils_demo_components.DemoReorderTransform
+```
+
+### Bulk transforms demo
+
+Renders every transform a module registers via `setup()` — here the
+demo module's `app.add_transform()` call:
+
+```{eval-rst}
+.. autotransforms:: docutils_demo_components
+   :no-index:
+```
+
+### Cross-referencing components
+
+Component entries register targets in the `docutils` domain, so prose
+can link to them: {docutils:transform}`DemoReorderTransform` resolves
+to the entry above, and {docutils:transform}`docutils_demo_components.DemoReorderTransform`
+spells out the full path.
+
 The extension itself registers directives, not docutils roles or Sphinx config
 values. The generated package reference below lists its registered surface from
 the live `setup()` calls.

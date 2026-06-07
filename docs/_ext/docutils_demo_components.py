@@ -1,0 +1,65 @@
+"""Synthetic docutils components for live component-autodoc demos.
+
+Grows one demo class per component type so the
+``docs/packages/sphinx-autodoc-docutils`` examples page can exercise
+every ``auto*`` directive against realistic metadata.
+
+Examples
+--------
+>>> DemoReorderTransform.default_priority
+760
+"""
+
+from __future__ import annotations
+
+import typing as t
+
+from docutils import nodes
+from docutils.transforms import Transform
+
+if t.TYPE_CHECKING:
+    from sphinx.application import Sphinx
+    from sphinx.util.typing import ExtensionMetadata
+
+
+class DemoReorderTransform(Transform):
+    """Move demo-badge paragraphs ahead of their sibling paragraphs.
+
+    Runs late in the read phase (priority 760) so it sees the fully
+    parsed document but still precedes reference resolution.
+    """
+
+    default_priority = 760
+
+    def apply(self) -> None:
+        """Hoist each ``demo-badge`` paragraph to the front of its parent."""
+        for paragraph in tuple(self.document.findall(nodes.paragraph)):
+            if "demo-badge" in paragraph.get("classes", ()):
+                parent = paragraph.parent
+                parent.remove(paragraph)
+                parent.insert(0, paragraph)
+
+
+def setup(app: Sphinx) -> ExtensionMetadata:
+    """Register the demo components with Sphinx.
+
+    Examples
+    --------
+    >>> class FakeApp:
+    ...     def __init__(self) -> None:
+    ...         self.calls: list[tuple[str, object]] = []
+    ...     def add_transform(self, cls: object) -> None:
+    ...         self.calls.append(("add_transform", cls))
+    >>> fake = FakeApp()
+    >>> metadata = setup(fake)  # type: ignore[arg-type]
+    >>> ("add_transform", DemoReorderTransform) in fake.calls
+    True
+    >>> metadata["parallel_read_safe"]
+    True
+    """
+    app.add_transform(DemoReorderTransform)
+    return {
+        "version": "0.0.0",
+        "parallel_read_safe": True,
+        "parallel_write_safe": True,
+    }

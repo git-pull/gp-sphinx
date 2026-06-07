@@ -14,6 +14,13 @@ from sphinx_autodoc_docutils._directives import (
     SetupRecorder,
     replay_setup,
 )
+from sphinx_autodoc_docutils._transforms_doc import (
+    AutoTransform,
+    AutoTransforms,
+    TransformInfo,
+    discover_transform,
+    discover_transforms,
+)
 from sphinx_autodoc_docutils.domain import (
     DocutilsComponentIndex,
     DocutilsDomain,
@@ -24,9 +31,14 @@ __all__ = [
     "AutoDirectives",
     "AutoRole",
     "AutoRoles",
+    "AutoTransform",
+    "AutoTransforms",
     "DocutilsComponentIndex",
     "DocutilsDomain",
     "SetupRecorder",
+    "TransformInfo",
+    "discover_transform",
+    "discover_transforms",
     "replay_setup",
     "setup",
 ]
@@ -60,6 +72,8 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     >>> metadata = setup(fake)  # type: ignore[arg-type]
     >>> ("add_directive", "autodirective") in fake.calls
     True
+    >>> ("add_directive", "autotransform") in fake.calls
+    True
     >>> ("add_domain", DocutilsDomain) in fake.calls
     True
     >>> ("setup_extension", "sphinx_ux_autodoc_layout") in fake.calls
@@ -77,6 +91,8 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.add_directive("autodirectives", AutoDirectives)
     app.add_directive("autorole", AutoRole)
     app.add_directive("autoroles", AutoRoles)
+    app.add_directive("autotransform", AutoTransform)
+    app.add_directive("autotransforms", AutoTransforms)
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
 

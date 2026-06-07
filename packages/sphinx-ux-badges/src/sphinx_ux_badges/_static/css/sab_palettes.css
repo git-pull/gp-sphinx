@@ -115,6 +115,15 @@
   --gp-sphinx-badge-docutils-fg:     #6d28d9;
   --gp-sphinx-badge-docutils-border: #8b5cf6;
 
+  /* ── docutils components (filled, per-type hues) ────── */
+  --gp-sphinx-badge-transform-bg:     #faf5ff;
+  --gp-sphinx-badge-transform-fg:     #7e22ce;
+  --gp-sphinx-badge-transform-border: #a855f7;
+
+  /* ── docutils component modifiers (outlined) ────────── */
+  --gp-sphinx-badge-mod-priority-fg:     #6b7280;
+  --gp-sphinx-badge-mod-priority-border: #d1d5db;
+
   /* ── Package metadata (maturity + links) ────────────── */
   --gp-sphinx-badge-meta-alpha-bg:     #ffedc6;
   --gp-sphinx-badge-meta-alpha-fg:     #4e2009;
@@ -222,6 +231,13 @@
     --gp-sphinx-badge-docutils-bg:     #2e1065;
     --gp-sphinx-badge-docutils-fg:     #c4b5fd;
     --gp-sphinx-badge-docutils-border: #a78bfa;
+
+    --gp-sphinx-badge-transform-bg:     #3b0764;
+    --gp-sphinx-badge-transform-fg:     #d8b4fe;
+    --gp-sphinx-badge-transform-border: #c084fc;
+
+    --gp-sphinx-badge-mod-priority-fg:     #9ca3af;
+    --gp-sphinx-badge-mod-priority-border: #4b5563;
 
     --gp-sphinx-badge-meta-alpha-bg:     #3f2700;
     --gp-sphinx-badge-meta-alpha-fg:     #ffca16;
@@ -331,6 +347,13 @@ body[data-theme="dark"] {
   --gp-sphinx-badge-docutils-fg:     #c4b5fd;
   --gp-sphinx-badge-docutils-border: #a78bfa;
 
+  --gp-sphinx-badge-transform-bg:     #3b0764;
+  --gp-sphinx-badge-transform-fg:     #d8b4fe;
+  --gp-sphinx-badge-transform-border: #c084fc;
+
+  --gp-sphinx-badge-mod-priority-fg:     #9ca3af;
+  --gp-sphinx-badge-mod-priority-border: #4b5563;
+
   --gp-sphinx-badge-meta-alpha-bg:     #3f2700;
   --gp-sphinx-badge-meta-alpha-fg:     #ffca16;
   --gp-sphinx-badge-meta-alpha-border: #8f6424;
@@ -397,6 +420,16 @@ body[data-theme="dark"] {
 .gp-sphinx-badge--type-directive,
 .gp-sphinx-badge--type-role,
 .gp-sphinx-badge--type-option { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-docutils-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-docutils-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-docutils-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — docutils components (filled, per-type hues)
+ * ══════════════════════════════════════════════════════════ */
+.gp-sphinx-badge--type-transform { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-transform-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-transform-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-transform-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — docutils component modifiers (outlined)
+ * ══════════════════════════════════════════════════════════ */
+.gp-sphinx-badge--mod-priority { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-mod-priority-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-mod-priority-border); }
 
 /* ══════════════════════════════════════════════════════════
  * Colour classes — package metadata (maturity + links)

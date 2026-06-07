@@ -77,6 +77,8 @@ _MANAGED_PYTHON_OBJTYPES: tuple[str, ...] = (
     "type",
 )
 
+_MANAGED_DOCUTILS_OBJTYPES: tuple[str, ...] = ("transform",)
+
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class DescLayoutProfile:
@@ -129,6 +131,14 @@ _PROFILE_REGISTRY: dict[tuple[str, str], DescLayoutProfile] = {
         slug="mcp-tool",
         allow_signature_fold=True,
     ),
+    **{
+        ("docutils", objtype): DescLayoutProfile(
+            domain="docutils",
+            objtype=objtype,
+            slug=f"docutils-{objtype}",
+        )
+        for objtype in _MANAGED_DOCUTILS_OBJTYPES
+    },
 }
 
 
