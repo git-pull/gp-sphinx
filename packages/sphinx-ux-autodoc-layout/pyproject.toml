@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sphinx-ux-autodoc-layout"
-version = "0.0.1a29"
+version = "0.0.1a30.dev0"
 description = "Componentized layout for Sphinx autodoc output"
 readme = "README.md"
 requires-python = ">=3.10"
