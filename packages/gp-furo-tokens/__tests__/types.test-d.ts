@@ -5,8 +5,11 @@ import type { z } from "zod";
 import type { FuroTokenName, GpSphinxRoleName } from "../src/contract.js";
 import {
   FURO_TOKEN_NAMES,
+  FuroPartialTokenMapSchema,
+  FuroTokenMapSchema,
   FuroTokenNameSchema,
   GP_SPHINX_ROLE_NAMES,
+  GpSphinxRoleMapSchema,
   GpSphinxRoleNameSchema,
 } from "../src/contract.js";
 import { FURO_DARK_TOKENS } from "../src/dark.js";
@@ -47,6 +50,18 @@ describe("token map types", () => {
   it("role map is exhaustive over the role contract", () => {
     expectTypeOf(GP_SPHINX_ROLE_TOKENS).toEqualTypeOf<
       Readonly<Record<GpSphinxRoleName, string>>
+    >();
+  });
+
+  it("map schemas infer the same shapes the value maps declare", () => {
+    expectTypeOf<z.infer<typeof FuroTokenMapSchema>>().toEqualTypeOf<
+      Record<FuroTokenName, string>
+    >();
+    expectTypeOf<z.infer<typeof FuroPartialTokenMapSchema>>().toEqualTypeOf<
+      Partial<Record<FuroTokenName, string>>
+    >();
+    expectTypeOf<z.infer<typeof GpSphinxRoleMapSchema>>().toEqualTypeOf<
+      Record<GpSphinxRoleName, string>
     >();
   });
 });

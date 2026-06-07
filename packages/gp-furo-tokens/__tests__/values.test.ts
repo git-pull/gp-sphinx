@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 
-import { FURO_TOKEN_NAMES } from "../src/contract.js";
+import {
+  FURO_TOKEN_NAMES,
+  FuroPartialTokenMapSchema,
+  FuroTokenMapSchema,
+} from "../src/contract.js";
 import { FURO_DARK_TOKENS } from "../src/dark.js";
 import { FURO_LIGHT_TOKENS } from "../src/light.js";
 
@@ -34,5 +39,28 @@ describe("dark deltas", () => {
     const declared = Object.keys(FURO_DARK_TOKENS).length;
     expect(declared).toBeGreaterThan(20);
     expect(declared).toBeLessThan(40);
+  });
+});
+
+describe("token map schemas", () => {
+  it("light map parses through the exhaustive token-map schema", () => {
+    const result = FuroTokenMapSchema.safeParse(FURO_LIGHT_TOKENS);
+    expect(result.success, result.success ? "" : z.prettifyError(result.error)).toBe(true);
+  });
+
+  it("dark deltas parse through the partial token-map schema", () => {
+    const result = FuroPartialTokenMapSchema.safeParse(FURO_DARK_TOKENS);
+    expect(result.success, result.success ? "" : z.prettifyError(result.error)).toBe(true);
+  });
+
+  it("rejects override maps that invent tokens outside the contract", () => {
+    const result = FuroPartialTokenMapSchema.safeParse({ "--not-a-furo-token": "red" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects full maps with a contract token missing", () => {
+    const { "--color-link": _dropped, ...rest } = FURO_LIGHT_TOKENS;
+    const result = FuroTokenMapSchema.safeParse(rest);
+    expect(result.success).toBe(false);
   });
 });

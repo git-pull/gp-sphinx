@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 
-import { GP_SPHINX_ROLE_NAMES, GpSphinxRoleNameSchema } from "../src/contract.js";
+import {
+  GP_SPHINX_ROLE_NAMES,
+  GpSphinxRoleMapSchema,
+  GpSphinxRoleNameSchema,
+} from "../src/contract.js";
 import { GP_SPHINX_ROLE_TOKENS } from "../src/roles.js";
 
 const roleNames = new Set<string>(GP_SPHINX_ROLE_NAMES);
@@ -25,5 +30,10 @@ describe("gp-sphinx role contract", () => {
       expect(name).toMatch(/^--gp-sphinx-type-[a-z][a-z0-9-]*$/);
       expect(GpSphinxRoleNameSchema.safeParse(name).success).toBe(true);
     }
+  });
+
+  it("role map parses through the exhaustive role-map schema", () => {
+    const result = GpSphinxRoleMapSchema.safeParse(GP_SPHINX_ROLE_TOKENS);
+    expect(result.success, result.success ? "" : z.prettifyError(result.error)).toBe(true);
   });
 });

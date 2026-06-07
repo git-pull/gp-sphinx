@@ -4,6 +4,11 @@ export {
   GpSphinxRoleNameSchema,
   type GpSphinxRoleName,
 } from "./contract.js";
+export {
+  FuroPartialTokenMapSchema,
+  FuroTokenMapSchema,
+  GpSphinxRoleMapSchema,
+} from "./contract.js";
 export { FURO_LIGHT_TOKENS } from "./light.js";
 export { FURO_DARK_TOKENS } from "./dark.js";
 export { GP_SPHINX_ROLE_TOKENS } from "./roles.js";
