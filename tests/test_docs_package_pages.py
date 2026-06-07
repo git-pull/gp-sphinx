@@ -95,6 +95,7 @@ _FASTMCP_CONF = textwrap.dedent(
     extensions = [
         "myst_parser",
         "sphinx_design",
+        "sphinx.ext.autodoc",
         "package_reference",
         "sphinx_autodoc_fastmcp",
     ]

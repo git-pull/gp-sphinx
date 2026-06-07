@@ -161,3 +161,18 @@ the live `setup()` calls.
 ```
 
 [Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-docutils) · [PyPI](https://pypi.org/project/sphinx-autodoc-docutils/)
+
+## Demo module reference
+
+The demo objects above, as plain Python API — the targets the
+entries' `Python path` facts link to:
+
+```{eval-rst}
+.. automodule:: docutils_demo
+   :members:
+```
+
+```{eval-rst}
+.. automodule:: docutils_demo_components
+   :members:
+```

@@ -65,3 +65,23 @@ The bulk form replays a package's `setup()` — here documenting the
 Component entries register targets in the `sphinxext` domain, so prose
 can link to them: {sphinxext:builder}`DemoArchiveBuilder` and
 {sphinxext:domain}`DemoTopicDomain` resolve to the entries above.
+
+## Demo module reference
+
+The demo objects above, as plain Python API — the targets the
+entries' `Python path` facts link to:
+
+```{eval-rst}
+.. automodule:: sphinx_config_demo
+   :members:
+```
+
+```{eval-rst}
+.. automodule:: sphinx_config_single_demo
+   :members:
+```
+
+```{eval-rst}
+.. automodule:: sphinx_demo_builder
+   :members:
+```
