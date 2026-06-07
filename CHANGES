@@ -18,6 +18,16 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Fixes
+
+#### Code comments no longer trigger a font swap on first paint
+
+Furo renders code comments in italic, so any page with a commented
+code block lazy-loaded the IBM Plex Mono italic face and visibly
+re-rendered when it arrived. The face is now part of
+{py:data}`~gp_sphinx.defaults.DEFAULT_SPHINX_FONT_PRELOAD`, fetched
+alongside the other critical fonts. (#43)
+
 ## gp-sphinx 0.0.1a28 (2026-06-07)
 
 ### Development
