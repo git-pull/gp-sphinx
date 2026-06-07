@@ -186,3 +186,23 @@ export const GP_SPHINX_ROLE_NAMES = [
 export type GpSphinxRoleName = (typeof GP_SPHINX_ROLE_NAMES)[number];
 
 export const GpSphinxRoleNameSchema = z.enum(GP_SPHINX_ROLE_NAMES);
+
+/**
+ * Runtime validators for token value maps.
+ *
+ * zod 4's `z.record` with an enum key schema is exhaustive — every
+ * contract name must be present and unknown keys are rejected — while
+ * `z.partialRecord` accepts any subset but still rejects names outside
+ * the contract. Exported so downstream consumers can validate override
+ * maps (e.g. values destined for Furo's `light_css_variables` /
+ * `dark_css_variables`) against the contract before shipping them.
+ *
+ * Values are plain `z.string()` on purpose: the contract preserves
+ * Furo's values verbatim, including the intentionally-empty
+ * `--color-background-muted` slot (see `light.ts`).
+ */
+export const FuroTokenMapSchema = z.record(FuroTokenNameSchema, z.string());
+
+export const FuroPartialTokenMapSchema = z.partialRecord(FuroTokenNameSchema, z.string());
+
+export const GpSphinxRoleMapSchema = z.record(GpSphinxRoleNameSchema, z.string());

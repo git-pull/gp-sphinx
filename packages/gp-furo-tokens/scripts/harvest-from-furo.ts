@@ -3,6 +3,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { FuroVarsSchema } from "./harvest-schema.ts";
+
 /**
  * Source files containing statically-declared CSS custom properties — every
  * `--name:` declaration in these is a public-contract member.
@@ -160,6 +162,10 @@ function main(): void {
     },
     names: [...allNames].sort(),
   };
+
+  // Guard the artifact before it lands on disk — a regex or expansion
+  // regression in this script should fail here, not in a later test run.
+  FuroVarsSchema.parse(fixture);
 
   const here = dirname(fileURLToPath(import.meta.url));
   const out = join(here, "..", "upstream", "furo-vars.json");

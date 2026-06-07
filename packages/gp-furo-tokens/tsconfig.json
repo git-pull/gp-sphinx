@@ -1,17 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2024",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2022"],
+    "lib": ["ES2024"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
+    "noUncheckedSideEffectImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "noEmit": true,
     "isolatedModules": true,
+    "erasableSyntaxOnly": true,
     "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
     "types": ["node"]
   },
-  "include": ["src/**/*", "__tests__/**/*", "vitest.config.ts"]
+  "include": ["src/**/*", "__tests__/**/*", "scripts/**/*", "vitest.config.ts"]
 }
