@@ -18,6 +18,27 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Development
+
+#### JS toolchain: Zod 4, Vitest 4, TypeScript 6, Tailwind CSS 4.3, Vite 8
+
+The workspace JS packages — the Furo token contract and the theme
+asset pipeline — now build and test on the current major of each
+upstream:
+
+- [Zod](https://zod.dev): 3 -> 4 — [migration guide](https://zod.dev/v4/changelog)
+- [Vitest](https://vitest.dev): 2 -> 4 — [announcement](https://vitest.dev/blog/vitest-4)
+- [TypeScript](https://www.typescriptlang.org): 5.7 -> 6.0 — [announcement](https://devblogs.microsoft.com/typescript/announcing-typescript-6-0/)
+- [Tailwind CSS](https://tailwindcss.com): 4.2 -> 4.3 — [release notes](https://github.com/tailwindlabs/tailwindcss/releases/tag/v4.3.0)
+- [Vite](https://vite.dev): 7 -> 8 (now Rolldown-powered) — [announcement](https://vite.dev/blog/announcing-vite8)
+
+Built theme assets are unchanged apart from minifier formatting, with
+one exception: responsive-breakpoint media queries now use range
+syntax, which requires Safari 16.4+, Chrome 111+, or Firefox 114+.
+Light/dark theming is unaffected on all browsers. The token contract
+and its harvested upstream fixture are now schema-validated end to
+end. (#50)
+
 ## gp-sphinx 0.0.1a27 (2026-06-06)
 
 ### Fixes
