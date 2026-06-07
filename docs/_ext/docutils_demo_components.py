@@ -15,6 +15,7 @@ from __future__ import annotations
 import typing as t
 
 from docutils import nodes
+from docutils.parsers import Parser
 from docutils.readers import standalone
 from docutils.transforms import Transform
 
@@ -56,6 +57,21 @@ class DemoArticleReader(standalone.Reader):  # type: ignore[type-arg]
         return [*super().get_transforms(), DemoReorderTransform]
 
 
+class DemoLineParser(Parser):
+    """Parse line-oriented demo sources into one paragraph per line."""
+
+    supported = ("demo-lines", "demolines")
+    config_section = "demo line parser"
+
+    def parse(self, inputstring: str, document: nodes.document) -> None:
+        """Append one paragraph node per non-empty input line."""
+        self.setup_parse(inputstring, document)
+        for line in inputstring.splitlines():
+            if line.strip():
+                document += nodes.paragraph(text=line.strip())
+        self.finish_parse()
+
+
 def setup(app: Sphinx) -> ExtensionMetadata:
     """Register the demo components with Sphinx.
 
@@ -66,14 +82,19 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     ...         self.calls: list[tuple[str, object]] = []
     ...     def add_transform(self, cls: object) -> None:
     ...         self.calls.append(("add_transform", cls))
+    ...     def add_source_parser(self, cls: object) -> None:
+    ...         self.calls.append(("add_source_parser", cls))
     >>> fake = FakeApp()
     >>> metadata = setup(fake)  # type: ignore[arg-type]
     >>> ("add_transform", DemoReorderTransform) in fake.calls
+    True
+    >>> ("add_source_parser", DemoLineParser) in fake.calls
     True
     >>> metadata["parallel_read_safe"]
     True
     """
     app.add_transform(DemoReorderTransform)
+    app.add_source_parser(DemoLineParser)
     return {
         "version": "0.0.0",
         "parallel_read_safe": True,

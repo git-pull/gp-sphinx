@@ -20,6 +20,7 @@ _MODULE_SOURCE = textwrap.dedent(
     from __future__ import annotations
 
     from docutils import nodes
+    from docutils.parsers import Parser
     from docutils.parsers.rst import Directive, directives
     from docutils.readers import Reader
     from docutils.transforms import Transform
@@ -71,8 +72,19 @@ _MODULE_SOURCE = textwrap.dedent(
             return [*super().get_transforms(), DemoTransform]
 
 
+    class DemoParser(Parser):
+        \"\"\"Parse demo-line sources.\"\"\"
+
+        supported = ("demo-lines",)
+        config_section = "demo parser"
+
+        def parse(self, inputstring, document):
+            pass
+
+
     def setup(app):
         app.add_transform(DemoTransform)
+        app.add_source_parser(DemoParser)
     """
 )
 
@@ -105,6 +117,8 @@ _INDEX_RST = textwrap.dedent(
        :no-index:
 
     .. autoreader:: demo_docutils_objects.DemoReader
+
+    .. autoparser:: demo_docutils_objects.DemoParser
     """
 )
 
@@ -183,3 +197,17 @@ def test_autodoc_docutils_reader_entries(
     assert "Supported formats" in html
     assert "demo-article" in html
     assert "DemoTransform" in html
+
+
+@pytest.mark.integration
+def test_autodoc_docutils_parser_entries(
+    autodoc_docutils_html_result: SharedSphinxResult,
+) -> None:
+    """autoparser entries render with profile, badge, and facts."""
+    html = read_output(autodoc_docutils_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--docutils-parser" in html
+    assert ">parser<" in html
+    assert "Supported aliases" in html
+    assert "demo-lines" in html
+    assert "app.add_source_parser()" in html

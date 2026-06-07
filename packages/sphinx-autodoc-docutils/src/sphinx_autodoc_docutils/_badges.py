@@ -14,6 +14,7 @@ _KIND_CLASSES: dict[str, str] = {
     "option": SAB.TYPE_OPTION,
     "transform": SAB.TYPE_TRANSFORM,
     "reader": SAB.TYPE_READER,
+    "parser": SAB.TYPE_PARSER,
 }
 
 

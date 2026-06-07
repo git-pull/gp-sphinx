@@ -77,6 +77,22 @@ Renders every reader class a module defines:
    :no-index:
 ```
 
+### Document one demo parser
+
+Parsers surface their alias tuple and, when the module's `setup()`
+calls `app.add_source_parser()`, the Sphinx registration:
+
+```{eval-rst}
+.. autoparser:: docutils_demo_components.DemoLineParser
+```
+
+### Bulk parsers demo
+
+```{eval-rst}
+.. autoparsers:: docutils_demo_components
+   :no-index:
+```
+
 ### Cross-referencing components
 
 Component entries register targets in the `docutils` domain, so prose

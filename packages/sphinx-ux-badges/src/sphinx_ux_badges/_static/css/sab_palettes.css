@@ -124,6 +124,10 @@
   --gp-sphinx-badge-reader-fg:     #4338ca;
   --gp-sphinx-badge-reader-border: #6366f1;
 
+  --gp-sphinx-badge-parser-bg:     #f0f9ff;
+  --gp-sphinx-badge-parser-fg:     #0369a1;
+  --gp-sphinx-badge-parser-border: #0ea5e9;
+
   /* ── docutils component modifiers (outlined) ────────── */
   --gp-sphinx-badge-mod-priority-fg:     #6b7280;
   --gp-sphinx-badge-mod-priority-border: #d1d5db;
@@ -244,6 +248,10 @@
     --gp-sphinx-badge-reader-fg:     #a5b4fc;
     --gp-sphinx-badge-reader-border: #818cf8;
 
+    --gp-sphinx-badge-parser-bg:     #082f49;
+    --gp-sphinx-badge-parser-fg:     #7dd3fc;
+    --gp-sphinx-badge-parser-border: #38bdf8;
+
     --gp-sphinx-badge-mod-priority-fg:     #9ca3af;
     --gp-sphinx-badge-mod-priority-border: #4b5563;
 
@@ -363,6 +371,10 @@ body[data-theme="dark"] {
   --gp-sphinx-badge-reader-fg:     #a5b4fc;
   --gp-sphinx-badge-reader-border: #818cf8;
 
+  --gp-sphinx-badge-parser-bg:     #082f49;
+  --gp-sphinx-badge-parser-fg:     #7dd3fc;
+  --gp-sphinx-badge-parser-border: #38bdf8;
+
   --gp-sphinx-badge-mod-priority-fg:     #9ca3af;
   --gp-sphinx-badge-mod-priority-border: #4b5563;
 
@@ -438,6 +450,7 @@ body[data-theme="dark"] {
  * ══════════════════════════════════════════════════════════ */
 .gp-sphinx-badge--type-transform { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-transform-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-transform-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-transform-border); }
 .gp-sphinx-badge--type-reader    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-reader-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-reader-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-reader-border); }
+.gp-sphinx-badge--type-parser    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-parser-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-parser-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-parser-border); }
 
 /* ══════════════════════════════════════════════════════════
  * Colour classes — docutils component modifiers (outlined)

@@ -165,6 +165,7 @@ class SAB:
     # ── docutils components (filled, per-type hues) ──────
     TYPE_TRANSFORM = "gp-sphinx-badge--type-transform"
     TYPE_READER = "gp-sphinx-badge--type-reader"
+    TYPE_PARSER = "gp-sphinx-badge--type-parser"
 
     # ── docutils component modifiers (outlined) ──────────
     MOD_PRIORITY = "gp-sphinx-badge--mod-priority"

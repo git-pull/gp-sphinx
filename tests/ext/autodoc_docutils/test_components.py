@@ -23,6 +23,13 @@ from sphinx_autodoc_docutils._components import (
     inject_component_badges,
     normalize_component_nodes,
 )
+from sphinx_autodoc_docutils._parsers_doc import (
+    ParserInfo,
+    _parser_fact_rows,
+    _source_parsers_from_calls,
+    discover_parser,
+    discover_parsers,
+)
 from sphinx_autodoc_docutils._readers_doc import (
     _reader_fact_rows,
     discover_reader,
@@ -354,3 +361,64 @@ def test_reader_fact_rows_dash_for_empty_metadata() -> None:
     assert by_label["Supported formats"] == "—"
     assert by_label["Config section"] == "—"
     assert by_label["Transforms"] == "—"
+
+
+# ---------------------------------------------------------------------------
+# Parsers
+# ---------------------------------------------------------------------------
+
+
+def test_source_parsers_from_calls_filters_parser_classes() -> None:
+    """_source_parsers_from_calls keeps only Parser subclasses."""
+    from docutils.parsers.rst import Parser as RstParser
+
+    classes = _source_parsers_from_calls(
+        [
+            ("add_source_parser", (RstParser,), {}),
+            ("add_source_parser", (object,), {}),
+            ("add_directive", ("noise", object), {}),
+        ],
+    )
+    assert classes == [RstParser]
+
+
+def test_discover_parsers_scans_module() -> None:
+    """discover_parsers finds parser subclasses defined in a module."""
+    infos = discover_parsers("docutils.parsers.rst")
+    assert [(info.cls.__name__, info.registered_via) for info in infos] == [
+        ("Parser", ""),
+    ]
+
+
+def test_discover_parsers_empty_for_module_without_parsers() -> None:
+    """discover_parsers returns [] for modules without parsers."""
+    assert discover_parsers("sphinx_fonts") == []
+
+
+def test_discover_parser_single_path() -> None:
+    """discover_parser imports one parser from a dotted path."""
+    info = discover_parser("docutils.parsers.rst.Parser")
+    assert "restructuredtext" in info.aliases
+
+
+def test_parser_fact_rows_surface_aliases() -> None:
+    """Parser fact rows include the alias tuple and config section."""
+    from docutils.parsers.rst import Parser as RstParser
+
+    rows = _parser_fact_rows(ParserInfo(cls=RstParser))
+    by_label = {row.label: row.body.astext() for row in rows}
+    assert by_label["Python path"] == "docutils.parsers.rst.Parser"
+    assert "rst" in by_label["Supported aliases"]
+    assert by_label["Config section"] == "restructuredtext parser"
+    assert "Registered via" not in by_label
+
+
+def test_parser_fact_rows_include_source_parser_registration() -> None:
+    """A registered source parser surfaces its add_source_parser call."""
+    from docutils.parsers.rst import Parser as RstParser
+
+    rows = _parser_fact_rows(
+        ParserInfo(cls=RstParser, registered_via="add_source_parser"),
+    )
+    by_label = {row.label: row.body.astext() for row in rows}
+    assert by_label["Registered via"] == "app.add_source_parser()"
