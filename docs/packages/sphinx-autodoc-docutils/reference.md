@@ -35,3 +35,9 @@ warn at build time.
 
 The domain also ships a grouped components index:
 {ref}`docutils-componentindex`.
+
+## Extension entry point
+
+```{eval-rst}
+.. autofunction:: sphinx_autodoc_docutils.setup
+```

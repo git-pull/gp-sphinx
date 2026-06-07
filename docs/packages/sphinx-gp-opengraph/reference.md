@@ -10,3 +10,9 @@ Generated from `app.add_config_value()` registrations in
 ```{eval-rst}
 .. autoconfigvalues:: sphinx_gp_opengraph
 ```
+
+## Extension entry point
+
+```{eval-rst}
+.. autofunction:: sphinx_gp_opengraph.setup
+```

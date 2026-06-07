@@ -40,3 +40,9 @@
 
 ```{package-reference} sphinx-ux-autodoc-layout
 ```
+
+## Extension entry point
+
+```{eval-rst}
+.. autofunction:: sphinx_ux_autodoc_layout.setup
+```

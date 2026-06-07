@@ -7,3 +7,9 @@
 ```{eval-rst}
 .. autoconfigvalues:: sphinx_fonts
 ```
+
+## Extension entry point
+
+```{eval-rst}
+.. autofunction:: sphinx_fonts.setup
+```

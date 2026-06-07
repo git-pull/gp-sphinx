@@ -52,3 +52,9 @@ for program-scoped clarity.
 ```{eval-rst}
 .. autoconfigvalues:: sphinx_autodoc_argparse.exemplar
 ```
+
+## Extension entry point
+
+```{eval-rst}
+.. autofunction:: sphinx_autodoc_argparse.setup
+```

@@ -22,3 +22,9 @@ via `sphinx-autodoc-docutils`.
 
 .. autoroles:: sphinx_autodoc_fastmcp
 ```
+
+## Extension entry point
+
+```{eval-rst}
+.. autofunction:: sphinx_autodoc_fastmcp.setup
+```

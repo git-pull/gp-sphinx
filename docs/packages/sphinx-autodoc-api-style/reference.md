@@ -27,3 +27,9 @@ This extension uses:
 | `deprecated` | `SAB.STATE_DEPRECATED` | `gp-sphinx-badge--state-deprecated` |
 
 See {doc}`/packages/sphinx-ux-badges/index` for the full shared palette.
+
+## Extension entry point
+
+```{eval-rst}
+.. autofunction:: sphinx_autodoc_api_style.setup
+```

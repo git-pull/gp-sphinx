@@ -32,3 +32,9 @@ warn at build time.
 
 The domain also ships a grouped components index:
 {ref}`sphinxext-componentindex`.
+
+## Extension entry point
+
+```{eval-rst}
+.. autofunction:: sphinx_autodoc_sphinx.setup
+```
