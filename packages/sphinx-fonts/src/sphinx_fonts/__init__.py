@@ -25,7 +25,7 @@ if t.TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
-__version__ = "0.0.1a27"
+__version__ = "0.0.1a28"
 
 CDN_TEMPLATE = (
     "https://cdn.jsdelivr.net/npm/{package}@{version}"
