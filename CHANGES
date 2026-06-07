@@ -30,7 +30,11 @@ family with the same single + bulk-by-module pattern that
 per-type kind badge, and registry-aware facts — a transform's
 `default_priority` and registration phase, a writer's resolved
 translator class, a node's element categories and per-builder
-visit/depart handlers, a translator's own handler overrides. Bulk
+visit/depart handlers, a translator's own handler overrides.
+List-valued facts render as individual chips, and names with
+documented py-domain targets — Python paths, translator classes,
+transform sets, handler overrides — become cross-reference links,
+degrading to plain chips when no target exists. Bulk
 forms replay a package's `setup()` so Sphinx-side registrations
 (`add_transform`, `add_node`, `add_source_parser`, `set_translator`)
 surface with their real metadata, and fall back to module scans for
