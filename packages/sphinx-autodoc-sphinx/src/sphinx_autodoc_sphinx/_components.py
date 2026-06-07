@@ -21,6 +21,8 @@ from sphinx import addnodes
 from sphinx_autodoc_sphinx._directives import RecorderApp
 from sphinx_ux_autodoc_layout import (
     build_api_facts_section,
+    build_chip_paragraph,
+    build_linked_literal,
     inject_signature_slots,
     iter_desc_nodes,
     parse_generated_markup,
@@ -153,6 +155,19 @@ def component_summary(value: object) -> str:
         if stripped:
             return stripped
     return ""
+
+
+def linked_paragraph(target: str, display: str | None = None) -> nodes.paragraph:
+    """Return a paragraph holding one linked literal chip.
+
+    Examples
+    --------
+    >>> linked_paragraph("pkg.mod.Cls").astext()
+    'pkg.mod.Cls'
+    >>> linked_paragraph("pkg.mod.Cls", "Cls").astext()
+    'Cls'
+    """
+    return build_chip_paragraph([build_linked_literal(target, display)])
 
 
 def import_component(path: str) -> type:

@@ -15,12 +15,13 @@ from sphinx_autodoc_sphinx._components import (
     component_classes,
     component_summary,
     import_component,
+    linked_paragraph,
     render_component_nodes,
     replay_setup,
 )
 from sphinx_autodoc_sphinx._directives import _literal_paragraph
 from sphinx_autodoc_sphinx.domain import DOMAIN
-from sphinx_ux_autodoc_layout import ApiFactRow
+from sphinx_ux_autodoc_layout import ApiFactRow, build_chip_paragraph
 
 if t.TYPE_CHECKING:
     from docutils import nodes
@@ -158,19 +159,18 @@ def _domain_fact_rows(info: DomainInfo) -> list[ApiFactRow]:
      'Directives', 'Indices']
     """
     cls = info.cls
-    object_types = ", ".join(sorted(cls.object_types)) or "—"
-    roles = ", ".join(sorted(cls.roles)) or "—"
-    domain_directives = ", ".join(sorted(cls.directives)) or "—"
-    indices = ", ".join(index.name for index in cls.indices) or "—"
     return [
-        ApiFactRow("Python path", _literal_paragraph(info.qualified_name)),
+        ApiFactRow("Python path", linked_paragraph(info.qualified_name)),
         ApiFactRow("Domain name", _literal_paragraph(info.domain_name or "—")),
         # str() unwraps the lazy gettext proxy Sphinx domains use.
         ApiFactRow("Label", _literal_paragraph(str(cls.label) or "—")),
-        ApiFactRow("Object types", _literal_paragraph(object_types)),
-        ApiFactRow("Roles", _literal_paragraph(roles)),
-        ApiFactRow("Directives", _literal_paragraph(domain_directives)),
-        ApiFactRow("Indices", _literal_paragraph(indices)),
+        ApiFactRow("Object types", build_chip_paragraph(sorted(cls.object_types))),
+        ApiFactRow("Roles", build_chip_paragraph(sorted(cls.roles))),
+        ApiFactRow("Directives", build_chip_paragraph(sorted(cls.directives))),
+        ApiFactRow(
+            "Indices",
+            build_chip_paragraph([index.name for index in cls.indices]),
+        ),
     ]
 
 

@@ -15,12 +15,13 @@ from sphinx_autodoc_sphinx._components import (
     component_classes,
     component_summary,
     import_component,
+    linked_paragraph,
     render_component_nodes,
     replay_setup,
 )
 from sphinx_autodoc_sphinx._directives import _literal_paragraph
 from sphinx_autodoc_sphinx.domain import BUILDER
-from sphinx_ux_autodoc_layout import ApiFactRow
+from sphinx_ux_autodoc_layout import ApiFactRow, build_chip_paragraph
 
 if t.TYPE_CHECKING:
     from docutils import nodes
@@ -155,21 +156,23 @@ def _builder_fact_rows(info: BuilderInfo) -> list[ApiFactRow]:
      'Epilog']
     """
     cls = info.cls
-    image_types = ", ".join(cls.supported_image_types) or "—"
     # default_translator_class only exists on translator-driven
     # builders (StandaloneHTMLBuilder and friends), not the base.
     translator = getattr(cls, "default_translator_class", None)
-    translator_path = (
-        f"{translator.__module__}.{translator.__name__}"
+    translator_body = (
+        linked_paragraph(f"{translator.__module__}.{translator.__qualname__}")
         if inspect.isclass(translator)
-        else "—"
+        else _literal_paragraph("—")
     )
     return [
-        ApiFactRow("Python path", _literal_paragraph(info.qualified_name)),
+        ApiFactRow("Python path", linked_paragraph(info.qualified_name)),
         ApiFactRow("Builder name", _literal_paragraph(info.builder_name or "—")),
         ApiFactRow("Output format", _literal_paragraph(str(cls.format) or "—")),
-        ApiFactRow("Supported image types", _literal_paragraph(image_types)),
-        ApiFactRow("Default translator", _literal_paragraph(translator_path)),
+        ApiFactRow(
+            "Supported image types",
+            build_chip_paragraph(list(cls.supported_image_types)),
+        ),
+        ApiFactRow("Default translator", translator_body),
         ApiFactRow("Parallel-safe", _literal_paragraph(str(cls.allow_parallel))),
         ApiFactRow("Epilog", _literal_paragraph(str(cls.epilog) or "—")),
     ]

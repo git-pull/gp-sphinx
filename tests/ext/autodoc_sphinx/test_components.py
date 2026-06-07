@@ -374,3 +374,39 @@ def test_domain_fact_rows_dash_for_bare_domain() -> None:
     assert by_label["Roles"] == "—"
     assert by_label["Directives"] == "—"
     assert by_label["Indices"] == "—"
+
+
+# ---------------------------------------------------------------------------
+# Linked facts
+# ---------------------------------------------------------------------------
+
+
+def test_builder_python_path_fact_is_linked() -> None:
+    """The Python path fact wraps the dotted path in a py-obj xref."""
+    rows = _builder_fact_rows(BuilderInfo(cls=_DemoBuilder))
+    xref = next(iter(rows[0].body.findall(addnodes.pending_xref)))
+    assert xref["refdomain"] == "py"
+    assert xref["reftarget"].endswith("._DemoBuilder")
+    assert xref["refwarn"] is False
+
+
+def test_builder_default_translator_fact_is_linked() -> None:
+    """A resolved default translator links to its qualified path."""
+    from sphinx.builders.html import StandaloneHTMLBuilder
+
+    rows = _builder_fact_rows(BuilderInfo(cls=StandaloneHTMLBuilder))
+    translator_row = next(row for row in rows if row.label == "Default translator")
+    xref = next(iter(translator_row.body.findall(addnodes.pending_xref)))
+    assert xref["reftarget"].endswith("HTML5Translator")
+
+
+def test_domain_surface_facts_render_chips() -> None:
+    """Object types and roles render one literal chip per value."""
+    from sphinx_autodoc_argparse.domain import ArgparseDomain
+
+    rows = _domain_fact_rows(DomainInfo(cls=ArgparseDomain))
+    object_types_row = next(row for row in rows if row.label == "Object types")
+    literal_count = sum(
+        isinstance(child, nodes.literal) for child in object_types_row.body.children
+    )
+    assert literal_count == 4
