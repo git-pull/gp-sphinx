@@ -12,7 +12,8 @@
     "isolatedModules": true,
     "erasableSyntaxOnly": true,
     "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
     "types": ["node"]
   },
-  "include": ["src/**/*", "__tests__/**/*", "vitest.config.ts"]
+  "include": ["src/**/*", "__tests__/**/*", "scripts/**/*", "vitest.config.ts"]
 }
