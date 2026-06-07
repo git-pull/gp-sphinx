@@ -77,6 +77,17 @@ _MANAGED_PYTHON_OBJTYPES: tuple[str, ...] = (
     "type",
 )
 
+_MANAGED_DOCUTILS_OBJTYPES: tuple[str, ...] = (
+    "transform",
+    "reader",
+    "parser",
+    "writer",
+    "node",
+    "translator",
+)
+
+_MANAGED_SPHINXEXT_OBJTYPES: tuple[str, ...] = ("builder", "domain")
+
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class DescLayoutProfile:
@@ -129,6 +140,22 @@ _PROFILE_REGISTRY: dict[tuple[str, str], DescLayoutProfile] = {
         slug="mcp-tool",
         allow_signature_fold=True,
     ),
+    **{
+        ("docutils", objtype): DescLayoutProfile(
+            domain="docutils",
+            objtype=objtype,
+            slug=f"docutils-{objtype}",
+        )
+        for objtype in _MANAGED_DOCUTILS_OBJTYPES
+    },
+    **{
+        ("sphinxext", objtype): DescLayoutProfile(
+            domain="sphinxext",
+            objtype=objtype,
+            slug=f"sphinxext-{objtype}",
+        )
+        for objtype in _MANAGED_SPHINXEXT_OBJTYPES
+    },
 }
 
 

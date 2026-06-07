@@ -6,10 +6,46 @@ import logging
 import pathlib
 import typing as t
 
+from sphinx_autodoc_sphinx._builders_doc import (
+    AutoBuilder,
+    AutoBuilders,
+    BuilderInfo,
+    discover_builder,
+    discover_builders,
+)
 from sphinx_autodoc_sphinx._directives import (
     AutoconfigvalueDirective,
     AutoconfigvaluesDirective,
 )
+from sphinx_autodoc_sphinx._domains_doc import (
+    AutoDomain,
+    AutoDomains,
+    DomainInfo,
+    discover_domain,
+    discover_domains,
+)
+from sphinx_autodoc_sphinx.domain import (
+    SphinxExtComponentIndex,
+    SphinxExtDomain,
+)
+
+__all__ = [
+    "AutoBuilder",
+    "AutoBuilders",
+    "AutoDomain",
+    "AutoDomains",
+    "AutoconfigvalueDirective",
+    "AutoconfigvaluesDirective",
+    "BuilderInfo",
+    "DomainInfo",
+    "SphinxExtComponentIndex",
+    "SphinxExtDomain",
+    "discover_builder",
+    "discover_builders",
+    "discover_domain",
+    "discover_domains",
+    "setup",
+]
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -30,6 +66,8 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     ...         self.calls.append(("setup_extension", name))
     ...     def add_directive(self, name: str, directive: object) -> None:
     ...         self.calls.append(("add_directive", name))
+    ...     def add_domain(self, domain: object) -> None:
+    ...         self.calls.append(("add_domain", domain))
     ...     def connect(self, event: str, handler: object) -> None:
     ...         self.calls.append(("connect", event))
     ...     def add_css_file(self, filename: str) -> None:
@@ -37,6 +75,8 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     >>> fake = FakeApp()
     >>> metadata = setup(fake)  # type: ignore[arg-type]
     >>> ("add_directive", "autoconfigvalue") in fake.calls
+    True
+    >>> ("add_domain", SphinxExtDomain) in fake.calls
     True
     >>> ("setup_extension", "sphinx_ux_autodoc_layout") in fake.calls
     True
@@ -48,8 +88,13 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.setup_extension("sphinx_ux_badges")
     app.setup_extension("sphinx_ux_autodoc_layout")
     app.setup_extension("sphinx_autodoc_typehints_gp")
+    app.add_domain(SphinxExtDomain)
     app.add_directive("autoconfigvalue", AutoconfigvalueDirective)
     app.add_directive("autoconfigvalues", AutoconfigvaluesDirective)
+    app.add_directive("autobuilder", AutoBuilder)
+    app.add_directive("autobuilders", AutoBuilders)
+    app.add_directive("autodomain", AutoDomain)
+    app.add_directive("autodomains", AutoDomains)
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
 

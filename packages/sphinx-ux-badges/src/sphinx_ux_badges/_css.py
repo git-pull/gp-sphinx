@@ -162,6 +162,25 @@ class SAB:
     TYPE_ROLE = "gp-sphinx-badge--type-role"
     TYPE_OPTION = "gp-sphinx-badge--type-option"
 
+    # ── docutils components (filled, per-type hues) ──────
+    TYPE_TRANSFORM = "gp-sphinx-badge--type-transform"
+    TYPE_READER = "gp-sphinx-badge--type-reader"
+    TYPE_PARSER = "gp-sphinx-badge--type-parser"
+    TYPE_WRITER = "gp-sphinx-badge--type-writer"
+    TYPE_NODE = "gp-sphinx-badge--type-node"
+    TYPE_TRANSLATOR = "gp-sphinx-badge--type-translator"
+
+    # ── docutils component modifiers (outlined) ──────────
+    MOD_PRIORITY = "gp-sphinx-badge--mod-priority"
+
+    # ── Sphinx extension components (filled) ─────────────
+    TYPE_BUILDER = "gp-sphinx-badge--type-builder"
+    TYPE_DOMAIN = "gp-sphinx-badge--type-domain"
+
+    # ── Sphinx extension component modifiers (outlined) ──
+    MOD_FORMAT = "gp-sphinx-badge--mod-format"
+    MOD_DOMAIN_NAME = "gp-sphinx-badge--mod-domain-name"
+
     # ── Package metadata (maturity + links) ───────────────
     META_ALPHA = "gp-sphinx-badge--meta-alpha"
     META_BETA = "gp-sphinx-badge--meta-beta"

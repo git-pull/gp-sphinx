@@ -25,16 +25,22 @@ from sphinx import addnodes
 from sphinx.util.docutils import SphinxDirective
 
 from sphinx_autodoc_sphinx._badges import build_config_badge_group
-from sphinx_autodoc_typehints_gp import normalize_type_collection_text
+from sphinx_autodoc_typehints_gp import (
+    build_annotation_display_paragraph,
+    normalize_type_collection_text,
+)
 from sphinx_ux_autodoc_layout import (
     ApiFactRow,
     build_api_facts_section,
+    build_chip_paragraph,
+    build_linked_literal,
     inject_signature_slots,
     iter_desc_nodes,
     parse_generated_markup,
 )
 
 if t.TYPE_CHECKING:
+    from sphinx.environment import BuildEnvironment
     from sphinx.util.typing import OptionSpec
 
 _COMPLEX_REPR_THRESHOLD = 60
@@ -163,11 +169,12 @@ def _literal_paragraph(text: str) -> nodes.paragraph:
 
 
 def _is_complex_default(value: object) -> bool:  # object: only calls repr()
-    """Return True when repr of value exceeds the inline display threshold.
+    """Return True when a default should render as a highlighted block.
 
-    Values whose repr is longer than :data:`_COMPLEX_REPR_THRESHOLD` chars
-    are rendered as a Pygments-highlighted ``literal_block`` node rather than
-    as an inline ``:default:`` field literal.
+    Non-empty containers always render as a Pygments-highlighted
+    ``literal_block`` — dict/list defaults read as structured Python,
+    not as an inline token. Scalars stay inline unless their repr
+    exceeds :data:`_COMPLEX_REPR_THRESHOLD` chars.
 
     Examples
     --------
@@ -175,9 +182,17 @@ def _is_complex_default(value: object) -> bool:  # object: only calls repr()
     False
     >>> _is_complex_default("warning")
     False
+    >>> _is_complex_default({})
+    False
+    >>> _is_complex_default({"light": "mint", "dark": "teal"})
+    True
+    >>> _is_complex_default(["a"])
+    True
     >>> _is_complex_default(frozenset(range(15)))
     True
     """
+    if isinstance(value, (dict, list, tuple, set, frozenset)) and value:
+        return True
     return len(repr(value)) > _COMPLEX_REPR_THRESHOLD
 
 
@@ -379,25 +394,47 @@ def _inject_config_badges(
             )
 
 
-def _config_fact_rows(value: SphinxConfigValue) -> list[ApiFactRow]:
-    """Return shared fact rows for one config value."""
+def _config_fact_rows(
+    value: SphinxConfigValue,
+    *,
+    env: BuildEnvironment | None = None,
+) -> list[ApiFactRow]:
+    """Return shared fact rows for one config value.
+
+    With *env*, the Type fact renders through the shared annotation
+    pipeline, so type names with py-domain targets — builtins via the
+    python intersphinx inventory included — become cross-reference
+    links. Without it, the Type fact stays a plain literal.
+    """
     default_body: nodes.Node
     if _is_complex_default(value.default):
         default_body = _make_default_block(value.default)
     else:
         default_body = _literal_paragraph(repr(value.default))
+    type_text = normalize_type_collection_text(value.types, default=value.default)
+    type_body: nodes.Node
+    if type_text in {"", "None"}:
+        # The shared display policy treats a bare ``None`` as a
+        # literal-enum member (collapsing it to the ``enum`` marker),
+        # and the workspace policy never links ``None`` anyway — keep
+        # the plain literal for both.
+        type_body = _literal_paragraph(type_text)
+    else:
+        type_body = build_annotation_display_paragraph(type_text, env)
     return [
+        ApiFactRow("Type", type_body),
+        ApiFactRow("Default", default_body),
         ApiFactRow(
-            "Type",
-            _literal_paragraph(
-                normalize_type_collection_text(
-                    value.types,
-                    default=value.default,
-                )
+            "Registered by",
+            build_chip_paragraph(
+                [
+                    build_linked_literal(
+                        f"{value.module_name}.setup",
+                        f"{value.module_name}.setup()",
+                    ),
+                ],
             ),
         ),
-        ApiFactRow("Default", default_body),
-        ApiFactRow("Registered by", _literal_paragraph(f"{value.module_name}.setup()")),
     ]
 
 
@@ -414,7 +451,9 @@ def _render_config_value_nodes(
     )
     _inject_config_badges(value_nodes, value)
     for desc_content in _iter_desc_content(value_nodes):
-        desc_content += build_api_facts_section(_config_fact_rows(value))
+        desc_content += build_api_facts_section(
+            _config_fact_rows(value, env=directive.env),
+        )
     return value_nodes
 
 

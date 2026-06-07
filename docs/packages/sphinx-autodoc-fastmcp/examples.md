@@ -28,3 +28,13 @@ for a plain inline reference.
 ```{eval-rst}
 .. fastmcp-tool-summary::
 ```
+
+## Demo module reference
+
+The demo objects above, as plain Python API — the targets the
+entries' `Python path` facts link to:
+
+```{eval-rst}
+.. automodule:: fastmcp_demo_tools
+   :members:
+```

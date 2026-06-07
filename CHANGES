@@ -18,6 +18,41 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### What's new
+
+gp-sphinx 0.0.1a29 extends component autodoc to the whole docutils and
+Sphinx extension family. Transforms, readers, parsers, writers, custom
+nodes, translators, builders, and domains now get the same polished
+reference cards that directives, roles, and config values already had —
+and documented components cross-link to the APIs they reference.
+
+#### Autodoc for docutils components
+
+`sphinx-autodoc-docutils` now documents transforms, readers, parsers,
+writers, custom nodes, and translators. Each type gets a single
+directive and a bulk-by-module form (`autotransform` /
+`autotransforms`, and siblings), rendering the shared reference card
+with a type badge and the component's registry metadata. See
+{ref}`sphinx-autodoc-docutils-examples` for live demos. (#53)
+
+#### Autodoc for Sphinx builders and domains
+
+`sphinx-autodoc-sphinx` adds `autobuilder` and `autodomain` (with bulk
+forms) alongside its config-value support, documenting `Builder` and
+`Domain` subclasses with their registered names, output formats, and
+extension surfaces. See {ref}`sphinx-autodoc-sphinx-examples` for live
+demos. (#53)
+
+#### Cross-reference roles for documented components
+
+Two Sphinx domains — `docutils` and `sphinxext` — make every documented
+component linkable from prose, e.g. `` {docutils:transform}`SanitizeTransform` ``,
+with a grouped component index per domain. Component facts (Python
+paths, translator classes, config types, registering entry points)
+become links to their APIs where a target exists, and unresolved
+references warn at build time. See
+{ref}`sphinx-autodoc-docutils-reference` for the role tables. (#53)
+
 ### Fixes
 
 #### Code comments no longer trigger a font swap on first paint

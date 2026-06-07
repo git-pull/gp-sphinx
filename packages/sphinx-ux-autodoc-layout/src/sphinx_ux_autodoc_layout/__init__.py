@@ -19,6 +19,10 @@ from sphinx import addnodes
 
 from sphinx_ux_autodoc_layout._cards import build_api_card_entry
 from sphinx_ux_autodoc_layout._css import API
+from sphinx_ux_autodoc_layout._inline import (
+    build_chip_paragraph,
+    build_linked_literal,
+)
 from sphinx_ux_autodoc_layout._nodes import (
     api_component,
     api_fold,
@@ -79,6 +83,8 @@ __all__ = [
     "build_api_slot",
     "build_api_summary_section",
     "build_api_table_section",
+    "build_chip_paragraph",
+    "build_linked_literal",
     "inject_signature_slots",
     "is_viewcode_ref",
     "iter_desc_nodes",

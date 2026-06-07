@@ -26,6 +26,22 @@ def build_config_badge_group(value: SphinxConfigValue) -> nodes.inline:
     -------
     nodes.inline
         Badge group containing the config kind and rebuild mode badges.
+
+    Examples
+    --------
+    >>> from sphinx_autodoc_sphinx._directives import SphinxConfigValue
+    >>> value = SphinxConfigValue("demo_ext", "demo_option", True, "html", (bool,))
+    >>> group = build_config_badge_group(value)
+    >>> "config" in group.astext()
+    True
+    >>> "html" in group.astext()
+    True
+
+    An empty rebuild mode renders as ``none``:
+
+    >>> bare = SphinxConfigValue("demo_ext", "demo_option", None, "")
+    >>> "none" in build_config_badge_group(bare).astext()
+    True
     """
     rebuild = value.rebuild or "none"
     return build_badge_group_from_specs(
@@ -44,3 +60,89 @@ def build_config_badge_group(value: SphinxConfigValue) -> nodes.inline:
         ],
         classes=[_GROUP_CLASS],
     )
+
+
+def build_domain_badge_group(domain_name: str = "") -> nodes.inline:
+    """Return header badges for one documented Sphinx domain.
+
+    Parameters
+    ----------
+    domain_name : str
+        The domain's registered name (its role prefix); rendered as an
+        outlined secondary badge when non-empty.
+
+    Returns
+    -------
+    nodes.inline
+        Badge group for the entry header.
+
+    Examples
+    --------
+    >>> group = build_domain_badge_group("argparse")
+    >>> "domain" in group.astext()
+    True
+    >>> "argparse" in group.astext()
+    True
+    >>> build_domain_badge_group("").astext()
+    'domain'
+    """
+    specs = [
+        BadgeSpec(
+            "domain",
+            tooltip="Sphinx domain",
+            classes=(SAB.TYPE_DOMAIN,),
+        ),
+    ]
+    if domain_name:
+        specs.append(
+            BadgeSpec(
+                domain_name,
+                tooltip=f"Domain name: {domain_name}",
+                classes=(SAB.MOD_DOMAIN_NAME,),
+                fill="outline",
+            ),
+        )
+    return build_badge_group_from_specs(specs, classes=[_GROUP_CLASS])
+
+
+def build_builder_badge_group(output_format: str = "") -> nodes.inline:
+    """Return header badges for one documented Sphinx builder.
+
+    Parameters
+    ----------
+    output_format : str
+        The builder's ``format`` attribute; rendered as an outlined
+        secondary badge when non-empty.
+
+    Returns
+    -------
+    nodes.inline
+        Badge group for the entry header.
+
+    Examples
+    --------
+    >>> group = build_builder_badge_group("html")
+    >>> "builder" in group.astext()
+    True
+    >>> "html" in group.astext()
+    True
+    >>> build_builder_badge_group("").astext()
+    'builder'
+    """
+    specs = [
+        BadgeSpec(
+            "builder",
+            tooltip="Sphinx builder",
+            classes=(SAB.TYPE_BUILDER,),
+        ),
+    ]
+    if output_format:
+        specs.append(
+            BadgeSpec(
+                output_format,
+                tooltip=f"Output format: {output_format}",
+                classes=(SAB.MOD_FORMAT,),
+                fill="outline",
+            ),
+        )
+    return build_badge_group_from_specs(specs, classes=[_GROUP_CLASS])

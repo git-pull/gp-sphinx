@@ -20,7 +20,11 @@ _MODULE_SOURCE = textwrap.dedent(
     from __future__ import annotations
 
     from docutils import nodes
+    from docutils.parsers import Parser
     from docutils.parsers.rst import Directive, directives
+    from docutils.readers import Reader
+    from docutils.transforms import Transform
+    from docutils.writers import Writer
 
 
     class DemoDirective(Directive):
@@ -48,6 +52,75 @@ _MODULE_SOURCE = textwrap.dedent(
 
     demo_role.options = {"class": directives.class_option}
     demo_role.content = True
+
+
+    class DemoTransform(Transform):
+        \"\"\"Reorder demo paragraphs after parsing.\"\"\"
+
+        default_priority = 765
+
+        def apply(self):
+            pass
+
+
+    class DemoReader(Reader):
+        \"\"\"Read demo article sources.\"\"\"
+
+        supported = ("demo-article",)
+        config_section = "demo reader"
+
+        def get_transforms(self):
+            return [*super().get_transforms(), DemoTransform]
+
+
+    class DemoParser(Parser):
+        \"\"\"Parse demo-line sources.\"\"\"
+
+        supported = ("demo-lines",)
+        config_section = "demo parser"
+
+        def parse(self, inputstring, document):
+            pass
+
+
+    class demo_chip(nodes.General, nodes.Inline, nodes.Element):
+        \"\"\"Inline chip node for demos.\"\"\"
+
+
+    def visit_demo_chip(translator, node):
+        pass
+
+
+    def depart_demo_chip(translator, node):
+        pass
+
+
+    class DemoTranslator(nodes.SparseNodeVisitor):
+        \"\"\"Translate demo documents to plain text.\"\"\"
+
+        def visit_paragraph(self, node):
+            pass
+
+        def depart_paragraph(self, node):
+            pass
+
+
+    class DemoWriter(Writer):
+        \"\"\"Write demo documents as plain text.\"\"\"
+
+        supported = ("demo-plain",)
+        config_section = "demo writer"
+        translator_class = DemoTranslator
+
+        def translate(self):
+            self.output = ""
+
+
+    def setup(app):
+        app.add_transform(DemoTransform)
+        app.add_source_parser(DemoParser)
+        app.add_node(demo_chip, html=(visit_demo_chip, depart_demo_chip))
+        app.set_translator("demo-plain", DemoTranslator, override=True)
     """
 )
 
@@ -73,6 +146,21 @@ _INDEX_RST = textwrap.dedent(
     .. autodirective:: demo_docutils_objects.DemoDirective
 
     .. autorole:: demo_docutils_objects.demo_role
+
+    .. autotransform:: demo_docutils_objects.DemoTransform
+
+    .. autotransforms:: demo_docutils_objects
+       :no-index:
+
+    .. autoreader:: demo_docutils_objects.DemoReader
+
+    .. autoparser:: demo_docutils_objects.DemoParser
+
+    .. autowriter:: demo_docutils_objects.DemoWriter
+
+    .. autonode:: demo_docutils_objects.demo_chip
+
+    .. autotranslator:: demo_docutils_objects.DemoTranslator
     """
 )
 
@@ -122,3 +210,89 @@ def test_autodoc_docutils_entries_use_shared_layout(
     assert ">option<" in html
     assert ">role<" in html
     assert "Python path" in html
+
+
+@pytest.mark.integration
+def test_autodoc_docutils_transform_entries(
+    autodoc_docutils_html_result: SharedSphinxResult,
+) -> None:
+    """autotransform entries render with profile, badges, and facts."""
+    html = read_output(autodoc_docutils_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--docutils-transform" in html
+    assert ">transform<" in html
+    assert "gp-sphinx-badge--mod-priority" in html
+    assert ">765<" in html
+    assert "Default priority" in html
+    assert "app.add_transform()" in html
+
+
+@pytest.mark.integration
+def test_autodoc_docutils_reader_entries(
+    autodoc_docutils_html_result: SharedSphinxResult,
+) -> None:
+    """autoreader entries render with profile, badge, and facts."""
+    html = read_output(autodoc_docutils_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--docutils-reader" in html
+    assert ">reader<" in html
+    assert "Supported formats" in html
+    assert "demo-article" in html
+    assert "DemoTransform" in html
+
+
+@pytest.mark.integration
+def test_autodoc_docutils_parser_entries(
+    autodoc_docutils_html_result: SharedSphinxResult,
+) -> None:
+    """autoparser entries render with profile, badge, and facts."""
+    html = read_output(autodoc_docutils_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--docutils-parser" in html
+    assert ">parser<" in html
+    assert "Supported aliases" in html
+    assert "demo-lines" in html
+    assert "app.add_source_parser()" in html
+
+
+@pytest.mark.integration
+def test_autodoc_docutils_writer_entries(
+    autodoc_docutils_html_result: SharedSphinxResult,
+) -> None:
+    """autowriter entries render with profile, badge, and facts."""
+    html = read_output(autodoc_docutils_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--docutils-writer" in html
+    assert ">writer<" in html
+    assert "Translator class" in html
+    assert "demo_docutils_objects.DemoTranslator" in html
+    assert "demo-plain" in html
+
+
+@pytest.mark.integration
+def test_autodoc_docutils_node_entries(
+    autodoc_docutils_html_result: SharedSphinxResult,
+) -> None:
+    """autonode entries render with profile, badge, and facts."""
+    html = read_output(autodoc_docutils_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--docutils-node" in html
+    assert ">node<" in html
+    assert "Base classes" in html
+    assert "Categories" in html
+    assert "Visit/depart handlers" in html
+
+
+@pytest.mark.integration
+def test_autodoc_docutils_translator_entries(
+    autodoc_docutils_html_result: SharedSphinxResult,
+) -> None:
+    """autotranslator entries render with profile, badges, and facts."""
+    html = read_output(autodoc_docutils_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--docutils-translator" in html
+    assert ">translator<" in html
+    assert ">override<" in html
+    assert "Overrides" in html
+    assert "visit_paragraph" in html
+    assert "Registered for builder" in html

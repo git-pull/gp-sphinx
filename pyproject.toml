@@ -207,6 +207,18 @@ convention = "numpy"
 [tool.pytest.ini_options]
 addopts = "-s --tb=short --no-header --showlocals --doctest-modules"
 doctest_optionflags = "ELLIPSIS NORMALIZE_WHITESPACE"
+# pytest's default norecursedirs covers "build" but not Sphinx's
+# "_build"; generated markdown under docs/_build otherwise collects as
+# doctest files and breaks collection whenever a build output exists
+# (tests that build the live docs/ tree can create it mid-session).
+norecursedirs = [
+  ".*",
+  "*.egg",
+  "_build",
+  "build",
+  "dist",
+  "node_modules",
+]
 markers = [
   "integration: sphinx integration tests (require full sphinx build)",
 ]

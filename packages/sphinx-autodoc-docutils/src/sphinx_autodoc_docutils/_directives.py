@@ -19,6 +19,8 @@ from sphinx_ux_autodoc_layout import (
     ApiFactRow,
     build_api_facts_section,
     build_api_table_section,
+    build_chip_paragraph,
+    build_linked_literal,
     inject_signature_slots,
     iter_desc_nodes,
     parse_generated_markup,
@@ -270,24 +272,6 @@ def _registered_name(name: str) -> str:
     return name.removesuffix("Directive").lower()
 
 
-def _option_rows(option_spec: OptionSpec | None) -> list[str]:
-    """Return table rows describing a directive or role option spec.
-
-    Examples
-    --------
-    >>> rows = _option_rows({"class": str})
-    >>> rows[0]
-    '| `class` | `str` |'
-    """
-    if not isinstance(option_spec, dict) or not option_spec:
-        return []
-    rows = []
-    for name, converter in sorted(option_spec.items()):
-        converter_name = getattr(converter, "__name__", type(converter).__name__)
-        rows.append(f"| `{name}` | `{converter_name}` |")
-    return rows
-
-
 def _literal_paragraph(text: str) -> nodes.paragraph:
     """Return a paragraph containing one literal node."""
     paragraph = nodes.paragraph()
@@ -295,20 +279,51 @@ def _literal_paragraph(text: str) -> nodes.paragraph:
     return paragraph
 
 
+def _converter_target(converter: object) -> str:
+    """Return the cross-reference target for an option-spec converter.
+
+    Builtins drop their module prefix so they match the python
+    inventory keys; everything else uses the qualified dotted path.
+    Returns an empty string for objects without importable identity.
+
+    Examples
+    --------
+    >>> from docutils.parsers.rst import directives
+    >>> _converter_target(directives.class_option)
+    'docutils.parsers.rst.directives.class_option'
+    >>> _converter_target(str)
+    'str'
+    >>> _converter_target(object())
+    ''
+    """
+    module = getattr(converter, "__module__", "")
+    name = getattr(converter, "__qualname__", "")
+    if not module or not name:
+        return ""
+    if module == "builtins":
+        return name
+    return f"{module}.{name}"
+
+
 def _option_field_list(option_spec: OptionSpec | None) -> nodes.field_list | None:
     """Return a field-list representation of an option spec."""
-    rows = _option_rows(option_spec)
-    if not rows:
+    if not isinstance(option_spec, dict) or not option_spec:
         return None
     field_list = nodes.field_list()
-    for row in rows:
-        option_name, converter_name = row.split("|")[1:3]
-        clean_option_name = option_name.strip().strip("`")
-        clean_converter_name = converter_name.strip().strip("`")
+    for option_name, converter in sorted(option_spec.items()):
+        converter_name = getattr(converter, "__name__", type(converter).__name__)
+        target = _converter_target(converter)
+        body: nodes.paragraph
+        if target:
+            body = build_chip_paragraph(
+                [build_linked_literal(target, converter_name)],
+            )
+        else:
+            body = _literal_paragraph(converter_name)
         field_list += nodes.field(
             "",
-            nodes.field_name("", clean_option_name),
-            nodes.field_body("", _literal_paragraph(clean_converter_name)),
+            nodes.field_name("", option_name),
+            nodes.field_body("", body),
         )
     return field_list
 
@@ -380,7 +395,10 @@ def _directive_fact_rows(
 ) -> list[ApiFactRow]:
     """Return shared fact rows for one autodocumented directive."""
     return [
-        ApiFactRow("Python path", _literal_paragraph(path)),
+        ApiFactRow(
+            "Python path",
+            build_chip_paragraph([build_linked_literal(path)]),
+        ),
         ApiFactRow(
             "Required arguments",
             _literal_paragraph(str(directive_cls.required_arguments)),
@@ -399,7 +417,12 @@ def _directive_fact_rows(
 
 def _role_fact_rows(path: str, role_fn: object) -> list[ApiFactRow]:
     """Return shared fact rows for one autodocumented role."""
-    rows = [ApiFactRow("Python path", _literal_paragraph(path))]
+    rows = [
+        ApiFactRow(
+            "Python path",
+            build_chip_paragraph([build_linked_literal(path)]),
+        ),
+    ]
     content_value = getattr(role_fn, "content", None)
     if content_value is not None:
         rows.append(
@@ -484,19 +507,31 @@ def _directive_markup(
         "",
         f"   {_summary(directive_cls) or 'Autodocumented directive class.'}",
     ]
-    option_rows = _option_rows(getattr(directive_cls, "option_spec", None))
-    if option_rows:
+    option_spec = getattr(directive_cls, "option_spec", None)
+    if isinstance(option_spec, dict) and option_spec:
         lines.extend(["", "   Options:", ""])
-        for row in option_rows:
-            option_name, converter_name = row.split("|")[1:3]
-            clean_option_name = option_name.strip().strip("`")
-            clean_converter_name = converter_name.strip().strip("`")
+        for option_name, converter in sorted(option_spec.items()):
+            converter_name = getattr(
+                converter,
+                "__name__",
+                type(converter).__name__,
+            )
+            target = _converter_target(converter)
+            # A :py:obj: with an explicit target links to the converter
+            # when its inventory is mapped and renders as plain text
+            # otherwise (the build is not nitpicky), matching the
+            # role-option validator treatment.
+            validator = (
+                f":py:obj:`{converter_name} <{target}>`"
+                if target
+                else f"``{converter_name}``"
+            )
             lines.extend(
                 [
-                    f"   .. rst:directive:option:: {clean_option_name}",
+                    f"   .. rst:directive:option:: {option_name}",
                     "      :no-index:" if no_index else "",
                     "",
-                    f"      Validator: ``{clean_converter_name}``.",
+                    f"      Validator: {validator}.",
                     "",
                 ]
             )

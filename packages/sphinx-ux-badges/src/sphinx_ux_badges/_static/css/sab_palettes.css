@@ -115,6 +115,51 @@
   --gp-sphinx-badge-docutils-fg:     #6d28d9;
   --gp-sphinx-badge-docutils-border: #8b5cf6;
 
+  /* ── docutils components (filled, per-type hues) ────── */
+  --gp-sphinx-badge-transform-bg:     #faf5ff;
+  --gp-sphinx-badge-transform-fg:     #7e22ce;
+  --gp-sphinx-badge-transform-border: #a855f7;
+
+  --gp-sphinx-badge-reader-bg:     #eef2ff;
+  --gp-sphinx-badge-reader-fg:     #4338ca;
+  --gp-sphinx-badge-reader-border: #6366f1;
+
+  --gp-sphinx-badge-parser-bg:     #f0f9ff;
+  --gp-sphinx-badge-parser-fg:     #0369a1;
+  --gp-sphinx-badge-parser-border: #0ea5e9;
+
+  --gp-sphinx-badge-writer-bg:     #f0fdfa;
+  --gp-sphinx-badge-writer-fg:     #0f766e;
+  --gp-sphinx-badge-writer-border: #14b8a6;
+
+  --gp-sphinx-badge-node-bg:     #fdf4ff;
+  --gp-sphinx-badge-node-fg:     #a21caf;
+  --gp-sphinx-badge-node-border: #d946ef;
+
+  --gp-sphinx-badge-translator-bg:     #eff6ff;
+  --gp-sphinx-badge-translator-fg:     #1d4ed8;
+  --gp-sphinx-badge-translator-border: #3b82f6;
+
+  /* ── docutils component modifiers (outlined) ────────── */
+  --gp-sphinx-badge-mod-priority-fg:     #6b7280;
+  --gp-sphinx-badge-mod-priority-border: #d1d5db;
+
+  /* ── Sphinx extension components (filled) ───────────── */
+  --gp-sphinx-badge-builder-bg:     #fffbeb;
+  --gp-sphinx-badge-builder-fg:     #b45309;
+  --gp-sphinx-badge-builder-border: #f59e0b;
+
+  --gp-sphinx-badge-domain-bg:     #f7fee7;
+  --gp-sphinx-badge-domain-fg:     #4d7c0f;
+  --gp-sphinx-badge-domain-border: #84cc16;
+
+  /* ── Sphinx extension component modifiers (outlined) ── */
+  --gp-sphinx-badge-mod-format-fg:     #6b7280;
+  --gp-sphinx-badge-mod-format-border: #d1d5db;
+
+  --gp-sphinx-badge-mod-domain-name-fg:     #6b7280;
+  --gp-sphinx-badge-mod-domain-name-border: #d1d5db;
+
   /* ── Package metadata (maturity + links) ────────────── */
   --gp-sphinx-badge-meta-alpha-bg:     #ffedc6;
   --gp-sphinx-badge-meta-alpha-fg:     #4e2009;
@@ -222,6 +267,47 @@
     --gp-sphinx-badge-docutils-bg:     #2e1065;
     --gp-sphinx-badge-docutils-fg:     #c4b5fd;
     --gp-sphinx-badge-docutils-border: #a78bfa;
+
+    --gp-sphinx-badge-transform-bg:     #3b0764;
+    --gp-sphinx-badge-transform-fg:     #d8b4fe;
+    --gp-sphinx-badge-transform-border: #c084fc;
+
+    --gp-sphinx-badge-reader-bg:     #1e1b4b;
+    --gp-sphinx-badge-reader-fg:     #a5b4fc;
+    --gp-sphinx-badge-reader-border: #818cf8;
+
+    --gp-sphinx-badge-parser-bg:     #082f49;
+    --gp-sphinx-badge-parser-fg:     #7dd3fc;
+    --gp-sphinx-badge-parser-border: #38bdf8;
+
+    --gp-sphinx-badge-writer-bg:     #042f2e;
+    --gp-sphinx-badge-writer-fg:     #5eead4;
+    --gp-sphinx-badge-writer-border: #2dd4bf;
+
+    --gp-sphinx-badge-node-bg:     #4a044e;
+    --gp-sphinx-badge-node-fg:     #f0abfc;
+    --gp-sphinx-badge-node-border: #e879f9;
+
+    --gp-sphinx-badge-translator-bg:     #172554;
+    --gp-sphinx-badge-translator-fg:     #93c5fd;
+    --gp-sphinx-badge-translator-border: #60a5fa;
+
+    --gp-sphinx-badge-mod-priority-fg:     #9ca3af;
+    --gp-sphinx-badge-mod-priority-border: #4b5563;
+
+    --gp-sphinx-badge-builder-bg:     #451a03;
+    --gp-sphinx-badge-builder-fg:     #fcd34d;
+    --gp-sphinx-badge-builder-border: #fbbf24;
+
+    --gp-sphinx-badge-domain-bg:     #1a2e05;
+    --gp-sphinx-badge-domain-fg:     #bef264;
+    --gp-sphinx-badge-domain-border: #a3e635;
+
+    --gp-sphinx-badge-mod-format-fg:     #9ca3af;
+    --gp-sphinx-badge-mod-format-border: #4b5563;
+
+    --gp-sphinx-badge-mod-domain-name-fg:     #9ca3af;
+    --gp-sphinx-badge-mod-domain-name-border: #4b5563;
 
     --gp-sphinx-badge-meta-alpha-bg:     #3f2700;
     --gp-sphinx-badge-meta-alpha-fg:     #ffca16;
@@ -331,6 +417,47 @@ body[data-theme="dark"] {
   --gp-sphinx-badge-docutils-fg:     #c4b5fd;
   --gp-sphinx-badge-docutils-border: #a78bfa;
 
+  --gp-sphinx-badge-transform-bg:     #3b0764;
+  --gp-sphinx-badge-transform-fg:     #d8b4fe;
+  --gp-sphinx-badge-transform-border: #c084fc;
+
+  --gp-sphinx-badge-reader-bg:     #1e1b4b;
+  --gp-sphinx-badge-reader-fg:     #a5b4fc;
+  --gp-sphinx-badge-reader-border: #818cf8;
+
+  --gp-sphinx-badge-parser-bg:     #082f49;
+  --gp-sphinx-badge-parser-fg:     #7dd3fc;
+  --gp-sphinx-badge-parser-border: #38bdf8;
+
+  --gp-sphinx-badge-writer-bg:     #042f2e;
+  --gp-sphinx-badge-writer-fg:     #5eead4;
+  --gp-sphinx-badge-writer-border: #2dd4bf;
+
+  --gp-sphinx-badge-node-bg:     #4a044e;
+  --gp-sphinx-badge-node-fg:     #f0abfc;
+  --gp-sphinx-badge-node-border: #e879f9;
+
+  --gp-sphinx-badge-translator-bg:     #172554;
+  --gp-sphinx-badge-translator-fg:     #93c5fd;
+  --gp-sphinx-badge-translator-border: #60a5fa;
+
+  --gp-sphinx-badge-mod-priority-fg:     #9ca3af;
+  --gp-sphinx-badge-mod-priority-border: #4b5563;
+
+  --gp-sphinx-badge-builder-bg:     #451a03;
+  --gp-sphinx-badge-builder-fg:     #fcd34d;
+  --gp-sphinx-badge-builder-border: #fbbf24;
+
+  --gp-sphinx-badge-domain-bg:     #1a2e05;
+  --gp-sphinx-badge-domain-fg:     #bef264;
+  --gp-sphinx-badge-domain-border: #a3e635;
+
+  --gp-sphinx-badge-mod-format-fg:     #9ca3af;
+  --gp-sphinx-badge-mod-format-border: #4b5563;
+
+  --gp-sphinx-badge-mod-domain-name-fg:     #9ca3af;
+  --gp-sphinx-badge-mod-domain-name-border: #4b5563;
+
   --gp-sphinx-badge-meta-alpha-bg:     #3f2700;
   --gp-sphinx-badge-meta-alpha-fg:     #ffca16;
   --gp-sphinx-badge-meta-alpha-border: #8f6424;
@@ -397,6 +524,33 @@ body[data-theme="dark"] {
 .gp-sphinx-badge--type-directive,
 .gp-sphinx-badge--type-role,
 .gp-sphinx-badge--type-option { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-docutils-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-docutils-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-docutils-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — docutils components (filled, per-type hues)
+ * ══════════════════════════════════════════════════════════ */
+.gp-sphinx-badge--type-transform { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-transform-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-transform-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-transform-border); }
+.gp-sphinx-badge--type-reader    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-reader-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-reader-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-reader-border); }
+.gp-sphinx-badge--type-parser    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-parser-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-parser-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-parser-border); }
+.gp-sphinx-badge--type-writer    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-writer-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-writer-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-writer-border); }
+.gp-sphinx-badge--type-node      { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-node-bg);      --gp-sphinx-badge-fg: var(--gp-sphinx-badge-node-fg);      --gp-sphinx-badge-border: var(--gp-sphinx-badge-node-border); }
+.gp-sphinx-badge--type-translator { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-translator-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-translator-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-translator-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — docutils component modifiers (outlined)
+ * ══════════════════════════════════════════════════════════ */
+.gp-sphinx-badge--mod-priority { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-mod-priority-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-mod-priority-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — Sphinx extension components (filled)
+ * ══════════════════════════════════════════════════════════ */
+.gp-sphinx-badge--type-builder { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-builder-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-builder-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-builder-border); }
+.gp-sphinx-badge--type-domain  { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-domain-bg);  --gp-sphinx-badge-fg: var(--gp-sphinx-badge-domain-fg);  --gp-sphinx-badge-border: var(--gp-sphinx-badge-domain-border); }
+
+/* ══════════════════════════════════════════════════════════
+ * Colour classes — Sphinx extension component modifiers (outlined)
+ * ══════════════════════════════════════════════════════════ */
+.gp-sphinx-badge--mod-format { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-mod-format-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-mod-format-border); }
+.gp-sphinx-badge--mod-domain-name { --gp-sphinx-badge-fg: var(--gp-sphinx-badge-mod-domain-name-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-mod-domain-name-border); }
 
 /* ══════════════════════════════════════════════════════════
  * Colour classes — package metadata (maturity + links)
