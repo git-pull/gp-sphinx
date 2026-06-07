@@ -1,3 +1,4 @@
+import type { PluginAPI } from "tailwindcss/plugin";
 import { describe, expect, it } from "vitest";
 
 import { FURO_TOKEN_NAMES, GP_SPHINX_ROLE_NAMES } from "../src/contract.js";
@@ -6,20 +7,23 @@ import { FURO_LIGHT_TOKENS } from "../src/light.js";
 import furoTokensPlugin from "../src/plugin.js";
 import { GP_SPHINX_ROLE_TOKENS } from "../src/roles.js";
 
-// addBase accepts nested CssInJs — at-rule keys (`@media (...)`) hold
-// nested selector→declaration maps; selector keys hold flat
-// declaration maps.  This mirrors what tailwindcss/plugin's runtime
-// shape will hand to the compiler.
+// Tailwind 4.3 exports PluginAPI from tailwindcss/plugin; CssInJs itself
+// stays internal, so derive it from addBase's parameter. At-rule keys
+// (`@media (...)`) hold nested selector→declaration maps; selector keys
+// hold flat declaration maps.
+type CssInJs = Parameters<PluginAPI["addBase"]>[0];
 type Declarations = Record<string, string>;
-type AddBaseArg = Record<string, Declarations | Record<string, Declarations>>;
 
-interface CapturingApi {
-  addBase: (rules: AddBaseArg) => void;
-  rules: AddBaseArg[];
+// Partial<PluginAPI> keeps the capture cast-free at the call sites while
+// staying assertable to the full PluginAPI below — we only exercise the
+// addBase path here.
+interface CapturingApi extends Partial<PluginAPI> {
+  addBase: PluginAPI["addBase"];
+  rules: CssInJs[];
 }
 
 function makeCapturingApi(): CapturingApi {
-  const rules: AddBaseArg[] = [];
+  const rules: CssInJs[] = [];
   return {
     rules,
     addBase(this: CapturingApi, rule) {
@@ -28,13 +32,9 @@ function makeCapturingApi(): CapturingApi {
   };
 }
 
-function runPlugin(): AddBaseArg[] {
+function runPlugin(): CssInJs[] {
   const api = makeCapturingApi();
-  // tailwindcss/plugin's return shape exposes a `handler` callback that
-  // receives the PluginAPI. We're only exercising the addBase path here, so
-  // a lightweight stand-in is enough to assert what would land in :root.
-  // biome-ignore lint/suspicious/noExplicitAny: standing in for PluginAPI in unit tests
-  furoTokensPlugin.handler(api as any);
+  furoTokensPlugin.handler(api as PluginAPI);
   return api.rules;
 }
 
