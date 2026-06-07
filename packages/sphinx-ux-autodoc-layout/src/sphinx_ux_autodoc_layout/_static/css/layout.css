@@ -318,6 +318,12 @@ dl.gp-sphinx-api-container > dd.gp-sphinx-api-content .gp-sphinx-api-facts dl.fi
   line-height: 1.5;
 }
 
+/* Restore chip padding on fact values (typehints_gp zeroes it for
+ * tight type annotations; standalone fact chips want it back). */
+.gp-sphinx-api-facts .field-list code.literal {
+  padding-inline: 0.2em;
+}
+
 /* Override docutils' tight `simple` list convention.  `<ul.simple>
  * > li > p` collapses to `margin: 4px 0`, leaving only ~8px between
  * adjacent rows against a 25.6px line-height.  Flex-gap delivers a
