@@ -19,6 +19,29 @@ _MODULE_SOURCE = textwrap.dedent(
     """\
     from __future__ import annotations
 
+    from sphinx.builders import Builder
+
+
+    class DemoZipBuilder(Builder):
+        \"\"\"Bundle rendered pages into a zip archive.\"\"\"
+
+        name = "demo-zip"
+        format = "zip"
+        epilog = "The zip is in %(outdir)s."
+        supported_image_types = ["image/png"]
+
+        def get_outdated_docs(self):
+            return []
+
+        def get_target_uri(self, docname, typ=None):
+            return docname
+
+        def prepare_writing(self, docnames):
+            pass
+
+        def write_doc(self, docname, doctree):
+            pass
+
 
     def setup(app):
         app.add_config_value(
@@ -40,6 +63,7 @@ _MODULE_SOURCE = textwrap.dedent(
             types=(dict,),
             description="Color tokens for the demo extension.",
         )
+        app.add_builder(DemoZipBuilder)
     """
 )
 
@@ -63,6 +87,8 @@ _INDEX_RST = textwrap.dedent(
     ===========
 
     .. autoconfigvalues:: demo_sphinx_ext
+
+    .. autobuilder:: demo_sphinx_ext.DemoZipBuilder
     """
 )
 
@@ -113,3 +139,20 @@ def test_autodoc_sphinx_confvals_use_shared_layout(
     assert "Registered by" in html
     assert "highlight-python" in html
     assert "Rebuild:" not in html
+
+
+@pytest.mark.integration
+def test_autodoc_sphinx_builder_entries(
+    autodoc_sphinx_html_result: SharedSphinxResult,
+) -> None:
+    """autobuilder entries render with profile, badges, and facts."""
+    html = read_output(autodoc_sphinx_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--sphinxext-builder" in html
+    assert ">builder<" in html
+    assert "gp-sphinx-badge--mod-format" in html
+    assert ">zip<" in html
+    assert "Builder name" in html
+    assert "demo-zip" in html
+    assert "image/png" in html
+    assert "Parallel-safe" in html

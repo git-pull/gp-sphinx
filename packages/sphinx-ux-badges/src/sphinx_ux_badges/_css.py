@@ -173,6 +173,12 @@ class SAB:
     # ── docutils component modifiers (outlined) ──────────
     MOD_PRIORITY = "gp-sphinx-badge--mod-priority"
 
+    # ── Sphinx extension components (filled) ─────────────
+    TYPE_BUILDER = "gp-sphinx-badge--type-builder"
+
+    # ── Sphinx extension component modifiers (outlined) ──
+    MOD_FORMAT = "gp-sphinx-badge--mod-format"
+
     # ── Package metadata (maturity + links) ───────────────
     META_ALPHA = "gp-sphinx-badge--meta-alpha"
     META_BETA = "gp-sphinx-badge--meta-beta"

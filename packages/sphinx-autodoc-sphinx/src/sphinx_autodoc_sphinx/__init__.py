@@ -6,6 +6,13 @@ import logging
 import pathlib
 import typing as t
 
+from sphinx_autodoc_sphinx._builders_doc import (
+    AutoBuilder,
+    AutoBuilders,
+    BuilderInfo,
+    discover_builder,
+    discover_builders,
+)
 from sphinx_autodoc_sphinx._directives import (
     AutoconfigvalueDirective,
     AutoconfigvaluesDirective,
@@ -16,10 +23,15 @@ from sphinx_autodoc_sphinx.domain import (
 )
 
 __all__ = [
+    "AutoBuilder",
+    "AutoBuilders",
     "AutoconfigvalueDirective",
     "AutoconfigvaluesDirective",
+    "BuilderInfo",
     "SphinxExtComponentIndex",
     "SphinxExtDomain",
+    "discover_builder",
+    "discover_builders",
     "setup",
 ]
 
@@ -67,6 +79,8 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.add_domain(SphinxExtDomain)
     app.add_directive("autoconfigvalue", AutoconfigvalueDirective)
     app.add_directive("autoconfigvalues", AutoconfigvaluesDirective)
+    app.add_directive("autobuilder", AutoBuilder)
+    app.add_directive("autobuilders", AutoBuilders)
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
 

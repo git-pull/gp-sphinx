@@ -44,3 +44,46 @@ def build_config_badge_group(value: SphinxConfigValue) -> nodes.inline:
         ],
         classes=[_GROUP_CLASS],
     )
+
+
+def build_builder_badge_group(output_format: str = "") -> nodes.inline:
+    """Return header badges for one documented Sphinx builder.
+
+    Parameters
+    ----------
+    output_format : str
+        The builder's ``format`` attribute; rendered as an outlined
+        secondary badge when non-empty.
+
+    Returns
+    -------
+    nodes.inline
+        Badge group for the entry header.
+
+    Examples
+    --------
+    >>> group = build_builder_badge_group("html")
+    >>> "builder" in group.astext()
+    True
+    >>> "html" in group.astext()
+    True
+    >>> build_builder_badge_group("").astext()
+    'builder'
+    """
+    specs = [
+        BadgeSpec(
+            "builder",
+            tooltip="Sphinx builder",
+            classes=(SAB.TYPE_BUILDER,),
+        ),
+    ]
+    if output_format:
+        specs.append(
+            BadgeSpec(
+                output_format,
+                tooltip=f"Output format: {output_format}",
+                classes=(SAB.MOD_FORMAT,),
+                fill="outline",
+            ),
+        )
+    return build_badge_group_from_specs(specs, classes=[_GROUP_CLASS])

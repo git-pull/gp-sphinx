@@ -22,3 +22,27 @@ Renders all config values from a module at once:
 ```{eval-rst}
 .. autoconfigvalues:: sphinx_config_demo
 ```
+
+### Document one demo builder
+
+Builders surface their CLI name, output format, supported image types,
+and parallel-safety:
+
+```{eval-rst}
+.. autobuilder:: sphinx_demo_builder.DemoArchiveBuilder
+```
+
+### Bulk builders demo
+
+Renders every builder a module registers via `setup()`:
+
+```{eval-rst}
+.. autobuilders:: sphinx_demo_builder
+   :no-index:
+```
+
+### Cross-referencing components
+
+Component entries register targets in the `sphinxext` domain, so prose
+can link to them: {sphinxext:builder}`DemoArchiveBuilder` resolves to
+the entry above.

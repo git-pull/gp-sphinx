@@ -86,6 +86,8 @@ _MANAGED_DOCUTILS_OBJTYPES: tuple[str, ...] = (
     "translator",
 )
 
+_MANAGED_SPHINXEXT_OBJTYPES: tuple[str, ...] = ("builder",)
+
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class DescLayoutProfile:
@@ -145,6 +147,14 @@ _PROFILE_REGISTRY: dict[tuple[str, str], DescLayoutProfile] = {
             slug=f"docutils-{objtype}",
         )
         for objtype in _MANAGED_DOCUTILS_OBJTYPES
+    },
+    **{
+        ("sphinxext", objtype): DescLayoutProfile(
+            domain="sphinxext",
+            objtype=objtype,
+            slug=f"sphinxext-{objtype}",
+        )
+        for objtype in _MANAGED_SPHINXEXT_OBJTYPES
     },
 }
 
