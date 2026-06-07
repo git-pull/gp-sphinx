@@ -178,7 +178,12 @@ def _transform_fact_rows(info: TransformInfo) -> list[ApiFactRow]:
         rows.append(
             ApiFactRow(
                 "Registered via",
-                _literal_paragraph(f"app.{info.registered_via}()"),
+                # Links to the Sphinx Application API when the sphinx
+                # inventory is mapped; degrades to the literal call.
+                linked_paragraph(
+                    f"sphinx.application.Sphinx.{info.registered_via}",
+                    f"app.{info.registered_via}()",
+                ),
             ),
         )
     return rows

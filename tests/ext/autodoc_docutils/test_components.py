@@ -779,3 +779,27 @@ def test_writer_fact_rows_surface_formats_and_translator() -> None:
         "docutils.writers.html5_polyglot.HTMLTranslator"
     )
     assert by_label["Transforms"] != ""
+
+
+def test_registered_via_fact_links_sphinx_app() -> None:
+    """The Registered via fact targets the Sphinx Application method."""
+    rows = _transform_fact_rows(
+        TransformInfo(cls=_DemoTransform, registered_via="add_transform"),
+    )
+    row = next(r for r in rows if r.label == "Registered via")
+    xref = next(iter(row.body.findall(addnodes.pending_xref)))
+    assert xref["reftarget"] == "sphinx.application.Sphinx.add_transform"
+    assert xref.astext() == "app.add_transform()"
+
+
+def test_option_field_list_links_converter() -> None:
+    """Directive option validators link to their converter callable."""
+    from docutils.parsers.rst import directives
+
+    from sphinx_autodoc_docutils._directives import _option_field_list
+
+    field_list = _option_field_list({"class": directives.class_option})
+    assert field_list is not None
+    xref = next(iter(field_list.findall(addnodes.pending_xref)))
+    assert xref["reftarget"] == "docutils.parsers.rst.directives.class_option"
+    assert xref.astext() == "class_option"

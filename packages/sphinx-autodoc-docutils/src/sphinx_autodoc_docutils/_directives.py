@@ -297,20 +297,51 @@ def _literal_paragraph(text: str) -> nodes.paragraph:
     return paragraph
 
 
+def _converter_target(converter: object) -> str:
+    """Return the cross-reference target for an option-spec converter.
+
+    Builtins drop their module prefix so they match the python
+    inventory keys; everything else uses the qualified dotted path.
+    Returns an empty string for objects without importable identity.
+
+    Examples
+    --------
+    >>> from docutils.parsers.rst import directives
+    >>> _converter_target(directives.class_option)
+    'docutils.parsers.rst.directives.class_option'
+    >>> _converter_target(str)
+    'str'
+    >>> _converter_target(object())
+    ''
+    """
+    module = getattr(converter, "__module__", "")
+    name = getattr(converter, "__qualname__", "")
+    if not module or not name:
+        return ""
+    if module == "builtins":
+        return name
+    return f"{module}.{name}"
+
+
 def _option_field_list(option_spec: OptionSpec | None) -> nodes.field_list | None:
     """Return a field-list representation of an option spec."""
-    rows = _option_rows(option_spec)
-    if not rows:
+    if not isinstance(option_spec, dict) or not option_spec:
         return None
     field_list = nodes.field_list()
-    for row in rows:
-        option_name, converter_name = row.split("|")[1:3]
-        clean_option_name = option_name.strip().strip("`")
-        clean_converter_name = converter_name.strip().strip("`")
+    for option_name, converter in sorted(option_spec.items()):
+        converter_name = getattr(converter, "__name__", type(converter).__name__)
+        target = _converter_target(converter)
+        body: nodes.paragraph
+        if target:
+            body = build_chip_paragraph(
+                [build_linked_literal(target, converter_name)],
+            )
+        else:
+            body = _literal_paragraph(converter_name)
         field_list += nodes.field(
             "",
-            nodes.field_name("", clean_option_name),
-            nodes.field_body("", _literal_paragraph(clean_converter_name)),
+            nodes.field_name("", option_name),
+            nodes.field_body("", body),
         )
     return field_list
 
