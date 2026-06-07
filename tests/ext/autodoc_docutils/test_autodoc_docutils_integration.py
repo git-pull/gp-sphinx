@@ -24,6 +24,7 @@ _MODULE_SOURCE = textwrap.dedent(
     from docutils.parsers.rst import Directive, directives
     from docutils.readers import Reader
     from docutils.transforms import Transform
+    from docutils.writers import Writer
 
 
     class DemoDirective(Directive):
@@ -82,6 +83,27 @@ _MODULE_SOURCE = textwrap.dedent(
             pass
 
 
+    class DemoTranslator(nodes.SparseNodeVisitor):
+        \"\"\"Translate demo documents to plain text.\"\"\"
+
+        def visit_paragraph(self, node):
+            pass
+
+        def depart_paragraph(self, node):
+            pass
+
+
+    class DemoWriter(Writer):
+        \"\"\"Write demo documents as plain text.\"\"\"
+
+        supported = ("demo-plain",)
+        config_section = "demo writer"
+        translator_class = DemoTranslator
+
+        def translate(self):
+            self.output = ""
+
+
     def setup(app):
         app.add_transform(DemoTransform)
         app.add_source_parser(DemoParser)
@@ -119,6 +141,8 @@ _INDEX_RST = textwrap.dedent(
     .. autoreader:: demo_docutils_objects.DemoReader
 
     .. autoparser:: demo_docutils_objects.DemoParser
+
+    .. autowriter:: demo_docutils_objects.DemoWriter
     """
 )
 
@@ -211,3 +235,17 @@ def test_autodoc_docutils_parser_entries(
     assert "Supported aliases" in html
     assert "demo-lines" in html
     assert "app.add_source_parser()" in html
+
+
+@pytest.mark.integration
+def test_autodoc_docutils_writer_entries(
+    autodoc_docutils_html_result: SharedSphinxResult,
+) -> None:
+    """autowriter entries render with profile, badge, and facts."""
+    html = read_output(autodoc_docutils_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--docutils-writer" in html
+    assert ">writer<" in html
+    assert "Translator class" in html
+    assert "demo_docutils_objects.DemoTranslator" in html
+    assert "demo-plain" in html

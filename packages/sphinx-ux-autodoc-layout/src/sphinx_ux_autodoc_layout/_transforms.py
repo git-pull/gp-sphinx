@@ -77,7 +77,12 @@ _MANAGED_PYTHON_OBJTYPES: tuple[str, ...] = (
     "type",
 )
 
-_MANAGED_DOCUTILS_OBJTYPES: tuple[str, ...] = ("transform", "reader", "parser")
+_MANAGED_DOCUTILS_OBJTYPES: tuple[str, ...] = (
+    "transform",
+    "reader",
+    "parser",
+    "writer",
+)
 
 
 @dataclasses.dataclass(frozen=True, slots=True)

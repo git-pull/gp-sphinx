@@ -18,6 +18,7 @@ from docutils import nodes
 from docutils.parsers import Parser
 from docutils.readers import standalone
 from docutils.transforms import Transform
+from docutils.writers import Writer
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -70,6 +71,58 @@ class DemoLineParser(Parser):
             if line.strip():
                 document += nodes.paragraph(text=line.strip())
         self.finish_parse()
+
+
+class DemoTextTranslator(nodes.NodeVisitor):
+    """Translate paragraphs into plain text lines for the demo writer."""
+
+    def __init__(self, document: nodes.document) -> None:
+        super().__init__(document)
+        self.lines: list[str] = []
+
+    def visit_paragraph(self, node: nodes.paragraph) -> None:
+        """Open a fresh output line."""
+        self.lines.append("")
+
+    def depart_paragraph(self, node: nodes.paragraph) -> None:
+        """Close the current output line."""
+
+    def visit_Text(self, node: nodes.Text) -> None:
+        """Append literal text to the current line."""
+        if self.lines:
+            self.lines[-1] += node.astext()
+
+    def unknown_visit(self, node: nodes.Node) -> None:
+        """Ignore nodes the demo writer does not understand."""
+
+    def unknown_departure(self, node: nodes.Node) -> None:
+        """Ignore nodes the demo writer does not understand."""
+
+
+class DemoPlainWriter(Writer):  # type: ignore[type-arg]
+    """Write documents as plain text lines, one paragraph per line.
+
+    Assigns ``translator_class`` in ``__init__`` (the django-docutils
+    style) rather than as a class attribute, which exercises the
+    defensive resolution the ``autowriter`` directive performs.
+    """
+
+    supported = ("demo-plain",)
+    config_section = "demo plain writer"
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.translator_class = DemoTextTranslator
+
+    def translate(self) -> None:
+        """Visit the document and join the collected lines."""
+        document = self.document
+        if document is None:
+            self.output = ""
+            return
+        visitor = DemoTextTranslator(document)
+        document.walkabout(visitor)
+        self.output = "\n".join(visitor.lines)
 
 
 def setup(app: Sphinx) -> ExtensionMetadata:

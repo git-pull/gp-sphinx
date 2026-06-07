@@ -42,6 +42,12 @@ from sphinx_autodoc_docutils._transforms_doc import (
     discover_transform,
     discover_transforms,
 )
+from sphinx_autodoc_docutils._writers_doc import (
+    _writer_fact_rows,
+    discover_writer,
+    discover_writers,
+    resolve_translator_class,
+)
 from sphinx_ux_autodoc_layout import ApiFactRow
 from sphinx_ux_autodoc_layout._nodes import api_component
 
@@ -422,3 +428,74 @@ def test_parser_fact_rows_include_source_parser_registration() -> None:
     )
     by_label = {row.label: row.body.astext() for row in rows}
     assert by_label["Registered via"] == "app.add_source_parser()"
+
+
+# ---------------------------------------------------------------------------
+# Writers
+# ---------------------------------------------------------------------------
+
+
+def test_discover_writers_scans_module() -> None:
+    """discover_writers finds writer subclasses defined in a module."""
+    writers = discover_writers("docutils.writers.html5_polyglot")
+    assert [cls.__name__ for cls in writers] == ["Writer"]
+
+
+def test_discover_writers_empty_for_module_without_writers() -> None:
+    """discover_writers returns [] for modules without writers."""
+    assert discover_writers("sphinx_fonts") == []
+
+
+def test_discover_writer_single_path() -> None:
+    """discover_writer imports one writer from a dotted path."""
+    cls = discover_writer("docutils.writers.html5_polyglot.Writer")
+    assert "html5" in cls.supported
+
+
+def test_resolve_translator_class_from_init_assignment() -> None:
+    """Writers assigning translator_class in __init__ still resolve."""
+    from docutils.writers import Writer as BaseWriter
+
+    class _InitWriter(BaseWriter):  # type: ignore[type-arg]
+        """Writer assigning its translator at construction time."""
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.translator_class = nodes.SparseNodeVisitor
+
+        def translate(self) -> None:
+            self.output = ""
+
+    assert resolve_translator_class(_InitWriter) is nodes.SparseNodeVisitor
+
+
+def test_resolve_translator_class_falls_back_to_class_attr() -> None:
+    """Writers that raise on construction fall back to the class attribute."""
+    from docutils.writers import Writer as BaseWriter
+
+    class _FussyWriter(BaseWriter):  # type: ignore[type-arg]
+        """Writer that needs framework state to construct."""
+
+        translator_class = nodes.SparseNodeVisitor
+
+        def __init__(self) -> None:
+            raise RuntimeError("needs framework state")
+
+        def translate(self) -> None:
+            self.output = ""
+
+    assert resolve_translator_class(_FussyWriter) is nodes.SparseNodeVisitor
+
+
+def test_writer_fact_rows_surface_formats_and_translator() -> None:
+    """Writer fact rows include formats, translator path, and transforms."""
+    from docutils.writers import html5_polyglot
+
+    rows = _writer_fact_rows(html5_polyglot.Writer)
+    by_label = {row.label: row.body.astext() for row in rows}
+    assert by_label["Python path"] == "docutils.writers.html5_polyglot.Writer"
+    assert "html5" in by_label["Supported formats"]
+    assert by_label["Translator class"] == (
+        "docutils.writers.html5_polyglot.HTMLTranslator"
+    )
+    assert by_label["Transforms"] != ""

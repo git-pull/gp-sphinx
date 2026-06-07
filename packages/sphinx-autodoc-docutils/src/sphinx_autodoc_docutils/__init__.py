@@ -34,6 +34,12 @@ from sphinx_autodoc_docutils._transforms_doc import (
     discover_transform,
     discover_transforms,
 )
+from sphinx_autodoc_docutils._writers_doc import (
+    AutoWriter,
+    AutoWriters,
+    discover_writer,
+    discover_writers,
+)
 from sphinx_autodoc_docutils.domain import (
     DocutilsComponentIndex,
     DocutilsDomain,
@@ -50,6 +56,8 @@ __all__ = [
     "AutoRoles",
     "AutoTransform",
     "AutoTransforms",
+    "AutoWriter",
+    "AutoWriters",
     "DocutilsComponentIndex",
     "DocutilsDomain",
     "ParserInfo",
@@ -61,6 +69,8 @@ __all__ = [
     "discover_readers",
     "discover_transform",
     "discover_transforms",
+    "discover_writer",
+    "discover_writers",
     "replay_setup",
     "setup",
 ]
@@ -119,6 +129,8 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.add_directive("autoreaders", AutoReaders)
     app.add_directive("autoparser", AutoParser)
     app.add_directive("autoparsers", AutoParsers)
+    app.add_directive("autowriter", AutoWriter)
+    app.add_directive("autowriters", AutoWriters)
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
 

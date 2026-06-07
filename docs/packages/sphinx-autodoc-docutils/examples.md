@@ -93,6 +93,23 @@ calls `app.add_source_parser()`, the Sphinx registration:
    :no-index:
 ```
 
+### Document one demo writer
+
+Writers surface their output formats and translator class — resolved
+defensively, since writers commonly assign `translator_class` inside
+`__init__`:
+
+```{eval-rst}
+.. autowriter:: docutils_demo_components.DemoPlainWriter
+```
+
+### Bulk writers demo
+
+```{eval-rst}
+.. autowriters:: docutils_demo_components
+   :no-index:
+```
+
 ### Cross-referencing components
 
 Component entries register targets in the `docutils` domain, so prose

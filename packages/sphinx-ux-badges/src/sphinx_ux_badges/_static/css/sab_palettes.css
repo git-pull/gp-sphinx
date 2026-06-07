@@ -128,6 +128,10 @@
   --gp-sphinx-badge-parser-fg:     #0369a1;
   --gp-sphinx-badge-parser-border: #0ea5e9;
 
+  --gp-sphinx-badge-writer-bg:     #f0fdfa;
+  --gp-sphinx-badge-writer-fg:     #0f766e;
+  --gp-sphinx-badge-writer-border: #14b8a6;
+
   /* ── docutils component modifiers (outlined) ────────── */
   --gp-sphinx-badge-mod-priority-fg:     #6b7280;
   --gp-sphinx-badge-mod-priority-border: #d1d5db;
@@ -252,6 +256,10 @@
     --gp-sphinx-badge-parser-fg:     #7dd3fc;
     --gp-sphinx-badge-parser-border: #38bdf8;
 
+    --gp-sphinx-badge-writer-bg:     #042f2e;
+    --gp-sphinx-badge-writer-fg:     #5eead4;
+    --gp-sphinx-badge-writer-border: #2dd4bf;
+
     --gp-sphinx-badge-mod-priority-fg:     #9ca3af;
     --gp-sphinx-badge-mod-priority-border: #4b5563;
 
@@ -375,6 +383,10 @@ body[data-theme="dark"] {
   --gp-sphinx-badge-parser-fg:     #7dd3fc;
   --gp-sphinx-badge-parser-border: #38bdf8;
 
+  --gp-sphinx-badge-writer-bg:     #042f2e;
+  --gp-sphinx-badge-writer-fg:     #5eead4;
+  --gp-sphinx-badge-writer-border: #2dd4bf;
+
   --gp-sphinx-badge-mod-priority-fg:     #9ca3af;
   --gp-sphinx-badge-mod-priority-border: #4b5563;
 
@@ -451,6 +463,7 @@ body[data-theme="dark"] {
 .gp-sphinx-badge--type-transform { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-transform-bg); --gp-sphinx-badge-fg: var(--gp-sphinx-badge-transform-fg); --gp-sphinx-badge-border: var(--gp-sphinx-badge-transform-border); }
 .gp-sphinx-badge--type-reader    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-reader-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-reader-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-reader-border); }
 .gp-sphinx-badge--type-parser    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-parser-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-parser-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-parser-border); }
+.gp-sphinx-badge--type-writer    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-writer-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-writer-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-writer-border); }
 
 /* ══════════════════════════════════════════════════════════
  * Colour classes — docutils component modifiers (outlined)
