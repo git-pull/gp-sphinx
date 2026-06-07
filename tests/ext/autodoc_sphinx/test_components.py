@@ -410,3 +410,18 @@ def test_domain_surface_facts_render_chips() -> None:
         isinstance(child, nodes.literal) for child in object_types_row.body.children
     )
     assert literal_count == 4
+
+
+def test_config_registered_by_fact_is_linked() -> None:
+    """The Registered by fact targets the extension's setup function."""
+    from sphinx_autodoc_sphinx._directives import (
+        SphinxConfigValue,
+        _config_fact_rows,
+    )
+
+    value = SphinxConfigValue("demo_ext", "demo_option", True, "html", (bool,))
+    rows = _config_fact_rows(value)
+    registered_row = next(row for row in rows if row.label == "Registered by")
+    xref = next(iter(registered_row.body.findall(addnodes.pending_xref)))
+    assert xref["reftarget"] == "demo_ext.setup"
+    assert xref.astext() == "demo_ext.setup()"

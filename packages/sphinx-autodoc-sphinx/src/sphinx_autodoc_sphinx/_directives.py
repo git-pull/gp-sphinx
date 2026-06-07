@@ -29,6 +29,8 @@ from sphinx_autodoc_typehints_gp import normalize_type_collection_text
 from sphinx_ux_autodoc_layout import (
     ApiFactRow,
     build_api_facts_section,
+    build_chip_paragraph,
+    build_linked_literal,
     inject_signature_slots,
     iter_desc_nodes,
     parse_generated_markup,
@@ -397,7 +399,17 @@ def _config_fact_rows(value: SphinxConfigValue) -> list[ApiFactRow]:
             ),
         ),
         ApiFactRow("Default", default_body),
-        ApiFactRow("Registered by", _literal_paragraph(f"{value.module_name}.setup()")),
+        ApiFactRow(
+            "Registered by",
+            build_chip_paragraph(
+                [
+                    build_linked_literal(
+                        f"{value.module_name}.setup",
+                        f"{value.module_name}.setup()",
+                    ),
+                ],
+            ),
+        ),
     ]
 
 
