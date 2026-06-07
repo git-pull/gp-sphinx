@@ -32,12 +32,18 @@ upstream:
 - [Tailwind CSS](https://tailwindcss.com): 4.2 -> 4.3 — [release notes](https://github.com/tailwindlabs/tailwindcss/releases/tag/v4.3.0)
 - [Vite](https://vite.dev): 7 -> 8 (now Rolldown-powered) — [announcement](https://vite.dev/blog/announcing-vite8)
 
-Built theme assets are unchanged apart from minifier formatting, with
-one exception: responsive-breakpoint media queries now use range
-syntax, which requires Safari 16.4+, Chrome 111+, or Firefox 114+.
-Light/dark theming is unaffected on all browsers. The token contract
-and its harvested upstream fixture are now schema-validated end to
-end. (#50)
+Built theme assets are unchanged apart from minifier formatting and
+the browser-floor note below. The token contract and its harvested
+upstream fixture are now schema-validated end to end. (#51)
+
+#### Theme assets: browser floor is now Baseline Widely Available
+
+The built theme CSS follows Vite 8's default browser target and emits
+[media-query range syntax](https://caniuse.com/css-media-range-syntax)
+for its responsive layout breakpoints, which requires Safari 16.4+,
+Chrome 111+, or Firefox 114+ (all released by spring 2023). Older
+browsers keep the desktop layout at narrow widths. Light/dark theming
+is unaffected on all browsers. (#51)
 
 ## gp-sphinx 0.0.1a27 (2026-06-06)
 
