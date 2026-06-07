@@ -26,6 +26,22 @@ def build_config_badge_group(value: SphinxConfigValue) -> nodes.inline:
     -------
     nodes.inline
         Badge group containing the config kind and rebuild mode badges.
+
+    Examples
+    --------
+    >>> from sphinx_autodoc_sphinx._directives import SphinxConfigValue
+    >>> value = SphinxConfigValue("demo_ext", "demo_option", True, "html", (bool,))
+    >>> group = build_config_badge_group(value)
+    >>> "config" in group.astext()
+    True
+    >>> "html" in group.astext()
+    True
+
+    An empty rebuild mode renders as ``none``:
+
+    >>> bare = SphinxConfigValue("demo_ext", "demo_option", None, "")
+    >>> "none" in build_config_badge_group(bare).astext()
+    True
     """
     rebuild = value.rebuild or "none"
     return build_badge_group_from_specs(
