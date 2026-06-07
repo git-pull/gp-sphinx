@@ -169,11 +169,12 @@ def _literal_paragraph(text: str) -> nodes.paragraph:
 
 
 def _is_complex_default(value: object) -> bool:  # object: only calls repr()
-    """Return True when repr of value exceeds the inline display threshold.
+    """Return True when a default should render as a highlighted block.
 
-    Values whose repr is longer than :data:`_COMPLEX_REPR_THRESHOLD` chars
-    are rendered as a Pygments-highlighted ``literal_block`` node rather than
-    as an inline ``:default:`` field literal.
+    Non-empty containers always render as a Pygments-highlighted
+    ``literal_block`` — dict/list defaults read as structured Python,
+    not as an inline token. Scalars stay inline unless their repr
+    exceeds :data:`_COMPLEX_REPR_THRESHOLD` chars.
 
     Examples
     --------
@@ -181,9 +182,17 @@ def _is_complex_default(value: object) -> bool:  # object: only calls repr()
     False
     >>> _is_complex_default("warning")
     False
+    >>> _is_complex_default({})
+    False
+    >>> _is_complex_default({"light": "mint", "dark": "teal"})
+    True
+    >>> _is_complex_default(["a"])
+    True
     >>> _is_complex_default(frozenset(range(15)))
     True
     """
+    if isinstance(value, (dict, list, tuple, set, frozenset)) and value:
+        return True
     return len(repr(value)) > _COMPLEX_REPR_THRESHOLD
 
 
