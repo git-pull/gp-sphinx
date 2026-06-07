@@ -283,6 +283,38 @@ def test_normalize_role_without_content_attr_omits_accepts_content_row() -> None
     assert "Accepts role content" not in labels
 
 
+def test_normalize_directive_python_path_is_linked() -> None:
+    """The directive Python path fact wraps the path in a py-obj xref."""
+    desc = _make_directive_desc(with_option=False)
+    content = t.cast(addnodes.desc_content, desc.children[-1])
+
+    _normalize_directive_nodes(
+        [desc],
+        path="my_mod.DemoDirective",
+        directive_cls=_DemoDirective,
+    )
+
+    facts = _api_facts_child(content)
+    assert facts is not None
+    xref = next(iter(facts.findall(addnodes.pending_xref)))
+    assert xref["refdomain"] == "py"
+    assert xref["reftarget"] == "my_mod.DemoDirective"
+    assert xref["refwarn"] is False
+
+
+def test_normalize_role_python_path_is_linked() -> None:
+    """The role Python path fact wraps the path in a py-obj xref."""
+    desc = _make_role_desc()
+    content = t.cast(addnodes.desc_content, desc.children[-1])
+
+    _normalize_role_nodes([desc], path="demo.demo_badge_role", role_fn=_demo_role)
+
+    facts = _api_facts_child(content)
+    assert facts is not None
+    xref = next(iter(facts.findall(addnodes.pending_xref)))
+    assert xref["reftarget"] == "demo.demo_badge_role"
+
+
 def test_normalize_role_skips_non_role_descs() -> None:
     """Desc nodes with non-role objtypes are left untouched."""
     directive_desc = _make_directive_desc(with_option=False)

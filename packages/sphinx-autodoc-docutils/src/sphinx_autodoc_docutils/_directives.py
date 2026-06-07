@@ -19,6 +19,8 @@ from sphinx_ux_autodoc_layout import (
     ApiFactRow,
     build_api_facts_section,
     build_api_table_section,
+    build_chip_paragraph,
+    build_linked_literal,
     inject_signature_slots,
     iter_desc_nodes,
     parse_generated_markup,
@@ -380,7 +382,10 @@ def _directive_fact_rows(
 ) -> list[ApiFactRow]:
     """Return shared fact rows for one autodocumented directive."""
     return [
-        ApiFactRow("Python path", _literal_paragraph(path)),
+        ApiFactRow(
+            "Python path",
+            build_chip_paragraph([build_linked_literal(path)]),
+        ),
         ApiFactRow(
             "Required arguments",
             _literal_paragraph(str(directive_cls.required_arguments)),
@@ -399,7 +404,12 @@ def _directive_fact_rows(
 
 def _role_fact_rows(path: str, role_fn: object) -> list[ApiFactRow]:
     """Return shared fact rows for one autodocumented role."""
-    rows = [ApiFactRow("Python path", _literal_paragraph(path))]
+    rows = [
+        ApiFactRow(
+            "Python path",
+            build_chip_paragraph([build_linked_literal(path)]),
+        ),
+    ]
     content_value = getattr(role_fn, "content", None)
     if content_value is not None:
         rows.append(
