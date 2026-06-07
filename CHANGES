@@ -18,6 +18,47 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### What's new
+
+#### Component autodoc for every docutils extension point
+
+`sphinx-autodoc-docutils` now documents the full docutils component
+family with the same single + bulk-by-module pattern that
+`autodirective`/`autodirectives` established: `autotransform(s)`,
+`autoreader(s)`, `autoparser(s)`, `autowriter(s)`, `autonode(s)`, and
+`autotranslator(s)`. Each entry renders with the shared card layout, a
+per-type kind badge, and registry-aware facts — a transform's
+`default_priority` and registration phase, a writer's resolved
+translator class, a node's element categories and per-builder
+visit/depart handlers, a translator's own handler overrides. Bulk
+forms replay a package's `setup()` so Sphinx-side registrations
+(`add_transform`, `add_node`, `add_source_parser`, `set_translator`)
+surface with their real metadata, and fall back to module scans for
+components that are instantiated directly — discovery never breaks the
+build when a component needs framework state to construct. See
+{ref}`sphinx-autodoc-docutils-examples` for live demos. (#53)
+
+#### Builder and domain autodoc
+
+`sphinx-autodoc-sphinx` gains `autobuilder(s)` and `autodomain(s)`,
+documenting `sphinx.builders.Builder` and `sphinx.domains.Domain`
+subclasses beside the config values it already covers. Builder entries
+surface the CLI name, output format, supported image types, default
+translator, and parallel-safety; domain entries surface the registered
+name, label, object types, roles, directives, and indices. See
+{ref}`sphinx-autodoc-sphinx-examples` for live demos. (#53)
+
+#### Cross-reference roles for documented components
+
+Two new Sphinx domains make every component entry linkable: the
+`docutils` domain (`` {docutils:transform}`SanitizeTransform` `` and
+siblings for readers, parsers, writers, nodes, and translators) and
+the `sphinxext` domain (`` {sphinxext:builder}`...` ``,
+`` {sphinxext:domain}`...` ``). Targets accept fully-qualified dotted
+paths or unambiguous bare class names, dangling references warn at
+build time, and each domain ships a grouped components index. See
+{ref}`sphinx-autodoc-docutils-reference` for the role tables. (#53)
+
 ### Fixes
 
 #### Code comments no longer trigger a font swap on first paint
