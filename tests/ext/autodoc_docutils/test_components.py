@@ -218,6 +218,60 @@ def test_import_component_rejects_non_class() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Linked facts
+# ---------------------------------------------------------------------------
+
+
+def test_python_path_fact_is_linked() -> None:
+    """The Python path fact wraps the dotted path in a py-obj xref."""
+    rows = _transform_fact_rows(TransformInfo(cls=_DemoTransform))
+    xref = next(iter(rows[0].body.findall(addnodes.pending_xref)))
+    assert xref["refdomain"] == "py"
+    assert xref["reftarget"].endswith("._DemoTransform")
+    assert xref["refwarn"] is False
+
+
+def test_reader_transforms_fact_links_qualified_targets() -> None:
+    """Transform chips display bare names but target qualified paths."""
+    from docutils.readers.standalone import Reader
+
+    rows = _reader_fact_rows(Reader)
+    transforms_row = next(row for row in rows if row.label == "Transforms")
+    xrefs = list(transforms_row.body.findall(addnodes.pending_xref))
+    assert xrefs
+    targets = {xref["reftarget"] for xref in xrefs}
+    assert "docutils.transforms.misc.Transitions" in targets
+    displays = {xref.astext() for xref in xrefs}
+    assert "Transitions" in displays
+
+
+def test_translator_overrides_fact_links_methods() -> None:
+    """Override chips target the fully-qualified method paths."""
+    rows = _translator_fact_rows(TranslatorInfo(cls=_DemoVisitor))
+    overrides_row = next(row for row in rows if row.label == "Overrides")
+    prefix = f"{_DemoVisitor.__module__}.{_DemoVisitor.__qualname__}"
+    targets = [
+        xref["reftarget"] for xref in overrides_row.body.findall(addnodes.pending_xref)
+    ]
+    assert targets == [
+        f"{prefix}.depart_paragraph",
+        f"{prefix}.visit_paragraph",
+    ]
+
+
+def test_supported_formats_fact_renders_chips() -> None:
+    """List-valued facts render one literal chip per value."""
+    from docutils.writers import html5_polyglot
+
+    rows = _writer_fact_rows(html5_polyglot.Writer)
+    formats_row = next(row for row in rows if row.label == "Supported formats")
+    literal_count = sum(
+        isinstance(child, nodes.literal) for child in formats_row.body.children
+    )
+    assert literal_count == 3
+
+
+# ---------------------------------------------------------------------------
 # Transforms
 # ---------------------------------------------------------------------------
 

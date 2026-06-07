@@ -29,6 +29,8 @@ from sphinx_autodoc_docutils._directives import (
 )
 from sphinx_ux_autodoc_layout import (
     build_api_facts_section,
+    build_chip_paragraph,
+    build_linked_literal,
     inject_signature_slots,
     iter_desc_nodes,
     parse_generated_markup,
@@ -214,8 +216,8 @@ def render_component_nodes(
     return node_list
 
 
-def safe_transform_names(component_cls: type) -> list[str]:
-    """Return transform class names from ``cls().get_transforms()``, guarded.
+def safe_transform_classes(component_cls: type) -> list[type]:
+    """Return transform classes from ``cls().get_transforms()``, guarded.
 
     Readers and writers expose their transform set through
     ``get_transforms()`` on an *instance*; real-world components (e.g.
@@ -226,18 +228,55 @@ def safe_transform_names(component_cls: type) -> list[str]:
     Examples
     --------
     >>> from docutils.readers.standalone import Reader
-    >>> names = safe_transform_names(Reader)
-    >>> "Transitions" in names
+    >>> classes = safe_transform_classes(Reader)
+    >>> any(cls.__name__ == "Transitions" for cls in classes)
     True
 
-    >>> safe_transform_names(object)
+    >>> safe_transform_classes(object)
     []
     """
     try:
         transforms = component_cls().get_transforms()
     except Exception:  # noqa: BLE001 — degrade to no facts on any component error
         return []
-    return [cls.__name__ for cls in transforms]
+    return list(transforms)
+
+
+def linked_paragraph(target: str, display: str | None = None) -> nodes.paragraph:
+    """Return a paragraph holding one linked literal chip.
+
+    Examples
+    --------
+    >>> linked_paragraph("pkg.mod.Cls").astext()
+    'pkg.mod.Cls'
+    >>> linked_paragraph("pkg.mod.Cls", "Cls").astext()
+    'Cls'
+    """
+    return build_chip_paragraph([build_linked_literal(target, display)])
+
+
+def transform_chip_nodes(component_cls: type) -> list[nodes.Node]:
+    """Return linked chips for a component's transform set.
+
+    Each chip displays the bare class name and cross-references the
+    fully-qualified path, so transforms documented anywhere in the
+    project become links while docutils-internal transforms stay plain
+    chips.
+
+    Examples
+    --------
+    >>> from docutils.readers.standalone import Reader
+    >>> chips = transform_chip_nodes(Reader)
+    >>> any(chip.astext() == "Transitions" for chip in chips)
+    True
+    """
+    return [
+        build_linked_literal(
+            f"{transform_cls.__module__}.{transform_cls.__qualname__}",
+            transform_cls.__name__,
+        )
+        for transform_cls in safe_transform_classes(component_cls)
+    ]
 
 
 def import_component(path: str) -> type:

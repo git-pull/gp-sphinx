@@ -14,6 +14,7 @@ from sphinx_autodoc_docutils._badges import build_translator_badge_group
 from sphinx_autodoc_docutils._components import (
     component_classes,
     import_component,
+    linked_paragraph,
     render_component_nodes,
 )
 from sphinx_autodoc_docutils._directives import (
@@ -22,7 +23,11 @@ from sphinx_autodoc_docutils._directives import (
     replay_setup,
 )
 from sphinx_autodoc_docutils.domain import TRANSLATOR
-from sphinx_ux_autodoc_layout import ApiFactRow
+from sphinx_ux_autodoc_layout import (
+    ApiFactRow,
+    build_chip_paragraph,
+    build_linked_literal,
+)
 
 if t.TYPE_CHECKING:
     from sphinx.util.typing import OptionSpec
@@ -169,14 +174,21 @@ def _translator_fact_rows(info: TranslatorInfo) -> list[ApiFactRow]:
     >>> [row.label for row in rows]
     ['Python path', 'Base class', 'Overrides']
     """
-    overrides = ", ".join(translator_overrides(info.cls)) or "—"
+    override_chips: list[nodes.Node] = [
+        build_linked_literal(f"{info.qualified_name}.{method}", method)
+        for method in translator_overrides(info.cls)
+    ]
+    base = info.cls.__bases__[0]
     rows = [
-        ApiFactRow("Python path", _literal_paragraph(info.qualified_name)),
+        ApiFactRow("Python path", linked_paragraph(info.qualified_name)),
         ApiFactRow(
             "Base class",
-            _literal_paragraph(info.cls.__bases__[0].__name__),
+            linked_paragraph(
+                f"{base.__module__}.{base.__qualname__}",
+                base.__name__,
+            ),
         ),
-        ApiFactRow("Overrides", _literal_paragraph(overrides)),
+        ApiFactRow("Overrides", build_chip_paragraph(override_chips)),
     ]
     if info.builder_name:
         rows.append(

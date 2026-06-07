@@ -13,12 +13,13 @@ from sphinx_autodoc_docutils._badges import build_kind_badge_group
 from sphinx_autodoc_docutils._components import (
     component_classes,
     import_component,
+    linked_paragraph,
     render_component_nodes,
-    safe_transform_names,
+    transform_chip_nodes,
 )
 from sphinx_autodoc_docutils._directives import _literal_paragraph, _summary
 from sphinx_autodoc_docutils.domain import WRITER
-from sphinx_ux_autodoc_layout import ApiFactRow
+from sphinx_ux_autodoc_layout import ApiFactRow, build_chip_paragraph
 
 if t.TYPE_CHECKING:
     from docutils import nodes
@@ -90,29 +91,23 @@ def _writer_fact_rows(cls: type[Writer[t.Any]]) -> list[ApiFactRow]:
     ['Python path', 'Supported formats', 'Translator class', 'Config section', 'Transforms']
     """
     translator = resolve_translator_class(cls)
-    translator_path = (
-        f"{translator.__module__}.{translator.__name__}"
+    translator_body = (
+        linked_paragraph(f"{translator.__module__}.{translator.__qualname__}")
         if translator is not None
-        else "—"
+        else _literal_paragraph("—")
     )
     return [
         ApiFactRow(
             "Python path",
-            _literal_paragraph(f"{cls.__module__}.{cls.__name__}"),
+            linked_paragraph(f"{cls.__module__}.{cls.__name__}"),
         ),
-        ApiFactRow(
-            "Supported formats",
-            _literal_paragraph(", ".join(cls.supported) or "—"),
-        ),
-        ApiFactRow("Translator class", _literal_paragraph(translator_path)),
+        ApiFactRow("Supported formats", build_chip_paragraph(list(cls.supported))),
+        ApiFactRow("Translator class", translator_body),
         ApiFactRow(
             "Config section",
             _literal_paragraph(cls.config_section or "—"),
         ),
-        ApiFactRow(
-            "Transforms",
-            _literal_paragraph(", ".join(safe_transform_names(cls)) or "—"),
-        ),
+        ApiFactRow("Transforms", build_chip_paragraph(transform_chip_nodes(cls))),
     ]
 
 

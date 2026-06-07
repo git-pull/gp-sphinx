@@ -14,6 +14,7 @@ from sphinx_autodoc_docutils._badges import build_kind_badge_group
 from sphinx_autodoc_docutils._components import (
     component_classes,
     import_component,
+    linked_paragraph,
     render_component_nodes,
 )
 from sphinx_autodoc_docutils._directives import (
@@ -22,7 +23,7 @@ from sphinx_autodoc_docutils._directives import (
     replay_setup,
 )
 from sphinx_autodoc_docutils.domain import PARSER
-from sphinx_ux_autodoc_layout import ApiFactRow
+from sphinx_ux_autodoc_layout import ApiFactRow, build_chip_paragraph
 
 if t.TYPE_CHECKING:
     from docutils import nodes
@@ -161,11 +162,8 @@ def _parser_fact_rows(info: ParserInfo) -> list[ApiFactRow]:
     ['Python path', 'Supported aliases', 'Config section']
     """
     rows = [
-        ApiFactRow("Python path", _literal_paragraph(info.qualified_name)),
-        ApiFactRow(
-            "Supported aliases",
-            _literal_paragraph(", ".join(info.aliases) or "—"),
-        ),
+        ApiFactRow("Python path", linked_paragraph(info.qualified_name)),
+        ApiFactRow("Supported aliases", build_chip_paragraph(list(info.aliases))),
         ApiFactRow(
             "Config section",
             _literal_paragraph(info.cls.config_section or "—"),

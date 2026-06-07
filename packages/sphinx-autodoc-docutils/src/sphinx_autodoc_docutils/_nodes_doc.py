@@ -14,15 +14,19 @@ from sphinx_autodoc_docutils._badges import build_kind_badge_group
 from sphinx_autodoc_docutils._components import (
     component_classes,
     import_component,
+    linked_paragraph,
     render_component_nodes,
 )
 from sphinx_autodoc_docutils._directives import (
-    _literal_paragraph,
     _summary,
     replay_setup,
 )
 from sphinx_autodoc_docutils.domain import NODE
-from sphinx_ux_autodoc_layout import ApiFactRow
+from sphinx_ux_autodoc_layout import (
+    ApiFactRow,
+    build_chip_paragraph,
+    build_linked_literal,
+)
 
 if t.TYPE_CHECKING:
     from sphinx.util.typing import OptionSpec
@@ -190,14 +194,21 @@ def _node_fact_rows(info: NodeInfo) -> list[ApiFactRow]:
     >>> [row.label for row in rows]
     ['Python path', 'Base classes', 'Categories', 'Visit/depart handlers']
     """
-    bases = ", ".join(base.__name__ for base in info.cls.__bases__)
-    categories = ", ".join(node_categories(info.cls)) or "—"
-    handlers = ", ".join(info.handlers) or "—"
+    base_chips: list[nodes.Node] = [
+        build_linked_literal(
+            f"{base.__module__}.{base.__qualname__}",
+            base.__name__,
+        )
+        for base in info.cls.__bases__
+    ]
     return [
-        ApiFactRow("Python path", _literal_paragraph(info.qualified_name)),
-        ApiFactRow("Base classes", _literal_paragraph(bases)),
-        ApiFactRow("Categories", _literal_paragraph(categories)),
-        ApiFactRow("Visit/depart handlers", _literal_paragraph(handlers)),
+        ApiFactRow("Python path", linked_paragraph(info.qualified_name)),
+        ApiFactRow("Base classes", build_chip_paragraph(base_chips)),
+        ApiFactRow("Categories", build_chip_paragraph(node_categories(info.cls))),
+        ApiFactRow(
+            "Visit/depart handlers",
+            build_chip_paragraph(list(info.handlers)),
+        ),
     ]
 
 

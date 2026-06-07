@@ -12,12 +12,13 @@ from sphinx_autodoc_docutils._badges import build_kind_badge_group
 from sphinx_autodoc_docutils._components import (
     component_classes,
     import_component,
+    linked_paragraph,
     render_component_nodes,
-    safe_transform_names,
+    transform_chip_nodes,
 )
 from sphinx_autodoc_docutils._directives import _literal_paragraph, _summary
 from sphinx_autodoc_docutils.domain import READER
-from sphinx_ux_autodoc_layout import ApiFactRow
+from sphinx_ux_autodoc_layout import ApiFactRow, build_chip_paragraph
 
 if t.TYPE_CHECKING:
     from docutils import nodes
@@ -64,19 +65,17 @@ def _reader_fact_rows(cls: type[Reader[t.Any]]) -> list[ApiFactRow]:
     >>> [row.label for row in rows]
     ['Python path', 'Supported formats', 'Config section', 'Transforms']
     """
-    supported = ", ".join(cls.supported) or "—"
-    transforms = ", ".join(safe_transform_names(cls)) or "—"
     return [
         ApiFactRow(
             "Python path",
-            _literal_paragraph(f"{cls.__module__}.{cls.__name__}"),
+            linked_paragraph(f"{cls.__module__}.{cls.__name__}"),
         ),
-        ApiFactRow("Supported formats", _literal_paragraph(supported)),
+        ApiFactRow("Supported formats", build_chip_paragraph(list(cls.supported))),
         ApiFactRow(
             "Config section",
             _literal_paragraph(cls.config_section or "—"),
         ),
-        ApiFactRow("Transforms", _literal_paragraph(transforms)),
+        ApiFactRow("Transforms", build_chip_paragraph(transform_chip_nodes(cls))),
     ]
 
 

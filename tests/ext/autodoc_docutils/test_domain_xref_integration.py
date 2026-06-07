@@ -47,6 +47,7 @@ _CONF_PY = textwrap.dedent(
     sys.path.insert(0, r"__SCENARIO_SRCDIR__")
 
     extensions = [
+        "sphinx.ext.autodoc",
         "sphinx_autodoc_docutils",
     ]
     """
@@ -62,6 +63,12 @@ _INDEX_RST = textwrap.dedent(
        usage
 
     .. autotransform:: demo_xref_components.DemoXrefTransform
+
+    Full API
+    --------
+
+    .. automodule:: demo_xref_components
+       :members:
     """
 )
 
@@ -162,3 +169,17 @@ def test_domain_data_populated_after_build(
     """The documented transform lands in the docutils domain data."""
     domain_data = docutils_xref_result.app.env.domaindata["docutils"]
     assert "demo_xref_components.DemoXrefTransform" in domain_data["transform"]
+
+
+@pytest.mark.integration
+def test_python_path_fact_resolves_to_automodule_target(
+    docutils_xref_result: SharedSphinxResult,
+) -> None:
+    """The Python path fact links to the class's py-domain target.
+
+    The scenario documents the demo module via automodule, so the
+    fact's py-obj cross-reference resolves to the autodoc anchor on
+    the same page.
+    """
+    index_html = read_output(docutils_xref_result, "index.html")
+    assert 'href="#demo_xref_components.DemoXrefTransform"' in index_html

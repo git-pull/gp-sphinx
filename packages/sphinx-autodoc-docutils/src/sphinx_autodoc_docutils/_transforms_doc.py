@@ -14,6 +14,7 @@ from sphinx_autodoc_docutils._badges import build_transform_badge_group
 from sphinx_autodoc_docutils._components import (
     component_classes,
     import_component,
+    linked_paragraph,
     render_component_nodes,
 )
 from sphinx_autodoc_docutils._directives import (
@@ -165,7 +166,7 @@ def _transform_fact_rows(info: TransformInfo) -> list[ApiFactRow]:
     ['Python path', 'Default priority', 'Registered via']
     """
     rows = [
-        ApiFactRow("Python path", _literal_paragraph(info.qualified_name)),
+        ApiFactRow("Python path", linked_paragraph(info.qualified_name)),
         ApiFactRow(
             "Default priority",
             _literal_paragraph(
