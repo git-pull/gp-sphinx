@@ -130,7 +130,7 @@ These are injected even though they are not exposed as `DEFAULT_*` constants:
 | Constant | Value |
 | --- | --- |
 | `DEFAULT_SPHINX_FONTS` | IBM Plex Sans (400/500/600/700, normal+italic) and IBM Plex Mono (400, normal+italic) Fontsource definitions |
-| `DEFAULT_SPHINX_FONT_PRELOAD` | IBM Plex Sans 400 / 500 / 600 / 700 normal + 400 italic, IBM Plex Mono 400 / 700 normal |
+| `DEFAULT_SPHINX_FONT_PRELOAD` | IBM Plex Sans 400 / 500 / 600 / 700 normal + 400 italic, IBM Plex Mono 400 / 700 normal + 400 italic |
 | `DEFAULT_SPHINX_FONT_FALLBACKS` | Metric-adjusted Arial and Courier fallback declarations |
 | `DEFAULT_SPHINX_FONT_CSS_VARIABLES` | `--font-stack`, `--font-stack--monospace`, `--font-stack--headings` |
 

@@ -239,6 +239,7 @@ DEFAULT_SPHINX_FONT_PRELOAD: list[tuple[str, int, str]] = [
     ("IBM Plex Sans", 400, "italic"),
     ("IBM Plex Mono", 400, "normal"),
     ("IBM Plex Mono", 700, "normal"),
+    ("IBM Plex Mono", 400, "italic"),
 ]
 """Font preload hints for critical rendering path.
 
@@ -252,13 +253,16 @@ The list covers every face Furo / ``furo-tw.css`` is observed to
 demand above the fold: body (Sans 400), headings + sidebar labels
 (Sans 500), epigraph blockquotes (Sans 600), strong / current
 sidebar (Sans 700), inline ``<em>`` and announcement-bar emphasis
-(Sans 400 italic), code blocks (Mono 400), and bold inline code
-``<strong><code>`` (Mono 700).
+(Sans 400 italic), code blocks (Mono 400), bold inline code
+``<strong><code>`` (Mono 700), and Pygments comment tokens
+(``.c`` / ``.c1`` / ``.cm``) which Furo's syntax style renders in
+italic (Mono 400 italic) -- a face triggered by every code block
+that carries a ``#`` comment.
 
 Examples
 --------
 >>> len(DEFAULT_SPHINX_FONT_PRELOAD)
-7
+8
 """
 
 DEFAULT_SPHINX_FONT_FALLBACKS: list[dict[str, str]] = [
