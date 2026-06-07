@@ -46,7 +46,7 @@ demos. (#53)
 #### Cross-reference roles for documented components
 
 Two Sphinx domains — `docutils` and `sphinxext` — make every documented
-component linkable from prose, e.g. {docutils:transform}`SanitizeTransform`,
+component linkable from prose, e.g. `` {docutils:transform}`SanitizeTransform` ``,
 with a grouped component index per domain. Component facts (Python
 paths, translator classes, config types, registering entry points)
 become links to their APIs where a target exists, and unresolved
