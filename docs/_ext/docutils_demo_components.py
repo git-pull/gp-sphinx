@@ -153,6 +153,8 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     ...         self.calls.append(("add_source_parser", cls))
     ...     def add_node(self, cls: object, **kwargs: object) -> None:
     ...         self.calls.append(("add_node", cls))
+    ...     def set_translator(self, name: str, cls: object, **kwargs: object) -> None:
+    ...         self.calls.append(("set_translator", cls))
     >>> fake = FakeApp()
     >>> metadata = setup(fake)  # type: ignore[arg-type]
     >>> ("add_transform", DemoReorderTransform) in fake.calls
@@ -161,12 +163,15 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     True
     >>> ("add_node", demo_marker) in fake.calls
     True
+    >>> ("set_translator", DemoTextTranslator) in fake.calls
+    True
     >>> metadata["parallel_read_safe"]
     True
     """
     app.add_transform(DemoReorderTransform)
     app.add_source_parser(DemoLineParser)
     app.add_node(demo_marker, html=(visit_demo_marker, depart_demo_marker))
+    app.set_translator("demo-plain", DemoTextTranslator, override=True)
     return {
         "version": "0.0.0",
         "parallel_read_safe": True,

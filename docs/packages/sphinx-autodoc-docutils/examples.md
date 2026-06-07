@@ -127,6 +127,23 @@ registered for via `app.add_node()`:
    :no-index:
 ```
 
+### Document one demo translator
+
+Translators surface their base class, the visit/depart methods the
+class itself defines, and the builder the module's `setup()` registers
+them for via `app.set_translator()` — including an `override` badge:
+
+```{eval-rst}
+.. autotranslator:: docutils_demo_components.DemoTextTranslator
+```
+
+### Bulk translators demo
+
+```{eval-rst}
+.. autotranslators:: docutils_demo_components
+   :no-index:
+```
+
 ### Cross-referencing components
 
 Component entries register targets in the `docutils` domain, so prose

@@ -50,6 +50,14 @@ from sphinx_autodoc_docutils._transforms_doc import (
     discover_transform,
     discover_transforms,
 )
+from sphinx_autodoc_docutils._translators_doc import (
+    TranslatorInfo,
+    _translator_fact_rows,
+    _translators_from_calls,
+    discover_translator,
+    discover_translators,
+    translator_overrides,
+)
 from sphinx_autodoc_docutils._writers_doc import (
     _writer_fact_rows,
     discover_writer,
@@ -570,6 +578,82 @@ def test_node_fact_rows_dash_without_handlers() -> None:
     rows = _node_fact_rows(NodeInfo(cls=_demo_inline))
     by_label = {row.label: row.body.astext() for row in rows}
     assert by_label["Visit/depart handlers"] == "—"
+
+
+# ---------------------------------------------------------------------------
+# Translators
+# ---------------------------------------------------------------------------
+
+
+class _DemoVisitor(nodes.SparseNodeVisitor):
+    """Demo translator overriding two paragraph handlers."""
+
+    def visit_paragraph(self, node: nodes.paragraph) -> None:
+        """Demo visit handler."""
+
+    def depart_paragraph(self, node: nodes.paragraph) -> None:
+        """Demo depart handler."""
+
+
+def test_translator_overrides_lists_own_methods_only() -> None:
+    """translator_overrides reports only methods defined on the class."""
+    assert translator_overrides(_DemoVisitor) == [
+        "depart_paragraph",
+        "visit_paragraph",
+    ]
+
+
+def test_translators_from_calls_extracts_builder_and_override() -> None:
+    """_translators_from_calls captures builder name and override flag."""
+    infos = _translators_from_calls(
+        [
+            ("set_translator", ("html", _DemoVisitor), {"override": True}),
+            ("set_translator", ("text", _DemoVisitor, False), {}),
+            ("set_translator", (123, _DemoVisitor), {}),
+            ("add_directive", ("noise", object), {}),
+        ],
+    )
+    assert [(info.builder_name, info.override) for info in infos] == [
+        ("html", True),
+        ("text", False),
+    ]
+
+
+def test_discover_translators_scans_module() -> None:
+    """discover_translators finds NodeVisitor subclasses in a module."""
+    infos = discover_translators("docutils.writers.html5_polyglot")
+    assert [(info.cls.__name__, info.builder_name) for info in infos] == [
+        ("HTMLTranslator", ""),
+    ]
+
+
+def test_discover_translators_empty_for_module_without_translators() -> None:
+    """discover_translators returns [] for modules without translators."""
+    assert discover_translators("sphinx_fonts") == []
+
+
+def test_discover_translator_single_path() -> None:
+    """discover_translator imports one translator from a dotted path."""
+    info = discover_translator("docutils.writers.html5_polyglot.HTMLTranslator")
+    assert info.cls.__name__ == "HTMLTranslator"
+
+
+def test_translator_fact_rows_surface_base_and_overrides() -> None:
+    """Translator fact rows include base class and own overrides."""
+    rows = _translator_fact_rows(TranslatorInfo(cls=_DemoVisitor))
+    by_label = {row.label: row.body.astext() for row in rows}
+    assert by_label["Base class"] == "SparseNodeVisitor"
+    assert by_label["Overrides"] == "depart_paragraph, visit_paragraph"
+    assert "Registered for builder" not in by_label
+
+
+def test_translator_fact_rows_include_builder_registration() -> None:
+    """A set_translator registration surfaces the builder name."""
+    rows = _translator_fact_rows(
+        TranslatorInfo(cls=_DemoVisitor, builder_name="html", override=True),
+    )
+    by_label = {row.label: row.body.astext() for row in rows}
+    assert by_label["Registered for builder"] == "html"
 
 
 # ---------------------------------------------------------------------------

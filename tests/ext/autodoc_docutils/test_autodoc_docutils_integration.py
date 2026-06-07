@@ -120,6 +120,7 @@ _MODULE_SOURCE = textwrap.dedent(
         app.add_transform(DemoTransform)
         app.add_source_parser(DemoParser)
         app.add_node(demo_chip, html=(visit_demo_chip, depart_demo_chip))
+        app.set_translator("demo-plain", DemoTranslator, override=True)
     """
 )
 
@@ -158,6 +159,8 @@ _INDEX_RST = textwrap.dedent(
     .. autowriter:: demo_docutils_objects.DemoWriter
 
     .. autonode:: demo_docutils_objects.demo_chip
+
+    .. autotranslator:: demo_docutils_objects.DemoTranslator
     """
 )
 
@@ -278,3 +281,18 @@ def test_autodoc_docutils_node_entries(
     assert "Base classes" in html
     assert "Categories" in html
     assert "Visit/depart handlers" in html
+
+
+@pytest.mark.integration
+def test_autodoc_docutils_translator_entries(
+    autodoc_docutils_html_result: SharedSphinxResult,
+) -> None:
+    """autotranslator entries render with profile, badges, and facts."""
+    html = read_output(autodoc_docutils_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--docutils-translator" in html
+    assert ">translator<" in html
+    assert ">override<" in html
+    assert "Overrides" in html
+    assert "visit_paragraph" in html
+    assert "Registered for builder" in html

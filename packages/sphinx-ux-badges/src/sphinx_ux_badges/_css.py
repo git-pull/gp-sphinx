@@ -168,6 +168,7 @@ class SAB:
     TYPE_PARSER = "gp-sphinx-badge--type-parser"
     TYPE_WRITER = "gp-sphinx-badge--type-writer"
     TYPE_NODE = "gp-sphinx-badge--type-node"
+    TYPE_TRANSLATOR = "gp-sphinx-badge--type-translator"
 
     # ── docutils component modifiers (outlined) ──────────
     MOD_PRIORITY = "gp-sphinx-badge--mod-priority"
