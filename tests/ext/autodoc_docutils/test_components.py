@@ -23,6 +23,14 @@ from sphinx_autodoc_docutils._components import (
     inject_component_badges,
     normalize_component_nodes,
 )
+from sphinx_autodoc_docutils._nodes_doc import (
+    NodeInfo,
+    _node_fact_rows,
+    _nodes_from_calls,
+    discover_node,
+    discover_nodes,
+    node_categories,
+)
 from sphinx_autodoc_docutils._parsers_doc import (
     ParserInfo,
     _parser_fact_rows,
@@ -428,6 +436,140 @@ def test_parser_fact_rows_include_source_parser_registration() -> None:
     )
     by_label = {row.label: row.body.astext() for row in rows}
     assert by_label["Registered via"] == "app.add_source_parser()"
+
+
+# ---------------------------------------------------------------------------
+# Nodes
+# ---------------------------------------------------------------------------
+
+
+class _demo_inline(nodes.General, nodes.Inline, nodes.Element):  # noqa: N801 — docutils node classes are lowercase
+    """Demo inline node for metadata tests."""
+
+
+def _visit_demo_inline(translator: object, node: object) -> None:
+    """Demo visit handler."""
+
+
+def _depart_demo_inline(translator: object, node: object) -> None:
+    """Demo depart handler."""
+
+
+class NodesFromCallsCase(t.NamedTuple):
+    """Test case for _nodes_from_calls()."""
+
+    test_id: str
+    calls: list[tuple[str, tuple[object, ...], dict[str, object]]]
+    expected: list[tuple[str, tuple[str, ...]]]
+
+
+_NODES_FROM_CALLS_CASES: list[NodesFromCallsCase] = [
+    NodesFromCallsCase(
+        test_id="single_builder",
+        calls=[
+            (
+                "add_node",
+                (_demo_inline,),
+                {"html": (_visit_demo_inline, _depart_demo_inline)},
+            ),
+        ],
+        expected=[("_demo_inline", ("html",))],
+    ),
+    NodesFromCallsCase(
+        test_id="override_kwarg_skipped",
+        calls=[
+            (
+                "add_node",
+                (_demo_inline,),
+                {"override": True, "html": (_visit_demo_inline, None)},
+            ),
+        ],
+        expected=[("_demo_inline", ("html",))],
+    ),
+    NodesFromCallsCase(
+        test_id="multiple_builders",
+        calls=[
+            (
+                "add_node",
+                (_demo_inline,),
+                {
+                    "html": (_visit_demo_inline, None),
+                    "latex": (_visit_demo_inline, None),
+                },
+            ),
+        ],
+        expected=[("_demo_inline", ("html", "latex"))],
+    ),
+    NodesFromCallsCase(
+        test_id="last_registration_wins",
+        calls=[
+            ("add_node", (_demo_inline,), {"html": (_visit_demo_inline, None)}),
+            ("add_node", (_demo_inline,), {"text": (_visit_demo_inline, None)}),
+        ],
+        expected=[("_demo_inline", ("text",))],
+    ),
+    NodesFromCallsCase(
+        test_id="ignores_non_node_classes",
+        calls=[("add_node", (object,), {})],
+        expected=[],
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "case",
+    _NODES_FROM_CALLS_CASES,
+    ids=lambda c: c.test_id,
+)
+def test_nodes_from_calls(case: NodesFromCallsCase) -> None:
+    """_nodes_from_calls extracts node registrations with handlers."""
+    infos = _nodes_from_calls(case.calls)
+    assert [(info.cls.__name__, info.handlers) for info in infos] == case.expected
+
+
+def test_discover_nodes_merges_registration_into_scan() -> None:
+    """discover_nodes surfaces registered nodes with their handlers."""
+    infos = discover_nodes("sphinx_ux_badges")
+    assert [(info.cls.__name__, info.handlers) for info in infos] == [
+        ("BadgeNode", ("html",)),
+    ]
+
+
+def test_discover_nodes_empty_for_module_without_nodes() -> None:
+    """discover_nodes returns [] for modules without node classes."""
+    assert discover_nodes("sphinx_fonts") == []
+
+
+def test_discover_node_single_path() -> None:
+    """discover_node imports one node class and picks up its handlers."""
+    info = discover_node("sphinx_ux_badges.BadgeNode")
+    assert info.cls.__name__ == "BadgeNode"
+
+
+def test_node_categories_for_inline_node() -> None:
+    """node_categories reports docutils element category mixins.
+
+    ``General`` subclasses ``Body`` in docutils, so a General node is
+    also a Body node.
+    """
+    assert node_categories(_demo_inline) == ["Body", "General", "Inline"]
+
+
+def test_node_fact_rows_surface_bases_and_handlers() -> None:
+    """Node fact rows include base classes, categories, and handlers."""
+    rows = _node_fact_rows(NodeInfo(cls=_demo_inline, handlers=("html",)))
+    by_label = {row.label: row.body.astext() for row in rows}
+    assert by_label["Python path"].endswith("_demo_inline")
+    assert "General" in by_label["Base classes"]
+    assert by_label["Categories"] == "Body, General, Inline"
+    assert by_label["Visit/depart handlers"] == "html"
+
+
+def test_node_fact_rows_dash_without_handlers() -> None:
+    """Translator-handled nodes (no add_node call) show a handler dash."""
+    rows = _node_fact_rows(NodeInfo(cls=_demo_inline))
+    by_label = {row.label: row.body.astext() for row in rows}
+    assert by_label["Visit/depart handlers"] == "—"
 
 
 # ---------------------------------------------------------------------------

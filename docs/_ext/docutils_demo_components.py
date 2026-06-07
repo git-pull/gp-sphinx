@@ -73,6 +73,20 @@ class DemoLineParser(Parser):
         self.finish_parse()
 
 
+class demo_marker(nodes.General, nodes.Inline, nodes.Element):
+    """Inline marker node rendered as a highlighted ``<mark>`` span."""
+
+
+def visit_demo_marker(translator: nodes.NodeVisitor, node: demo_marker) -> None:
+    """Open the ``<mark>`` wrapper for a demo marker node."""
+    translator.body.append("<mark>")  # type: ignore[attr-defined]
+
+
+def depart_demo_marker(translator: nodes.NodeVisitor, node: demo_marker) -> None:
+    """Close the ``<mark>`` wrapper for a demo marker node."""
+    translator.body.append("</mark>")  # type: ignore[attr-defined]
+
+
 class DemoTextTranslator(nodes.NodeVisitor):
     """Translate paragraphs into plain text lines for the demo writer."""
 
@@ -137,17 +151,22 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     ...         self.calls.append(("add_transform", cls))
     ...     def add_source_parser(self, cls: object) -> None:
     ...         self.calls.append(("add_source_parser", cls))
+    ...     def add_node(self, cls: object, **kwargs: object) -> None:
+    ...         self.calls.append(("add_node", cls))
     >>> fake = FakeApp()
     >>> metadata = setup(fake)  # type: ignore[arg-type]
     >>> ("add_transform", DemoReorderTransform) in fake.calls
     True
     >>> ("add_source_parser", DemoLineParser) in fake.calls
     True
+    >>> ("add_node", demo_marker) in fake.calls
+    True
     >>> metadata["parallel_read_safe"]
     True
     """
     app.add_transform(DemoReorderTransform)
     app.add_source_parser(DemoLineParser)
+    app.add_node(demo_marker, html=(visit_demo_marker, depart_demo_marker))
     return {
         "version": "0.0.0",
         "parallel_read_safe": True,

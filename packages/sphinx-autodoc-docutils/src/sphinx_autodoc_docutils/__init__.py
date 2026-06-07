@@ -14,6 +14,13 @@ from sphinx_autodoc_docutils._directives import (
     SetupRecorder,
     replay_setup,
 )
+from sphinx_autodoc_docutils._nodes_doc import (
+    AutoNode,
+    AutoNodes,
+    NodeInfo,
+    discover_node,
+    discover_nodes,
+)
 from sphinx_autodoc_docutils._parsers_doc import (
     AutoParser,
     AutoParsers,
@@ -48,6 +55,8 @@ from sphinx_autodoc_docutils.domain import (
 __all__ = [
     "AutoDirective",
     "AutoDirectives",
+    "AutoNode",
+    "AutoNodes",
     "AutoParser",
     "AutoParsers",
     "AutoReader",
@@ -60,9 +69,12 @@ __all__ = [
     "AutoWriters",
     "DocutilsComponentIndex",
     "DocutilsDomain",
+    "NodeInfo",
     "ParserInfo",
     "SetupRecorder",
     "TransformInfo",
+    "discover_node",
+    "discover_nodes",
     "discover_parser",
     "discover_parsers",
     "discover_reader",
@@ -131,6 +143,8 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.add_directive("autoparsers", AutoParsers)
     app.add_directive("autowriter", AutoWriter)
     app.add_directive("autowriters", AutoWriters)
+    app.add_directive("autonode", AutoNode)
+    app.add_directive("autonodes", AutoNodes)
 
     _static_dir = str(pathlib.Path(__file__).parent / "_static")
 

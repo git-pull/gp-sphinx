@@ -110,6 +110,23 @@ defensively, since writers commonly assign `translator_class` inside
    :no-index:
 ```
 
+### Document one demo node
+
+Custom node classes surface their base classes, docutils element
+categories, and the builders their visit/depart handlers were
+registered for via `app.add_node()`:
+
+```{eval-rst}
+.. autonode:: docutils_demo_components.demo_marker
+```
+
+### Bulk nodes demo
+
+```{eval-rst}
+.. autonodes:: docutils_demo_components
+   :no-index:
+```
+
 ### Cross-referencing components
 
 Component entries register targets in the `docutils` domain, so prose

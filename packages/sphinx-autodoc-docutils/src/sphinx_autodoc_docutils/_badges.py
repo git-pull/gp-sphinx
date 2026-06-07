@@ -16,6 +16,7 @@ _KIND_CLASSES: dict[str, str] = {
     "reader": SAB.TYPE_READER,
     "parser": SAB.TYPE_PARSER,
     "writer": SAB.TYPE_WRITER,
+    "node": SAB.TYPE_NODE,
 }
 
 

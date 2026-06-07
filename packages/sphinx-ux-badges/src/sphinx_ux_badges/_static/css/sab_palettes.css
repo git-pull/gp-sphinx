@@ -132,6 +132,10 @@
   --gp-sphinx-badge-writer-fg:     #0f766e;
   --gp-sphinx-badge-writer-border: #14b8a6;
 
+  --gp-sphinx-badge-node-bg:     #fdf4ff;
+  --gp-sphinx-badge-node-fg:     #a21caf;
+  --gp-sphinx-badge-node-border: #d946ef;
+
   /* ── docutils component modifiers (outlined) ────────── */
   --gp-sphinx-badge-mod-priority-fg:     #6b7280;
   --gp-sphinx-badge-mod-priority-border: #d1d5db;
@@ -260,6 +264,10 @@
     --gp-sphinx-badge-writer-fg:     #5eead4;
     --gp-sphinx-badge-writer-border: #2dd4bf;
 
+    --gp-sphinx-badge-node-bg:     #4a044e;
+    --gp-sphinx-badge-node-fg:     #f0abfc;
+    --gp-sphinx-badge-node-border: #e879f9;
+
     --gp-sphinx-badge-mod-priority-fg:     #9ca3af;
     --gp-sphinx-badge-mod-priority-border: #4b5563;
 
@@ -387,6 +395,10 @@ body[data-theme="dark"] {
   --gp-sphinx-badge-writer-fg:     #5eead4;
   --gp-sphinx-badge-writer-border: #2dd4bf;
 
+  --gp-sphinx-badge-node-bg:     #4a044e;
+  --gp-sphinx-badge-node-fg:     #f0abfc;
+  --gp-sphinx-badge-node-border: #e879f9;
+
   --gp-sphinx-badge-mod-priority-fg:     #9ca3af;
   --gp-sphinx-badge-mod-priority-border: #4b5563;
 
@@ -464,6 +476,7 @@ body[data-theme="dark"] {
 .gp-sphinx-badge--type-reader    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-reader-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-reader-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-reader-border); }
 .gp-sphinx-badge--type-parser    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-parser-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-parser-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-parser-border); }
 .gp-sphinx-badge--type-writer    { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-writer-bg);    --gp-sphinx-badge-fg: var(--gp-sphinx-badge-writer-fg);    --gp-sphinx-badge-border: var(--gp-sphinx-badge-writer-border); }
+.gp-sphinx-badge--type-node      { --gp-sphinx-badge-bg: var(--gp-sphinx-badge-node-bg);      --gp-sphinx-badge-fg: var(--gp-sphinx-badge-node-fg);      --gp-sphinx-badge-border: var(--gp-sphinx-badge-node-border); }
 
 /* ══════════════════════════════════════════════════════════
  * Colour classes — docutils component modifiers (outlined)

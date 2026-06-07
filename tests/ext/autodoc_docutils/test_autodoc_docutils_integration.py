@@ -83,6 +83,18 @@ _MODULE_SOURCE = textwrap.dedent(
             pass
 
 
+    class demo_chip(nodes.General, nodes.Inline, nodes.Element):
+        \"\"\"Inline chip node for demos.\"\"\"
+
+
+    def visit_demo_chip(translator, node):
+        pass
+
+
+    def depart_demo_chip(translator, node):
+        pass
+
+
     class DemoTranslator(nodes.SparseNodeVisitor):
         \"\"\"Translate demo documents to plain text.\"\"\"
 
@@ -107,6 +119,7 @@ _MODULE_SOURCE = textwrap.dedent(
     def setup(app):
         app.add_transform(DemoTransform)
         app.add_source_parser(DemoParser)
+        app.add_node(demo_chip, html=(visit_demo_chip, depart_demo_chip))
     """
 )
 
@@ -143,6 +156,8 @@ _INDEX_RST = textwrap.dedent(
     .. autoparser:: demo_docutils_objects.DemoParser
 
     .. autowriter:: demo_docutils_objects.DemoWriter
+
+    .. autonode:: demo_docutils_objects.demo_chip
     """
 )
 
@@ -249,3 +264,17 @@ def test_autodoc_docutils_writer_entries(
     assert "Translator class" in html
     assert "demo_docutils_objects.DemoTranslator" in html
     assert "demo-plain" in html
+
+
+@pytest.mark.integration
+def test_autodoc_docutils_node_entries(
+    autodoc_docutils_html_result: SharedSphinxResult,
+) -> None:
+    """autonode entries render with profile, badge, and facts."""
+    html = read_output(autodoc_docutils_html_result, "index.html")
+
+    assert "gp-sphinx-api-profile--docutils-node" in html
+    assert ">node<" in html
+    assert "Base classes" in html
+    assert "Categories" in html
+    assert "Visit/depart handlers" in html

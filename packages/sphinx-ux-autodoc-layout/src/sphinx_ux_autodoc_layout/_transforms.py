@@ -82,6 +82,7 @@ _MANAGED_DOCUTILS_OBJTYPES: tuple[str, ...] = (
     "reader",
     "parser",
     "writer",
+    "node",
 )
 
 
