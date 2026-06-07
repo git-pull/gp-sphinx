@@ -30,7 +30,7 @@ if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
     from sphinx.util.typing import ExtensionMetadata
 
-_EXTENSION_VERSION = "0.0.1a28"
+_EXTENSION_VERSION = "0.0.1a29"
 
 logger = getLogger(__name__)
 logging.getLogger(__name__).addHandler(logging.NullHandler())
