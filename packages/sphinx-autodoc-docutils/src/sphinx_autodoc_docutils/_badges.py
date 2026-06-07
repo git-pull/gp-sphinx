@@ -33,6 +33,19 @@ def build_kind_badge_group(kind: str) -> nodes.inline:
     -------
     nodes.inline
         Badge group for the entry header.
+
+    Examples
+    --------
+    >>> "directive" in build_kind_badge_group("directive").astext()
+    True
+    >>> "reader" in build_kind_badge_group("reader").astext()
+    True
+
+    Unknown kinds keep their label and fall back to the directive
+    colour class:
+
+    >>> "mystery" in build_kind_badge_group("mystery").astext()
+    True
     """
     colour_class = _KIND_CLASSES.get(kind, SAB.TYPE_DIRECTIVE)
     return build_badge_group_from_specs(
