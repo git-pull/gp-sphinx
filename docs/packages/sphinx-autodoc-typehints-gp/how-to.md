@@ -23,7 +23,7 @@ and skips its own plain-text duplicates — cooperation, not conflict.
 
 ## Features
 
-- Resolves type hints statically without `exec()` or `typing.get_type_hints()`.
+- Resolves type hints statically without `exec()` or {func}`typing.get_type_hints`.
 - Works perfectly with `TYPE_CHECKING` blocks.
 - No text-level race conditions with Napoleon.
 - Exposes reusable helpers for annotation display classification and rendered
@@ -44,8 +44,8 @@ Four `build_*` functions span two axes:
 
 | | Resolved (`env` available) | Unresolved (annotation text only) |
 |---|---|---|
-| Raw paragraph | `build_resolved_annotation_paragraph` | `build_annotation_paragraph` |
-| Display-classified | `build_resolved_annotation_display_paragraph` | `build_annotation_display_paragraph` |
+| Raw paragraph | {func}`~sphinx_autodoc_typehints_gp.build_resolved_annotation_paragraph` | {func}`~sphinx_autodoc_typehints_gp.build_annotation_paragraph` |
+| Display-classified | {func}`~sphinx_autodoc_typehints_gp.build_resolved_annotation_display_paragraph` | {func}`~sphinx_autodoc_typehints_gp.build_annotation_display_paragraph` |
 
 Use `build_resolved_*` inside `doctree-resolved` event handlers where a
 `BuildEnvironment` is available.  Use `build_*` when you have only the
@@ -53,7 +53,8 @@ annotation string.
 
 ## Annotation display classification
 
-`classify_annotation_display()` returns an `AnnotationDisplay` with structured
+{func}`~sphinx_autodoc_typehints_gp.classify_annotation_display` returns an
+{class}`~sphinx_autodoc_typehints_gp.AnnotationDisplay` with structured
 metadata for UI renderers.  All values below are verified against the installed
 package:
 
@@ -68,16 +69,17 @@ package:
 `is_literal_enum=True` lets rendering code produce individual badge chips for
 each member rather than a monolithic code string.  This decision used to live
 in each consumer (FastMCP, pytest-fixtures, api-style); now it lives in
-`classify_annotation_display()` so no downstream package re-implements enum
-detection heuristics.
+{func}`~sphinx_autodoc_typehints_gp.classify_annotation_display` so no
+downstream package re-implements enum detection heuristics.
 
 ## Static resolution
 
 | Approach | `TYPE_CHECKING` block safe | Napoleon text-processing race |
 |---|---|---|
-| `typing.get_type_hints()` | No — resolves at import time | Yes — depends on import order |
-| `sphinx_stringify_annotation()` | Yes — resolves at Sphinx build time | No — no text processing |
+| {func}`typing.get_type_hints` | No — resolves at import time | Yes — depends on import order |
+| `sphinx.util.typing.stringify_annotation()` | Yes — resolves at Sphinx build time | No — no text processing |
 
-This extension uses `sphinx_stringify_annotation()` to resolve annotations at
-build time, making it safe with `TYPE_CHECKING` blocks and eliminating
+This extension uses `sphinx.util.typing.stringify_annotation()` (Sphinx
+publishes no cross-reference target for it) to resolve annotations at build
+time, making it safe with `TYPE_CHECKING` blocks and eliminating
 text-processing races with Napoleon.
