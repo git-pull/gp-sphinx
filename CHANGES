@@ -35,7 +35,9 @@ List-valued facts render as individual chips, and names with
 documented py-domain targets — Python paths, translator classes,
 transform sets, handler overrides, config value types and their
 registering `setup()` entry points — become cross-reference links,
-degrading to plain chips when no target exists. Bulk
+degrading to plain chips when no target exists. Container config-value
+defaults (dicts, lists) render as Pygments-highlighted Python blocks.
+Bulk
 forms replay a package's `setup()` so Sphinx-side registrations
 (`add_transform`, `add_node`, `add_source_parser`, `set_translator`)
 surface with their real metadata, and fall back to module scans for
