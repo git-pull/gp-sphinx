@@ -488,12 +488,23 @@ def _arg_table(
 
 
 class FastMCPPromptDirective(SphinxDirective):
-    """Autodocument one MCP prompt: section + card body."""
+    """Autodocument one MCP prompt: section + card body.
+
+    Supports the standard Sphinx ``:no-index:`` flag (mirrors
+    :class:`FastMCPToolDirective`): when set, the card still renders in full
+    but its canonical section ID is not registered in :class:`StandardDomain`
+    ``labels`` / ``anonlabels``. Use it when a prompt appears on more than one
+    page — exactly one invocation should omit ``:no-index:`` so cross-references
+    have a single canonical home.
+    """
 
     required_arguments = 1
     optional_arguments = 0
     has_content = True
     final_argument_whitespace = False
+    option_spec: t.ClassVar[dict[str, t.Callable[[str], t.Any]]] = {
+        "no-index": directives.flag,
+    }
 
     def run(self) -> list[nodes.Node]:
         """Build section with title + description for one prompt."""
@@ -512,11 +523,17 @@ class FastMCPPromptDirective(SphinxDirective):
 
         document = self.state.document
         section_id, _ = _component_ids("prompt", prompt.name)
+        no_index = "no-index" in self.options
         section = nodes.section()
         section["ids"].append(section_id)
         section["classes"].extend((_CSS.PROMPT_SECTION, API.CARD_SHELL))
-        _register_section_label(self.env, section_id, prompt.name)
-        document.note_explicit_target(section)
+        if no_index:
+            # Marker consumed by ``register_tool_labels`` so the doctree-read
+            # pass mirrors the directive's skip on incremental rebuilds.
+            section["fastmcp_no_index"] = True
+        else:
+            _register_section_label(self.env, section_id, prompt.name)
+            document.note_explicit_target(section)
 
         title_node = nodes.title("", "")
         title_node["classes"].append(_CSS.SECTION_TITLE_HIDDEN)
@@ -596,6 +613,7 @@ def _build_resource_card(
     display_name: str,
     document: t.Any,
     permalink_title: str = "Link to this resource",
+    no_index: bool = False,
 ) -> nodes.Node:
     """Shared card builder for resources & resource templates."""
     content_nodes: list[nodes.Node] = []
@@ -620,8 +638,13 @@ def _build_resource_card(
     section = nodes.section()
     section["ids"].append(section_id)
     section["classes"].extend((shell_class, API.CARD_SHELL))
-    _register_section_label(env, section_id, display_name)
-    document.note_explicit_target(section)
+    if no_index:
+        # Marker consumed by ``register_tool_labels`` so the doctree-read pass
+        # mirrors the directive's skip on incremental rebuilds.
+        section["fastmcp_no_index"] = True
+    else:
+        _register_section_label(env, section_id, display_name)
+        document.note_explicit_target(section)
 
     title_node = nodes.title("", "")
     title_node["classes"].append(_CSS.SECTION_TITLE_HIDDEN)
@@ -644,12 +667,21 @@ def _build_resource_card(
 
 
 class FastMCPResourceDirective(SphinxDirective):
-    """Autodocument one MCP resource (fixed URI)."""
+    """Autodocument one MCP resource (fixed URI).
+
+    Supports the standard Sphinx ``:no-index:`` flag (mirrors
+    :class:`FastMCPToolDirective`): when set, the card renders but its canonical
+    section ID is not registered as a cross-reference target, so a resource
+    shown on more than one page registers its canonical home exactly once.
+    """
 
     required_arguments = 1
     optional_arguments = 0
     has_content = True
     final_argument_whitespace = False
+    option_spec: t.ClassVar[dict[str, t.Callable[[str], t.Any]]] = {
+        "no-index": directives.flag,
+    }
 
     def run(self) -> list[nodes.Node]:
         """Build section card for a resource."""
@@ -688,17 +720,26 @@ class FastMCPResourceDirective(SphinxDirective):
                 section_id=_component_ids("resource", res.name)[0],
                 display_name=res.name,
                 document=self.state.document,
+                no_index="no-index" in self.options,
             ),
         ]
 
 
 class FastMCPResourceTemplateDirective(SphinxDirective):
-    """Autodocument one MCP resource template (parameterised URI)."""
+    """Autodocument one MCP resource template (parameterised URI).
+
+    Supports the standard Sphinx ``:no-index:`` flag (mirrors
+    :class:`FastMCPToolDirective`): when set, the card renders but its canonical
+    section ID is not registered as a cross-reference target.
+    """
 
     required_arguments = 1
     optional_arguments = 0
     has_content = True
     final_argument_whitespace = False
+    option_spec: t.ClassVar[dict[str, t.Callable[[str], t.Any]]] = {
+        "no-index": directives.flag,
+    }
 
     def run(self) -> list[nodes.Node]:
         """Build section card for a resource template."""
@@ -741,6 +782,7 @@ class FastMCPResourceTemplateDirective(SphinxDirective):
             display_name=tpl.name,
             document=self.state.document,
             permalink_title="Link to this resource template",
+            no_index="no-index" in self.options,
         )
         result: list[nodes.Node] = [card]
         if tpl.parameters:

@@ -1,9 +1,13 @@
 """Cross-reference linking coverage for FastMCP component directives & roles.
 
 Locks issue #56's acceptance criteria. Tools/prompts already linked; this
-suite proves resources, prompts, and resource templates register std-domain
-labels, so they land in ``objects.inv`` as ``std:label``
-(intersphinx-reachable) and resolve via ``{ref}``.
+suite proves the parity affordances for the non-tool families:
+
+* resources, prompts, and resource templates register std-domain labels, so
+  they land in ``objects.inv`` as ``std:label`` (intersphinx-reachable) and
+  resolve via ``{ref}``
+* ``:no-index:`` suppresses cross-document label registration so a component
+  shown on more than one page keeps a single canonical home
 """
 
 from __future__ import annotations
@@ -192,3 +196,72 @@ def test_component_label_lands_in_objects_inv(
     assert case.label in inventory["std:label"], (
         f"{case.label} missing from objects.inv std:label entries"
     )
+
+
+# --- :no-index: parity (issue #56 request) ---------------------------------
+
+_NO_INDEX_INDEX_MD = textwrap.dedent(
+    """\
+    # No-index demo
+
+    ```{toctree}
+    canonical
+    secondary
+    ```
+    """
+)
+
+_CANONICAL_MD = textwrap.dedent(
+    """\
+    # Canonical home
+
+    ```{fastmcp-resource} hello
+    ```
+    """
+)
+
+_SECONDARY_MD = textwrap.dedent(
+    """\
+    # Secondary appearance
+
+    ```{fastmcp-resource} hello
+    :no-index:
+    ```
+    """
+)
+
+
+@pytest.fixture(scope="module")
+def no_index_html(tmp_path_factory: pytest.TempPathFactory) -> SharedSphinxResult:
+    """Build a resource shown on two pages, the second with ``:no-index:``."""
+    cache_root = tmp_path_factory.mktemp("fastmcp-no-index")
+    scenario = _scenario(
+        ScenarioFile("index.md", _NO_INDEX_INDEX_MD),
+        ScenarioFile("canonical.md", _CANONICAL_MD),
+        ScenarioFile("secondary.md", _SECONDARY_MD),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("fastmcp_link_fixture_ext",),
+    )
+
+
+@pytest.mark.integration
+def test_no_index_resource_keeps_single_canonical_home(
+    no_index_html: SharedSphinxResult,
+) -> None:
+    """``:no-index:`` binds the canonical label to the page that omits it."""
+    inventory = _load_inventory(no_index_html)
+    item = inventory["std:label"]["fastmcp-resource-hello"]
+    assert item.uri.startswith("canonical"), (
+        f"canonical label should point at canonical page, got {item.uri!r}"
+    )
+
+
+@pytest.mark.integration
+def test_no_index_resource_emits_no_duplicate_label_warning(
+    no_index_html: SharedSphinxResult,
+) -> None:
+    """The opted-out page registers no competing label, so no duplicate warning."""
+    assert "duplicate label" not in no_index_html.warnings.lower()
