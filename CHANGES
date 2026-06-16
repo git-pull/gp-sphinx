@@ -18,6 +18,23 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### What's new
+
+#### Cross-reference roles for resources and prompts
+
+`sphinx-autodoc-fastmcp` adds the `{resource}` / `{resourceref}` and
+`{prompt}` / `{promptref}` inline roles, mirroring the existing
+`{tool}` / `{toolref}` family. `{resource}` links a fixed resource or a
+resource template by name, and an unknown name degrades to a plain
+literal rather than a broken link. (#57)
+
+#### `:no-index:` for components shown on more than one page
+
+The `fastmcp-prompt`, `fastmcp-resource`, `fastmcp-resource-template`,
+and `argparse` directives now accept `:no-index:`. Add it to every
+appearance except the canonical one: the card still renders everywhere,
+but registers its cross-reference target exactly once. (#57)
+
 ## gp-sphinx 0.0.1a30 (2026-06-07)
 
 ### Fixes

@@ -48,12 +48,20 @@ class RenderConfig:
     True
     >>> config.group_title_prefix
     ''
+    >>> config.register_xref_targets
+    True
     """
 
     group_title_prefix: str = ""
     show_defaults: bool = True
     show_choices: bool = True
     show_types: bool = True
+    # When False (set by the directive's ``:no-index:`` flag) the render still
+    # emits full markup and per-section HTML anchors, but registers no
+    # cross-reference targets: no ``argparse:*`` / ``std:cmdoption`` inventory
+    # entries and no implicit section labels. Lets a parser appear on more than
+    # one page with a single canonical xref home.
+    register_xref_targets: bool = True
 
     @classmethod
     def from_sphinx_config(cls, config: Config) -> RenderConfig:
@@ -194,7 +202,7 @@ class ArgparseRenderer:
         >>> r = ArgparseRenderer()
         >>> r._register_argument("myapp", ["--verbose"], "verbose")  # no-op without env
         """
-        if self.env is None or not names:
+        if self.env is None or not names or not self.config.register_xref_targets:
             return
         std_domain = self.env.domains.standard_domain
         std_program = prog_name.replace(" ", "-") if prog_name else None
@@ -233,7 +241,7 @@ class ArgparseRenderer:
         >>> r = ArgparseRenderer()
         >>> r._register_program("myapp", "argparse-myapp")  # no-op without env
         """
-        if self.env is None or not prog_name:
+        if self.env is None or not prog_name or not self.config.register_xref_targets:
             return
         argparse_domain = self.env.domains["argparse"]
         argparse_domain.note_program(  # type: ignore[attr-defined]
@@ -265,7 +273,7 @@ class ArgparseRenderer:
         >>> r = ArgparseRenderer()
         >>> r._register_subcommand("myapp", "sync", "argparse-myapp-sync")
         """
-        if self.env is None or not name:
+        if self.env is None or not name or not self.config.register_xref_targets:
             return
         argparse_domain = self.env.domains["argparse"]
         argparse_domain.note_subcommand(  # type: ignore[attr-defined]
@@ -443,7 +451,9 @@ class ArgparseRenderer:
         section["ids"] = [section_id]
         # Scope section name by id_prefix so multi-page docs don't collide
         # on the implicit "usage" target docutils creates from section["names"].
-        section["names"] = [nodes.fully_normalize_name(section_id)]
+        # Omitted under :no-index: so the opted-out render leaks no label.
+        if self.config.register_xref_targets:
+            section["names"] = [nodes.fully_normalize_name(section_id)]
         section += nodes.title("Usage", "Usage")
 
         usage_node = argparse_usage()
@@ -518,10 +528,12 @@ class ArgparseRenderer:
 
         # Create section wrapper for TOC discovery. Scope section name by
         # id_prefix so multi-page docs don't collide on the implicit target
-        # docutils creates from section["names"].
+        # docutils creates from section["names"]. Omitted under :no-index: so
+        # the opted-out render leaks no label.
         section = nodes.section()
         section["ids"] = [section_id]
-        section["names"] = [nodes.fully_normalize_name(section_id)]
+        if self.config.register_xref_targets:
+            section["names"] = [nodes.fully_normalize_name(section_id)]
 
         # Add title for TOC - Sphinx's TocTreeCollector looks for this
         section += nodes.title(title, title)
