@@ -77,10 +77,12 @@ _tooliconir_role = _make_toolicon_role("inline-right")
 class _component_ref_placeholder(nodes.General, nodes.Inline, nodes.Element):
     """Placeholder for prompt/resource cross-refs, resolved at ``doctree-resolved``.
 
-    Unlike tools, resources and prompts carry no bare-slug alias, so the
-    resolver targets the canonical ``fastmcp-<kind>-<slug>`` id directly. The
-    ``refkind`` attribute selects the candidate-id family in
-    :func:`sphinx_autodoc_fastmcp._transforms.resolve_component_refs`.
+    Unlike tools, resources and prompts carry no bare-slug alias. The
+    ``refkind`` attribute selects the canonical-id family that
+    :func:`sphinx_autodoc_fastmcp._transforms.resolve_component_refs` looks up:
+    ``prompt`` targets the single ``fastmcp-prompt-<slug>`` id, while
+    ``resource`` tries ``fastmcp-resource-<slug>`` then
+    ``fastmcp-resource-template-<slug>`` so one spelling links either.
     """
 
 
