@@ -35,6 +35,16 @@ Use {tool}`list_sessions` for a linked badge, or {toolref}`delete_session`
 for a plain inline reference.
 ````
 
+Prompts and resources have the same affordance (without a safety badge, which
+only tools carry). `{resource}` resolves a fixed resource or a resource
+template by name; `{prompt}` resolves a prompt:
+
+````myst
+See the {resource}`status` resource, the {resource}`events_by_day` template,
+and the {prompt}`greet` prompt. The `{resourceref}` / `{promptref}` spellings
+are aliases mirroring `{toolref}`.
+````
+
 ### Prompts and resources
 
 After setting `fastmcp_server_module`, four MyST directives become available
@@ -58,6 +68,17 @@ Resources and resource templates accept either the friendly component name
 (`my_resource`) or the literal URI (`mem://my_resource`). When two
 distinct resources share a name, autodoc keeps the first registration and
 emits a warning — disambiguate by URI.
+
+Each of these directives accepts the standard `:no-index:` flag. When a
+prompt, resource, or resource template is shown on more than one page, add
+`:no-index:` to every appearance except the canonical one so the card still
+renders everywhere but registers its cross-reference target exactly once:
+
+````myst
+```{fastmcp-resource} my_resource
+:no-index:
+```
+````
 
 ### `:ref:` cross-reference IDs
 
