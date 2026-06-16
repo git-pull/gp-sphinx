@@ -43,6 +43,10 @@ class ArgparseDirective(SphinxDirective):
         Override the program name (optional).
     :path:
         Navigate to a specific subparser by path (e.g., "sync pull").
+    :no-index:
+        Render the parser without registering cross-reference targets
+        (flag). Use on secondary appearances so a parser documented on
+        more than one page keeps a single canonical xref home.
     :no-defaults:
         Don't show default values (flag).
     :no-description:
@@ -73,6 +77,7 @@ class ArgparseDirective(SphinxDirective):
         "func": directives.unchanged_required,
         "prog": directives.unchanged,
         "path": directives.unchanged,
+        "no-index": directives.flag,
         "no-defaults": directives.flag,
         "no-description": directives.flag,
         "no-epilog": directives.flag,
@@ -200,6 +205,8 @@ class ArgparseDirective(SphinxDirective):
             config.show_choices = False
         if "no-types" in self.options:
             config.show_types = False
+        if "no-index" in self.options:
+            config.register_xref_targets = False
 
         return config
 
