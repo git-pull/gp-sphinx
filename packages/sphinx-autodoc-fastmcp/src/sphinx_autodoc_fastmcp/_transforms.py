@@ -11,7 +11,10 @@ from sphinx.application import Sphinx
 from sphinx_autodoc_fastmcp._badges import build_safety_badge
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._models import ToolInfo
-from sphinx_autodoc_fastmcp._roles import _tool_ref_placeholder
+from sphinx_autodoc_fastmcp._roles import (
+    _component_ref_placeholder,
+    _tool_ref_placeholder,
+)
 from sphinx_ux_autodoc_layout import API, api_component
 from sphinx_ux_badges import SAB
 
@@ -210,6 +213,62 @@ def resolve_tool_refs(
                     newnode += nodes.Text(" ")
                     newnode += build_safety_badge(tool_info.safety)
 
+        node.replace_self(newnode)
+
+
+_COMPONENT_REF_CANDIDATES: dict[str, tuple[str, ...]] = {
+    "resource": ("fastmcp-resource-{slug}", "fastmcp-resource-template-{slug}"),
+    "prompt": ("fastmcp-prompt-{slug}",),
+}
+
+
+def resolve_component_refs(
+    app: Sphinx,
+    doctree: nodes.document,
+    fromdocname: str,
+) -> None:
+    """Resolve ``:resource:`` / ``:resourceref:`` / ``:prompt:`` / ``:promptref:``.
+
+    Mirrors :func:`resolve_tool_refs` without the safety-badge branches:
+    resources and prompts have no safety tier, so each placeholder becomes a
+    plain inline reference (``reference`` wrapping ``literal``). ``{resource}``
+    resolves against both the resource and resource-template id families so one
+    role spelling covers both. An unresolved target degrades to a bare literal.
+    """
+    domain = app.env.domains.standard_domain
+    builder = app.builder
+
+    for node in list(doctree.findall(_component_ref_placeholder)):
+        kind = node.get("refkind", "")
+        slug = node.get("refslug", "")
+        display = node.get("reftext", "") or slug
+
+        label_info = None
+        for template in _COMPONENT_REF_CANDIDATES.get(kind, ()):
+            label_info = domain.labels.get(template.format(slug=slug))
+            if label_info is not None:
+                break
+
+        if label_info is None:
+            node.replace_self(nodes.literal("", display))
+            continue
+
+        todocname, labelid, _title = label_info
+        newnode = nodes.reference("", "", internal=True)
+        try:
+            newnode["refuri"] = builder.get_relative_uri(fromdocname, todocname)
+            if labelid:
+                newnode["refuri"] += "#" + labelid
+        except Exception:
+            logger.warning(
+                "sphinx_autodoc_fastmcp: failed to resolve URI for %s -> %s",
+                fromdocname,
+                todocname,
+            )
+            newnode["refuri"] = "#" + labelid
+        newnode["classes"].append("reference")
+        newnode["classes"].append("internal")
+        newnode += nodes.literal("", display)
         node.replace_self(newnode)
 
 

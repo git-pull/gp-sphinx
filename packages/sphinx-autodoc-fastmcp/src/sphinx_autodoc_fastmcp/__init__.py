@@ -29,6 +29,10 @@ from sphinx_autodoc_fastmcp._directives import (
     FastMCPToolSummaryDirective,
 )
 from sphinx_autodoc_fastmcp._roles import (
+    _prompt_role,
+    _promptref_role,
+    _resource_role,
+    _resourceref_role,
     _tool_role,
     _toolicon_role,
     _tooliconil_role,
@@ -42,6 +46,7 @@ from sphinx_autodoc_fastmcp._transforms import (
     badge_role,
     collect_tool_section_content,
     register_tool_labels,
+    resolve_component_refs,
     resolve_tool_refs,
 )
 
@@ -177,6 +182,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.connect("doctree-read", collect_tool_section_content)
     app.connect("doctree-resolved", add_section_badges)
     app.connect("doctree-resolved", resolve_tool_refs)
+    app.connect("doctree-resolved", resolve_component_refs)
 
     app.add_role("tool", _tool_role)
     app.add_role("toolref", _toolref_role)
@@ -185,6 +191,10 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     app.add_role("tooliconr", _tooliconr_role)
     app.add_role("tooliconil", _tooliconil_role)
     app.add_role("tooliconir", _tooliconir_role)
+    app.add_role("resource", _resource_role)
+    app.add_role("resourceref", _resourceref_role)
+    app.add_role("prompt", _prompt_role)
+    app.add_role("promptref", _promptref_role)
     app.add_role("badge", badge_role)
 
     app.add_directive("fastmcp-tool", FastMCPToolDirective)

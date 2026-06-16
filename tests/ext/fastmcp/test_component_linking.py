@@ -6,6 +6,10 @@ suite proves the parity affordances for the non-tool families:
 * resources, prompts, and resource templates register std-domain labels, so
   they land in ``objects.inv`` as ``std:label`` (intersphinx-reachable) and
   resolve via ``{ref}``
+* the ``{resource}`` / ``{resourceref}`` / ``{prompt}`` / ``{promptref}`` role
+  families resolve to the canonical anchors, with ``{resource}`` covering both
+  fixed resources and resource templates and unknown names degrading to a bare
+  literal
 * ``:no-index:`` suppresses cross-document label registration so a component
   shown on more than one page keeps a single canonical home
 """
@@ -24,6 +28,7 @@ from tests._sphinx_scenarios import (
     SharedSphinxResult,
     SphinxScenario,
     build_shared_sphinx_result,
+    read_output,
 )
 
 # In-memory fastmcp-shaped fixture extension: stuffs one prompt, one resource,
@@ -111,6 +116,9 @@ _DIRECTIVES_MD = textwrap.dedent(
     """\
     # FastMCP linking demo
 
+    Roles: {prompt}`greet`, {promptref}`greet`, {resource}`hello`,
+    {resourceref}`hello`, {resource}`user_record`, {resource}`does_not_exist`.
+
     ```{fastmcp-prompt} greet
     ```
 
@@ -196,6 +204,54 @@ def test_component_label_lands_in_objects_inv(
     assert case.label in inventory["std:label"], (
         f"{case.label} missing from objects.inv std:label entries"
     )
+
+
+# --- role families (issue #56 optional follow-on) --------------------------
+
+
+class RoleCase(t.NamedTuple):
+    """One inline role usage and the canonical anchor it must resolve to."""
+
+    test_id: str
+    href_target: str
+
+
+_ROLE_CASES: list[RoleCase] = [
+    RoleCase(test_id="prompt", href_target="fastmcp-prompt-greet"),
+    RoleCase(test_id="promptref", href_target="fastmcp-prompt-greet"),
+    RoleCase(test_id="resource", href_target="fastmcp-resource-hello"),
+    RoleCase(test_id="resourceref", href_target="fastmcp-resource-hello"),
+    RoleCase(
+        test_id="resource-covers-template",
+        href_target="fastmcp-resource-template-user-record",
+    ),
+]
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    "case",
+    _ROLE_CASES,
+    ids=lambda c: c.test_id,
+)
+def test_component_role_resolves_to_canonical_anchor(
+    linking_html: SharedSphinxResult,
+    case: RoleCase,
+) -> None:
+    """``{resource}`` / ``{prompt}`` role families link to the card anchor."""
+    html = read_output(linking_html, "index.html")
+    assert f'href="#{case.href_target}"' in html
+
+
+@pytest.mark.integration
+def test_unknown_component_role_degrades_to_literal(
+    linking_html: SharedSphinxResult,
+) -> None:
+    """An unresolved component name renders a bare literal, not a dangling link."""
+    html = read_output(linking_html, "index.html")
+    assert "does_not_exist" in html
+    assert 'href="#fastmcp-resource-does-not-exist"' not in html
+    assert "undefined label" not in linking_html.warnings
 
 
 # --- :no-index: parity (issue #56 request) ---------------------------------
