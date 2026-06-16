@@ -48,6 +48,8 @@ class RenderConfig:
     True
     >>> config.group_title_prefix
     ''
+    >>> config.register_xref_targets
+    True
     """
 
     group_title_prefix: str = ""

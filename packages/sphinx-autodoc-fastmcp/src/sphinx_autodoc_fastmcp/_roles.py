@@ -93,6 +93,29 @@ def _make_component_ref_role(
 
     The role renders an inline code literal linked to the component card; it
     carries no safety badge (only tools have a safety tier).
+
+    Parameters
+    ----------
+    refkind : str
+        Component family the role resolves against — ``"resource"`` or
+        ``"prompt"``. Stored on the placeholder so
+        :func:`sphinx_autodoc_fastmcp._transforms.resolve_component_refs`
+        picks the right canonical-id family.
+
+    Returns
+    -------
+    collections.abc.Callable
+        A docutils role function ``(name, rawtext, text, lineno, inliner,
+        options=None, content=None)`` returning ``([placeholder], [])``.
+
+    Examples
+    --------
+    >>> role = _make_component_ref_role("resource")
+    >>> emitted, messages = role("resource", "", "user_record", 0, None)
+    >>> emitted[0]["refkind"], emitted[0]["refslug"], emitted[0]["reftext"]
+    ('resource', 'user-record', 'user_record')
+    >>> messages
+    []
     """
 
     def role_fn(
