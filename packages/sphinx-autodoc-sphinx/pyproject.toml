@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-autodoc-sphinx"
-version = "0.0.1a30"
+version = "0.0.1a31"
 description = "Sphinx extension for documenting extension config values as first-class conf.py reference entries"
 requires-python = ">=3.10,<4.0"
 authors = [
@@ -27,9 +27,9 @@ readme = "README.md"
 keywords = ["sphinx", "configuration", "conf.py", "documentation", "autodoc"]
 dependencies = [
   "sphinx>=8.1",
-  "sphinx-ux-badges==0.0.1a30",
-  "sphinx-ux-autodoc-layout==0.0.1a30",
-  "sphinx-autodoc-typehints-gp==0.0.1a30",
+  "sphinx-ux-badges==0.0.1a31",
+  "sphinx-ux-autodoc-layout==0.0.1a31",
+  "sphinx-autodoc-typehints-gp==0.0.1a31",
 ]
 
 [project.urls]
