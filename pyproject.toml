@@ -35,6 +35,10 @@ gp-furo-theme = { workspace = true }
 gp-sphinx = { workspace = true }
 sphinx-vite-builder = { workspace = true }
 
+[tool.uv.exclude-newer-package]
+# Adopt gp-libs releases immediately, bypassing the global cooldown.
+gp-libs = false
+
 [dependency-groups]
 dev = [
   "gp-sphinx",
