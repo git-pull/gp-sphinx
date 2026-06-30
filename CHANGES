@@ -18,6 +18,19 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Fixes
+
+#### `sphinx-autodoc-fastmcp`: Tool cross-references survive reserved-label slugs
+
+A tool whose slug matches a Sphinx-reserved standard label — `search`,
+`genindex`, or `modindex` — had its `{tool}` / `{toolref}` /
+`{toolicon*}` cross-reference silently link to that built-in page (the
+site search page, for `search`) instead of the tool's own card, and the
+build stayed clean. Tool roles now resolve the canonical
+`fastmcp-tool-<slug>` anchor first, so a reserved slug no longer hijacks
+the link. A tool that appears only under `:no-index:` — and so has no
+canonical cross-reference home — now warns instead of mis-linking. (#60)
+
 ## gp-sphinx 0.0.1a31 (2026-06-15)
 
 ### What's new
