@@ -312,3 +312,141 @@ def test_heading_collision_anchor_counts(
     """The heading owns the bare anchor; tool links target the canonical id (#48)."""
     html = read_output(fastmcp_heading_collision_result, "index.html")
     assert html.count(needle) == expected_count
+
+
+_RESERVED_MODULE_SOURCE = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    import types
+
+
+    def search(terms: str, limit: int = 20) -> str:
+        \"\"\"Search prompt records.
+
+        Parameters
+        ----------
+        terms : str
+            Terms to match.
+        limit : int
+            Maximum number of results.
+        \"\"\"
+
+        return "[]"
+
+
+    search.__fastmcp__ = types.SimpleNamespace(
+        name="search",
+        title="Search",
+        tags={"readonly"},
+        annotations=None,
+    )
+    """
+)
+
+_RESERVED_CONF_PY = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    import sys
+
+    sys.path.insert(0, r"__SCENARIO_SRCDIR__")
+
+    extensions = [
+        "sphinx_autodoc_fastmcp",
+    ]
+
+    fastmcp_tool_modules = ["reserved_tools"]
+    fastmcp_area_map = {"reserved_tools": "api"}
+    fastmcp_collector_mode = "introspect"
+    """
+)
+
+# ``search`` is a Sphinx built-in std label (the JS "Search Page"), seeded
+# into StandardDomain before any document is read, so a tool's bare-slug
+# alias can never claim it (#48 only covers same-document heading
+# collisions). The tool role must resolve via the canonical
+# ``fastmcp-tool-search`` section id, not silently link to the site search.
+_RESERVED_INDEX_RST = textwrap.dedent(
+    """\
+    Reserved slug tools
+    ===================
+
+    Use :toolref:`search` for an inline link.
+
+    .. fastmcp-tool:: reserved_tools.search
+    """
+)
+
+
+@pytest.fixture(scope="module")
+def fastmcp_reserved_slug_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a page with a tool whose slug collides with a reserved label."""
+    cache_root = tmp_path_factory.mktemp("fastmcp-reserved-slug")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("reserved_tools.py", _RESERVED_MODULE_SOURCE),
+            ScenarioFile(
+                "conf.py",
+                _RESERVED_CONF_PY.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("index.rst", _RESERVED_INDEX_RST),
+        ),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("reserved_tools",),
+    )
+
+
+class ReservedSlugFixture(t.NamedTuple):
+    """Expected occurrence count for an href under a reserved-slug collision."""
+
+    test_id: str
+    needle: str
+    expected_count: int
+
+
+_RESERVED_SLUG_FIXTURES: list[ReservedSlugFixture] = [
+    # The tool role targets its own canonical card anchor, not Sphinx's
+    # reserved ``search`` built-in (the site-search page).
+    ReservedSlugFixture(
+        test_id="toolref-targets-canonical-anchor",
+        needle='class="reference internal" href="#fastmcp-tool-search"><code',
+        expected_count=1,
+    ),
+    # The bare slug must not resolve to the built-in "Search Page", which is
+    # ``search.html`` in the html builder.
+    ReservedSlugFixture(
+        test_id="toolref-skips-builtin-search-page",
+        needle='href="search.html"><code',
+        expected_count=0,
+    ),
+    # The card's canonical anchor is present regardless (physical section id).
+    ReservedSlugFixture(
+        test_id="canonical-card-id-present",
+        needle='id="fastmcp-tool-search"',
+        expected_count=1,
+    ),
+]
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    list(ReservedSlugFixture._fields),
+    _RESERVED_SLUG_FIXTURES,
+    ids=[f.test_id for f in _RESERVED_SLUG_FIXTURES],
+)
+def test_reserved_slug_tool_ref_targets_canonical(
+    fastmcp_reserved_slug_result: SharedSphinxResult,
+    test_id: str,
+    needle: str,
+    expected_count: int,
+) -> None:
+    """A tool whose slug collides with a reserved label links to its card."""
+    html = read_output(fastmcp_reserved_slug_result, "index.html")
+    assert html.count(needle) == expected_count

@@ -153,13 +153,38 @@ def resolve_tool_refs(
         target = node.get("reftarget", "")
         show_badge = node.get("show_badge", True)
         icon_pos = node.get("icon_pos", "")
-        label_info = domain.labels.get(target)
+        tool_name = target.replace("-", "_")
+        # Resolve the canonical section id first so a tool whose slug
+        # collides with a Sphinx-reserved label (``search``, ``genindex``,
+        # ``modindex``) still links to its own card. Those built-ins occupy
+        # ``StandardDomain`` labels before any document is read, so the tool's
+        # bare-slug alias can never claim them — the heading-collision path
+        # (#48) only resolves same-document slug clashes. Fall back to the
+        # bare slug for the back-compat ``{ref}`` aliases the directive
+        # registers.
+        canonical = f"fastmcp-tool-{target}"
+        label_info = domain.labels.get(canonical) or domain.labels.get(target)
         if label_info is None:
-            node.replace_self(nodes.literal("", target.replace("-", "_")))
+            node.replace_self(nodes.literal("", tool_name))
             continue
 
         todocname, labelid, _title = label_info
-        tool_name = target.replace("-", "_")
+        if tool_name in tool_data and labelid != canonical:
+            # A known tool resolved to a foreign label (e.g. the reserved
+            # ``search`` page): its only directive(s) carry ``:no-index:``, so
+            # it has no canonical cross-reference home and the link silently
+            # points elsewhere. Surface it instead of shipping a wrong link.
+            logger.warning(
+                "sphinx_autodoc_fastmcp: tool %r cross-reference resolved to "
+                "%s#%s, not its canonical section %r; ensure exactly one "
+                "`{fastmcp-tool} %s` directive omits ``:no-index:`` so the "
+                "tool has a cross-reference home",
+                tool_name,
+                todocname,
+                labelid,
+                canonical,
+                tool_name,
+            )
 
         newnode = nodes.reference("", "", internal=True)
         try:
