@@ -733,6 +733,24 @@ def smoke_sphinx_gp_llms(dist_dir: pathlib.Path, version: str) -> None:
         )
 
 
+def smoke_sphinx_gp_mermaid(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the sphinx-gp-mermaid extension installs and imports cleanly."""
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(
+            python_path,
+            *_workspace_wheel_requirements(dist_dir),
+        )
+        _run_python(
+            python_path,
+            (
+                "import sphinx_gp_mermaid; "
+                "from sphinx_gp_mermaid import setup; "
+                "assert callable(setup)"
+            ),
+        )
+
+
 def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
     """Verify the autodoc-fastmcp extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
@@ -863,6 +881,7 @@ _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-gp-opengraph": smoke_sphinx_gp_opengraph,
     "sphinx-gp-sitemap": smoke_sphinx_gp_sitemap,
     "sphinx-gp-llms": smoke_sphinx_gp_llms,
+    "sphinx-gp-mermaid": smoke_sphinx_gp_mermaid,
     "gp-sphinx": smoke_gp_sphinx,
     "sphinx-autodoc-argparse": smoke_sphinx_autodoc_argparse,
     "sphinx-autodoc-api-style": smoke_sphinx_autodoc_api_style,
