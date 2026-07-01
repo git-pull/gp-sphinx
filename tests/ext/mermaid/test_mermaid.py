@@ -242,7 +242,6 @@ def test_visitor_falls_back_when_renderer_missing(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """A missing renderer degrades to a text fallback and warns once."""
-    monkeypatch.setattr(sgm, "_render_warned", False)
 
     def boom(app: object, source: str, theme: str) -> str:
         msg = "no mmdc"
@@ -341,29 +340,48 @@ def test_setup_registers_components() -> None:
     assert "mermaid_cmd" in recorded["config"]
     assert "mermaid_puppeteer_config" in recorded["config"]
     assert "css/sphinx_gp_mermaid.css" in recorded["css"]
-    assert [event for event, _ in recorded["connect"]] == ["builder-inited"]
+    assert [event for event, _ in recorded["connect"]] == [
+        "config-inited",
+        "builder-inited",
+    ]
 
 
-def test_static_path_hook_is_idempotent() -> None:
-    """The ``builder-inited`` hook appends the package static dir exactly once."""
-    connected: list[t.Callable[[t.Any], None]] = []
+def _connected_hooks() -> dict[str, t.Callable[..., None]]:
+    """Run ``setup()`` against a fake app and return its connected hooks."""
+    hooks: dict[str, t.Callable[..., None]] = {}
 
     app = types.SimpleNamespace(
         add_node=lambda *a, **kw: None,
         add_directive=lambda *a, **kw: None,
         add_config_value=lambda *a, **kw: None,
         add_css_file=lambda *a, **kw: None,
-        connect=lambda event, callback: connected.append(callback),
+        connect=lambda event, callback: hooks.setdefault(event, callback),
     )
     sgm.setup(t.cast("t.Any", app))
-    assert len(connected) == 1
+    return hooks
+
+
+def test_static_path_hook_is_idempotent() -> None:
+    """The ``builder-inited`` hook appends the package static dir exactly once."""
+    hooks = _connected_hooks()
 
     static_paths: list[str] = []
     fake_app = types.SimpleNamespace(
         config=types.SimpleNamespace(html_static_path=static_paths),
     )
-    connected[0](fake_app)
-    connected[0](fake_app)
+    hooks["builder-inited"](fake_app)
+    hooks["builder-inited"](fake_app)
 
     expected = str(pathlib.Path(sgm.__file__).parent / "_static")
     assert static_paths == [expected]
+
+
+def test_cache_dir_exclusion_hook_is_idempotent() -> None:
+    """The ``config-inited`` hook excludes the cache dir exactly once."""
+    hooks = _connected_hooks()
+
+    config = types.SimpleNamespace(exclude_patterns=["_build"])
+    hooks["config-inited"](types.SimpleNamespace(), config)
+    hooks["config-inited"](types.SimpleNamespace(), config)
+
+    assert config.exclude_patterns == ["_build", "_mermaid_cache"]

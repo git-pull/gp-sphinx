@@ -55,8 +55,14 @@ from sphinx.util.logging import getLogger
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
+    from sphinx.builders import Builder
+    from sphinx.config import Config
     from sphinx.util.typing import ExtensionMetadata
     from sphinx.writers.html5 import HTML5Translator
+    from sphinx.writers.latex import LaTeXTranslator
+    from sphinx.writers.manpage import ManualPageTranslator
+    from sphinx.writers.texinfo import TexinfoTranslator
+    from sphinx.writers.text import TextTranslator
 
 __all__ = [
     "MermaidDirective",
@@ -170,8 +176,10 @@ _MERMAID_DEFAULT_ID = "my-svg"
 # ``viewBox="-5 -97 148 194"``).
 _VIEWBOX_RE = re.compile(r'<svg\b[^>]*?\bviewBox="-?[\d.]+ -?[\d.]+ ([\d.]+) ([\d.]+)"')
 
-#: Guards the "renderer missing/failed" warning so it fires once, not per node.
-_render_warned = False
+#: Builder attribute guarding the "renderer missing/failed" warning so it
+#: fires once per writer process, not per node (parallel-write safe, unlike a
+#: module global).
+_WARNED_ATTR = "_sphinx_gp_mermaid_warned"
 
 
 class MermaidError(Exception):
@@ -435,7 +443,7 @@ def _render(app: Sphinx, source: str, config_json: str) -> str:
                 text=True,
                 timeout=180,
             )
-        except FileNotFoundError as exc:  # mmdc vanished between resolve and run
+        except OSError as exc:  # mmdc vanished after resolve, or isn't executable
             raise MermaidRendererMissing(str(exc)) from exc
         except subprocess.SubprocessError as exc:
             stderr = getattr(exc, "stderr", "") or ""
@@ -465,12 +473,15 @@ def _render_cached(app: Sphinx, source: str, theme: str) -> str:
     return svg
 
 
-def _warn_render_failure(node: nodes.Node, exc: MermaidError) -> None:
-    """Emit a single build warning when rendering is unavailable or fails."""
-    global _render_warned
-    if _render_warned:
+def _warn_render_failure(builder: Builder, node: nodes.Node, exc: MermaidError) -> None:
+    """Emit a single build warning when rendering is unavailable or fails.
+
+    The once-only memo lives on the builder (imgmath's pattern), so parallel
+    writer processes each warn at most once and a fresh build starts clean.
+    """
+    if getattr(builder, _WARNED_ATTR, False):
         return
-    _render_warned = True
+    setattr(builder, _WARNED_ATTR, True)
     logger.warning(
         "mermaid render unavailable; emitting diagram source as text: %s",
         exc,
@@ -486,7 +497,7 @@ def html_visit_mermaid_inline(self: HTML5Translator, node: mermaid_inline) -> No
         light = _render_cached(app, source, _THEME_LIGHT)
         dark = _render_cached(app, source, _THEME_DARK)
     except MermaidError as exc:
-        _warn_render_failure(node, exc)
+        _warn_render_failure(self.builder, node, exc)
         self.body.append(
             '<pre class="gp-sphinx-diagram__fallback">'
             + html.escape(source)
@@ -527,6 +538,50 @@ def _depart_mermaid_inline(self: HTML5Translator, node: mermaid_inline) -> None:
     """No-op; :func:`html_visit_mermaid_inline` raises ``SkipNode``."""
 
 
+def _diagram_fallback_text(node: mermaid_inline) -> str:
+    """Return the alt-text stand-in non-HTML builders emit for a diagram.
+
+    >>> node = mermaid_inline()
+    >>> node["alt"] = "session holds windows"
+    >>> _diagram_fallback_text(node)
+    '[diagram: session holds windows]'
+    >>> _diagram_fallback_text(mermaid_inline())
+    '[diagram]'
+    """
+    alt: str = node.get("alt", "") or node.get("caption", "")
+    return f"[diagram: {alt}]" if alt else "[diagram]"
+
+
+def text_visit_mermaid_inline(self: TextTranslator, node: mermaid_inline) -> None:
+    """Emit the alt-text stand-in for the text builder, then skip."""
+    self.add_text(_diagram_fallback_text(node))
+    raise nodes.SkipNode
+
+
+def man_visit_mermaid_inline(
+    self: ManualPageTranslator,
+    node: mermaid_inline,
+) -> None:
+    """Emit the alt-text stand-in for the man builder, then skip."""
+    self.body.append(_diagram_fallback_text(node))
+    raise nodes.SkipNode
+
+
+def latex_visit_mermaid_inline(self: LaTeXTranslator, node: mermaid_inline) -> None:
+    """Emit the escaped alt-text stand-in for the LaTeX builder, then skip."""
+    self.body.append(self.encode(_diagram_fallback_text(node)))
+    raise nodes.SkipNode
+
+
+def texinfo_visit_mermaid_inline(
+    self: TexinfoTranslator,
+    node: mermaid_inline,
+) -> None:
+    """Emit the escaped alt-text stand-in for the texinfo builder, then skip."""
+    self.body.append(self.escape(_diagram_fallback_text(node)))
+    raise nodes.SkipNode
+
+
 def setup(app: Sphinx) -> ExtensionMetadata:
     """Register the directive, node, config values, and stylesheet.
 
@@ -549,6 +604,10 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.add_node(
         mermaid_inline,
         html=(html_visit_mermaid_inline, _depart_mermaid_inline),
+        text=(text_visit_mermaid_inline, None),
+        man=(man_visit_mermaid_inline, None),
+        latex=(latex_visit_mermaid_inline, None),
+        texinfo=(texinfo_visit_mermaid_inline, None),
     )
     app.add_directive("mermaid", MermaidDirective)
     app.add_config_value("mermaid_cmd", "", "env")
@@ -560,6 +619,13 @@ def setup(app: Sphinx) -> ExtensionMetadata:
         if _static_dir not in app.config.html_static_path:
             app.config.html_static_path.append(_static_dir)
 
+    def _exclude_cache_dir(app: Sphinx, config: Config) -> None:
+        # The render cache lives under the confdir (outside _build) so it
+        # survives clean builds; keep Sphinx from treating it as sources.
+        if "_mermaid_cache" not in config.exclude_patterns:
+            config.exclude_patterns.append("_mermaid_cache")
+
+    app.connect("config-inited", _exclude_cache_dir)
     app.connect("builder-inited", _add_static_path)
     app.add_css_file("css/sphinx_gp_mermaid.css")
 
