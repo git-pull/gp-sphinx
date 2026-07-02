@@ -497,13 +497,15 @@ def html_visit_mermaid_inline(self: HTML5Translator, node: mermaid_inline) -> No
     """Render the diagram and append dual light/dark inline SVG, then skip."""
     source: str = node["mermaid_source"]
     app = self.builder.app
+    ids: list[str] = node.get("ids", [])
+    fig_id = f' id="{ids[0]}"' if ids else ""
     try:
         light = _render_cached(app, source, _THEME_LIGHT)
         dark = _render_cached(app, source, _THEME_DARK)
     except MermaidError as exc:
         _warn_render_failure(self.builder, node, exc)
         self.body.append(
-            '<pre class="gp-sphinx-diagram__fallback">'
+            f'<pre class="gp-sphinx-diagram__fallback"{fig_id}>'
             + html.escape(source)
             + "</pre>",
         )
@@ -516,8 +518,6 @@ def html_visit_mermaid_inline(self: HTML5Translator, node: mermaid_inline) -> No
     caption: str = node.get("caption", "")
     alt = node.get("alt", "") or caption
     aria = f' aria-label="{html.escape(alt, quote=True)}"' if alt else ""
-    ids: list[str] = node.get("ids", [])
-    fig_id = f' id="{ids[0]}"' if ids else ""
 
     parts = [
         f'<figure class="gp-sphinx-diagram"{fig_id}>',

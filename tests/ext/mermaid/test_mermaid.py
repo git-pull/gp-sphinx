@@ -264,6 +264,66 @@ def test_visitor_falls_back_when_renderer_missing(
     assert any("mermaid render unavailable" in r.getMessage() for r in warnings)
 
 
+class FallbackAnchorCase(t.NamedTuple):
+    """A degraded render and the anchor markup it must preserve."""
+
+    test_id: str
+    node_ids: tuple[str, ...]
+    expect_contains: tuple[str, ...]
+    expect_absent: tuple[str, ...]
+
+
+_FALLBACK_ANCHOR_CASES: list[FallbackAnchorCase] = [
+    FallbackAnchorCase(
+        test_id="named-diagram-keeps-anchor",
+        node_ids=("flow-diagram",),
+        expect_contains=(' id="flow-diagram"',),
+        expect_absent=(),
+    ),
+    FallbackAnchorCase(
+        test_id="anonymous-diagram-has-no-id",
+        node_ids=(),
+        expect_contains=(),
+        expect_absent=(" id=",),
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "case",
+    _FALLBACK_ANCHOR_CASES,
+    ids=[c.test_id for c in _FALLBACK_ANCHOR_CASES],
+)
+def test_fallback_preserves_name_anchor(
+    case: FallbackAnchorCase,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: pathlib.Path,
+) -> None:
+    """The fallback ``<pre>`` carries the node's ``:name:`` anchor id."""
+
+    def boom(app: object, source: str, theme: str) -> str:
+        msg = "no mmdc"
+        raise sgm.MermaidRendererMissing(msg)
+
+    monkeypatch.setattr(sgm, "_render_cached", boom)
+    translator = _make_translator(tmp_path)
+    node = sgm.mermaid_inline()
+    node["mermaid_source"] = "flowchart LR a-->b"
+    node["caption"] = ""
+    node["alt"] = ""
+    node["ids"] = list(case.node_ids)
+
+    with pytest.raises(nodes.SkipNode):
+        sgm.html_visit_mermaid_inline(t.cast("t.Any", translator), node)
+
+    html = "".join(translator.body)
+    assert 'class="gp-sphinx-diagram__fallback"' in html
+    for needle in case.expect_contains:
+        assert needle in html, f"{case.test_id}: expected {needle!r}"
+    for needle in case.expect_absent:
+        assert needle not in html, f"{case.test_id}: unexpected {needle!r}"
+
+
 def test_render_cache_is_idempotent(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: pathlib.Path,
