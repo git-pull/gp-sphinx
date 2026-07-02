@@ -459,7 +459,9 @@ def _render_cached(app: Sphinx, source: str, theme: str) -> str:
     """Return a rendered SVG, reading/writing a content-hashed on-disk cache.
 
     The cache lives outside ``_build`` (under the confdir) so it survives the
-    ``rm -rf docs/_build`` that precedes a full build.
+    ``rm -rf docs/_build`` that precedes a full build. The write is a
+    pid-suffixed temp file moved into place with :meth:`pathlib.Path.replace`,
+    so a parallel writer racing on the same digest never reads a torn SVG.
     """
     config_json = json.dumps(_mermaid_config(theme), sort_keys=True)
     digest = _diagram_digest(source, theme, extra=config_json)
@@ -469,7 +471,9 @@ def _render_cached(app: Sphinx, source: str, theme: str) -> str:
         return cache_file.read_text(encoding="utf-8")
     svg = _render(app, source, config_json)
     cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_file.write_text(svg, encoding="utf-8")
+    tmp_file = cache_file.with_name(f"{digest}.{os.getpid()}.tmp")
+    tmp_file.write_text(svg, encoding="utf-8")
+    tmp_file.replace(cache_file)
     return svg
 
 

@@ -295,7 +295,11 @@ def test_render_cache_is_idempotent(
 
     assert first == second == _FAKE_MMDC_SVG
     assert calls["n"] == 1
-    assert list((tmp_path / "_mermaid_cache").glob("*.svg"))
+    cached = list((tmp_path / "_mermaid_cache").glob("*.svg"))
+    assert len(cached) == 1
+    assert cached[0].read_text(encoding="utf-8") == _FAKE_MMDC_SVG
+    # The atomic write replaces its temp file; nothing may linger.
+    assert not list((tmp_path / "_mermaid_cache").glob("*.tmp"))
 
 
 def test_setup_registers_components() -> None:
