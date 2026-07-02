@@ -437,6 +437,17 @@ def merge_sphinx_config(
     >>> "sphinx_design" in conf["extensions"]
     False
 
+    Loading sphinx_gp_mermaid also routes plain ``mermaid`` fences to it:
+
+    >>> conf = merge_sphinx_config(
+    ...     project="test",
+    ...     version="1.0",
+    ...     copyright="2026",
+    ...     extra_extensions=["sphinx_gp_mermaid"],
+    ... )
+    >>> conf["myst_fence_as_directive"]
+    ['mermaid']
+
     Auto-computed values from source_repository and docs_url:
 
     >>> conf = merge_sphinx_config(
@@ -600,6 +611,12 @@ def merge_sphinx_config(
     # Wire sphinx-vite-builder's orchestration root if it was resolved above.
     if vite_root_setting is not None:
         conf["sphinx_vite_builder_root"] = vite_root_setting
+
+    # Route plain ```mermaid fences to sphinx_gp_mermaid's directive. This
+    # must happen at conf level: myst-parser snapshots myst_* config at its
+    # own config-inited, so an extension-level mutation lands too late.
+    if "sphinx_gp_mermaid" in ext_list:
+        conf["myst_fence_as_directive"] = ["mermaid"]
 
     # Apply overrides last (can override auto-computed values)
     conf.update(overrides)

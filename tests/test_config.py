@@ -216,6 +216,39 @@ def test_merge_sphinx_config_default_myst_config() -> None:
     assert result["myst_enable_extensions"] == DEFAULT_MYST_EXTENSIONS
 
 
+def test_merge_sphinx_config_mermaid_fence_routing() -> None:
+    """Loading sphinx_gp_mermaid routes plain mermaid fences to it."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        extra_extensions=["sphinx_gp_mermaid"],
+    )
+    assert result["myst_fence_as_directive"] == ["mermaid"]
+
+
+def test_merge_sphinx_config_no_fence_routing_without_mermaid() -> None:
+    """Without the mermaid extension, no fence routing is configured."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+    )
+    assert "myst_fence_as_directive" not in result
+
+
+def test_merge_sphinx_config_mermaid_fence_override_wins() -> None:
+    """An explicit myst_fence_as_directive override replaces the default."""
+    result = merge_sphinx_config(
+        project="test",
+        version="1.0",
+        copyright="2026",
+        extra_extensions=["sphinx_gp_mermaid"],
+        myst_fence_as_directive=["mermaid", "dot"],
+    )
+    assert result["myst_fence_as_directive"] == ["mermaid", "dot"]
+
+
 def test_merge_sphinx_config_default_fonts() -> None:
     """Default font configuration is present."""
     result = merge_sphinx_config(
