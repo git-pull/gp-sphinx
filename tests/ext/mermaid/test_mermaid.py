@@ -82,6 +82,38 @@ _NORMALIZE_CASES: list[NormalizeCase] = [
         expect_contains=('width="148"', 'height="194"'),
         expect_absent=('width="100%"', 'width="10"'),
     ),
+    NormalizeCase(
+        test_id="label-text-my-svg-preserved",
+        raw_svg=(
+            '<svg id="my-svg" width="100%" viewBox="0 0 200 80">'
+            "<style>#my-svg .label{color:#333;}</style>"
+            "<p>Deploy my-svg-viewer</p></svg>"
+        ),
+        svg_id="mermaid-lbl-light",
+        expect_contains=(
+            'id="mermaid-lbl-light"',
+            "#mermaid-lbl-light .label",
+            "Deploy my-svg-viewer",
+        ),
+        expect_absent=('id="my-svg"', "#my-svg"),
+    ),
+    NormalizeCase(
+        test_id="a11y-chart-ids-rewritten",
+        raw_svg=(
+            '<svg id="my-svg" width="100%" viewBox="0 0 200 80" '
+            'aria-describedby="chart-desc-my-svg" '
+            'aria-labelledby="chart-title-my-svg">'
+            '<desc id="chart-desc-my-svg">flow</desc>'
+            '<title id="chart-title-my-svg">Flow</title></svg>'
+        ),
+        svg_id="mermaid-aria-dark",
+        expect_contains=(
+            'aria-describedby="chart-desc-mermaid-aria-dark"',
+            'id="chart-desc-mermaid-aria-dark"',
+            'id="chart-title-mermaid-aria-dark"',
+        ),
+        expect_absent=("chart-desc-my-svg", "chart-title-my-svg"),
+    ),
 ]
 
 

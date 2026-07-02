@@ -170,6 +170,14 @@ def _theme_css(theme: str) -> str:
 #: duplicate-id collisions when both variants are inlined on one page.
 _MERMAID_DEFAULT_ID = "my-svg"
 
+#: The id token in id-token position only: attribute values (``id="my-svg"``,
+#: ``id="my-svg_marker"``), ``#``-refs (CSS selectors, ``url(#my-svg_...)``),
+#: and mermaid's a11y ids (``chart-desc-my-svg``/``chart-title-my-svg``) —
+#: never visible label text.
+_MERMAID_ID_TOKEN_RE = re.compile(
+    r'(["#]|chart-(?:desc|title)-)' + re.escape(_MERMAID_DEFAULT_ID),
+)
+
 # Width/height are the 3rd/4th viewBox numbers of the ROOT <svg> tag. Anchoring
 # to ``<svg ... >`` (no ``>`` in between) avoids matching an inner element's
 # viewBox, and the min-x/min-y may be negative (block diagrams use e.g.
@@ -252,8 +260,10 @@ def _normalize_svg(svg: str, *, svg_id: str) -> str:
     Three fixes are applied to mermaid's default output:
 
     1. The hardcoded ``my-svg`` id token — used by the id attribute, the
-       id-scoped ``<style>`` rules, and ``url(#my-svg_...)`` marker references —
-       is rewritten to ``svg_id`` so two variants never collide on duplicate ids.
+       id-scoped ``<style>`` rules, ``url(#my-svg_...)`` marker references,
+       and ``chart-desc-``/``chart-title-`` a11y ids — is rewritten to
+       ``svg_id`` so two variants never collide on duplicate ids. Only
+       id-token positions are rewritten; label text is left intact.
     2. The root ``width="100%"`` (mermaid emits no ``height``) is replaced with
        explicit ``width``/``height`` taken from the ``viewBox``, so the browser
        reserves the diagram's box in the first layout pass — before any script.
@@ -286,8 +296,18 @@ def _normalize_svg(svg: str, *, svg_id: str) -> str:
     >>> out = _normalize_svg(block, svg_id="x")
     >>> 'width="148"' in out and 'height="194"' in out
     True
+
+    Label text containing the literal token survives untouched:
+
+    >>> label = (
+    ...     '<svg id="my-svg" width="100%" viewBox="0 0 10 10">'
+    ...     '<p>Deploy my-svg-viewer</p></svg>'
+    ... )
+    >>> out = _normalize_svg(label, svg_id="x")
+    >>> 'id="x"' in out and "Deploy my-svg-viewer" in out
+    True
     """
-    svg = svg.replace(_MERMAID_DEFAULT_ID, svg_id)
+    svg = _MERMAID_ID_TOKEN_RE.sub(rf"\g<1>{svg_id}", svg)
     match = _VIEWBOX_RE.search(svg)
     if match is not None:
         width, height = match.group(1), match.group(2)
