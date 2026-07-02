@@ -181,6 +181,11 @@ _VIEWBOX_RE = re.compile(r'<svg\b[^>]*?\bviewBox="-?[\d.]+ -?[\d.]+ ([\d.]+) ([\
 #: module global).
 _WARNED_ATTR = "_sphinx_gp_mermaid_warned"
 
+#: Translator attribute counting digest occurrences per page, so repeats of
+#: the same diagram source get distinct SVG ids (the translator is created
+#: fresh per document, making the counts naturally per-page).
+_ID_COUNTS_ATTR = "_sphinx_gp_mermaid_id_counts"
+
 
 class MermaidError(Exception):
     """Base class for build-time mermaid rendering failures."""
@@ -226,13 +231,19 @@ def _diagram_digest(
     return hashlib.sha1(payload.encode("utf-8")).hexdigest()
 
 
-def _svg_element_id(digest: str, theme: str) -> str:
+def _svg_element_id(digest: str, theme: str, *, occurrence: int = 0) -> str:
     """Return a per-diagram, per-theme SVG id replacing mermaid's ``my-svg``.
+
+    ``occurrence`` disambiguates repeats of the same source on one page;
+    the first occurrence keeps the unsuffixed id.
 
     >>> _svg_element_id("abcdef1234567890", "light")
     'mermaid-abcdef123456-light'
+    >>> _svg_element_id("abcdef1234567890", "light", occurrence=2)
+    'mermaid-abcdef123456-2-light'
     """
-    return f"mermaid-{digest[:12]}-{theme}"
+    suffix = f"-{occurrence}" if occurrence else ""
+    return f"mermaid-{digest[:12]}{suffix}-{theme}"
 
 
 def _normalize_svg(svg: str, *, svg_id: str) -> str:
@@ -512,8 +523,18 @@ def html_visit_mermaid_inline(self: HTML5Translator, node: mermaid_inline) -> No
         raise nodes.SkipNode from None
 
     digest = _diagram_digest(source, "")
-    light = _normalize_svg(light, svg_id=_svg_element_id(digest, _THEME_LIGHT))
-    dark = _normalize_svg(dark, svg_id=_svg_element_id(digest, _THEME_DARK))
+    counts: dict[str, int] = getattr(self, _ID_COUNTS_ATTR, {})
+    occurrence = counts.get(digest, 0)
+    counts[digest] = occurrence + 1
+    setattr(self, _ID_COUNTS_ATTR, counts)
+    light = _normalize_svg(
+        light,
+        svg_id=_svg_element_id(digest, _THEME_LIGHT, occurrence=occurrence),
+    )
+    dark = _normalize_svg(
+        dark,
+        svg_id=_svg_element_id(digest, _THEME_DARK, occurrence=occurrence),
+    )
 
     caption: str = node.get("caption", "")
     alt = node.get("alt", "") or caption

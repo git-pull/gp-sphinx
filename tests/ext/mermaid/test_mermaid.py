@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import pathlib
+import re
 import types
 import typing as t
 
@@ -234,6 +235,65 @@ def test_visitor_emits_dual_themed_svg(
     assert "my-svg" not in html
     # Both variants normalized to identical geometry -> shift-free toggle.
     assert html.count('viewBox="0 0 200 80"') == 2
+
+
+class DuplicateDiagramCase(t.NamedTuple):
+    """Sources visited on one page and the id uniqueness they must yield."""
+
+    test_id: str
+    sources: tuple[str, ...]
+    expect_suffixed: int
+
+
+_DUPLICATE_DIAGRAM_CASES: list[DuplicateDiagramCase] = [
+    DuplicateDiagramCase(
+        test_id="repeated-source-gets-suffix",
+        sources=("flowchart LR a-->b", "flowchart LR a-->b"),
+        expect_suffixed=2,
+    ),
+    DuplicateDiagramCase(
+        test_id="distinct-sources-unsuffixed",
+        sources=("flowchart LR a-->b", "flowchart LR a-->c"),
+        expect_suffixed=0,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "case",
+    _DUPLICATE_DIAGRAM_CASES,
+    ids=[c.test_id for c in _DUPLICATE_DIAGRAM_CASES],
+)
+def test_visitor_disambiguates_duplicate_diagram_ids(
+    case: DuplicateDiagramCase,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: pathlib.Path,
+) -> None:
+    """Repeats of the same source on one page never share an SVG id."""
+    monkeypatch.setattr(
+        sgm,
+        "_render_cached",
+        lambda app, source, theme: _FAKE_MMDC_SVG,
+    )
+    translator = _make_translator(tmp_path)
+    for source in case.sources:
+        node = sgm.mermaid_inline()
+        node["mermaid_source"] = source
+        node["caption"] = ""
+        node["alt"] = ""
+        with pytest.raises(nodes.SkipNode):
+            sgm.html_visit_mermaid_inline(t.cast("t.Any", translator), node)
+
+    html = "".join(translator.body)
+    svg_ids = re.findall(r'id="(mermaid-[^"]+)"', html)
+    assert len(svg_ids) == 2 * len(case.sources)
+    assert len(set(svg_ids)) == len(svg_ids)
+    suffixed = [
+        svg_id
+        for svg_id in svg_ids
+        if re.fullmatch(r"mermaid-[0-9a-f]{12}-\d+-(?:light|dark)", svg_id)
+    ]
+    assert len(suffixed) == case.expect_suffixed
 
 
 def test_visitor_falls_back_when_renderer_missing(
