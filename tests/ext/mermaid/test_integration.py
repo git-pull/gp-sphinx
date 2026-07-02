@@ -136,18 +136,18 @@ def test_build_does_not_degrade(
     Sphinx apps share a process, so assert on the degradation signals only.
     """
     assert "mermaid render unavailable" not in mermaid_html_build.warnings
-    assert "gp-sphinx-diagram__fallback" not in mermaid_html
+    assert "gp-sphinx-mermaid__fallback" not in mermaid_html
 
 
 def test_both_fence_spellings_render_figures(mermaid_html: str) -> None:
     """The plain ```mermaid fence and :::{mermaid} both produce figures."""
-    assert mermaid_html.count('<figure class="gp-sphinx-diagram"') == 2
+    assert mermaid_html.count('<figure class="gp-sphinx-mermaid"') == 2
 
 
 def test_dual_variants_carry_theme_fills(mermaid_html: str) -> None:
     """Each diagram inlines a light and a dark SVG from separate renders."""
-    assert mermaid_html.count("gp-sphinx-diagram__variant--theme-light") == 2
-    assert mermaid_html.count("gp-sphinx-diagram__variant--theme-dark") == 2
+    assert mermaid_html.count("gp-sphinx-mermaid__variant--theme-light") == 2
+    assert mermaid_html.count("gp-sphinx-mermaid__variant--theme-dark") == 2
     # The stub bakes themeVariables.primaryColor into the fill, proving the
     # light and dark configs each flowed through the subprocess boundary.
     assert mermaid_html.count("fill:#f8f9fb;") == 2
@@ -196,7 +196,7 @@ def test_figure_markup_snapshot(
 ) -> None:
     """The named figure's full markup is stable across runs."""
     match = re.search(
-        r'<figure class="gp-sphinx-diagram" id="flow-diagram">.*?</figure>',
+        r'<figure class="gp-sphinx-mermaid" id="flow-diagram">.*?</figure>',
         mermaid_html,
         flags=re.DOTALL,
     )

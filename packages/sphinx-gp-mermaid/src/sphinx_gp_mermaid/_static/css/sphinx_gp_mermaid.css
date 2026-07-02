@@ -7,13 +7,13 @@
  * variants share identical geometry, so toggling display never shifts layout.
  */
 
-.gp-sphinx-diagram {
+.gp-sphinx-mermaid {
   margin: 1.5rem 0;
   /* Wide diagrams scroll within the column instead of overflowing it. */
   overflow-x: auto;
 }
 
-.gp-sphinx-diagram__variant svg {
+.gp-sphinx-mermaid__variant svg {
   /* Intrinsic width/height/viewBox are set at build time; these let the
      diagram scale down on narrow columns while keeping its aspect ratio,
      so there is no layout shift. */
@@ -23,7 +23,7 @@
   margin: 0 auto;
 }
 
-.gp-sphinx-diagram > figcaption {
+.gp-sphinx-mermaid > figcaption {
   text-align: center;
   font-size: 0.9em;
   margin-top: 0.5rem;
@@ -38,34 +38,34 @@
  * during SPA navigation, so the correct variant shows immediately and stays
  * correct across page swaps with no JavaScript.
  */
-.gp-sphinx-diagram__variant--theme-light {
+.gp-sphinx-mermaid__variant--theme-light {
   display: block;
 }
 
-.gp-sphinx-diagram__variant--theme-dark {
+.gp-sphinx-mermaid__variant--theme-dark {
   display: none;
 }
 
-body[data-theme="dark"] .gp-sphinx-diagram__variant--theme-light {
+body[data-theme="dark"] .gp-sphinx-mermaid__variant--theme-light {
   display: none;
 }
 
-body[data-theme="dark"] .gp-sphinx-diagram__variant--theme-dark {
+body[data-theme="dark"] .gp-sphinx-mermaid__variant--theme-dark {
   display: block;
 }
 
 @media (prefers-color-scheme: dark) {
-  body:not([data-theme="light"]) .gp-sphinx-diagram__variant--theme-light {
+  body:not([data-theme="light"]) .gp-sphinx-mermaid__variant--theme-light {
     display: none;
   }
 
-  body:not([data-theme="light"]) .gp-sphinx-diagram__variant--theme-dark {
+  body:not([data-theme="light"]) .gp-sphinx-mermaid__variant--theme-dark {
     display: block;
   }
 }
 
 /* Shown only when mmdc is unavailable at build time (degraded fallback). */
-.gp-sphinx-diagram__fallback {
+.gp-sphinx-mermaid__fallback {
   white-space: pre;
   overflow-x: auto;
 }

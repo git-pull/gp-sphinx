@@ -261,8 +261,8 @@ def test_visitor_emits_dual_themed_svg(
 
     html = "".join(translator.body)
     assert seen == [sgm._THEME_LIGHT, sgm._THEME_DARK]
-    assert html.count("gp-sphinx-diagram__variant--theme-light") == 1
-    assert html.count("gp-sphinx-diagram__variant--theme-dark") == 1
+    assert html.count("gp-sphinx-mermaid__variant--theme-light") == 1
+    assert html.count("gp-sphinx-mermaid__variant--theme-dark") == 1
     assert "<figcaption>How it flows</figcaption>" in html
     assert "my-svg" not in html
     # Both variants normalized to identical geometry -> shift-free toggle.
@@ -350,7 +350,7 @@ def test_visitor_falls_back_when_renderer_missing(
         sgm.html_visit_mermaid_inline(t.cast("t.Any", translator), node)
 
     html = "".join(translator.body)
-    assert 'class="gp-sphinx-diagram__fallback"' in html
+    assert 'class="gp-sphinx-mermaid__fallback"' in html
     assert "flowchart LR a--&gt;b" in html
     warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
     assert any("mermaid render unavailable" in r.getMessage() for r in warnings)
@@ -409,7 +409,7 @@ def test_fallback_preserves_name_anchor(
         sgm.html_visit_mermaid_inline(t.cast("t.Any", translator), node)
 
     html = "".join(translator.body)
-    assert 'class="gp-sphinx-diagram__fallback"' in html
+    assert 'class="gp-sphinx-mermaid__fallback"' in html
     for needle in case.expect_contains:
         assert needle in html, f"{case.test_id}: expected {needle!r}"
     for needle in case.expect_absent:

@@ -536,7 +536,7 @@ def html_visit_mermaid_inline(self: HTML5Translator, node: mermaid_inline) -> No
     except MermaidError as exc:
         _warn_render_failure(self.builder, node, exc)
         self.body.append(
-            f'<pre class="gp-sphinx-diagram__fallback"{fig_id}>'
+            f'<pre class="gp-sphinx-mermaid__fallback"{fig_id}>'
             + html.escape(source)
             + "</pre>",
         )
@@ -561,14 +561,14 @@ def html_visit_mermaid_inline(self: HTML5Translator, node: mermaid_inline) -> No
     aria = f' aria-label="{html.escape(alt, quote=True)}"' if alt else ""
 
     parts = [
-        f'<figure class="gp-sphinx-diagram"{fig_id}>',
+        f'<figure class="gp-sphinx-mermaid"{fig_id}>',
         (
-            '<div class="gp-sphinx-diagram__variant '
-            f'gp-sphinx-diagram__variant--theme-light" role="img"{aria}>{light}</div>'
+            '<div class="gp-sphinx-mermaid__variant '
+            f'gp-sphinx-mermaid__variant--theme-light" role="img"{aria}>{light}</div>'
         ),
         (
-            '<div class="gp-sphinx-diagram__variant '
-            'gp-sphinx-diagram__variant--theme-dark" role="img" '
+            '<div class="gp-sphinx-mermaid__variant '
+            'gp-sphinx-mermaid__variant--theme-dark" role="img" '
             f'aria-hidden="true">{dark}</div>'
         ),
     ]
