@@ -110,6 +110,9 @@ conf = merge_sphinx_config(
     api_collapsed_threshold=10,
     pytest_fixture_lint_level="none",
     rediraffe_redirects="redirects.txt",
+    # AGENTS.md is agent guidance, not a site page; keep Sphinx from
+    # treating it as an orphan document.
+    exclude_patterns=["_build", "AGENTS.md", "CLAUDE.md"],
     intersphinx_mapping=intersphinx_mapping,
     # Enable Vite orchestration: under `sphinx-autobuild`,
     # sphinx-vite-builder spawns `pnpm exec vite build --watch` so
