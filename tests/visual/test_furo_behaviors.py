@@ -33,12 +33,16 @@ from playwright.sync_api import Page
 
 _SKIP_REASON = "Set GP_SPHINX_VISUAL=1 to enable behavioral parity tests"
 
+# Mark-level gate, not an in-body pytest.skip(): marks are evaluated before
+# fixture setup, so pytest-playwright's ``page`` fixture never launches a
+# browser on gated runs. An in-body skip runs after fixtures — and the
+# browser launch errors on machines without a Playwright chromium.
+pytestmark = pytest.mark.skipif(
+    not os.environ.get("GP_SPHINX_VISUAL"),
+    reason=_SKIP_REASON,
+)
+
 _STYLESHEET_VARIANTS: tuple[t.Literal["scss", "tw"], ...] = ("scss", "tw")
-
-
-def _ensure_visual_enabled() -> None:
-    if not os.environ.get("GP_SPHINX_VISUAL"):
-        pytest.skip(_SKIP_REASON)
 
 
 def _swap_stylesheet_to_tw(page: Page) -> None:
@@ -113,8 +117,6 @@ def test_theme_toggle_cycles(
     We pin ``prefers-color-scheme`` to ``light`` via Playwright's
     ``emulate_media`` so the cycle is deterministic.
     """
-    _ensure_visual_enabled()
-
     page.emulate_media(color_scheme="light")
     # localStorage clear: explicit goto so the page initialises in
     # 'auto' regardless of prior runs.
@@ -180,8 +182,6 @@ def test_mobile_sidebar_drawer(
     it to ``left: 0``. The toggle is a hidden checkbox driven by
     a ``<label for="__navigation">``.
     """
-    _ensure_visual_enabled()
-
     page.set_viewport_size({"width": 600, "height": 800})
     _setup_page(page, http_server_url, "/", variant=variant)
 
@@ -247,8 +247,6 @@ def test_scroll_spy_marks_current_section(
     (line 158).  As sections enter the viewport, Gumshoe adds the
     class to the matching ``.toc-tree li``.
     """
-    _ensure_visual_enabled()
-
     # /configuration/ has multiple sections (Sphinx wraps each h2
     # in a <section id="..."> that the toc-tree links target via
     # href="#id"). Section IDs are on the <section> element, not
@@ -317,8 +315,6 @@ def test_back_to_top_visibility(
     ``.show-back-to-top .back-to-top { display: flex }``
     (in ``components/scaffold.css``) flips the button visible.
     """
-    _ensure_visual_enabled()
-
     _setup_page(page, http_server_url, "/configuration/", variant=variant)
     page.set_viewport_size({"width": 1440, "height": 900})
 
@@ -370,8 +366,6 @@ def test_skip_to_content_focus(
     Default state: ``.skip-to-content { transform: translateY(-200%) }``
     Active state via ``:focus-within``: ``transform: translateY(0%)``
     """
-    _ensure_visual_enabled()
-
     _setup_page(page, http_server_url, "/", variant=variant)
     page.set_viewport_size({"width": 1440, "height": 900})
 
