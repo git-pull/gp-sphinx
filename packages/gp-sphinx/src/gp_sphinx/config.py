@@ -612,9 +612,8 @@ def merge_sphinx_config(
     if vite_root_setting is not None:
         conf["sphinx_vite_builder_root"] = vite_root_setting
 
-    # Route plain ```mermaid fences to sphinx_gp_mermaid's directive. This
-    # must happen at conf level: myst-parser snapshots myst_* config at its
-    # own config-inited, so an extension-level mutation lands too late.
+    # Route plain ```mermaid fences to sphinx_gp_mermaid's directive. Set at
+    # conf level: myst-parser snapshots myst_* config at builder-inited.
     if "sphinx_gp_mermaid" in ext_list:
         conf["myst_fence_as_directive"] = ["mermaid"]
 
