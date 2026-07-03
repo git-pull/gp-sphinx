@@ -1,0 +1,6 @@
+flowchart LR
+    browser --> cdn
+    cdn -->|hit| browser
+    cdn -->|miss| origin
+    origin --> db[(database)]
+    origin --> cdn

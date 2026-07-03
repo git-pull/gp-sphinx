@@ -1,0 +1,8 @@
+sequenceDiagram
+    participant U as Reader
+    participant S as Sphinx
+    participant M as mmdc
+    U->>S: request page
+    S->>M: render mermaid fence
+    M-->>S: inline SVG (light + dark)
+    S-->>U: page paints with diagram

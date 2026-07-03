@@ -1,0 +1,7 @@
+stateDiagram-v2
+    [*] --> Parsing
+    Parsing --> Rendering: fence found
+    Rendering --> Cached: mmdc succeeds
+    Rendering --> Fallback: mmdc missing
+    Cached --> [*]
+    Fallback --> [*]
