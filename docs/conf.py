@@ -58,6 +58,7 @@ sys.path.insert(
     0,
     str(project_root / "packages" / "sphinx-autodoc-typehints-gp" / "src"),
 )
+sys.path.insert(0, str(project_root / "packages" / "sphinx-gp-mermaid" / "src"))
 sys.path.insert(0, str(cwd / "_ext"))  # docs demo modules
 
 import gp_sphinx  # noqa: E402
@@ -100,6 +101,8 @@ conf = merge_sphinx_config(
         "sphinx_autodoc_sphinx",
         "sphinx_autodoc_argparse.exemplar",
         "sphinx_ux_autodoc_layout",
+        "sphinx_gp_mermaid",
+        "mermaid_examples",
     ],
     fastmcp_tool_modules=["fastmcp_demo_tools"],
     fastmcp_area_map={
