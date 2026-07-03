@@ -39,8 +39,10 @@ def _autodoc_and_ux_package_paths() -> list[pathlib.Path]:
             for p in [
                 *packages_dir.glob("sphinx-autodoc-*.md"),
                 *packages_dir.glob("sphinx-ux-*.md"),
+                *packages_dir.glob("sphinx-gp-*.md"),
                 *packages_dir.glob("sphinx-autodoc-*/index.md"),
                 *packages_dir.glob("sphinx-ux-*/index.md"),
+                *packages_dir.glob("sphinx-gp-*/index.md"),
             ]
         }
     )
@@ -62,6 +64,7 @@ LIVE_DEMO_MARKERS = (
     "```{argparse}",
     "{tool}`",
     "{toolref}`",
+    "```{mermaid-examples}",
 )
 
 
