@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-autodoc-argparse"
-version = "0.0.1a31"
+version = "0.0.1a32"
 description = "Modern Sphinx extension for documenting argparse-based CLI tools"
 requires-python = ">=3.10,<4.0"
 authors = [

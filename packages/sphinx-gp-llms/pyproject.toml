@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-gp-llms"
-version = "0.0.1a31"
+version = "0.0.1a32"
 description = "LLM-friendly documentation outputs for Sphinx — llms.txt, llms-full.txt, docs.json, per-page Markdown"
 requires-python = ">=3.10,<4.0"
 authors = [
