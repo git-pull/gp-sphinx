@@ -23,7 +23,7 @@ DOCS_ROOT = REPO_ROOT / "docs"
 
 
 def _autodoc_and_ux_package_paths() -> list[pathlib.Path]:
-    """Return one docs page per autodoc / ux package.
+    """Return one docs page per autodoc, ux, or gp package.
 
     Accepts both layouts during the per-package migration window:
     ``docs/packages/<name>.md`` (legacy flat) and
@@ -39,8 +39,10 @@ def _autodoc_and_ux_package_paths() -> list[pathlib.Path]:
             for p in [
                 *packages_dir.glob("sphinx-autodoc-*.md"),
                 *packages_dir.glob("sphinx-ux-*.md"),
+                *packages_dir.glob("sphinx-gp-*.md"),
                 *packages_dir.glob("sphinx-autodoc-*/index.md"),
                 *packages_dir.glob("sphinx-ux-*/index.md"),
+                *packages_dir.glob("sphinx-gp-*/index.md"),
             ]
         }
     )
@@ -62,6 +64,7 @@ LIVE_DEMO_MARKERS = (
     "```{argparse}",
     "{tool}`",
     "{toolref}`",
+    "```{mermaid-examples}",
 )
 
 

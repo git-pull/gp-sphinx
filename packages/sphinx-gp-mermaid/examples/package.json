@@ -1,0 +1,8 @@
+{
+  "name": "sphinx-gp-mermaid-examples",
+  "private": true,
+  "description": "Local mermaid-cli toolchain for regenerating example diagram outputs.",
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "11.16.0"
+  }
+}

@@ -1,0 +1,8 @@
+erDiagram
+    PROJECT ||--o{ DOCUMENT : contains
+    DOCUMENT ||--o{ DIAGRAM : embeds
+    DIAGRAM {
+        string source
+        string theme
+        string digest
+    }

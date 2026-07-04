@@ -1,0 +1,4 @@
+# Local mermaid-cli toolchain — regenerate with `pnpm install --ignore-workspace`.
+node_modules/
+pnpm-lock.yaml
+pnpm-workspace.yaml

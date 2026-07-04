@@ -1,0 +1,13 @@
+classDiagram
+    class MermaidDirective {
+        +run() list~Node~
+    }
+    class mermaid_inline {
+        +mermaid_source str
+    }
+    class Renderer {
+        +render(source, theme) str
+        -cache Path
+    }
+    MermaidDirective --> mermaid_inline : emits
+    mermaid_inline --> Renderer : rendered by

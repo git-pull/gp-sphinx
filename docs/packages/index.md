@@ -12,12 +12,13 @@ and independently installable.
 
 ## Common libraries
 
-The rendering pipeline every autodoc extension consumes:
+The rendering pipeline every autodoc extension consumes, plus shared page primitives:
 
 - [`sphinx-ux-badges`](sphinx-ux-badges/index.md) — badge primitives and colour palette
 - [`sphinx-ux-autodoc-layout`](sphinx-ux-autodoc-layout/index.md) — structural presenter for `api-*` entry components
 - [`sphinx-autodoc-typehints-gp`](sphinx-autodoc-typehints-gp/index.md) — annotation normalization and type rendering
 - [`sphinx-fonts`](sphinx-fonts/index.md) — IBM Plex font preloading
+- [`sphinx-gp-mermaid`](sphinx-gp-mermaid/index.md) — build-time mermaid diagrams as dual-theme inline SVG
 
 ## Autodoc extensions
 

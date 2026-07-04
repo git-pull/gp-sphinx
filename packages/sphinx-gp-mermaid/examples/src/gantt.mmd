@@ -1,0 +1,10 @@
+gantt
+    title Diagram build
+    dateFormat YYYY-MM-DD
+    axisFormat %m-%d
+    section Render
+    Parse fences   :a1, 2026-07-01, 1d
+    Run mmdc       :a2, after a1, 2d
+    section Ship
+    Normalize SVG  :a3, after a2, 1d
+    Write HTML     :a4, after a3, 1d
