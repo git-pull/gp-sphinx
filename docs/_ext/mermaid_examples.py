@@ -60,6 +60,10 @@ def _figure_markup(light: str, dark: str, *, alt: str) -> str:
     True
     >>> markup.count("gp-sphinx-mermaid__variant--theme-")
     2
+    >>> 'role="img"' in markup and 'aria-hidden="true"' in markup
+    True
+    >>> 'aria-label="A flow"' in markup
+    True
     """
     aria = f' aria-label="{html.escape(alt, quote=True)}"'
     return "".join(
@@ -127,8 +131,16 @@ def setup(app: Sphinx) -> ExtensionMetadata:
 
     Examples
     --------
-    >>> from mermaid_examples import setup
-    >>> callable(setup)
+    >>> class FakeApp:
+    ...     def __init__(self) -> None:
+    ...         self.calls: list[tuple[str, object]] = []
+    ...     def add_directive(self, name: str, cls: object) -> None:
+    ...         self.calls.append((name, cls))
+    >>> fake = FakeApp()
+    >>> metadata = setup(fake)  # type: ignore[arg-type]
+    >>> ("mermaid-examples", MermaidExamplesDirective) in fake.calls
+    True
+    >>> metadata["parallel_read_safe"]
     True
     """
     app.add_directive("mermaid-examples", MermaidExamplesDirective)
