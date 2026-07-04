@@ -23,7 +23,7 @@ DOCS_ROOT = REPO_ROOT / "docs"
 
 
 def _autodoc_and_ux_package_paths() -> list[pathlib.Path]:
-    """Return one docs page per autodoc / ux package.
+    """Return one docs page per autodoc, ux, or gp package.
 
     Accepts both layouts during the per-package migration window:
     ``docs/packages/<name>.md`` (legacy flat) and
