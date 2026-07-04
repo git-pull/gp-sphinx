@@ -7,7 +7,8 @@ figure markup so furo's ``body[data-theme]`` toggle applies.
 
 The committed SVGs are inlined verbatim (they are already id/size normalized),
 so the docs build needs no mermaid-cli toolchain and never shells out to
-``mmdc``. Regenerate the SVGs with ``examples/generate.py``.
+``mmdc``. Regenerate the SVGs with
+``packages/sphinx-gp-mermaid/examples/generate.py``.
 """
 
 from __future__ import annotations
