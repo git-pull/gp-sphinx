@@ -18,6 +18,18 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### What's new
+
+#### New package: sphinx-gp-mermaid
+
+Build-time Mermaid diagrams. Fenced `mermaid` blocks render to inline SVG
+during the build via mermaid-cli — no client-side runtime, no asynchronous
+pop-in, no layout shift — in light and dark variants matched to the gp-furo
+palette and toggled by CSS on the page theme. Opt in with
+`extra_extensions=["sphinx_gp_mermaid"]`; a missing renderer degrades to the
+diagram source rather than failing the build. See {ref}`sphinx-gp-mermaid`
+for authoring, theming, and the renderer/CI setup. (#61)
+
 ## gp-sphinx 0.0.1a31 (2026-06-15)
 
 ### What's new
