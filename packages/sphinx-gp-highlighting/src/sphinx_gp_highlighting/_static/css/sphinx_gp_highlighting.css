@@ -1,0 +1,12 @@
+.gp-sphinx-highlighting-inline {
+  white-space: nowrap;
+}
+
+.gp-sphinx-highlighting-inline--kind-path,
+.gp-sphinx-highlighting-inline--kind-dir {
+  color: var(--color-api-name, inherit);
+}
+
+.gp-sphinx-highlighting-inline--kind-dir::after {
+  color: var(--color-foreground-muted, currentColor);
+}

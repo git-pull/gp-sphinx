@@ -751,6 +751,27 @@ def smoke_sphinx_gp_mermaid(dist_dir: pathlib.Path, version: str) -> None:
         )
 
 
+def smoke_sphinx_gp_highlighting(dist_dir: pathlib.Path, version: str) -> None:
+    """Verify the sphinx-gp-highlighting extension and lexer entry point."""
+    with tempfile.TemporaryDirectory() as tmp:
+        python_path = _create_venv(pathlib.Path(tmp))
+        _install_into_venv(
+            python_path,
+            *_workspace_wheel_requirements(dist_dir),
+        )
+        _run_python(
+            python_path,
+            (
+                "from pygments.lexers import get_lexer_by_name; "
+                "import sphinx_gp_highlighting; "
+                "from sphinx_gp_highlighting import setup; "
+                "lexer = get_lexer_by_name('tree'); "
+                "assert lexer.__class__.__name__ == 'DirectoryTreeLexer'; "
+                "assert callable(setup)"
+            ),
+        )
+
+
 def smoke_sphinx_autodoc_fastmcp(dist_dir: pathlib.Path, version: str) -> None:
     """Verify the autodoc-fastmcp extension installs and imports cleanly."""
     with tempfile.TemporaryDirectory() as tmp:
@@ -882,6 +903,7 @@ _PACKAGE_SMOKE_RUNNERS: dict[str, t.Callable[[pathlib.Path, str], None]] = {
     "sphinx-gp-sitemap": smoke_sphinx_gp_sitemap,
     "sphinx-gp-llms": smoke_sphinx_gp_llms,
     "sphinx-gp-mermaid": smoke_sphinx_gp_mermaid,
+    "sphinx-gp-highlighting": smoke_sphinx_gp_highlighting,
     "gp-sphinx": smoke_gp_sphinx,
     "sphinx-autodoc-argparse": smoke_sphinx_autodoc_argparse,
     "sphinx-autodoc-api-style": smoke_sphinx_autodoc_api_style,

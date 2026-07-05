@@ -39,6 +39,7 @@ def test_by_cluster_grid_emits_per_cluster_heading_and_prose() -> None:
         "## Tokens",
         "## Autodoc extensions",
         "## UX components",
+        "## Highlighting",
         "## Build & SEO",
     ]
     for heading in expected_headings:
@@ -50,9 +51,9 @@ def test_by_cluster_grid_emits_one_grid_per_nonempty_cluster() -> None:
     rendered = package_reference.workspace_package_grid_markdown(
         groups="by-cluster",
     )
-    # 5 clusters all populated (tokens, autodoc, ux, theme-coordinator,
-    # build-seo) -> 5 grids today.
-    assert rendered.count("::::{grid}") == 5
+    # 6 clusters all populated (tokens, autodoc, ux, theme-coordinator,
+    # highlighting, build-seo) -> 6 grids today.
+    assert rendered.count("::::{grid}") == 6
 
 
 def test_by_cluster_grid_includes_shipped_js_packages() -> None:

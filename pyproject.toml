@@ -32,6 +32,7 @@ sphinx-gp-opengraph = { workspace = true }
 sphinx-gp-sitemap = { workspace = true }
 sphinx-gp-llms = { workspace = true }
 sphinx-gp-mermaid = { workspace = true }
+sphinx-gp-highlighting = { workspace = true }
 gp-furo-theme = { workspace = true }
 gp-sphinx = { workspace = true }
 sphinx-vite-builder = { workspace = true }
@@ -55,6 +56,7 @@ dev = [
   "sphinx-gp-sitemap",
   "sphinx-gp-llms",
   "sphinx-gp-mermaid",
+  "sphinx-gp-highlighting",
   "gp-furo-theme",
   "sphinx-vite-builder",
   # Docs
@@ -185,6 +187,7 @@ known-first-party = [
   "sphinx_gp_sitemap",
   "sphinx_gp_llms",
   "sphinx_gp_mermaid",
+  "sphinx_gp_highlighting",
 ]
 combine-as-imports = true
 required-imports = [
