@@ -6,8 +6,9 @@
 
 ### [PEP 517](https://peps.python.org/pep-0517/) build backend
 
-Drop-in replacement for `hatchling.build`. Runs `pnpm exec vite build`
-before delegating wheel/sdist construction to hatchling. End users who
+Drop-in replacement for [Hatchling](https://hatch.pypa.io/latest/)'s
+`hatchling.build`. Runs [pnpm](https://pnpm.io/) `exec vite build`
+before delegating wheel/sdist construction to Hatchling. End users who
 `pip install` from PyPI don't need pnpm or Node — the wheel ships with
 the static assets already populated.
 

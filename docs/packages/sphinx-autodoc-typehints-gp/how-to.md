@@ -27,8 +27,8 @@ and skips its own plain-text duplicates — cooperation, not conflict.
 
 ## Features
 
-- Resolves type hints statically without `exec()` or {func}`typing.get_type_hints`.
-- Works perfectly with `TYPE_CHECKING` blocks.
+- Resolves type hints statically without `exec()` or {py:func}`typing.get_type_hints`.
+- Works with `TYPE_CHECKING` blocks because annotations are stringified at Sphinx build time.
 - No text-level race conditions with Napoleon.
 - Exposes reusable helpers for annotation display classification and rendered
   type paragraphs used by the other autodoc packages.
@@ -48,8 +48,8 @@ Four `build_*` functions span two axes:
 
 | | Resolved (`env` available) | Unresolved (annotation text only) |
 |---|---|---|
-| Raw paragraph | {func}`~sphinx_autodoc_typehints_gp.build_resolved_annotation_paragraph` | {func}`~sphinx_autodoc_typehints_gp.build_annotation_paragraph` |
-| Display-classified | {func}`~sphinx_autodoc_typehints_gp.build_resolved_annotation_display_paragraph` | {func}`~sphinx_autodoc_typehints_gp.build_annotation_display_paragraph` |
+| Raw paragraph | {py:func}`~sphinx_autodoc_typehints_gp.build_resolved_annotation_paragraph` | {py:func}`~sphinx_autodoc_typehints_gp.build_annotation_paragraph` |
+| Display-classified | {py:func}`~sphinx_autodoc_typehints_gp.build_resolved_annotation_display_paragraph` | {py:func}`~sphinx_autodoc_typehints_gp.build_annotation_display_paragraph` |
 
 Use `build_resolved_*` inside `doctree-resolved` event handlers where a
 {py:class}`~sphinx.environment.BuildEnvironment` is available. Use `build_*`
@@ -57,8 +57,8 @@ when you have only the annotation string.
 
 ## Annotation display classification
 
-{func}`~sphinx_autodoc_typehints_gp.classify_annotation_display` returns an
-{class}`~sphinx_autodoc_typehints_gp.AnnotationDisplay` with structured
+{py:func}`~sphinx_autodoc_typehints_gp.classify_annotation_display` returns an
+{py:class}`~sphinx_autodoc_typehints_gp.AnnotationDisplay` with structured
 metadata for UI renderers.  All values below are verified against the installed
 package:
 
@@ -71,16 +71,15 @@ package:
 | `int \| bool` | `"int \| bool"` | `False` | `()` |
 
 `is_literal_enum=True` lets rendering code produce individual badge chips for
-each member rather than a monolithic code string.  This decision used to live
-in each consumer (FastMCP, pytest-fixtures, api-style); now it lives in
-{func}`~sphinx_autodoc_typehints_gp.classify_annotation_display` so no
-downstream package re-implements enum detection heuristics.
+each member rather than a monolithic code string. Centralizing that decision in
+{py:func}`~sphinx_autodoc_typehints_gp.classify_annotation_display` keeps
+FastMCP, pytest-fixtures, and api-style on the same enum-detection behavior.
 
 ## Static resolution
 
 | Approach | `TYPE_CHECKING` block safe | Napoleon text-processing race |
 |---|---|---|
-| {func}`typing.get_type_hints` | No — resolves at import time | Yes — depends on import order |
+| {py:func}`typing.get_type_hints` | No — resolves at import time | Yes — depends on import order |
 | `sphinx.util.typing.stringify_annotation()` | Yes — resolves at Sphinx build time | No — no text processing |
 
 This extension uses `sphinx.util.typing.stringify_annotation()` (Sphinx

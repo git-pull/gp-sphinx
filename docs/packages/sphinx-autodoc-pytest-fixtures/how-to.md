@@ -22,8 +22,7 @@ pytest_fixture_external_links = {
 {py:meth}`~sphinx.application.Sphinx.setup_extension`. You do not need to add
 them separately to your `extensions` list.
 
-## Registered configuration values
+## Find configuration values
 
-```{eval-rst}
-.. autoconfigvalues:: sphinx_autodoc_pytest_fixtures
-```
+The {doc}`reference` page lists the configuration values registered by the
+extension.

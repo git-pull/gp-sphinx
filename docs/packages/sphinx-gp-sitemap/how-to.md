@@ -52,7 +52,8 @@ element per built page to `sitemap.xml` in the output directory.
    suppresses alternates explicitly.
 5. **Lastmod** (optional) — when `sitemap_show_lastmod = True`, the
    `config-inited` handler runs
-   `app.setup_extension("sphinx_last_updated_by_git")` once at the
+   {py:meth}`~sphinx.application.Sphinx.setup_extension` once for
+   `sphinx_last_updated_by_git` at the
    start of the build to lazy-load the supporting extension. If the
    import fails, sphinx-gp-sitemap logs a `WARNING` and disables the flag
    for the rest of the build — `<lastmod>` is omitted but everything

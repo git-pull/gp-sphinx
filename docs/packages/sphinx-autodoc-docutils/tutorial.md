@@ -2,7 +2,7 @@
 
 # Tutorial
 
-## Working usage examples
+## Document your first directive or role
 
 Use a single-object directive when you want one rendered reference entry:
 

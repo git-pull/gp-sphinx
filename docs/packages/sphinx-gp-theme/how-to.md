@@ -70,7 +70,7 @@ Options declared in `theme.conf` and accepted through `html_theme_options`:
 
 ## Relationship to gp-sphinx
 
-`gp-sphinx` sets this theme automatically via {py:func}`~gp_sphinx.config.merge_sphinx_config` and
+{doc}`/packages/gp-sphinx/index` sets this theme automatically via {py:func}`~gp_sphinx.config.merge_sphinx_config` and
 pre-populates `source_repository`, `source_branch`, `source_directory`, footer
 icons, and the IBM Plex font stacks consumed by the theme templates.
 

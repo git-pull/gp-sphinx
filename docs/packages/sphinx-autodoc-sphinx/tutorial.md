@@ -2,7 +2,7 @@
 
 # Tutorial
 
-## Working usage examples
+## Document a Sphinx extension surface
 
 Render one config value:
 

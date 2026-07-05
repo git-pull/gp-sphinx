@@ -84,12 +84,17 @@ already present.
 ## Injected `setup(app)`
 
 The returned config includes a `setup(app)` function from
-{py:func}`gp_sphinx.config.setup`. It does two things:
+{py:func}`gp_sphinx.config.setup`. It wires the coordinator's shared
+browser helpers and lexer aliases into the Sphinx app:
 
 | Action | Effect |
 | --- | --- |
 | `app.add_js_file("js/spa-nav.js", loading_method="defer")` | Registers the bundled SPA navigation script from `sphinx-gp-theme` |
+| `app.connect("html-page-context", _inject_copybutton_bridge)` | Adds copybutton prompt settings to the page context so copied examples stay prompt-aware after SPA navigation |
+| `app.connect("html-page-context", _inject_fowt_prevention)` | Injects the early theme script that prevents a flash of the wrong theme before Furo initializes |
 | `app.connect("build-finished", remove_tabs_js)` | Removes `_static/tabs.js` after HTML builds as a `sphinx-inline-tabs` workaround |
+| `app.add_lexer("myst", MystLexer)` | Registers the MyST lexer alias used by Markdown examples |
+| `app.add_lexer("myst-md", MystLexer)` | Registers the alternate MyST lexer alias used by Markdown examples |
 
 ## Always-set coordinator values
 

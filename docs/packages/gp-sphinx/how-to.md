@@ -33,7 +33,7 @@ globals().update(conf)
 - Shared extension defaults, theme defaults, fonts, MyST, napoleon, copybutton, and rediraffe settings.
 - Auto-computed `issue_url_tpl` and theme source-repository wiring from `source_repository`.
 - Auto-computed SEO values when `docs_url` is set: `ogp_site_url`, `ogp_site_name`, `ogp_image` for {doc}`/packages/sphinx-gp-opengraph/index`, plus `site_url` and `sitemap_url_scheme` for {doc}`/packages/sphinx-gp-sitemap/index`. See {ref}`from-docs_url` for the canonical mapping.
-- A `setup(app)` hook that registers `js/spa-nav.js` and removes `tabs.js` after HTML builds.
+- A `setup(app)` hook that registers `js/spa-nav.js`, injects the copybutton bridge and FOWT-prevention script on `html-page-context`, removes `tabs.js` after HTML builds, and registers the `myst` / `myst-md` lexer aliases.
 - Support for appending {py:mod}`sphinx:sphinx.ext.linkcode` automatically when `linkcode_resolve` is supplied in `**overrides`.
 
 See {doc}`/configuration` for the complete parameter reference and every shared `DEFAULT_*` constant.

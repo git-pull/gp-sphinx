@@ -17,7 +17,7 @@ registrations in
 Generated from {py:meth}`~sphinx.application.Sphinx.add_directive` and
 {py:meth}`~sphinx.application.Sphinx.add_role` registrations in
 [`sphinx_autodoc_fastmcp/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-fastmcp/src/sphinx_autodoc_fastmcp/__init__.py)
-via `sphinx-autodoc-docutils`.
+via {doc}`/packages/sphinx-autodoc-docutils/index`.
 
 ```{eval-rst}
 .. autodirectives:: sphinx_autodoc_fastmcp

@@ -27,7 +27,7 @@ the site's content:
 
 - **H1** — project name
 - **Blockquote** — first paragraph of the root document
-- **H2 sections** — one per `{toctree}` directive with a `:caption:`
+- **H2 sections** — one per {rst:dir}`sphinx:toctree` directive with a `:caption:`
   option; pages not in any captioned toctree fall into a
   "Documentation" section
 - **Bulleted links** — `[Page Title](full URL): first-paragraph

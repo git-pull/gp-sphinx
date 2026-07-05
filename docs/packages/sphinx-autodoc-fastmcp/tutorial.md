@@ -2,7 +2,7 @@
 
 # Tutorial
 
-## Working usage examples
+## Document your first tool
 
 Render one tool card:
 
@@ -47,8 +47,10 @@ are aliases mirroring `{toolref}`.
 
 ### Prompts and resources
 
-After setting {confval}`fastmcp_server_module`, four MyST directives become available
-for documenting MCP prompts and resources:
+After setting {confval}`fastmcp_server_module`,
+{rst:dir}`fastmcp-prompt`, {rst:dir}`fastmcp-prompt-input`,
+{rst:dir}`fastmcp-resource`, and {rst:dir}`fastmcp-resource-template`
+become available for documenting MCP prompts and resources:
 
 ````myst
 ```{fastmcp-prompt} my_prompt

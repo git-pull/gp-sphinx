@@ -2,7 +2,7 @@
 
 # Tutorial
 
-## Working usage examples
+## Render a compact API card
 
 Render one compact function:
 

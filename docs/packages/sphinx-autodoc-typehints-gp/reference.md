@@ -2,6 +2,16 @@
 
 # API Reference
 
+## Config reference
+
+Generated from {py:meth}`~sphinx.application.Sphinx.add_config_value`
+registrations in
+[`sphinx_autodoc_typehints_gp/extension.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-typehints-gp/src/sphinx_autodoc_typehints_gp/extension.py).
+
+```{eval-rst}
+.. autoconfigvalues:: sphinx_autodoc_typehints_gp.extension
+```
+
 ## Annotation rendering
 
 ```{eval-rst}

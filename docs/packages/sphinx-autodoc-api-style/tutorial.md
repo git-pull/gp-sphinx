@@ -2,10 +2,12 @@
 
 # Tutorial
 
-## Working usage examples
+## Add badges to existing autodoc
 
-No special directives are needed — existing `.. autofunction::`,
-`.. autoclass::`, `.. automodule::` directives automatically receive badges.
+Start with the autodoc directives your API page already uses. Existing
+{rst:dir}`sphinx:autofunction`, {rst:dir}`sphinx:autoclass`, and
+{rst:dir}`sphinx:automodule` entries automatically receive badges when the
+extension is loaded.
 
 Render one function:
 

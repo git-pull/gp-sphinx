@@ -2,7 +2,7 @@
 
 # Tutorial
 
-## Working usage examples
+## Build your first badge toolbar
 
 {py:func}`sphinx_ux_badges.setup` registers the extension with Sphinx:
 

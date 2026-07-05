@@ -6,26 +6,10 @@ Use this extension when a project needs rendered `argparse` programs,
 options, choices, and role links from the same parser object that powers
 its CLI.
 
-## Registered directives and roles
+## Find registered directives and roles
 
-### Base `argparse` directive
-
-```{eval-rst}
-.. autodirective:: sphinx_autodoc_argparse.directive.ArgparseDirective
-   :no-index:
-```
-
-### Exemplar override
-
-```{eval-rst}
-.. autodirective:: sphinx_autodoc_argparse.exemplar.CleanArgParseDirective
-```
-
-### CLI role callables
-
-```{eval-rst}
-.. autoroles:: sphinx_autodoc_argparse.roles
-```
+The {doc}`reference` page lists the directive classes, options, and CLI role
+callables registered by the extension.
 
 ## Downstream usage snippets
 

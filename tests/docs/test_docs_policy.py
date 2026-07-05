@@ -6,14 +6,22 @@ import ast
 import inspect
 import pathlib
 import re
+import sys
 import typing as t
 
 import pytest
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "docs" / "_ext"))
+
+import package_reference
 
 from gp_sphinx.config import merge_sphinx_config
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 DOCS_ROOT = REPO_ROOT / "docs"
+GP_SPHINX_CONFIG = (
+    REPO_ROOT / "packages" / "gp-sphinx" / "src" / "gp_sphinx" / "config.py"
+)
 
 
 class MarkdownFence(t.NamedTuple):
@@ -43,6 +51,7 @@ _DOCUMENTED_OVERRIDE_KWARGS = frozenset(
         "linkcode_resolve",
     },
 )
+_GENERIC_PY_ROLE_RE = re.compile(r"\{(func|class|meth|attr|data|mod|exc)\}`")
 
 
 def _markdown_files() -> list[pathlib.Path]:
@@ -99,6 +108,40 @@ def _python_fences_with_merge_config() -> list[MarkdownFence]:
     ]
 
 
+def _setup_function() -> ast.FunctionDef:
+    """Return the coordinator ``setup`` function AST."""
+    tree = ast.parse(GP_SPHINX_CONFIG.read_text(encoding="utf-8"))
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef) and node.name == "setup":
+            return node
+    msg = f"setup() not found in {GP_SPHINX_CONFIG}"
+    raise AssertionError(msg)
+
+
+def _literal_arg(call: ast.Call, index: int) -> str | None:
+    """Return a literal string argument from an AST call."""
+    try:
+        node = call.args[index]
+    except IndexError:
+        return None
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    return None
+
+
+def _call_handler_name(call: ast.Call, index: int) -> str | None:
+    """Return a simple handler name from an AST call."""
+    try:
+        node = call.args[index]
+    except IndexError:
+        return None
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        return node.attr
+    return None
+
+
 def test_release_docs_leave_tagging_to_maintainers() -> None:
     """Release docs do not teach agent-forbidden tag creation or tag pushes."""
     text = (DOCS_ROOT / "project" / "releasing.md").read_text(encoding="utf-8")
@@ -151,6 +194,112 @@ def test_package_how_to_pages_open_with_concept_prose() -> None:
             break
 
     assert offenders == []
+
+
+def test_docs_use_explicit_py_domain_roles() -> None:
+    """Python-domain roles are spelled explicitly in authored docs."""
+    offenders: list[str] = []
+    for path in _markdown_files():
+        for line_number, line in enumerate(
+            path.read_text(encoding="utf-8").splitlines(), 1
+        ):
+            if _GENERIC_PY_ROLE_RE.search(line):
+                offenders.append(
+                    f"{path.relative_to(REPO_ROOT)}:{line_number}: {line.strip()}"
+                )
+
+    assert offenders == []
+
+
+def test_packages_with_config_values_document_reference_surfaces() -> None:
+    """Packages that register config values expose them from reference pages."""
+    offenders: list[str] = []
+    for package in package_reference.workspace_packages():
+        package_name = package["name"]
+        if package_name == "gp-sphinx":
+            continue
+        modules = package_reference.extension_modules(package["module_name"])
+        modules_with_config = [
+            block["module"]
+            for module in modules
+            if (block := package_reference.collect_extension_surface(module))[
+                "config_values"
+            ]
+        ]
+        if not modules_with_config:
+            continue
+
+        reference = DOCS_ROOT / "packages" / package_name / "reference.md"
+        if not reference.is_file():
+            offenders.append(
+                f"{package_name}: missing reference.md for {modules_with_config}",
+            )
+            continue
+
+        text = reference.read_text(encoding="utf-8")
+        missing = [
+            module
+            for module in modules_with_config
+            if f".. autoconfigvalues:: {module}" not in text
+        ]
+        if missing:
+            offenders.append(f"{package_name}: missing autoconfigvalues for {missing}")
+
+    assert offenders == []
+
+
+def test_coordinator_setup_docs_match_registered_surface() -> None:
+    """The coordinator setup reference lists registered hooks and lexers."""
+    setup = _setup_function()
+    connect_calls: list[tuple[str, str]] = []
+    lexers: list[str] = []
+
+    for node in ast.walk(setup):
+        if not isinstance(node, ast.Call):
+            continue
+        if not isinstance(node.func, ast.Attribute):
+            continue
+        if node.func.attr == "connect":
+            event = _literal_arg(node, 0)
+            handler = _call_handler_name(node, 1)
+            if event is not None and handler is not None:
+                connect_calls.append((event, handler))
+        if node.func.attr == "add_lexer":
+            lexer = _literal_arg(node, 0)
+            if lexer is not None:
+                lexers.append(lexer)
+
+    text = (DOCS_ROOT / "configuration.md").read_text(encoding="utf-8")
+    missing = [
+        f"{event}:{handler}"
+        for event, handler in connect_calls
+        if event not in text or handler not in text
+    ]
+    missing.extend(f"lexer:{lexer}" for lexer in lexers if lexer not in text)
+
+    assert missing == []
+
+
+def test_tutorial_pages_start_as_learning_paths() -> None:
+    """Tutorial pages do not open as generated-example inventories."""
+    offenders: list[str] = []
+    for path in sorted((DOCS_ROOT / "packages").glob("*/tutorial.md")):
+        text = path.read_text(encoding="utf-8")
+        first_section = next(
+            (line.strip() for line in text.splitlines() if line.startswith("## ")),
+            "",
+        )
+        if first_section == "## Working usage examples":
+            offenders.append(str(path.relative_to(REPO_ROOT)))
+
+    assert offenders == []
+
+
+def test_whats_new_avoids_branch_internal_names() -> None:
+    """Published docs avoid branch-internal narrative."""
+    text = (DOCS_ROOT / "whats-new.md").read_text(encoding="utf-8")
+
+    assert "autodoc-improvements" not in text
 
 
 @pytest.mark.parametrize(
