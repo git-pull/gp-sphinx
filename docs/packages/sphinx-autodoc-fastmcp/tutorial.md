@@ -47,7 +47,7 @@ are aliases mirroring `{toolref}`.
 
 ### Prompts and resources
 
-After setting `fastmcp_server_module`, four MyST directives become available
+After setting {confval}`fastmcp_server_module`, four MyST directives become available
 for documenting MCP prompts and resources:
 
 ````myst

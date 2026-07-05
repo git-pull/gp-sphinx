@@ -2,6 +2,10 @@
 
 # How to
 
+Use this extension when a Sphinx theme should download Fontsource packages,
+emit `@font-face` declarations, preload selected font files, and expose
+font stacks to templates.
+
 ## Downstream `conf.py`
 
 ```python

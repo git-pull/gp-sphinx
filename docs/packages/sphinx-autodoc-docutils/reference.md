@@ -22,12 +22,12 @@ matching role:
 
 | Role | Links to |
 | --- | --- |
-| `` {docutils:transform}`Name` `` | `autotransform` / `autotransforms` entries |
-| `` {docutils:reader}`Name` `` | `autoreader` / `autoreaders` entries |
-| `` {docutils:parser}`Name` `` | `autoparser` / `autoparsers` entries |
-| `` {docutils:writer}`Name` `` | `autowriter` / `autowriters` entries |
-| `` {docutils:node}`Name` `` | `autonode` / `autonodes` entries |
-| `` {docutils:translator}`Name` `` | `autotranslator` / `autotranslators` entries |
+| `` {docutils:transform}`Name` `` | {rst:dir}`autotransform` / {rst:dir}`autotransforms` entries |
+| `` {docutils:reader}`Name` `` | {rst:dir}`autoreader` / {rst:dir}`autoreaders` entries |
+| `` {docutils:parser}`Name` `` | {rst:dir}`autoparser` / {rst:dir}`autoparsers` entries |
+| `` {docutils:writer}`Name` `` | {rst:dir}`autowriter` / {rst:dir}`autowriters` entries |
+| `` {docutils:node}`Name` `` | {rst:dir}`autonode` / {rst:dir}`autonodes` entries |
+| `` {docutils:translator}`Name` `` | {rst:dir}`autotranslator` / {rst:dir}`autotranslators` entries |
 
 Targets accept the fully-qualified dotted path
 (`` {docutils:transform}`pkg.transforms.Sanitize` ``) or the bare class

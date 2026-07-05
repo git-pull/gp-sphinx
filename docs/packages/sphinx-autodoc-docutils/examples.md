@@ -43,7 +43,8 @@ Renders all role callables in a module at once:
 ### Document one demo transform
 
 The single form imports the class directly and surfaces its
-`default_priority` and registration phase:
+{py:attr}`~docutils_demo_components.DemoReorderTransform.default_priority`
+and registration phase:
 
 ```{eval-rst}
 .. autotransform:: docutils_demo_components.DemoReorderTransform

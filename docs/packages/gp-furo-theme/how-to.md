@@ -2,6 +2,9 @@
 
 # How to
 
+Use `gp-furo-theme` when you want the git-pull Tailwind port of Furo
+directly, outside the coordinator defaults that `gp-sphinx` supplies.
+
 ## Downstream `conf.py`
 
 ```python

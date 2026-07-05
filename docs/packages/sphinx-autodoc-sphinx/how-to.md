@@ -2,6 +2,10 @@
 
 # How to
 
+Use this extension when a Sphinx extension needs generated reference pages
+for builders, domains, and configuration values that readers can link from
+prose.
+
 ## Downstream `conf.py`
 
 ```python

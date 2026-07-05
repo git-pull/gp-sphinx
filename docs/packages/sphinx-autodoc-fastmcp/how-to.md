@@ -2,6 +2,10 @@
 
 # How to
 
+Use this extension when a FastMCP server should document its tools,
+resources, prompts, generated schemas, safety metadata, and cross-reference
+badges from live registration data.
+
 ## Downstream `conf.py`
 
 ```python
@@ -28,7 +32,7 @@ them separately to your `extensions` list.
 
 ## Live server collection
 
-Pointing `fastmcp_server_module` at a live FastMCP instance enables autodoc of
+Pointing {confval}`fastmcp_server_module` at a live FastMCP instance enables autodoc of
 **prompts**, **resources**, and **resource templates** — see the four new
 directives below. The collector accepts either:
 

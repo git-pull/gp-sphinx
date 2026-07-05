@@ -2,6 +2,10 @@
 
 # How to
 
+Use `sphinx-gp-theme` when a site wants the git-pull Furo layer directly:
+project metadata, source links, app icons, sidebar project navigation, and
+the shared static assets.
+
 ## Downstream `conf.py`
 
 ```python

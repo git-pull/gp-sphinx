@@ -2,6 +2,10 @@
 
 # How to
 
+Use the coordinator when a downstream project wants the shared theme,
+extensions, fonts, SEO defaults, and workspace conventions from one
+`docs/conf.py` call.
+
 ## Downstream `conf.py`
 
 ```python

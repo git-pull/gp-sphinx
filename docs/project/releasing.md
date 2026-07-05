@@ -24,24 +24,20 @@ building, and publishing. There is no setup.py or requirements files.
 4. Keep first-party workspace dependencies pinned exactly to the shared
    version
 
-5. Commit and tag with the repo-wide release format:
+5. Commit with the repo-wide release format:
 
    ```console
-   $ git commit -m 'build(release): Tag v0.0.1a7'
+   $ git commit -m 'Tag v0.0.1a7'
    ```
 
-   ```console
-   $ git tag v0.0.1a7
-   ```
+   The release manager creates and pushes the tag after review. Tags
+   trigger publishing, so automated agents must leave tag creation to the
+   maintainer running the release.
 
 6. Push:
 
    ```console
    $ git push
-   ```
-
-   ```console
-   $ git push --tags
    ```
 
 7. GitHub Actions validates the shared version, builds all publishable

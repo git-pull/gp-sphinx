@@ -23,8 +23,8 @@ matching role:
 
 | Role | Links to |
 | --- | --- |
-| `` {sphinxext:builder}`Name` `` | `autobuilder` / `autobuilders` entries |
-| `` {sphinxext:domain}`Name` `` | `autodomain` / `autodomains` entries |
+| `` {sphinxext:builder}`Name` `` | {rst:dir}`autobuilder` / {rst:dir}`autobuilders` entries |
+| `` {sphinxext:domain}`Name` `` | {rst:dir}`autodomain` / {rst:dir}`autodomains` entries |
 
 Targets accept the fully-qualified dotted path
 (`` {sphinxext:builder}`pkg.builders.ZipBuilder` ``) or the bare class

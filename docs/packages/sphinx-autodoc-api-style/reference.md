@@ -7,24 +7,24 @@
 All badge classes are drawn from the shared
 {py:class}`~sphinx_ux_badges._css.SAB` palette. This extension uses:
 
-| Object type | `SAB` constant | CSS class |
+| Object type | {py:class}`~sphinx_ux_badges._css.SAB` constant | CSS class |
 |---|---|---|
-| `function` | `SAB.TYPE_FUNCTION` | `gp-sphinx-badge--type-function` |
-| `class` | `SAB.TYPE_CLASS` | `gp-sphinx-badge--type-class` |
-| `method` | `SAB.TYPE_METHOD` | `gp-sphinx-badge--type-method` |
-| `property` | `SAB.TYPE_PROPERTY` | `gp-sphinx-badge--type-property` |
-| `attribute` | `SAB.TYPE_ATTRIBUTE` | `gp-sphinx-badge--type-attribute` |
-| `data` | `SAB.TYPE_DATA` | `gp-sphinx-badge--type-data` |
-| `exception` | `SAB.TYPE_EXCEPTION` | `gp-sphinx-badge--type-exception` |
+| `function` | {py:attr}`~sphinx_ux_badges._css.SAB.TYPE_FUNCTION` | `gp-sphinx-badge--type-function` |
+| `class` | {py:attr}`~sphinx_ux_badges._css.SAB.TYPE_CLASS` | `gp-sphinx-badge--type-class` |
+| `method` | {py:attr}`~sphinx_ux_badges._css.SAB.TYPE_METHOD` | `gp-sphinx-badge--type-method` |
+| `property` | {py:attr}`~sphinx_ux_badges._css.SAB.TYPE_PROPERTY` | `gp-sphinx-badge--type-property` |
+| `attribute` | {py:attr}`~sphinx_ux_badges._css.SAB.TYPE_ATTRIBUTE` | `gp-sphinx-badge--type-attribute` |
+| `data` | {py:attr}`~sphinx_ux_badges._css.SAB.TYPE_DATA` | `gp-sphinx-badge--type-data` |
+| `exception` | {py:attr}`~sphinx_ux_badges._css.SAB.TYPE_EXCEPTION` | `gp-sphinx-badge--type-exception` |
 
-| Modifier | `SAB` constant | CSS class |
+| Modifier | {py:class}`~sphinx_ux_badges._css.SAB` constant | CSS class |
 |---|---|---|
-| `async` | `SAB.MOD_ASYNC` | `gp-sphinx-badge--mod-async` |
-| `classmethod` | `SAB.MOD_CLASSMETHOD` | `gp-sphinx-badge--mod-classmethod` |
-| `staticmethod` | `SAB.MOD_STATICMETHOD` | `gp-sphinx-badge--mod-staticmethod` |
-| `abstract` | `SAB.MOD_ABSTRACT` | `gp-sphinx-badge--mod-abstract` |
-| `final` | `SAB.MOD_FINAL` | `gp-sphinx-badge--mod-final` |
-| `deprecated` | `SAB.STATE_DEPRECATED` | `gp-sphinx-badge--state-deprecated` |
+| `async` | {py:attr}`~sphinx_ux_badges._css.SAB.MOD_ASYNC` | `gp-sphinx-badge--mod-async` |
+| `classmethod` | {py:attr}`~sphinx_ux_badges._css.SAB.MOD_CLASSMETHOD` | `gp-sphinx-badge--mod-classmethod` |
+| `staticmethod` | {py:attr}`~sphinx_ux_badges._css.SAB.MOD_STATICMETHOD` | `gp-sphinx-badge--mod-staticmethod` |
+| `abstract` | {py:attr}`~sphinx_ux_badges._css.SAB.MOD_ABSTRACT` | `gp-sphinx-badge--mod-abstract` |
+| `final` | {py:attr}`~sphinx_ux_badges._css.SAB.MOD_FINAL` | `gp-sphinx-badge--mod-final` |
+| `deprecated` | {py:attr}`~sphinx_ux_badges._css.SAB.STATE_DEPRECATED` | `gp-sphinx-badge--state-deprecated` |
 
 See {doc}`/packages/sphinx-ux-badges/index` for the full shared palette.
 

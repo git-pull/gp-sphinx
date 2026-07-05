@@ -2,6 +2,10 @@
 
 # How to
 
+Use this extension when a pytest plugin needs fixture reference pages with
+scope badges, linting for missing docs, and optional links back to external
+fixture documentation.
+
 ## Downstream `conf.py`
 
 ```python

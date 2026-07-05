@@ -2,6 +2,10 @@
 
 # How to
 
+Use this extension when autodoc output needs static annotation rendering,
+NumPy-style field-list cross-references, and reusable type-display helpers
+without importing application-only dependencies.
+
 ## Installation
 
 ```console
@@ -58,7 +62,7 @@ when you have only the annotation string.
 metadata for UI renderers.  All values below are verified against the installed
 package:
 
-| Annotation input | `text` | `is_literal_enum` | `literal_members` |
+| Annotation input | {py:attr}`~sphinx_autodoc_typehints_gp.AnnotationDisplay.text` | {py:attr}`~sphinx_autodoc_typehints_gp.AnnotationDisplay.is_literal_enum` | {py:attr}`~sphinx_autodoc_typehints_gp.AnnotationDisplay.literal_members` |
 |---|---|---|---|
 | `str` | `"str"` | `False` | `()` |
 | `str \| None` | `"str \| None"` | `False` | `()` |

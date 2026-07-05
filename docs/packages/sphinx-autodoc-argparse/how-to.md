@@ -2,6 +2,10 @@
 
 # How to
 
+Use this extension when a project needs rendered `argparse` programs,
+options, choices, and role links from the same parser object that powers
+its CLI.
+
 ## Registered directives and roles
 
 ### Base `argparse` directive

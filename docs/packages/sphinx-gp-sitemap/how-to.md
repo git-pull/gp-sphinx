@@ -18,7 +18,7 @@ The flat scheme overrides the upstream default of
 `"{lang}{version}{link}"` because git-pull.com sites deploy at the
 project root, with no language or version directory in the URL space.
 Multilingual or version-pinned hosts can still pass an explicit
-`sitemap_url_scheme` through `**overrides` —
+{confval}`sitemap_url_scheme` through `**overrides` —
 {py:func}`~gp_sphinx.config.merge_sphinx_config` runs auto-derivation first and
 overrides last. The canonical mapping lives in {ref}`from-docs_url`.
 
@@ -33,10 +33,10 @@ element per built page to `sitemap.xml` in the output directory.
    computes the relative URL using the builder's suffix
    (`html_file_suffix or ".html"` for the `html` builder; `…/` for
    `dirhtml`, with the index emitted as the empty string), drops it
-   when any pattern in `sitemap_excludes` matches, and appends a
+   when any pattern in {confval}`sitemap_excludes` matches, and appends a
    `(relative_link, last_updated)` tuple to the list.
-3. **Compose** — `build-finished` resolves `site_url` (or
-   `html_baseurl` as fallback; if both are unset the build is logged
+3. **Compose** — `build-finished` resolves {confval}`site_url` (or
+   {confval}`html_baseurl` as fallback; if both are unset the build is logged
    at INFO and skipped silently). For each collected link the
    handler formats `site_url + sitemap_url_scheme.format(lang=…,
    version=…, link=…)`. The `lang` segment comes from
@@ -57,8 +57,9 @@ element per built page to `sitemap.xml` in the output directory.
    import fails, sphinx-gp-sitemap logs a `WARNING` and disables the flag
    for the rest of the build — `<lastmod>` is omitted but everything
    else still emits.
-6. **Serialize** — `xml.etree.ElementTree.write()` produces the file.
-   When `sitemap_indent > 0`, `ElementTree.indent()` pretty-prints
+6. **Serialize** — {py:meth}`xml.etree.ElementTree.ElementTree.write`
+   produces the file. When {confval}`sitemap_indent` is greater than `0`,
+   {py:func}`xml.etree.ElementTree.indent` pretty-prints
    the tree with the configured width. ElementTree handles XML entity
    escaping for the URL text and attribute values automatically.
 
@@ -72,8 +73,9 @@ build-finished →  _write_sitemap             (enumerate found_docs +
 
 Both live in
 [`sphinx_gp_sitemap/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-sitemap/src/sphinx_gp_sitemap/__init__.py).
-Page enumeration runs once at `build-finished` over `app.env.found_docs`
-using `app.builder.get_target_uri(pagename)` for each URL — no
+Page enumeration runs once at `build-finished` over
+{py:attr}`~sphinx.environment.BuildEnvironment.found_docs` using
+{py:meth}`~sphinx.builders.Builder.get_target_uri` for each URL — no
 `html-page-context` handler, so incremental builds (where Sphinx
 fires the hook only for re-written pages) still emit a complete
 sitemap. `app.env.found_docs` is part of the env Sphinx merges across
@@ -87,13 +89,14 @@ reconstructed page URLs as `pagename + html_file_suffix`, which
 diverges from the HTML builder's actual `<a href>` output when
 `html_link_suffix` is set (e.g. `"/"` for clean URLs) or when a
 pagename contains characters Sphinx URL-quotes. sphinx-gp-sitemap
-calls `app.builder.get_target_uri(pagename)` directly, matching the
+calls {py:meth}`~sphinx.builders.Builder.get_target_uri` directly, matching the
 links Sphinx emits on the page itself.
 
 **`html_baseurl` is re-registered defensively.** Sphinx core
 registers `html_baseurl` on most modern versions, but older trees and
 some custom builders skip it. The {py:func}`~sphinx_gp_sitemap.setup` body wraps
 the {py:meth}`~sphinx.application.Sphinx.add_config_value` call for
-`html_baseurl` in `contextlib.suppress(ExtensionError)` so the extension is
+`html_baseurl` in `contextlib.suppress()` for
+{py:exc}`~sphinx.errors.ExtensionError` so the extension is
 robust against either layout. The bare `except BaseException` upstream uses is
 replaced by the narrow `ExtensionError` catch.

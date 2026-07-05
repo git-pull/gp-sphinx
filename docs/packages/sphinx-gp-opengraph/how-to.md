@@ -44,7 +44,7 @@ configured cap. Embedded HTML quote characters are escaped with
 `&quot;` before emission, so user content cannot break out of the
 attribute value.
 
-Custom raw markup listed in `ogp_custom_meta_tags` is appended verbatim
+Custom raw markup listed in {confval}`ogp_custom_meta_tags` is appended verbatim
 after the structured tags — that is the supported escape hatch for
 Twitter card declarations and `og:image:width`/`og:image:height` hints.
 
@@ -62,7 +62,7 @@ is purely a per-page transformer.
 
 ## Trade-offs
 
-**`ogp_social_cards` is accepted but ignored.** The upstream extension
+**{confval}`ogp_social_cards` is accepted but ignored.** The upstream extension
 ships a matplotlib renderer that builds per-page PNGs at
 `builder-inited`. sphinx-gp-opengraph deliberately omits the dependency to
 keep the install graph small. The config key remains registered so

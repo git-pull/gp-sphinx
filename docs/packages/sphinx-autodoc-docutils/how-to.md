@@ -2,6 +2,10 @@
 
 # How to
 
+Use this extension when your docs extension exposes docutils directives,
+roles, nodes, readers, parsers, writers, translators, or transforms that
+deserve generated reference pages and cross-reference targets.
+
 ## Downstream `conf.py`
 
 ```python

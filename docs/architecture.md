@@ -68,7 +68,8 @@ source-construct family:
 :link-type: doc
 
 **Subject**: argparse parsers — programs, options, subcommands, positionals.
-**Directives**: `argparse` (custom `argparse` domain).
+**Directives**: {ref}`argparse <base-argparse-directive>` (custom
+`argparse` domain).
 :::
 
 :::{grid-item-card} sphinx-autodoc-docutils
@@ -92,7 +93,7 @@ source-construct family:
 :link-type: doc
 
 **Subject**: pytest fixtures (extends the `py` domain).
-**Directives**: `autofixture`, {rst:dir}`autofixtures`,
+**Directives**: fixture documenter, {rst:dir}`autofixtures`,
 {rst:dir}`auto-pytest-plugin`.
 :::
 
