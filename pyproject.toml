@@ -249,6 +249,7 @@ testpaths = [
   "packages/sphinx-ux-badges/src",
   "packages/sphinx-gp-opengraph/src",
   "packages/sphinx-gp-sitemap/src",
+  "packages/sphinx-gp-highlighting/src",
   "packages/sphinx-gp-llms/src",
   "packages/sphinx-gp-mermaid/src",
   "packages/sphinx-vite-builder/src",
