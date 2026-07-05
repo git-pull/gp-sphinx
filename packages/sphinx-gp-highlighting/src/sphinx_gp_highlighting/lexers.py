@@ -21,7 +21,11 @@ class DirectoryTreeLexer(RegexLexer):
     --------
     >>> from pygments.token import Token
     >>> lexer = DirectoryTreeLexer()
-    >>> tokens = list(lexer.get_tokens("root\\n└── pyproject.toml  # config\\n"))
+    >>> source = '''\
+    ... root
+    ... └── pyproject.toml  # config
+    ... '''
+    >>> tokens = list(lexer.get_tokens(source))
     >>> (Token.Punctuation, '└──') in tokens
     True
     >>> (Token.Name, 'pyproject.toml') in tokens
@@ -65,7 +69,10 @@ class DirectoryTreeLexer(RegexLexer):
 
         Examples
         --------
-        >>> DirectoryTreeLexer.analyse_text("root\\n└── pyproject.toml\\n")
+        >>> DirectoryTreeLexer.analyse_text('''\
+        ... root
+        ... └── pyproject.toml
+        ... ''')
         0.7
         >>> DirectoryTreeLexer.analyse_text("plain text")
         0.0
