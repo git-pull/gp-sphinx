@@ -37,11 +37,18 @@ Author diagrams as MyST fences:
 ````markdown
 :::{mermaid}
 :caption: How it flows.
+:alt: a request flowing through two steps
+:name: request-flow
+:responsive: fit
 
 flowchart LR
     a --> b
 :::
 ````
+
+`fit` is the default responsive policy: the rendered SVG scales down to the
+content column. Use `:responsive: preserve` when a dense diagram should keep
+its intrinsic width and scroll horizontally instead of shrinking labels.
 
 ## Renderer toolchain
 

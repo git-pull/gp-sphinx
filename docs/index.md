@@ -115,6 +115,10 @@ GitHub <https://github.com/git-pull/gp-sphinx>
 :caption: Theme & coordinator
 ```
 
+```{cluster-toctree} highlighting
+:caption: Highlighting
+```
+
 ```{cluster-toctree} build-seo
 :caption: Build & SEO
 ```

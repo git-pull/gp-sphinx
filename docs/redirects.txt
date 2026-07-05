@@ -2,6 +2,7 @@ extensions/sphinx-gp-opengraph packages/sphinx-gp-opengraph
 extensions/sphinx-gp-sitemap packages/sphinx-gp-sitemap
 extensions/sphinx-gp-llms packages/sphinx-gp-llms
 extensions/sphinx-gp-mermaid packages/sphinx-gp-mermaid
+extensions/sphinx-gp-highlighting packages/sphinx-gp-highlighting
 extensions/gp-sphinx packages/gp-sphinx
 extensions/index packages/index
 extensions/sphinx-autodoc-argparse packages/sphinx-autodoc-argparse

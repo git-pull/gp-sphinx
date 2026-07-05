@@ -20,6 +20,12 @@ The rendering pipeline every autodoc extension consumes, plus shared page primit
 - [`sphinx-fonts`](sphinx-fonts/index.md) — IBM Plex font preloading
 - [`sphinx-gp-mermaid`](sphinx-gp-mermaid/index.md) — build-time mermaid diagrams as dual-theme inline SVG
 
+## Code highlighting
+
+Pygments lexers and inline literal helpers for code-heavy documentation:
+
+- [`sphinx-gp-highlighting`](sphinx-gp-highlighting/index.md) — directory-tree code blocks and inline command/path highlighting
+
 ## Autodoc extensions
 
 Domain-specific [autodoc extensions](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html) — each adds directives that generate documentation from a particular source-construct family (Python APIs, argparse parsers, pytest fixtures, etc.):

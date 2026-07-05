@@ -96,6 +96,8 @@ _INDEX_MD = textwrap.dedent(
     :caption: How it flows.
     :alt: a to b
     :name: flow-diagram
+    :class: event-flow
+    :responsive: preserve
 
     flowchart TD
         a --> b
@@ -141,7 +143,7 @@ def test_build_does_not_degrade(
 
 def test_both_fence_spellings_render_figures(mermaid_html: str) -> None:
     """The plain ```mermaid fence and :::{mermaid} both produce figures."""
-    assert mermaid_html.count('<figure class="gp-sphinx-mermaid"') == 2
+    assert mermaid_html.count("gp-sphinx-mermaid__variant--theme-light") == 2
 
 
 def test_dual_variants_carry_theme_fills(mermaid_html: str) -> None:
@@ -168,7 +170,19 @@ def test_caption_alt_and_name_flow_through(mermaid_html: str) -> None:
     assert "<figcaption>How it flows.</figcaption>" in mermaid_html
     assert 'aria-label="a to b"' in mermaid_html
     assert 'id="flow-diagram"' in mermaid_html
+    assert (
+        'class="event-flow gp-sphinx-mermaid gp-sphinx-mermaid--preserve"'
+        in mermaid_html
+    )
     assert mermaid_html.count('aria-hidden="true"') == 2
+
+
+def test_responsive_policy_markup_flows_through(mermaid_html: str) -> None:
+    """Each rendered figure carries responsive mode classes and metadata."""
+    assert mermaid_html.count('data-mermaid-responsive="fit"') == 1
+    assert mermaid_html.count('data-mermaid-responsive="preserve"') == 1
+    assert 'data-mermaid-width="200"' in mermaid_html
+    assert 'data-mermaid-height="80"' in mermaid_html
 
 
 def test_stylesheet_ships_with_the_package(
@@ -196,7 +210,10 @@ def test_figure_markup_snapshot(
 ) -> None:
     """The named figure's full markup is stable across runs."""
     match = re.search(
-        r'<figure class="gp-sphinx-mermaid" id="flow-diagram">.*?</figure>',
+        (
+            r'<figure class="event-flow gp-sphinx-mermaid '
+            r'gp-sphinx-mermaid--preserve" .*?id="flow-diagram">.*?</figure>'
+        ),
         mermaid_html,
         flags=re.DOTALL,
     )

@@ -235,7 +235,49 @@ def _make_translator(tmp_path: pathlib.Path) -> types.SimpleNamespace:
     )
     app = types.SimpleNamespace(confdir=str(tmp_path), config=config)
     builder = types.SimpleNamespace(app=app)
-    return types.SimpleNamespace(builder=builder, body=[])
+
+    def attval(value: str) -> str:
+        return (
+            value.replace("&", "&amp;")
+            .replace('"', "&quot;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+        )
+
+    def starttag(
+        node: nodes.Element,
+        tagname: str,
+        suffix: str = "\n",
+        empty: bool = False,
+        **attributes: object,
+    ) -> str:
+        atts = {name.lower(): value for name, value in attributes.items()}
+        node_classes = t.cast("list[str]", node.get("classes", []))
+        classes = [str(c) for c in node_classes]
+        extra_classes = t.cast("str", atts.pop("class", ""))
+        classes.extend(extra_classes.split())
+        if classes:
+            atts["class"] = " ".join(classes)
+        ids = list(t.cast("list[str]", node.get("ids", [])))
+        if ids:
+            atts["id"] = ids[0]
+        infix = " /" if empty else ""
+        rendered = "".join(
+            f' {name}="{attval(str(value))}"' for name, value in sorted(atts.items())
+        )
+        return f"<{tagname}{rendered}{infix}>{suffix}"
+
+    return types.SimpleNamespace(builder=builder, body=[], starttag=starttag)
+
+
+def test_responsive_option_accepts_fit_and_preserve() -> None:
+    """The directive exposes the two supported responsive policies."""
+    converter = sgm.MermaidDirective.option_spec["responsive"]
+
+    assert converter("fit") == "fit"
+    assert converter("preserve") == "preserve"
+    with pytest.raises(ValueError):
+        converter("auto")
 
 
 def test_visitor_emits_dual_themed_svg(
@@ -267,6 +309,34 @@ def test_visitor_emits_dual_themed_svg(
     assert "my-svg" not in html
     # Both variants normalized to identical geometry -> shift-free toggle.
     assert html.count('viewBox="0 0 200 80"') == 2
+
+
+def test_visitor_emits_responsive_policy_markup(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: pathlib.Path,
+) -> None:
+    """Responsive policy, dimensions, and author classes reach the figure."""
+    monkeypatch.setattr(
+        sgm,
+        "_render_cached",
+        lambda app, source, theme: _FAKE_MMDC_SVG,
+    )
+    translator = _make_translator(tmp_path)
+    node = sgm.mermaid_inline()
+    node["mermaid_source"] = "flowchart LR a-->b"
+    node["caption"] = ""
+    node["alt"] = ""
+    node["responsive"] = "preserve"
+    node["classes"] = ["wide-flow"]
+
+    with pytest.raises(nodes.SkipNode):
+        sgm.html_visit_mermaid_inline(t.cast("t.Any", translator), node)
+
+    html = "".join(translator.body)
+    assert 'class="wide-flow gp-sphinx-mermaid gp-sphinx-mermaid--preserve"' in html
+    assert 'data-mermaid-responsive="preserve"' in html
+    assert 'data-mermaid-width="200"' in html
+    assert 'data-mermaid-height="80"' in html
 
 
 class DuplicateDiagramCase(t.NamedTuple):

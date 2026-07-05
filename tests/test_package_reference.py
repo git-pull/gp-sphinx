@@ -24,6 +24,7 @@ def test_workspace_packages_lists_publishable_packages() -> None:
         "sphinx-gp-sitemap",
         "sphinx-gp-llms",
         "sphinx-gp-mermaid",
+        "sphinx-gp-highlighting",
         "gp-sphinx",
         "sphinx-autodoc-argparse",
         "sphinx-autodoc-api-style",

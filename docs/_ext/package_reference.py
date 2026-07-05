@@ -202,6 +202,7 @@ _CLUSTER_FOR_NAME: dict[str, str] = {
     "sphinx-ux-badges": "ux",
     "sphinx-ux-autodoc-layout": "ux",
     "sphinx-gp-mermaid": "ux",
+    "sphinx-gp-highlighting": "highlighting",
     "sphinx-vite-builder": "build-seo",
     "sphinx-gp-opengraph": "build-seo",
     "sphinx-gp-sitemap": "build-seo",
@@ -944,6 +945,11 @@ _CLUSTER_HEADINGS: tuple[tuple[str, str, str], ...] = (
         "UX components",
         "Badge primitives, layout presenters, and other shared "
         "rendering helpers consumed by the autodoc family.",
+    ),
+    (
+        "highlighting",
+        "Highlighting",
+        "Pygments lexers and inline literal helpers for code-heavy docs.",
     ),
     (
         "build-seo",

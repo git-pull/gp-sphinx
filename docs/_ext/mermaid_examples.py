@@ -56,7 +56,9 @@ def _figure_markup(light: str, dark: str, *, alt: str) -> str:
     ``body[data-theme]`` rules toggle the committed variants with no script.
 
     >>> markup = _figure_markup("<svg/>", "<svg/>", alt="A flow")
-    >>> 'class="gp-sphinx-mermaid"' in markup
+    >>> 'class="gp-sphinx-mermaid gp-sphinx-mermaid--fit"' in markup
+    True
+    >>> 'data-mermaid-responsive="fit"' in markup
     True
     >>> markup.count("gp-sphinx-mermaid__variant--theme-")
     2
@@ -68,7 +70,10 @@ def _figure_markup(light: str, dark: str, *, alt: str) -> str:
     aria = f' aria-label="{html.escape(alt, quote=True)}"'
     return "".join(
         [
-            '<figure class="gp-sphinx-mermaid">',
+            (
+                '<figure class="gp-sphinx-mermaid gp-sphinx-mermaid--fit" '
+                'data-mermaid-responsive="fit">'
+            ),
             (
                 '<div class="gp-sphinx-mermaid__variant '
                 f'gp-sphinx-mermaid__variant--theme-light" role="img"{aria}>'
