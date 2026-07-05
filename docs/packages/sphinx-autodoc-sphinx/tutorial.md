@@ -2,7 +2,7 @@
 
 # Tutorial
 
-## Working usage examples
+## Document a Sphinx extension surface
 
 Render one config value:
 
@@ -45,6 +45,6 @@ Builders and domains follow the same single/bulk pattern:
 ````
 
 Bulk forms accept either an extension package (its `setup()` is
-replayed so `app.add_builder()` / `app.add_domain()` registrations
-surface) or a plain module (scanned for `Builder` / `Domain`
-subclasses).
+replayed so {py:meth}`~sphinx.application.Sphinx.add_builder` and
+{py:meth}`~sphinx.application.Sphinx.add_domain` registrations surface) or a
+plain module (scanned for `Builder` / `Domain` subclasses).

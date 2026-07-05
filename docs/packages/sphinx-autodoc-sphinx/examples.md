@@ -34,7 +34,8 @@ and parallel-safety:
 
 ### Bulk builders demo
 
-Renders every builder a module registers via `setup()`:
+Renders every builder a module registers via
+{py:func}`sphinx_demo_builder.setup`:
 
 ```{eval-rst}
 .. autobuilders:: sphinx_demo_builder
@@ -52,8 +53,9 @@ indices:
 
 ### Bulk domains demo
 
-The bulk form replays a package's `setup()` — here documenting the
-`docutils` domain that `sphinx-autodoc-docutils` itself registers:
+The bulk form replays a package's
+{py:func}`sphinx_autodoc_docutils.setup` — here documenting the `docutils`
+domain that `sphinx-autodoc-docutils` itself registers:
 
 ```{eval-rst}
 .. autodomains:: sphinx_autodoc_docutils

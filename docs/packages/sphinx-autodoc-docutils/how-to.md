@@ -2,6 +2,10 @@
 
 # How to
 
+Use this extension when your docs extension exposes docutils directives,
+roles, nodes, readers, parsers, writers, translators, or transforms that
+deserve generated reference pages and cross-reference targets.
+
 ## Downstream `conf.py`
 
 ```python
@@ -9,8 +13,9 @@ extensions = ["sphinx_autodoc_docutils"]
 ```
 
 `sphinx_autodoc_docutils` automatically registers `sphinx_ux_badges`,
-`sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via `app.setup_extension()`.
-You do not need to add them separately to your `extensions` list.
+`sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via
+{py:meth}`~sphinx.application.Sphinx.setup_extension`. You do not need to add
+them separately to your `extensions` list.
 
 ## Cross-reference documented components
 

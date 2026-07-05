@@ -13,7 +13,7 @@ the URL input the extension needs:
 | --- | --- |
 | `site_url` | `docs_url`, normalized to end in `/` |
 
-When `site_url` is unset, the extension logs at INFO and skips all
+When {confval}`site_url` is unset, the extension logs at INFO and skips all
 output — no broken builds.
 
 ## Output formats
@@ -27,7 +27,7 @@ the site's content:
 
 - **H1** — project name
 - **Blockquote** — first paragraph of the root document
-- **H2 sections** — one per `{toctree}` directive with a `:caption:`
+- **H2 sections** — one per {rst:dir}`sphinx:toctree` directive with a `:caption:`
   option; pages not in any captioned toctree fall into a
   "Documentation" section
 - **Bulleted links** — `[Page Title](full URL): first-paragraph
@@ -64,7 +64,8 @@ Vercel). Every HTML page at `/path/page.html` gets a sibling at
 ## How the outputs are built
 
 All output files are generated at `build-finished` in the main
-process, iterating `app.env.found_docs` (the env-merged set of all
+process, iterating {py:attr}`~sphinx.environment.BuildEnvironment.found_docs`
+(the env-merged set of all
 documented files). This means:
 
 - **Incremental builds** produce complete output — no pages are
@@ -95,7 +96,7 @@ When the extension is loaded and `site_url` is configured, the
 page footer's "Machine-readable" line includes links to Markdown
 (per-page `.md` twin), raw source (GitHub), docs.json, llms.txt,
 and llms-full.txt. Each link appears only when its corresponding
-output is enabled — disabling `llms_generate_json` removes the
+output is enabled — disabling {confval}`llms_generate_json` removes the
 docs.json link from the footer.
 
 The footer renders LLM links independently of `source_repository`,

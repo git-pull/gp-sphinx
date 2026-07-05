@@ -2,7 +2,7 @@
 
 # Tutorial
 
-## Working usage examples
+## Add static type rendering
 
 Add `sphinx_autodoc_typehints_gp` to your `extensions` list in `conf.py`:
 

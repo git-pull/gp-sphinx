@@ -4,10 +4,32 @@
 
 ## Cross-reference roles
 
-Every `.. argparse::` block populates a dedicated `argparse` domain
+Every {ref}`argparse directive <base-argparse-directive>` block populates a dedicated `argparse` domain
 alongside the existing `std:cmdoption` entries.  Use these roles to
 link to programs, options, subcommands, and positional arguments
 declared anywhere in the project:
+
+## Directive and role reference
+
+(base-argparse-directive)=
+
+### Base `argparse` directive
+
+```{eval-rst}
+.. autodirective:: sphinx_autodoc_argparse.directive.ArgparseDirective
+```
+
+### Exemplar override
+
+```{eval-rst}
+.. autodirective:: sphinx_autodoc_argparse.exemplar.CleanArgParseDirective
+```
+
+### CLI role callables
+
+```{eval-rst}
+.. autoroles:: sphinx_autodoc_argparse.roles
+```
 
 | Role | Resolves to | Example |
 |------|-------------|---------|

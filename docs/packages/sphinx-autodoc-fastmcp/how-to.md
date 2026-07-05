@@ -2,6 +2,10 @@
 
 # How to
 
+Use this extension when a FastMCP server should document its tools,
+resources, prompts, generated schemas, safety metadata, and cross-reference
+badges from live registration data.
+
 ## Downstream `conf.py`
 
 ```python
@@ -22,12 +26,13 @@ fastmcp_server_module = "my_project.server:mcp"
 ```
 
 `sphinx_autodoc_fastmcp` automatically registers `sphinx_ux_badges`,
-`sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via `app.setup_extension()`.
-You do not need to add them separately to your `extensions` list.
+`sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via
+{py:meth}`~sphinx.application.Sphinx.setup_extension`. You do not need to add
+them separately to your `extensions` list.
 
-## `fastmcp_server_module`
+## Live server collection
 
-Pointing the collector at a live FastMCP instance enables autodoc of
+Pointing {confval}`fastmcp_server_module` at a live FastMCP instance enables autodoc of
 **prompts**, **resources**, and **resource templates** — see the four new
 directives below. The collector accepts either:
 

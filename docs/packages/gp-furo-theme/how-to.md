@@ -2,6 +2,10 @@
 
 # How to
 
+Use `gp-furo-theme` when you want the git-pull Tailwind port of [Furo]
+directly, outside the coordinator defaults that {doc}`/packages/gp-sphinx/index`
+supplies.
+
 ## Downstream `conf.py`
 
 ```python
@@ -74,8 +78,6 @@ replicate.
 
 ```{package-reference} gp-furo-theme
 ```
-
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-furo-theme)
 
 [Furo]: https://github.com/pradyunsg/furo
 [Vite]: https://vitejs.dev

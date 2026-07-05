@@ -2,9 +2,9 @@
 
 # What's new
 
-The `autodoc-improvements` branch introduces a unified **autodoc design
-system** — eight major advancements that transform how the documentation
-stack works.  See the {doc}`gallery` for a visual showcase.
+gp-sphinx includes a unified **autodoc design system**: eight major
+advancements that shape how the documentation stack works. See the
+{doc}`gallery` for a visual showcase.
 
 ## New packages
 
@@ -41,7 +41,7 @@ consistently.
 ## argparse Sphinx domain
 
 {doc}`sphinx-autodoc-argparse <packages/sphinx-autodoc-argparse/index>` now
-ships a real Sphinx `Domain` subclass.  Programs, options, subcommands,
+ships a real {py:class}`sphinx.domains.Domain` subclass.  Programs, options, subcommands,
 and positional arguments are individually addressable via
 `:argparse:program:`, `:argparse:option:`, `:argparse:subcommand:`, and
 `:argparse:positional:` xref roles.  Two auto-generated indices —

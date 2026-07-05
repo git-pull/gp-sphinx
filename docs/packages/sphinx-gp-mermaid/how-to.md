@@ -15,7 +15,7 @@ flowchart LR
 :::
 ```
 
-`:caption:`, `:alt:`, and `:name:` are the directive's options; `:name:` gives the figure a cross-reference target. When you build through {py:func}`~gp_sphinx.config.merge_sphinx_config` with the extension in `extra_extensions`, plain `mermaid` fences route to the same directive automatically (it sets `myst_fence_as_directive = ["mermaid"]`).
+`:caption:`, `:alt:`, and `:name:` are the directive's options; `:name:` gives the figure a cross-reference target. When you build through {py:func}`~gp_sphinx.config.merge_sphinx_config` with the extension in `extra_extensions`, plain {rst:dir}`mermaid` fences route to the same directive automatically (it sets `myst_fence_as_directive = ["mermaid"]`).
 
 See {ref}`sphinx-gp-mermaid-reference` for the full option and config list.
 
@@ -27,9 +27,9 @@ Rendering shells out to [`mmdc`](https://github.com/mermaid-js/mermaid-cli), so 
 $ pnpm add -D @mermaid-js/mermaid-cli
 ```
 
-The extension finds `mmdc` from the `mermaid_cmd` config value, then `<confdir>/node_modules/.bin/mmdc`, then `PATH`. `mmdc` drives a headless Chrome through puppeteer — build-time rendering costs a Node and Chrome toolchain in CI, which consumers of your published docs never pay.
+The extension finds `mmdc` from the {confval}`mermaid_cmd` config value, then `<confdir>/node_modules/.bin/mmdc`, then `PATH`. `mmdc` drives a headless Chrome through puppeteer — build-time rendering costs a Node and Chrome toolchain in CI, which consumers of your published docs never pay.
 
-In a container, set `PUPPETEER_EXECUTABLE_PATH` to your Chrome (the generated puppeteer config keeps the `--no-sandbox` args), or point `mermaid_puppeteer_config` at your own config file.
+In a container, set `PUPPETEER_EXECUTABLE_PATH` to your Chrome (the generated puppeteer config keeps the `--no-sandbox` args), or point {confval}`mermaid_puppeteer_config` at your own config file.
 
 ## How rendering behaves
 

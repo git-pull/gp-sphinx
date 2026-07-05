@@ -2,26 +2,14 @@
 
 # How to
 
-## Registered directives and roles
+Use this extension when a project needs rendered `argparse` programs,
+options, choices, and role links from the same parser object that powers
+its CLI.
 
-### Base `argparse` directive
+## Find registered directives and roles
 
-```{eval-rst}
-.. autodirective:: sphinx_autodoc_argparse.directive.ArgparseDirective
-   :no-index:
-```
-
-### Exemplar override
-
-```{eval-rst}
-.. autodirective:: sphinx_autodoc_argparse.exemplar.CleanArgParseDirective
-```
-
-### CLI role callables
-
-```{eval-rst}
-.. autoroles:: sphinx_autodoc_argparse.roles
-```
+The {doc}`reference` page lists the directive classes, options, and CLI role
+callables registered by the extension.
 
 ## Downstream usage snippets
 
@@ -46,5 +34,3 @@ Or reStructuredText:
 
 ```{package-reference} sphinx-autodoc-argparse
 ```
-
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-argparse) · [PyPI](https://pypi.org/project/sphinx-autodoc-argparse/)

@@ -9,8 +9,9 @@ at 500. Consumes the `api_slot` nodes that producer packages inject into
 `desc_signature` during earlier transforms, and composes them into the final
 `gp-sphinx-api-layout-right` subcomponent (badges, source link, permalink).
 
-The extension also overrides Sphinx's built-in `desc_signature` HTML visitor
-(`app.add_node(addnodes.desc_signature, override=True, ...)`). This is a
+The extension also overrides Sphinx's built-in
+{py:class}`~sphinx.addnodes.desc_signature` HTML visitor with
+{py:meth}`~sphinx.application.Sphinx.add_node`. This is a
 deliberate platform decision: taking ownership of signature rendering allows
 the `gp-sphinx-api-link` permalink to be placed inside the managed layout rather than
 appended by Sphinx's default handler.
@@ -36,25 +37,21 @@ conf = merge_sphinx_config(
 )
 ```
 
-Or without `merge_sphinx_config`:
+Or without {py:func}`~gp_sphinx.config.merge_sphinx_config`:
 
 ```python
 extensions = ["sphinx.ext.autodoc", "sphinx_ux_autodoc_layout"]
 api_layout_enabled = True
 ```
 
-## Configuration
+## Find configuration values
 
-Generated from `app.add_config_value()` registrations in
-[`sphinx_ux_autodoc_layout/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-ux-autodoc-layout/src/sphinx_ux_autodoc_layout/__init__.py).
-
-```{eval-rst}
-.. autoconfigvalues:: sphinx_ux_autodoc_layout
-```
+The {doc}`reference` page lists the configuration values registered by the
+extension.
 
 ## Shared helper surface
 
-- `build_api_card_entry()` builds the shared inner `api-*` shell for
-  section-card consumers such as FastMCP.
-- `build_api_summary_section()` wraps summary and index tables in the shared
-  `gp-sphinx-api-summary` region.
+- {py:func}`~sphinx_ux_autodoc_layout.build_api_card_entry` builds the shared
+  inner `gp-sphinx-api-*` shell for section-card consumers such as FastMCP.
+- {py:func}`~sphinx_ux_autodoc_layout.build_api_summary_section` wraps summary
+  and index tables in the shared `gp-sphinx-api-summary` region.

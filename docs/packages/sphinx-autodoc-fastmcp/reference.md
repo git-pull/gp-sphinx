@@ -4,7 +4,8 @@
 
 ## Config reference
 
-Generated from `app.add_config_value()` registrations in
+Generated from {py:meth}`~sphinx.application.Sphinx.add_config_value`
+registrations in
 [`sphinx_autodoc_fastmcp/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-fastmcp/src/sphinx_autodoc_fastmcp/__init__.py).
 
 ```{eval-rst}
@@ -13,9 +14,10 @@ Generated from `app.add_config_value()` registrations in
 
 ## Directive and role reference
 
-Generated from `app.add_directive()` and `app.add_role()` registrations in
+Generated from {py:meth}`~sphinx.application.Sphinx.add_directive` and
+{py:meth}`~sphinx.application.Sphinx.add_role` registrations in
 [`sphinx_autodoc_fastmcp/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-fastmcp/src/sphinx_autodoc_fastmcp/__init__.py)
-via `sphinx-autodoc-docutils`.
+via {doc}`/packages/sphinx-autodoc-docutils/index`.
 
 ```{eval-rst}
 .. autodirectives:: sphinx_autodoc_fastmcp

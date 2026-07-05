@@ -2,11 +2,12 @@
 
 # Tutorial
 
-## Working usage examples
+## Build your first badge toolbar
 
-`setup()` registers the extension with Sphinx:
+{py:func}`sphinx_ux_badges.setup` registers the extension with Sphinx:
 
-1. {py:meth}`~sphinx.application.Sphinx.add_node` registers `BadgeNode` with
+1. {py:meth}`~sphinx.application.Sphinx.add_node` registers
+   {py:class}`~sphinx_ux_badges.BadgeNode` with
    HTML visitors (`visit_badge_html` / `depart_badge_html`).
 2. {py:meth}`~sphinx.application.Sphinx.add_css_file` injects the shared
    `sphinx_ux_badges.css` stylesheet.
@@ -19,7 +20,8 @@ def setup(app: Sphinx) -> dict[str, Any]:
     app.setup_extension("sphinx_ux_badges")
 ```
 
-`BadgeNode` subclasses {py:class}`docutils.nodes.inline`, so unregistered
+{py:class}`~sphinx_ux_badges.BadgeNode` subclasses
+{py:class}`docutils.nodes.inline`, so unregistered
 builders (text, LaTeX, man) fall back to `visit_inline` via Sphinx's
 MRO-based dispatch — no special handling needed.
 

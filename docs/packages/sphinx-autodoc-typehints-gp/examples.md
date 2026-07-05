@@ -50,8 +50,9 @@ render unchanged.
 .. autodata:: api_demo_typehints_gp.LONG_DEFAULT_RULES
 ```
 
-What to look for: `SHORT_DEFAULT` shows `'admin'` directly;
-`LONG_DEFAULT_RULES` shows `<...truncated, N chars>` instead of the
+What to look for: {py:data}`~api_demo_typehints_gp.SHORT_DEFAULT` shows
+`'admin'` directly; {py:data}`~api_demo_typehints_gp.LONG_DEFAULT_RULES`
+shows `<...truncated, N chars>` instead of the
 20-tuple list blob.
 
 ## Cross-referenced default values
@@ -92,7 +93,7 @@ return types, and raises exception names all match. The whole
 `<span class="gp-sphinx-field-prefix">` so a single CSS rule renders
 the prefix in monospace; `Returns` prose stays in body font.
 
-The `open_session` autodoc above already demonstrates this — its
+The {py:func}`~api_demo_typehints_gp.open_session` autodoc above already demonstrates this — its
 `Parameters`, `Return`, and `Raises` sections each render the
 canonical shape on every Python identifier reference.
 

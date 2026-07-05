@@ -6,8 +6,8 @@ organized by family. Each package has its own page; the
 set as the workspace evolves.
 
 [`gp-sphinx`](gp-sphinx/index.md) is the umbrella entry point — its
-`merge_sphinx_config()` wires up the full stack for downstream
-projects in ~10 lines of `conf.py`. Every other package is opt-in
+{py:func}`~gp_sphinx.config.merge_sphinx_config` wires up the full stack for
+downstream projects in ~10 lines of `conf.py`. Every other package is opt-in
 and independently installable.
 
 ## Common libraries
@@ -41,7 +41,8 @@ Domain-specific [autodoc extensions](https://www.sphinx-doc.org/en/master/usage/
 
 Shared Sphinx configuration and presentation assets:
 
-- [`gp-sphinx`](gp-sphinx/index.md) — umbrella coordinator (`merge_sphinx_config()`)
+- [`gp-sphinx`](gp-sphinx/index.md) — umbrella coordinator
+  ({py:func}`~gp_sphinx.config.merge_sphinx_config`)
 - [`sphinx-gp-theme`](sphinx-gp-theme/index.md) — Furo child theme with the gp-sphinx default palette
 - [`gp-furo-theme`](gp-furo-theme/index.md) — Tailwind v4 port of upstream Furo for git-pull projects
 

@@ -22,7 +22,8 @@ The rendering pipeline that every autodoc extension consumes:
 :link-type: doc
 
 Badge primitives, colour palette, and CSS infrastructure.
-All badge colours live in one place (`SAB.*` constants).
+All badge colours live in one place
+({py:class}`~sphinx_ux_badges._css.SAB` constants).
 :::
 
 :::{grid-item-card} sphinx-ux-autodoc-layout
@@ -58,7 +59,8 @@ source-construct family:
 :link-type: doc
 
 **Subject**: standard Python.
-**Directives**: `autofunction`, `autoclass`, `automodule`.
+**Directives**: {rst:dir}`sphinx:autofunction`,
+{rst:dir}`sphinx:autoclass`, {rst:dir}`sphinx:automodule`.
 :::
 
 :::{grid-item-card} sphinx-autodoc-argparse
@@ -66,7 +68,8 @@ source-construct family:
 :link-type: doc
 
 **Subject**: argparse parsers — programs, options, subcommands, positionals.
-**Directives**: `argparse` (custom `argparse` domain).
+**Directives**: {ref}`argparse <base-argparse-directive>` (custom
+`argparse` domain).
 :::
 
 :::{grid-item-card} sphinx-autodoc-docutils
@@ -74,7 +77,7 @@ source-construct family:
 :link-type: doc
 
 **Subject**: docutils directives and roles.
-**Directives**: `autodirective`, `autorole`.
+**Directives**: {rst:dir}`autodirective`, {rst:dir}`autorole`.
 :::
 
 :::{grid-item-card} sphinx-autodoc-fastmcp
@@ -82,7 +85,7 @@ source-construct family:
 :link-type: doc
 
 **Subject**: FastMCP tools, prompts, resources.
-**Directives**: `fastmcp-tool`, `fastmcp-tool-summary`.
+**Directives**: {rst:dir}`fastmcp-tool`, {rst:dir}`fastmcp-tool-summary`.
 :::
 
 :::{grid-item-card} sphinx-autodoc-pytest-fixtures
@@ -90,7 +93,8 @@ source-construct family:
 :link-type: doc
 
 **Subject**: pytest fixtures (extends the `py` domain).
-**Directives**: `autofixture`, `autofixtures`, `auto-pytest-plugin`.
+**Directives**: fixture documenter, {rst:dir}`autofixtures`,
+{rst:dir}`auto-pytest-plugin`.
 :::
 
 :::{grid-item-card} sphinx-autodoc-sphinx
@@ -98,20 +102,21 @@ source-construct family:
 :link-type: doc
 
 **Subject**: Sphinx config values.
-**Directives**: `autoconfigvalue`, `autoconfigvalues`.
+**Directives**: {rst:dir}`autoconfigvalue`, {rst:dir}`autoconfigvalues`.
 :::
 
 ::::
 
-Each autodoc extension calls `app.setup_extension()` to auto-register its
-infrastructure dependencies — downstream projects only need to add the
-package to their `extensions` list.
+Each autodoc extension calls
+{py:meth}`~sphinx.application.Sphinx.setup_extension` to auto-register its
+infrastructure dependencies — downstream projects only need to add the package
+to their `extensions` list.
 
 ## Tier 3: Theme and coordinator
 
 | Package | Role |
 |---------|------|
-| {doc}`gp-sphinx <packages/gp-sphinx/index>` | Coordinator.  `merge_sphinx_config()` wires up the full stack. |
+| {doc}`gp-sphinx <packages/gp-sphinx/index>` | Coordinator. {py:func}`~gp_sphinx.config.merge_sphinx_config` wires up the full stack. |
 | {doc}`sphinx-gp-theme <packages/sphinx-gp-theme/index>` | Furo-based theme with CSS variables and SPA navigation. |
 | {doc}`gp-furo-theme <packages/gp-furo-theme/index>` | Tailwind v4 port of upstream Furo for git-pull projects. |
 | {doc}`sphinx-fonts <packages/sphinx-fonts/index>` | IBM Plex via Fontsource — preloaded web fonts. |

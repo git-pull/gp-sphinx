@@ -2,6 +2,10 @@
 
 # How to
 
+Use `sphinx-gp-theme` when a site wants the git-pull Furo layer directly:
+project metadata, source links, app icons, sidebar project navigation, and
+the shared static assets.
+
 ## Downstream `conf.py`
 
 ```python
@@ -66,11 +70,9 @@ Options declared in `theme.conf` and accepted through `html_theme_options`:
 
 ## Relationship to gp-sphinx
 
-`gp-sphinx` sets this theme automatically via {py:func}`~gp_sphinx.config.merge_sphinx_config` and
+{doc}`/packages/gp-sphinx/index` sets this theme automatically via {py:func}`~gp_sphinx.config.merge_sphinx_config` and
 pre-populates `source_repository`, `source_branch`, `source_directory`, footer
 icons, and the IBM Plex font stacks consumed by the theme templates.
 
 ```{package-reference} sphinx-gp-theme
 ```
-
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-theme) · [PyPI](https://pypi.org/project/sphinx-gp-theme/)

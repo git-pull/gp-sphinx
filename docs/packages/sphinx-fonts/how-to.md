@@ -2,6 +2,10 @@
 
 # How to
 
+Use this extension when a Sphinx theme should download Fontsource packages,
+emit `@font-face` declarations, preload selected font files, and expose
+font stacks to templates.
+
 ## Downstream `conf.py`
 
 ```python
@@ -60,9 +64,7 @@ The extension injects these values during `html-page-context`:
 
 - Fonts are cached under `~/.cache/sphinx-fonts`.
 - Non-HTML builders return early and do not download assets.
-- `sphinx-gp-theme` consumes this template context automatically; `gp-sphinx` preconfigures IBM Plex defaults for it.
+- {doc}`/packages/sphinx-gp-theme/index` consumes this template context automatically; {doc}`/packages/gp-sphinx/index` preconfigures IBM Plex defaults for it.
 
 ```{package-reference} sphinx-fonts
 ```
-
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-fonts) · [PyPI](https://pypi.org/project/sphinx-fonts/)

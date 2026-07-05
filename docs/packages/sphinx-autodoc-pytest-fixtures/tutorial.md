@@ -2,7 +2,7 @@
 
 # Tutorial
 
-## Working usage examples
+## Document a plugin page
 
 Render a standard pytest plugin page:
 

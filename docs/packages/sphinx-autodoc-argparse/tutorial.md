@@ -2,7 +2,10 @@
 
 # Tutorial
 
-## Working usage examples
+## Document your first parser
+
+Start by loading the base parser extension and the exemplar layer. The exemplar
+layer gives you the cleaner directive and roles used across the gp-sphinx docs:
 
 ```python
 extensions = [
