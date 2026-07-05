@@ -17,8 +17,35 @@ _BASE_CLASS = "gp-sphinx-highlighting-inline"
 _COMMAND_LANGUAGE = "bash"
 _SHELL_SESSION_LANGUAGE = "console"
 _SHELL_SESSION_RE = re.compile(r"^\$ \S")
-_PATH_RE = re.compile(r"^(?:~|/|\.{1,2}/)[^\s`]+$")
-_PATH_WITH_SEPARATOR_RE = re.compile(r"^(?:[\w.-]+/)+[\w.-]+/?$")
+_HOME_OR_DOT_PATH_RE = re.compile(r"^(?:~|\.{1,2}/)[^\s`]*$")
+_WINDOWS_PATH_RE = re.compile(r"^[A-Za-z]:[\\/][^\s`]+$")
+_RELATIVE_DIR_RE = re.compile(r"^(?:[\w.-]+/)+$")
+_RELATIVE_FILE_RE = re.compile(r"^(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9][\w.-]*$")
+_ABSOLUTE_PATH_ROOTS = frozenset(
+    {
+        "Applications",
+        "Library",
+        "Users",
+        "bin",
+        "dev",
+        "etc",
+        "home",
+        "lib",
+        "lib64",
+        "mnt",
+        "opt",
+        "proc",
+        "root",
+        "run",
+        "sbin",
+        "srv",
+        "sys",
+        "tmp",
+        "usr",
+        "var",
+        "Volumes",
+    }
+)
 
 
 def classify_inline_literal(
@@ -262,8 +289,57 @@ class HighlightingInlineTransform(Transform):
 
 
 def _is_path_like(text: str) -> bool:
-    """Return whether ``text`` looks like a filesystem path."""
-    return bool(_PATH_RE.match(text) or _PATH_WITH_SEPARATOR_RE.match(text))
+    """Return whether ``text`` looks like a filesystem path.
+
+    Examples
+    --------
+    >>> _is_path_like("~/.config/tmuxp/")
+    True
+    >>> _is_path_like("/mnt/c/Users/example")
+    True
+    >>> _is_path_like("application/json")
+    False
+    """
+    return bool(
+        _HOME_OR_DOT_PATH_RE.match(text)
+        or _WINDOWS_PATH_RE.match(text)
+        or _is_absolute_filesystem_path(text)
+        or _is_relative_filesystem_path(text)
+    )
+
+
+def _is_absolute_filesystem_path(text: str) -> bool:
+    """Return whether ``text`` starts with a common absolute path root.
+
+    Examples
+    --------
+    >>> _is_absolute_filesystem_path("/proc/version")
+    True
+    >>> _is_absolute_filesystem_path("/api/pull")
+    False
+    """
+    if not text.startswith("/"):
+        return False
+    first_component = text.removeprefix("/").split("/", maxsplit=1)[0]
+    return first_component in _ABSOLUTE_PATH_ROOTS
+
+
+def _is_relative_filesystem_path(text: str) -> bool:
+    """Return whether ``text`` is a conservative bare relative path.
+
+    Examples
+    --------
+    >>> _is_relative_filesystem_path("docs/conf.py")
+    True
+    >>> _is_relative_filesystem_path("resources/read")
+    False
+    """
+    if text.startswith(("/", "~", "./", "../")):
+        return False
+    first_component = text.split("/", maxsplit=1)[0]
+    if "." in first_component and not first_component.startswith("."):
+        return False
+    return bool(_RELATIVE_DIR_RE.match(text) or _RELATIVE_FILE_RE.match(text))
 
 
 def _should_skip_literal(node: nodes.literal) -> bool:

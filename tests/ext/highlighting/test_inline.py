@@ -62,6 +62,36 @@ _INLINE_CLASSIFICATION_FIXTURES: list[InlineClassificationFixture] = [
         expected="dir",
     ),
     InlineClassificationFixture(
+        test_id="wsl_absolute_path",
+        text="/mnt/c/Users/example/AppData/Roaming",
+        commands=(),
+        expected="path",
+    ),
+    InlineClassificationFixture(
+        test_id="mime_type",
+        text="application/json",
+        commands=(),
+        expected=None,
+    ),
+    InlineClassificationFixture(
+        test_id="mcp_method",
+        text="resources/read",
+        commands=(),
+        expected=None,
+    ),
+    InlineClassificationFixture(
+        test_id="cli_option_pair",
+        text="-0/--print0",
+        commands=(),
+        expected=None,
+    ),
+    InlineClassificationFixture(
+        test_id="http_api_endpoint",
+        text="/api/pull",
+        commands=(),
+        expected=None,
+    ),
+    InlineClassificationFixture(
         test_id="plain_python_name",
         text="module_name",
         commands=("tmuxp",),
