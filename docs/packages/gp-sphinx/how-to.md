@@ -37,9 +37,9 @@ See {doc}`/configuration` for the complete parameter reference and every shared 
 ## SEO emission for free
 
 `sphinx_gp_opengraph` and `sphinx_gp_sitemap` are members of
-{py:data}`~gp_sphinx.defaults.DEFAULT_EXTENSIONS`, so every project
-that calls `merge_sphinx_config()` loads them automatically. Passing
-`docs_url=` is the only step required for default SEO emission —
+{py:data}`~gp_sphinx.defaults.DEFAULT_EXTENSIONS`, so every project that calls
+{py:func}`~gp_sphinx.config.merge_sphinx_config` loads them automatically.
+Passing `docs_url=` is the only step required for default SEO emission —
 gp-sphinx fills in the upstream config keys both extensions need.
 Per-package details live on the {doc}`/packages/sphinx-gp-opengraph/index` and
 {doc}`/packages/sphinx-gp-sitemap/index` pages.
@@ -53,5 +53,3 @@ for the exact coordinator call.
 
 ```{package-reference} gp-sphinx
 ```
-
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-sphinx) · [PyPI](https://pypi.org/project/gp-sphinx/)

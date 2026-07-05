@@ -51,8 +51,9 @@ The single form imports the class directly and surfaces its
 
 ### Bulk transforms demo
 
-Renders every transform a module registers via `setup()` — here the
-demo module's `app.add_transform()` call:
+Renders every transform a module registers via {py:func}`docutils_demo_components.setup`
+— here the demo module's {py:meth}`~sphinx.application.Sphinx.add_transform`
+call:
 
 ```{eval-rst}
 .. autotransforms:: docutils_demo_components
@@ -79,8 +80,10 @@ Renders every reader class a module defines:
 
 ### Document one demo parser
 
-Parsers surface their alias tuple and, when the module's `setup()`
-calls `app.add_source_parser()`, the Sphinx registration:
+Parsers surface their alias tuple and, when the module's
+{py:func}`docutils_demo_components.setup` calls
+{py:meth}`~sphinx.application.Sphinx.add_source_parser`, the Sphinx
+registration:
 
 ```{eval-rst}
 .. autoparser:: docutils_demo_components.DemoLineParser
@@ -114,7 +117,7 @@ defensively, since writers commonly assign `translator_class` inside
 
 Custom node classes surface their base classes, docutils element
 categories, and the builders their visit/depart handlers were
-registered for via `app.add_node()`:
+registered for via {py:meth}`~sphinx.application.Sphinx.add_node`:
 
 ```{eval-rst}
 .. autonode:: docutils_demo_components.demo_marker
@@ -129,9 +132,11 @@ registered for via `app.add_node()`:
 
 ### Document one demo translator
 
-Translators surface their base class, the visit/depart methods the
-class itself defines, and the builder the module's `setup()` registers
-them for via `app.set_translator()` — including an `override` badge:
+Translators surface their base class, the visit/depart methods the class
+itself defines, and the builder the module's
+{py:func}`docutils_demo_components.setup` registers them for via
+{py:meth}`~sphinx.application.Sphinx.set_translator` — including an `override`
+badge:
 
 ```{eval-rst}
 .. autotranslator:: docutils_demo_components.DemoTextTranslator
@@ -155,12 +160,10 @@ way.
 
 The extension itself registers directives, not docutils roles or Sphinx config
 values. The generated package reference below lists its registered surface from
-the live `setup()` calls.
+the live {py:func}`docutils_demo_components.setup` calls.
 
 ```{package-reference} sphinx-autodoc-docutils
 ```
-
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-docutils) · [PyPI](https://pypi.org/project/sphinx-autodoc-docutils/)
 
 ## Demo module reference
 

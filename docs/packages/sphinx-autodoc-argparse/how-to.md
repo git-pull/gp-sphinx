@@ -46,5 +46,3 @@ Or reStructuredText:
 
 ```{package-reference} sphinx-autodoc-argparse
 ```
-
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-argparse) · [PyPI](https://pypi.org/project/sphinx-autodoc-argparse/)

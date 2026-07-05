@@ -36,7 +36,7 @@ conf = merge_sphinx_config(
 )
 ```
 
-Or without `merge_sphinx_config`:
+Or without {py:func}`~gp_sphinx.config.merge_sphinx_config`:
 
 ```python
 extensions = ["sphinx.ext.autodoc", "sphinx_ux_autodoc_layout"]
@@ -45,7 +45,8 @@ api_layout_enabled = True
 
 ## Configuration
 
-Generated from `app.add_config_value()` registrations in
+Generated from {py:meth}`~sphinx.application.Sphinx.add_config_value`
+registrations in
 [`sphinx_ux_autodoc_layout/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-ux-autodoc-layout/src/sphinx_ux_autodoc_layout/__init__.py).
 
 ```{eval-rst}
@@ -54,7 +55,7 @@ Generated from `app.add_config_value()` registrations in
 
 ## Shared helper surface
 
-- `build_api_card_entry()` builds the shared inner `api-*` shell for
-  section-card consumers such as FastMCP.
-- `build_api_summary_section()` wraps summary and index tables in the shared
-  `gp-sphinx-api-summary` region.
+- {py:func}`~sphinx_ux_autodoc_layout.build_api_card_entry` builds the shared
+  inner `gp-sphinx-api-*` shell for section-card consumers such as FastMCP.
+- {py:func}`~sphinx_ux_autodoc_layout.build_api_summary_section` wraps summary
+  and index tables in the shared `gp-sphinx-api-summary` region.

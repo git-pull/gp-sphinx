@@ -4,8 +4,8 @@
 
 ## Badge reference
 
-All badge classes are drawn from the shared `sphinx_ux_badges.SAB` palette.
-This extension uses:
+All badge classes are drawn from the shared
+{py:class}`~sphinx_ux_badges._css.SAB` palette. This extension uses:
 
 | Object type | `SAB` constant | CSS class |
 |---|---|---|

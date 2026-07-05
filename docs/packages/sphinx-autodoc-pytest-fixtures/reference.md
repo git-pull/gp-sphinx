@@ -4,7 +4,8 @@
 
 ## Directive reference
 
-Generated from `app.add_directive()` registrations in
+Generated from {py:meth}`~sphinx.application.Sphinx.add_directive`
+registrations in
 [`sphinx_autodoc_pytest_fixtures/__init__.py`](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-pytest-fixtures/src/sphinx_autodoc_pytest_fixtures/__init__.py)
 via `sphinx-autodoc-docutils`.
 

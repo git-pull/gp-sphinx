@@ -14,8 +14,9 @@ pytest_fixture_external_links = {
 ```
 
 `sphinx_autodoc_pytest_fixtures` automatically registers `sphinx_ux_badges`,
-`sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via `app.setup_extension()`.
-You do not need to add them separately to your `extensions` list.
+`sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via
+{py:meth}`~sphinx.application.Sphinx.setup_extension`. You do not need to add
+them separately to your `extensions` list.
 
 ## Registered configuration values
 

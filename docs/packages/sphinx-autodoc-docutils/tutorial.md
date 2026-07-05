@@ -49,6 +49,7 @@ transforms, readers, parsers, writers, custom nodes, and translators:
 ````
 
 Bulk forms accept either an extension package (its `setup()` is
-replayed so `app.add_transform()` / `app.add_node()` registrations
-surface with their real metadata) or a plain module (scanned for
-subclasses of the matching docutils base class).
+replayed so {py:meth}`~sphinx.application.Sphinx.add_transform` and
+{py:meth}`~sphinx.application.Sphinx.add_node` registrations surface with their
+real metadata) or a plain module (scanned for subclasses of the matching
+docutils base class).

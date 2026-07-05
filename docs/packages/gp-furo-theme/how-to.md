@@ -75,7 +75,5 @@ replicate.
 ```{package-reference} gp-furo-theme
 ```
 
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/gp-furo-theme)
-
 [Furo]: https://github.com/pradyunsg/furo
 [Vite]: https://vitejs.dev

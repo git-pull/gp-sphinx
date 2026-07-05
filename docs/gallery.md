@@ -97,7 +97,9 @@ disclosure widget.
 ## Badge palette
 
 The full badge system — types, modifiers, sizes, and variants — rendered by
-the real `build_badge` / `build_badge_group` / `build_toolbar` API:
+the real {py:func}`~sphinx_ux_badges.build_badge`,
+{py:func}`~sphinx_ux_badges.build_badge_group`, and
+{py:func}`~sphinx_ux_badges.build_toolbar` APIs:
 
 ```{gp-sphinx-badge-demo}
 ```

@@ -35,16 +35,16 @@ extensions = ["sphinx_autodoc_api_style"]
 ```
 
 `sphinx_autodoc_api_style` automatically registers `sphinx_ux_badges` and
-`sphinx_ux_autodoc_layout` via `app.setup_extension()`. You do not need to add
-them separately to your `extensions` list.
+`sphinx_ux_autodoc_layout` via
+{py:meth}`~sphinx.application.Sphinx.setup_extension`. You do not need to
+add them separately to your `extensions` list.
 
 ## CSS prefix
 
-All badge CSS classes use the `sab-` prefix from {doc}`/packages/sphinx-ux-badges/index`.
-Layout card classes (borders, headers, field-list rules) are local to this package
-and use `dl.py-*` and `.api-*` selectors.
+All badge CSS classes use the `gp-sphinx-badge` namespace from
+{doc}`/packages/sphinx-ux-badges/index`. Layout card rules are local to this
+package and target Sphinx's `dl.py-*` selectors plus shared `gp-sphinx-api-*`
+wrappers.
 
 ```{package-reference} sphinx-autodoc-api-style
 ```
-
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-api-style) · [PyPI](https://pypi.org/project/sphinx-autodoc-api-style/)

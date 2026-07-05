@@ -36,7 +36,7 @@ layer for the `sphinx-autodoc-*` family.  The symbols exported in `__all__`
 are intended for use by other `gp-sphinx` packages and by extension authors
 who want to reuse the same rendering pipeline.  The API is stable within a
 `gp-sphinx` version range but does not carry the same backward-compatibility
-guarantees as `gp_sphinx.merge_sphinx_config()`.
+guarantees as {py:func}`gp_sphinx.config.merge_sphinx_config`.
 
 ## Choosing the right helper
 
@@ -48,8 +48,8 @@ Four `build_*` functions span two axes:
 | Display-classified | {func}`~sphinx_autodoc_typehints_gp.build_resolved_annotation_display_paragraph` | {func}`~sphinx_autodoc_typehints_gp.build_annotation_display_paragraph` |
 
 Use `build_resolved_*` inside `doctree-resolved` event handlers where a
-`BuildEnvironment` is available.  Use `build_*` when you have only the
-annotation string.
+{py:class}`~sphinx.environment.BuildEnvironment` is available. Use `build_*`
+when you have only the annotation string.
 
 ## Annotation display classification
 

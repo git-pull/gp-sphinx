@@ -72,5 +72,3 @@ icons, and the IBM Plex font stacks consumed by the theme templates.
 
 ```{package-reference} sphinx-gp-theme
 ```
-
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-gp-theme) · [PyPI](https://pypi.org/project/sphinx-gp-theme/)

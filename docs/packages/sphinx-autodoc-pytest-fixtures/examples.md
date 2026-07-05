@@ -63,6 +63,3 @@ generated fixture summary and reference.
 
 ```{package-reference} sphinx-autodoc-pytest-fixtures
 ```
-
-[Source on GitHub](https://github.com/git-pull/gp-sphinx/tree/main/packages/sphinx-autodoc-pytest-fixtures) · [PyPI](https://pypi.org/project/sphinx-autodoc-pytest-fixtures/)
-

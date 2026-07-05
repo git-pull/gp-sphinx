@@ -18,9 +18,9 @@ The flat scheme overrides the upstream default of
 `"{lang}{version}{link}"` because git-pull.com sites deploy at the
 project root, with no language or version directory in the URL space.
 Multilingual or version-pinned hosts can still pass an explicit
-`sitemap_url_scheme` through `**overrides` — `merge_sphinx_config()`
-runs auto-derivation first and overrides last. The canonical mapping
-lives in {ref}`from-docs_url`.
+`sitemap_url_scheme` through `**overrides` —
+{py:func}`~gp_sphinx.config.merge_sphinx_config` runs auto-derivation first and
+overrides last. The canonical mapping lives in {ref}`from-docs_url`.
 
 ## How `sitemap.xml` is built
 
@@ -92,8 +92,8 @@ links Sphinx emits on the page itself.
 
 **`html_baseurl` is re-registered defensively.** Sphinx core
 registers `html_baseurl` on most modern versions, but older trees and
-some custom builders skip it. The `setup()` body wraps the
-`add_config_value("html_baseurl", …)` call in
-`contextlib.suppress(ExtensionError)` so the extension is robust
-against either layout. The bare `except BaseException` upstream uses
-is replaced by the narrow `ExtensionError` catch.
+some custom builders skip it. The {py:func}`~sphinx_gp_sitemap.setup` body wraps
+the {py:meth}`~sphinx.application.Sphinx.add_config_value` call for
+`html_baseurl` in `contextlib.suppress(ExtensionError)` so the extension is
+robust against either layout. The bare `except BaseException` upstream uses is
+replaced by the narrow `ExtensionError` catch.

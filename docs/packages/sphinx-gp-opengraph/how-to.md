@@ -17,8 +17,8 @@ three of the most common config values:
 
 The canonical reference for these and the other auto-derived values
 lives in {ref}`from-docs_url`. Any value passed via `**overrides` to
-`merge_sphinx_config()` wins over the auto-derived default —
-auto-computation runs first, overrides apply last.
+{py:func}`~gp_sphinx.config.merge_sphinx_config` wins over the auto-derived
+default — auto-computation runs first, overrides apply last.
 
 ## How the page-level meta tags are built
 

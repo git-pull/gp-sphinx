@@ -5,8 +5,8 @@
 ## Downstream extensions
 
 All colour variants are provided by the shared palette above.  Downstream
-extensions reference `SAB.*` constants instead of maintaining their own
-`sab-*` / `spf-*` / `sas-*` / `sadoc-*` colour classes.
+extensions reference {py:class}`~sphinx_ux_badges._css.SAB` constants
+instead of maintaining package-local colour-class palettes.
 
 ```{list-table}
 :header-rows: 1

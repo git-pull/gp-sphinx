@@ -5,9 +5,9 @@
 ## Colour palette
 
 All semantic badge colours live in `sab_palettes.css` (registered by
-this extension).  Every `sphinx-autodoc-*` package uses the `SAB.*`
-constants instead of its own colour classes.  The live demo below shows
-every variant.
+this extension).  Every `sphinx-autodoc-*` package uses
+{py:class}`~sphinx_ux_badges._css.SAB` constants instead of its own
+colour classes.  The live demo below shows every variant.
 
 ```{list-table}
 :header-rows: 1
@@ -219,7 +219,8 @@ Override them in your project's `custom.css` or via
 
 ## CSS class reference
 
-All classes use the `sab-` prefix (**s**phinx **a**utodoc **b**adges).
+All classes use the shared `gp-sphinx-badge` base class and
+`gp-sphinx-badge--*` modifiers.
 
 ```{list-table}
 :header-rows: 1
@@ -229,40 +230,42 @@ All classes use the `sab-` prefix (**s**phinx **a**utodoc **b**adges).
   - Applied by
   - Description
 * - `gp-sphinx-badge`
-  - `BadgeNode`
+  - {py:class}`~sphinx_ux_badges.BadgeNode`
   - Base class. Always present on every badge.
 * - `gp-sphinx-badge--outline`
-  - `build_badge(fill="outline")`
+  - {py:func}`~sphinx_ux_badges.build_badge` with `fill="outline"`
   - Transparent background, inherits text color.
 * - `gp-sphinx-badge--icon-only`
-  - `build_badge(style="icon-only")`
+  - {py:func}`~sphinx_ux_badges.build_badge` with `style="icon-only"`
   - 16 × 16 colored box with emoji `::before`.
 * - `gp-sphinx-badge--inline-icon`
-  - `build_badge(style="inline-icon")`
+  - {py:func}`~sphinx_ux_badges.build_badge` with `style="inline-icon"`
   - Bare emoji inside a code chip, no background.
 * - `gp-sphinx-badge-group`
-  - `build_badge_group()`
+  - {py:func}`~sphinx_ux_badges.build_badge_group`
   - Flex container with `gap: 0.3rem` between badges.
 * - `gp-sphinx-toolbar`
-  - `build_toolbar()`
+  - {py:func}`~sphinx_ux_badges.build_toolbar`
   - Flex push-right (`margin-left: auto`) for title rows.
 * - `gp-sphinx-badge--size-xxs`
-  - `build_badge(size="xxs")` / `BadgeNode(..., badge_size="xxs")`
+  - {py:func}`~sphinx_ux_badges.build_badge` with `size="xxs"` /
+    {py:class}`~sphinx_ux_badges.BadgeNode` with `badge_size="xxs"`
   - Minimum size (status dots, very tight layouts).
 * - `gp-sphinx-badge--size-xs`
-  - `build_badge(size="xs")` / `BadgeNode(..., badge_size="xs")`
+  - {py:func}`~sphinx_ux_badges.build_badge` with `size="xs"` /
+    {py:class}`~sphinx_ux_badges.BadgeNode` with `badge_size="xs"`
   - Extra small (dense tables, tight UI).
 * - `gp-sphinx-badge--size-sm`
-  - `build_badge(size="sm")`
+  - {py:func}`~sphinx_ux_badges.build_badge` with `size="sm"`
   - Small inline badges.
 * - `gp-sphinx-badge--size-md`
-  - `build_badge(size="md")`
+  - {py:func}`~sphinx_ux_badges.build_badge` with `size="md"`
   - Medium — larger than the default but smaller than `lg`.
 * - `gp-sphinx-badge--size-lg`
-  - `build_badge(size="lg")`
+  - {py:func}`~sphinx_ux_badges.build_badge` with `size="lg"`
   - Large (section titles, callouts).
 * - `gp-sphinx-badge--size-xl`
-  - `build_badge(size="xl")`
+  - {py:func}`~sphinx_ux_badges.build_badge` with `size="xl"`
   - Extra large (hero / landing emphasis).
 ```
 
