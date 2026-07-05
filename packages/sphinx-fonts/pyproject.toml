@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-fonts"
-version = "0.0.1a32"
+version = "0.0.1a33"
 description = "Sphinx extension for self-hosted fonts via Fontsource CDN"
 requires-python = ">=3.10,<4.0"
 authors = [

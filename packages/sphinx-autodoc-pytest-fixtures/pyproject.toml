@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-autodoc-pytest-fixtures"
-version = "0.0.1a32"
+version = "0.0.1a33"
 description = "Sphinx extension for documenting pytest fixtures as first-class objects"
 requires-python = ">=3.10,<4.0"
 authors = [
@@ -30,9 +30,9 @@ keywords = ["sphinx", "pytest", "fixtures", "documentation", "autodoc"]
 dependencies = [
   "sphinx>=8.1",
   "pytest",
-  "sphinx-ux-badges==0.0.1a32",
-  "sphinx-ux-autodoc-layout==0.0.1a32",
-  "sphinx-autodoc-typehints-gp==0.0.1a32",
+  "sphinx-ux-badges==0.0.1a33",
+  "sphinx-ux-autodoc-layout==0.0.1a33",
+  "sphinx-autodoc-typehints-gp==0.0.1a33",
 ]
 
 [project.urls]

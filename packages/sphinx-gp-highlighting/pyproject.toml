@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-gp-highlighting"
-version = "0.0.1a32"
+version = "0.0.1a33"
 description = "Reusable Pygments lexers and inline highlighting for Sphinx"
 requires-python = ">=3.10,<4.0"
 authors = [
