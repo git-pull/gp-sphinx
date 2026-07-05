@@ -84,7 +84,7 @@ def test_examples_page_embeds_every_diagram(examples_page_html: str) -> None:
     """One dual-theme figure per committed source."""
     count = len(_EXAMPLE_STEMS)
     assert count >= 10
-    assert examples_page_html.count('<figure class="gp-sphinx-mermaid"') == count
+    assert examples_page_html.count('data-mermaid-responsive="fit"') == count
     assert examples_page_html.count("gp-sphinx-mermaid__variant--theme-light") == count
     assert examples_page_html.count("gp-sphinx-mermaid__variant--theme-dark") == count
 

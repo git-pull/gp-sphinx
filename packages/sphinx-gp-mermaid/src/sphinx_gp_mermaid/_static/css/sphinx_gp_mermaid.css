@@ -9,18 +9,25 @@
 
 .gp-sphinx-mermaid {
   margin: 1.5rem 0;
-  /* Wide diagrams scroll within the column instead of overflowing it. */
+  /* Preserve-mode diagrams scroll within the column instead of overflowing it. */
   overflow-x: auto;
 }
 
 .gp-sphinx-mermaid__variant svg {
-  /* Intrinsic width/height/viewBox are set at build time; these let the
-     diagram scale down on narrow columns while keeping its aspect ratio,
-     so there is no layout shift. */
-  max-width: 100%;
-  height: auto;
+  /* Intrinsic width/height/viewBox are set at build time so the browser can
+     reserve geometry before paint. Responsive policy rules below decide
+     whether the SVG scales to the column or keeps that intrinsic width. */
   display: block;
   margin: 0 auto;
+}
+
+.gp-sphinx-mermaid--fit .gp-sphinx-mermaid__variant svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.gp-sphinx-mermaid--preserve .gp-sphinx-mermaid__variant svg {
+  max-width: none;
 }
 
 .gp-sphinx-mermaid > figcaption {

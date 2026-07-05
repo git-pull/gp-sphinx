@@ -19,6 +19,7 @@ plain ``` ```mermaid ``` fences route here too when
 
     :::{mermaid}
     :caption: How it flows.
+    :responsive: fit
 
     flowchart LR
         a --> b
@@ -84,6 +85,13 @@ _RENDER_VERSION = "mmdc11-furo-svg-v4"
 #: Logical names for the two inlined variants (cache key, SVG id, CSS class).
 _THEME_LIGHT = "light"
 _THEME_DARK = "dark"
+
+#: Author-facing responsive policies. ``fit`` scales the SVG down to the
+#: available column; ``preserve`` keeps its intrinsic width and lets the figure
+#: scroll horizontally.
+_RESPONSIVE_FIT = "fit"
+_RESPONSIVE_PRESERVE = "preserve"
+_RESPONSIVE_POLICIES = (_RESPONSIVE_FIT, _RESPONSIVE_PRESERVE)
 
 #: System font stack matching gp-furo's body font (gp-furo-tokens --font-stack).
 _FONT_STACK = (
@@ -254,6 +262,22 @@ def _svg_element_id(digest: str, theme: str, *, occurrence: int = 0) -> str:
     return f"mermaid-{digest[:12]}{suffix}-{theme}"
 
 
+def _svg_dimensions(svg: str) -> tuple[str, str] | None:
+    """Return root SVG ``viewBox`` width and height, if available.
+
+    >>> _svg_dimensions('<svg viewBox="0 0 120 40"></svg>')
+    ('120', '40')
+    >>> _svg_dimensions('<svg viewBox="-5 -97 148 194"></svg>')
+    ('148', '194')
+    >>> _svg_dimensions("<svg></svg>") is None
+    True
+    """
+    match = _VIEWBOX_RE.search(svg)
+    if match is None:
+        return None
+    return match.group(1), match.group(2)
+
+
 def _normalize_svg(svg: str, *, svg_id: str) -> str:
     """Make an ``mmdc`` SVG safe to inline: unique id, explicit size, no max-width.
 
@@ -267,8 +291,8 @@ def _normalize_svg(svg: str, *, svg_id: str) -> str:
     2. The root ``width="100%"`` (mermaid emits no ``height``) is replaced with
        explicit ``width``/``height`` taken from the ``viewBox``, so the browser
        reserves the diagram's box in the first layout pass — before any script.
-    3. The inline ``max-width: NNpx`` is stripped; paired with the stylesheet's
-       ``max-width: 100%; height: auto`` the diagram scales without reflow.
+    3. The inline ``max-width: NNpx`` is stripped so the stylesheet, not
+       mermaid's inline style, controls the figure's responsive policy.
 
     >>> svg = (
     ...     '<svg id="my-svg" width="100%" '
@@ -308,16 +332,46 @@ def _normalize_svg(svg: str, *, svg_id: str) -> str:
     True
     """
     svg = _MERMAID_ID_TOKEN_RE.sub(rf"\g<1>{svg_id}", svg)
-    match = _VIEWBOX_RE.search(svg)
-    if match is not None:
-        width, height = match.group(1), match.group(2)
+    dimensions = _svg_dimensions(svg)
+    if dimensions is not None:
+        width, height = dimensions
         svg = re.sub(r'(<svg\b[^>]*?)\s+width="[^"]*"', r"\1", svg, count=1)
         svg = re.sub(r"<svg\b", f'<svg width="{width}" height="{height}"', svg, count=1)
     return re.sub(r"\s*max-width:\s*[\d.]+px;?", "", svg, count=1)
 
 
+def _responsive_policy(argument: str) -> str:
+    """Validate a Mermaid diagram responsive policy.
+
+    >>> _responsive_policy("fit")
+    'fit'
+    >>> _responsive_policy("PRESERVE")
+    'preserve'
+    >>> _responsive_policy("auto")
+    Traceback (most recent call last):
+    ...
+    ValueError: "auto" unknown; choose from "fit", or "preserve"
+    """
+    return directives.choice(argument, _RESPONSIVE_POLICIES)
+
+
 class MermaidDirective(SphinxDirective):
-    """Stash a mermaid fence's source on a node for the write phase to render."""
+    """Stash a mermaid fence's source on a node for the write phase to render.
+
+    Options
+    -------
+    caption : str
+        Optional figure caption.
+    alt : str
+        Accessible label for the rendered figure. Falls back to ``caption``.
+    name : str
+        Cross-reference target for the figure.
+    class : str
+        Extra CSS class or classes on the outer ``<figure>``.
+    responsive : {"fit", "preserve"}
+        ``fit`` scales the SVG down to the column; ``preserve`` keeps the
+        intrinsic SVG width and scrolls horizontally when needed.
+    """
 
     has_content = True
     required_arguments = 0
@@ -326,6 +380,8 @@ class MermaidDirective(SphinxDirective):
         "caption": directives.unchanged,
         "alt": directives.unchanged,
         "name": directives.unchanged,
+        "class": directives.class_option,
+        "responsive": _responsive_policy,
     }
 
     def run(self) -> list[nodes.Node]:
@@ -340,6 +396,8 @@ class MermaidDirective(SphinxDirective):
         node["mermaid_source"] = "\n".join(self.content)
         node["caption"] = self.options.get("caption", "")
         node["alt"] = self.options.get("alt", "")
+        node["responsive"] = self.options.get("responsive", _RESPONSIVE_FIT)
+        node["classes"].extend(self.options.get("class", []))
         self.add_name(node)
         self.set_source_info(node)
         return [node]
@@ -559,9 +617,25 @@ def html_visit_mermaid_inline(self: HTML5Translator, node: mermaid_inline) -> No
     caption: str = node.get("caption", "")
     alt = node.get("alt", "") or caption
     aria = f' aria-label="{html.escape(alt, quote=True)}"' if alt else ""
+    responsive: str = node.get("responsive", _RESPONSIVE_FIT)
+    attrs = {
+        "data-mermaid-responsive": responsive,
+    }
+    dimensions = _svg_dimensions(light)
+    if dimensions is not None:
+        width, height = dimensions
+        attrs["data-mermaid-width"] = width
+        attrs["data-mermaid-height"] = height
+    starttag = t.cast("t.Any", self.starttag)
 
     parts = [
-        f'<figure class="gp-sphinx-mermaid"{fig_id}>',
+        starttag(
+            node,
+            "figure",
+            "",
+            CLASS=f"gp-sphinx-mermaid gp-sphinx-mermaid--{responsive}",
+            **attrs,
+        ),
         (
             '<div class="gp-sphinx-mermaid__variant '
             f'gp-sphinx-mermaid__variant--theme-light" role="img"{aria}>{light}</div>'
