@@ -2,6 +2,11 @@
   white-space: nowrap;
 }
 
+.gp-sphinx-highlighting-inline--kind-command,
+.gp-sphinx-highlighting-inline--kind-shell-session {
+  color: var(--color-code-foreground, inherit);
+}
+
 .gp-sphinx-highlighting-inline--kind-path,
 .gp-sphinx-highlighting-inline--kind-dir {
   color: var(--color-api-name, inherit);

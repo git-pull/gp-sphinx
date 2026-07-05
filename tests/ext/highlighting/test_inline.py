@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pathlib
 import textwrap
 import typing as t
 
@@ -18,6 +19,11 @@ from tests._sphinx_scenarios import (
     SphinxScenario,
     build_shared_sphinx_result,
     read_output,
+)
+
+_HIGHLIGHTING_CSS = pathlib.Path(
+    "packages/sphinx-gp-highlighting/src/sphinx_gp_highlighting/_static/css/"
+    "sphinx_gp_highlighting.css"
 )
 
 
@@ -100,6 +106,38 @@ _INLINE_CLASSIFICATION_FIXTURES: list[InlineClassificationFixture] = [
 ]
 
 
+class InlineCssTargetFixture(t.NamedTuple):
+    """Case for CSS self-containment of emitted inline classes."""
+
+    test_id: str
+    text: str
+    kind: InlineLiteralKind
+
+
+_INLINE_CSS_TARGET_FIXTURES: list[InlineCssTargetFixture] = [
+    InlineCssTargetFixture(
+        test_id="command",
+        text="tmuxp freeze my-session",
+        kind="command",
+    ),
+    InlineCssTargetFixture(
+        test_id="shell_session",
+        text="$ tmuxp freeze my-session",
+        kind="shell-session",
+    ),
+    InlineCssTargetFixture(
+        test_id="path",
+        text="~/.config/tmuxp/config.yaml",
+        kind="path",
+    ),
+    InlineCssTargetFixture(
+        test_id="dir",
+        text="~/.config/tmuxp/",
+        kind="dir",
+    ),
+]
+
+
 @pytest.mark.parametrize(
     list(InlineClassificationFixture._fields),
     _INLINE_CLASSIFICATION_FIXTURES,
@@ -129,6 +167,29 @@ def test_build_highlighted_literal_leaves_paths_unlanguaged() -> None:
     node = build_highlighted_literal("~/.config/tmuxp/", "dir")
     assert "gp-sphinx-highlighting-inline--kind-dir" in node["classes"]
     assert "language" not in node
+
+
+@pytest.mark.parametrize(
+    list(InlineCssTargetFixture._fields),
+    _INLINE_CSS_TARGET_FIXTURES,
+    ids=[case.test_id for case in _INLINE_CSS_TARGET_FIXTURES],
+)
+def test_emitted_inline_modifiers_are_targeted_by_css(
+    test_id: str,
+    text: str,
+    kind: InlineLiteralKind,
+) -> None:
+    """Package CSS targets every emitted inline modifier class."""
+    css = _HIGHLIGHTING_CSS.read_text(encoding="utf-8")
+    node = build_highlighted_literal(text, kind)
+    modifiers = [
+        cls
+        for cls in node["classes"]
+        if cls.startswith("gp-sphinx-highlighting-inline--kind-")
+    ]
+    assert modifiers, test_id
+    for modifier in modifiers:
+        assert f".{modifier}" in css, test_id
 
 
 _CONF_PY = textwrap.dedent(
