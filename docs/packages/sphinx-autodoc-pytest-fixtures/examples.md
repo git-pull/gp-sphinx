@@ -23,13 +23,15 @@ Add project-specific usage notes here. The helper renders the install
 section, autodiscovery note, and full fixture summary/reference.
 :::
 
-#### When to use `auto-pytest-plugin`
+#### Plugin page helper usage
 
-Use this directive for a standard pytest plugin page where you want consistent
-house-style: an install section, the `pytest11` autodiscovery note, and a
-generated fixture summary and reference.
+Use {rst:dir}`auto-pytest-plugin` for a standard pytest plugin page where you
+want consistent house-style: an install section, the `pytest11` autodiscovery
+note, and a generated fixture summary and reference.
 
-#### autofixtures options
+#### Bulk fixture options
+
+The {rst:dir}`autofixtures` directive accepts these options:
 
 | Option | Default | Description |
 |--------|---------|-------------|

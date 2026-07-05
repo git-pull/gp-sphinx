@@ -22,7 +22,8 @@ The rendering pipeline that every autodoc extension consumes:
 :link-type: doc
 
 Badge primitives, colour palette, and CSS infrastructure.
-All badge colours live in one place (`SAB.*` constants).
+All badge colours live in one place
+({py:class}`~sphinx_ux_badges._css.SAB` constants).
 :::
 
 :::{grid-item-card} sphinx-ux-autodoc-layout
@@ -58,7 +59,8 @@ source-construct family:
 :link-type: doc
 
 **Subject**: standard Python.
-**Directives**: `autofunction`, `autoclass`, `automodule`.
+**Directives**: {rst:dir}`sphinx:autofunction`,
+{rst:dir}`sphinx:autoclass`, {rst:dir}`sphinx:automodule`.
 :::
 
 :::{grid-item-card} sphinx-autodoc-argparse
@@ -74,7 +76,7 @@ source-construct family:
 :link-type: doc
 
 **Subject**: docutils directives and roles.
-**Directives**: `autodirective`, `autorole`.
+**Directives**: {rst:dir}`autodirective`, {rst:dir}`autorole`.
 :::
 
 :::{grid-item-card} sphinx-autodoc-fastmcp
@@ -82,7 +84,7 @@ source-construct family:
 :link-type: doc
 
 **Subject**: FastMCP tools, prompts, resources.
-**Directives**: `fastmcp-tool`, `fastmcp-tool-summary`.
+**Directives**: {rst:dir}`fastmcp-tool`, {rst:dir}`fastmcp-tool-summary`.
 :::
 
 :::{grid-item-card} sphinx-autodoc-pytest-fixtures
@@ -90,7 +92,8 @@ source-construct family:
 :link-type: doc
 
 **Subject**: pytest fixtures (extends the `py` domain).
-**Directives**: `autofixture`, `autofixtures`, `auto-pytest-plugin`.
+**Directives**: `autofixture`, {rst:dir}`autofixtures`,
+{rst:dir}`auto-pytest-plugin`.
 :::
 
 :::{grid-item-card} sphinx-autodoc-sphinx
@@ -98,7 +101,7 @@ source-construct family:
 :link-type: doc
 
 **Subject**: Sphinx config values.
-**Directives**: `autoconfigvalue`, `autoconfigvalues`.
+**Directives**: {rst:dir}`autoconfigvalue`, {rst:dir}`autoconfigvalues`.
 :::
 
 ::::

@@ -15,7 +15,7 @@ flowchart LR
 :::
 ```
 
-`:caption:`, `:alt:`, and `:name:` are the directive's options; `:name:` gives the figure a cross-reference target. When you build through {py:func}`~gp_sphinx.config.merge_sphinx_config` with the extension in `extra_extensions`, plain `mermaid` fences route to the same directive automatically (it sets `myst_fence_as_directive = ["mermaid"]`).
+`:caption:`, `:alt:`, and `:name:` are the directive's options; `:name:` gives the figure a cross-reference target. When you build through {py:func}`~gp_sphinx.config.merge_sphinx_config` with the extension in `extra_extensions`, plain {rst:dir}`mermaid` fences route to the same directive automatically (it sets `myst_fence_as_directive = ["mermaid"]`).
 
 See {ref}`sphinx-gp-mermaid-reference` for the full option and config list.
 

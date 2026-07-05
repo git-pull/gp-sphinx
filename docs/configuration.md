@@ -22,7 +22,8 @@ globals().update(conf)
 {py:func}`~gp_sphinx.config.merge_sphinx_config` returns a flat dictionary meant to be injected into the
 module namespace with `globals().update(conf)`. That is the conventional Sphinx
 integration point: Sphinx reads `conf.py` globals directly, and the returned
-mapping already includes the coordinator’s generated `setup(app)` hook.
+mapping already includes {py:func}`gp_sphinx.config.setup`, the coordinator’s
+generated `setup(app)` hook.
 
 ## `merge_sphinx_config()` parameters
 

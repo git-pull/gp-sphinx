@@ -28,7 +28,7 @@ conf = merge_sphinx_config(
 )
 ```
 
-Or without `merge_sphinx_config`:
+Or without {py:func}`~gp_sphinx.config.merge_sphinx_config`:
 
 ```python
 extensions = ["sphinx_autodoc_api_style"]
