@@ -18,6 +18,25 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### What's new
+
+#### Responsive Mermaid diagrams
+
+Mermaid diagrams gain a `:responsive:` option with `fit` and
+`preserve` policies. Use `fit` when a diagram should scale to the
+content column, and `preserve` when a dense architecture map or matrix
+should keep its readable width and scroll horizontally instead.
+See {ref}`sphinx-gp-mermaid-how-to` for authoring guidance. (#64)
+
+#### Code highlighting for trees, commands, and paths
+
+`sphinx-gp-highlighting` gives docs a dedicated `tree` lexer for
+directory layout snippets plus inline roles for commands, paths, and
+directories. Projects can opt in to safe automatic highlighting for
+shell prompts, allow-listed commands, and clear filesystem literals
+while ordinary code names stay unchanged. See
+{ref}`sphinx-gp-highlighting` for setup and examples. (#64)
+
 ## gp-sphinx 0.0.1a32 (2026-07-04)
 
 ### What's new
@@ -791,4 +810,3 @@ build cleanly. Section IDs are now namespaced per program so
 (#16)
 
 [Furo]: https://github.com/pradyunsg/furo
-
