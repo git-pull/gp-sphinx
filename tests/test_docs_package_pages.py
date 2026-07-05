@@ -59,6 +59,7 @@ def _autodoc_and_ux_package_paths() -> list[pathlib.Path]:
 PACKAGE_PAGES = _autodoc_and_ux_package_paths()
 LIVE_DEMO_MARKERS = (
     "```{eval-rst}",
+    "```tree",
     "```{gp-sphinx-badge-demo}",
     ":::{auto-pytest-plugin}",
     "```{argparse}",

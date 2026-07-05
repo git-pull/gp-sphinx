@@ -21,14 +21,19 @@
 
 ## Config values
 
+```{eval-rst}
 .. autoconfigvalues:: sphinx_gp_highlighting
+```
 
 ## Roles
 
+```{eval-rst}
 .. autoroles:: sphinx_gp_highlighting
+```
 
 ## API
 
+```{eval-rst}
 .. autofunction:: sphinx_gp_highlighting.setup
 
 .. autoclass:: sphinx_gp_highlighting.lexers.DirectoryTreeLexer
@@ -36,3 +41,4 @@
 .. autofunction:: sphinx_gp_highlighting.inline.classify_inline_literal
 
 .. autofunction:: sphinx_gp_highlighting.inline.build_highlighted_literal
+```
