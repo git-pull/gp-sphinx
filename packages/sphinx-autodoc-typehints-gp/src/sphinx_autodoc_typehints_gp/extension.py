@@ -283,6 +283,41 @@ def _enhance_existing_type_field(
     para.extend(_annotation_to_nodes(text, env))
 
 
+def _strip_hidden_doctest_examples(lines: list[str]) -> None:
+    """Drop doctest examples flagged ``# doctest: +HIDE`` from rendered output.
+
+    The example still runs as a test — the doctest runner reads ``__doc__`` from
+    source, which this never touches. This only removes it from the
+    Sphinx-rendered docstring, so incidental setup (building an ``env`` mapping,
+    a socket path) can execute without cluttering the docs. Each ``>>>`` line
+    carrying the flag is dropped together with its ``...`` continuation lines.
+
+    Parameters
+    ----------
+    lines : list[str]
+        The docstring lines, modified in place.
+
+    Examples
+    --------
+    >>> body = [">>> x = 1  # doctest: +HIDE", ">>> x", "1"]
+    >>> _strip_hidden_doctest_examples(body)
+    >>> body
+    ['>>> x', '1']
+    """
+    kept: list[str] = []
+    dropping = False
+    for line in lines:
+        stripped = line.lstrip()
+        if stripped.startswith(">>>") and "doctest:" in line and "+HIDE" in line:
+            dropping = True
+            continue
+        if dropping and stripped.startswith("..."):
+            continue
+        dropping = False
+        kept.append(line)
+    lines[:] = kept
+
+
 def process_docstring(
     app: Sphinx,
     what: str,
@@ -317,6 +352,8 @@ def process_docstring(
     >>> process_docstring  # doctest: +ELLIPSIS
     <function process_docstring at 0x...>
     """
+    _strip_hidden_doctest_examples(lines)
+
     from sphinx_autodoc_typehints_gp._numpy_docstring import process_numpy_docstring
 
     lines[:] = process_numpy_docstring(lines)
