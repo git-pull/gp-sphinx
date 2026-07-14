@@ -30,8 +30,38 @@ and skips its own plain-text duplicates — cooperation, not conflict.
 - Resolves type hints statically without `exec()` or {py:func}`typing.get_type_hints`.
 - Works with `TYPE_CHECKING` blocks because annotations are stringified at Sphinx build time.
 - No text-level race conditions with Napoleon.
+- Hides incidental doctest setup marked `# doctest: +HIDE` from rendered
+  docstrings, so plumbing can execute without cluttering the example.
 - Exposes reusable helpers for annotation display classification and rendered
   type paragraphs used by the other autodoc packages.
+
+## Hiding incidental doctest setup
+
+A docstring example often needs plumbing to run — building an environment
+mapping, opening a socket path — that means nothing to the reader. Mark the
+setup line with `# doctest: +HIDE` and this extension drops it from the
+rendered docstring, together with any `...` continuation lines, leaving the
+meaningful call and its output in place:
+
+```python
+def connect(url: str) -> Connection:
+    """Open a connection to ``url``.
+
+    >>> socket = "/run/gp/app.sock"  # doctest: +HIDE
+    >>> connect("unix://" + socket)
+    <Connection ...>
+    """
+```
+
+The rendered page shows only the `connect(...)` call and its result; the
+`socket` line is gone. Nothing rewrites the source docstring — the strip runs
+at Sphinx build time, on the `autodoc-process-docstring` event — so the example
+your doctest runner executes is unchanged.
+
+Because `# doctest: +HIDE` is a doctest optionflag, the runner has to recognize
+it: register it once with `doctest.register_optionflag("HIDE")`, or an
+unregistered flag raises `ValueError: invalid option '+HIDE'` when the
+docstring runs.
 
 ## Shared layer
 
