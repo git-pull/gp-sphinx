@@ -52,6 +52,10 @@ _KEYWORD_TO_MOD: dict[str, str] = {
     "final": "final",
 }
 
+# Signature-prefix keywords the Python domain emits that a modifier badge now
+# conveys. Keyed off _KEYWORD_TO_MOD so detection and stripping never drift.
+_REDUNDANT_PREFIX_KEYWORDS: frozenset[str] = frozenset(_KEYWORD_TO_MOD)
+
 
 def _detect_modifiers(sig_node: addnodes.desc_signature) -> frozenset[str]:
     """Detect modifier keywords from a signature node's annotations.
@@ -131,6 +135,45 @@ def _detect_deprecated(desc_node: addnodes.desc) -> bool:
     return False
 
 
+def _strip_redundant_prefix(sig_node: addnodes.desc_signature) -> None:
+    """Remove leading modifier keywords already shown as a badge.
+
+    The Python domain renders ``classmethod``/``staticmethod``/``async``/
+    ``abstractmethod``/``final`` as a ``desc_sig_keyword`` inside the signature's
+    leading ``desc_annotation``. The badge group conveys the same modifier, so
+    the prefix keyword duplicates it. Remove each such keyword and its trailing
+    space; drop the annotation if it empties out. Type-word prefixes
+    (``property``/``type``) are left alone.
+
+    Examples
+    --------
+    >>> from sphinx import addnodes
+    >>> sig = addnodes.desc_signature()
+    >>> ann = addnodes.desc_annotation()
+    >>> ann += addnodes.desc_sig_keyword("", "classmethod")
+    >>> ann += addnodes.desc_sig_space()
+    >>> sig += ann
+    >>> sig += addnodes.desc_name("", "from_env")
+    >>> _strip_redundant_prefix(sig)
+    >>> any(isinstance(n, addnodes.desc_annotation) for n in sig.children)
+    False
+    """
+    for ann in list(sig_node.findall(addnodes.desc_annotation)):
+        removed = False
+        for kw in list(ann.findall(addnodes.desc_sig_keyword)):
+            if kw.astext().strip() not in _REDUNDANT_PREFIX_KEYWORDS:
+                continue
+            idx = kw.parent.index(kw)
+            if idx + 1 < len(kw.parent) and isinstance(
+                kw.parent[idx + 1], addnodes.desc_sig_space
+            ):
+                kw.parent.pop(idx + 1)
+            kw.parent.remove(kw)
+            removed = True
+        if removed and not ann.astext().strip() and ann.parent is not None:
+            ann.parent.remove(ann)
+
+
 def _inject_badges(sig_node: addnodes.desc_signature, objtype: str) -> None:
     """Inject structured layout slots containing badges and source links.
 
@@ -163,6 +206,8 @@ def _inject_badges(sig_node: addnodes.desc_signature, objtype: str) -> None:
         marker_attr="sab_badges_injected",
         badge_node=badge_group,
     )
+    # The badge now conveys the modifier; drop the duplicate signature prefix.
+    _strip_redundant_prefix(sig_node)
 
 
 def _prune_empty_desc_content(desc_node: addnodes.desc) -> None:
