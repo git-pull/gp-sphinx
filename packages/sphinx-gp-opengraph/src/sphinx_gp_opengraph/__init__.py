@@ -42,7 +42,7 @@ if t.TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-_EXTENSION_VERSION = "0.0.1a33"
+_EXTENSION_VERSION = "0.0.1a34"
 
 DEFAULT_DESCRIPTION_LENGTH = 200
 

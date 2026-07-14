@@ -77,7 +77,7 @@ __all__ = [
 logger = getLogger(__name__)
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
-_EXTENSION_VERSION = "0.0.1a33"
+_EXTENSION_VERSION = "0.0.1a34"
 
 #: Bump to invalidate the on-disk render cache when render arguments change.
 _RENDER_VERSION = "mmdc11-furo-svg-v4"
