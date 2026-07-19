@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-gp-mermaid"
-version = "0.0.1a34"
+version = "0.0.1a35"
 description = "Build-time Mermaid diagrams for Sphinx — dual light/dark inline SVG rendered via mermaid-cli"
 requires-python = ">=3.10,<4.0"
 authors = [

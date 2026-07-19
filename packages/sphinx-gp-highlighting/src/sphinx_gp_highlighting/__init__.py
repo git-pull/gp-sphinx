@@ -30,7 +30,7 @@ if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
     from sphinx.util.typing import ExtensionMetadata
 
-_EXTENSION_VERSION = "0.0.1a34"
+_EXTENSION_VERSION = "0.0.1a35"
 _TREE_ALIASES: tuple[str, ...] = ("tree", "directory-tree", "dir-tree")
 
 logger = getLogger(__name__)

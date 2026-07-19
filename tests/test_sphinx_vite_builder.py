@@ -15,7 +15,7 @@ from sphinx_vite_builder import __version__, setup
 
 def test_version_matches_workspace_lock() -> None:
     """Version follows the gp-sphinx workspace lockstep."""
-    assert __version__ == "0.0.1a34"
+    assert __version__ == "0.0.1a35"
 
 
 class _FakeApp:
