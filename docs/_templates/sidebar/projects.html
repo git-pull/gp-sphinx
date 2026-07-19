@@ -43,6 +43,10 @@
     <span class="indent">
       <a class="internal" href="https://django-docutils.git-pull.com">django-docutils</a>
     </span>
+    <span class="indent">
+      <a class="internal" href="https://django-search-query.git-pull.com">django-search-query</a>
+      (<a class="internal" href="https://django-search-query.git-pull.com/packages/django-admin-search-query/">admin</a>)
+    </span>
   </p>
 
   <p class="indented-block">
@@ -77,16 +81,26 @@
 (() => {
   const sidebar = document.getElementById("sidebar-projects");
   const loc = window.location;
-  sidebar.querySelectorAll("a[href]").forEach((link) => {
+  const entries = Array.from(sidebar.querySelectorAll("a[href]"), (link) => {
     const url = new URL(link.href, loc.origin);
+    const path = url.pathname.replace(/\/+$/, "");
     const sameHost = url.hostname === loc.hostname;
-    const hasPath = url.pathname.replace(/\/+$/, "").length > 0;
     // Links with a pathname: match origin + path prefix (e.g. /pytest-plugin/)
     // Links without: match hostname only (e.g. https://libtmux.git-pull.com)
-    const isActive = hasPath
-      ? sameHost && loc.pathname.startsWith(url.pathname.replace(/\/+$/, ""))
+    const isActive = path
+      ? sameHost && loc.pathname.startsWith(path)
       : sameHost;
-    if (isActive && !link.classList.contains("active")) {
+    return { link, path, isActive };
+  });
+  // A sub-site link outranks its bare-host parent, so visiting
+  // /packages/django-admin-search-query/ marks (admin) alone, not both it and
+  // django-search-query. Only the deepest matching path is kept.
+  const depth = Math.max(
+    0,
+    ...entries.filter((e) => e.isActive).map((e) => e.path.length),
+  );
+  entries.forEach(({ link, path, isActive }) => {
+    if (isActive && path.length >= depth && !link.classList.contains("active")) {
       const d = document.createElement('span');
       d.textContent = link.textContent;
       d.classList.add("active");
