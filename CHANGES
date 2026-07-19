@@ -18,6 +18,14 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Fixes
+
+#### Sidebar highlights the most specific project link
+
+Projects whose docs span a parent site and a sub-path lit up both
+entries in the sidebar project list at once. Only the deepest matching
+link is marked current. (#67)
+
 ## gp-sphinx 0.0.1a34 (2026-07-13)
 
 ### What's new
