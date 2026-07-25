@@ -1095,6 +1095,8 @@ _CONCRETE_MEMBER_VISIBILITY_SOURCE = textwrap.dedent(
     '''\
     from __future__ import annotations
 
+    import typing as t
+
 
     class PlainItem:
         """An item whose property is documented as an attribute.
@@ -1124,6 +1126,31 @@ _CONCRETE_MEMBER_VISIBILITY_SOURCE = textwrap.dedent(
         def value(self) -> int:
             """Return the excluded concrete value."""
             return 2
+
+
+    class UndocumentedSettings:
+        """Settings with an undocumented concrete ClassVar.
+
+        Attributes
+        ----------
+        registry : dict[str, str]
+            Fallback registry documentation.
+        """
+
+        registry: t.ClassVar[dict[str, str]] = {}
+
+
+    class SourceDocumentedSettings:
+        """Settings with a source-documented concrete ClassVar.
+
+        Attributes
+        ----------
+        registry : dict[str, str]
+            Stale registry fallback.
+        """
+
+        #: Source-owned registry documentation.
+        registry: t.ClassVar[dict[str, str]] = {}
     '''
 )
 
@@ -1148,6 +1175,12 @@ def concrete_member_visibility_html_result(
         .. autoclass:: concrete_member_visibility_demo.ExcludedItem
            :members:
            :exclude-members: value
+
+        .. autoclass:: concrete_member_visibility_demo.UndocumentedSettings
+           :members:
+
+        .. autoclass:: concrete_member_visibility_demo.SourceDocumentedSettings
+           :members:
         """
     )
     cache_root = tmp_path_factory.mktemp("concrete-member-visibility")
@@ -1190,6 +1223,24 @@ def test_unselected_concrete_member_keeps_field_documentation(
     assert attributes.count("ExcludedItem.value") == 1
     assert "Plain fallback field documentation." in html
     assert "Excluded fallback field documentation." in html
+    assert "duplicate object description" not in (
+        concrete_member_visibility_html_result.warnings
+    )
+
+
+@pytest.mark.integration
+def test_source_documented_classvar_replaces_field_fallback(
+    concrete_member_visibility_html_result: SharedSphinxResult,
+) -> None:
+    """Only a selected ClassVar with a source doc replaces Attributes."""
+    attributes = _attribute_names(concrete_member_visibility_html_result)
+    html = read_output(concrete_member_visibility_html_result, "index.html")
+
+    assert attributes.count("UndocumentedSettings.registry") == 1
+    assert "Fallback registry documentation." in html
+    assert attributes.count("SourceDocumentedSettings.registry") == 1
+    assert "Source-owned registry documentation." in html
+    assert "Stale registry fallback." not in html
     assert "duplicate object description" not in (
         concrete_member_visibility_html_result.warnings
     )

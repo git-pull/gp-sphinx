@@ -38,7 +38,9 @@ import sys
 import typing as t
 import weakref
 
+from sphinx.errors import PycodeError
 from sphinx.ext.autodoc import ALL
+from sphinx.pycode import ModuleAnalyzer
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -462,6 +464,37 @@ def _is_concrete_non_field_member(klass: type, name: str) -> bool:
     return looks_concrete and not _is_declared_field(klass, name)
 
 
+def _has_source_attribute_doc(klass: type, name: str) -> bool:
+    """Return whether Sphinx found a PEP 258 attribute docstring.
+
+    Parameters
+    ----------
+    klass : type
+        Class whose source documentation is being inspected.
+    name : str
+        Attribute name under consideration.
+
+    Returns
+    -------
+    bool
+        Whether Sphinx's module analyzer found source documentation.
+
+    Examples
+    --------
+    >>> _has_source_attribute_doc  # doctest: +ELLIPSIS
+    <function _has_source_attribute_doc at 0x...>
+    """
+    module_name = getattr(klass, "__module__", None)
+    qualname = getattr(klass, "__qualname__", None)
+    if not module_name or not qualname:
+        return False
+    try:
+        attribute_docs = ModuleAnalyzer.for_module(module_name).find_attr_docs()
+    except PycodeError:
+        return False
+    return (qualname, name) in attribute_docs
+
+
 def _concrete_member_will_render(
     klass: type,
     name: str,
@@ -533,7 +566,7 @@ def _concrete_member_will_render(
 
     annotations = _declared_annotations(klass)
     if name in annotations and _is_class_var(annotations[name]):
-        return bool(options.undoc_members)
+        return bool(options.undoc_members or _has_source_attribute_doc(klass, name))
     if options.undoc_members:
         return True
     exposed = inspect.getattr_static(klass, name, _UNSET)
