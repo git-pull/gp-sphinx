@@ -598,6 +598,18 @@ _FIELDS_MODULE_SOURCE = textwrap.dedent(
             self.value = value
 
 
+    class FieldError(Exception):
+        """An exception carrying structured details.
+
+        Attributes
+        ----------
+        code : int
+            Machine-readable error code.
+        """
+
+        code: int
+
+
     class BaseOptions(t.TypedDict):
         """Options every caller may pass.
 
@@ -647,6 +659,8 @@ _FIELDS_INDEX_RST = textwrap.dedent(
 
     .. autoclass:: documented_fields_demo.BothDocumented
        :class-doc-from: both
+
+    .. autoexception:: documented_fields_demo.FieldError
 
     .. autoclass:: documented_fields_demo.BaseOptions
 
@@ -776,6 +790,19 @@ def test_combined_class_and_initializer_attributes_are_described_once(
         documented_fields_html_result, "index.html"
     )
     assert "Initializer-owned duplicate field documentation." not in read_output(
+        documented_fields_html_result, "index.html"
+    )
+
+
+@pytest.mark.integration
+def test_exception_attributes_are_described_once(
+    documented_fields_html_result: SharedSphinxResult,
+) -> None:
+    """``autoexception`` treats documented annotations as class fields."""
+    attributes = _attribute_names(documented_fields_html_result)
+
+    assert attributes.count("FieldError.code") == 1
+    assert "Machine-readable error code." in read_output(
         documented_fields_html_result, "index.html"
     )
 

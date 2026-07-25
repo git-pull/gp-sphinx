@@ -37,7 +37,7 @@ import re
 import typing as t
 import weakref
 
-from sphinx.ext.autodoc import ClassDocumenter
+from sphinx.ext.autodoc import ClassDocumenter, ExceptionDocumenter
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -46,6 +46,7 @@ if t.TYPE_CHECKING:
     )
 
 _ATTRIBUTE_DIRECTIVE = ".. attribute:: "
+_CLASS_LIKE_AUTODOC_TYPES = frozenset({"class", "exception"})
 _UNSET = object()
 _CLASS_VAR_RE = re.compile(r"\s*(?:\w+\.)*ClassVar\b")
 
@@ -420,7 +421,7 @@ def record_documented_fields(
     >>> record_documented_fields  # doctest: +ELLIPSIS
     <function record_documented_fields at 0x...>
     """
-    if what != "class" or not isinstance(obj, type):
+    if what not in _CLASS_LIKE_AUTODOC_TYPES or not isinstance(obj, type):
         return
     names = _attribute_directive_names(lines)
     previous = _PROCESSED_FIELDS.get(app)
@@ -475,6 +476,13 @@ class GpClassDocumenter(  # type: ignore[misc]
     ClassDocumenter,
 ):
     """Class documenter that finalizes emitted field directives."""
+
+
+class GpExceptionDocumenter(  # type: ignore[misc]
+    _DocumentedFieldDocumenterMixin,
+    ExceptionDocumenter,
+):
+    """Exception documenter that finalizes emitted field directives."""
 
 
 def _clear_processed_fields(app: Sphinx) -> None:
@@ -541,7 +549,7 @@ def skip_documented_fields(
     >>> skip_documented_fields  # doctest: +ELLIPSIS
     <function skip_documented_fields at 0x...>
     """
-    if skip or what != "class":
+    if skip or what not in _CLASS_LIKE_AUTODOC_TYPES:
         return None
 
     processed = _PROCESSED_FIELDS.get(app)
@@ -556,7 +564,7 @@ def skip_documented_fields(
 
 
 def register(app: Sphinx) -> None:
-    """Connect the duplicate-field skip handler to the Sphinx app.
+    """Register field-aware class and exception documenters.
 
     Parameters
     ----------
@@ -569,5 +577,6 @@ def register(app: Sphinx) -> None:
     <function register at 0x...>
     """
     app.add_autodocumenter(GpClassDocumenter, override=True)
+    app.add_autodocumenter(GpExceptionDocumenter, override=True)
     app.connect("builder-inited", _clear_processed_fields)
     app.connect("autodoc-skip-member", skip_documented_fields)
