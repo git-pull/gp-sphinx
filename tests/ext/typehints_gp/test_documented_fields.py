@@ -1114,6 +1114,18 @@ _NO_INDEX_MODULE_SOURCE = textwrap.dedent(
         """
 
         value: int
+
+
+    class ExistingNoIndex:
+        """A class whose manual field is already unregistered.
+
+        .. attribute:: value
+           :no-index:
+
+           Manually unregistered field.
+        """
+
+        value: int
     '''
 )
 
@@ -1136,6 +1148,9 @@ def no_index_html_result(
                     ====
 
                     .. autoclass:: no_index_demo.NoIndexField
+                       :no-index:
+
+                    .. autoclass:: no_index_demo.ExistingNoIndex
                        :no-index:
                     """
                 ),
@@ -1162,3 +1177,8 @@ def test_no_index_applies_to_emitted_attribute(
         no_index_html_result, "index.html"
     )
     assert "no_index_demo.NoIndexField.value" not in objects
+    assert attributes.count("ExistingNoIndex.value") == 1
+    assert "Manually unregistered field." in read_output(
+        no_index_html_result, "index.html"
+    )
+    assert "duplicate option" not in no_index_html_result.warnings

@@ -22,6 +22,7 @@ from __future__ import annotations
 import ast
 import builtins
 import inspect
+import itertools
 import logging
 import sys
 import typing as t
@@ -332,11 +333,24 @@ def _add_attribute_no_index(lines: list[str]) -> None:
     >>> _add_attribute_no_index(body)
     >>> body
     ['.. attribute:: value', '   :no-index:', '', '   Description.']
+
+    >>> existing = [".. attribute:: value", "   :no-index:", ""]
+    >>> _add_attribute_no_index(existing)
+    >>> existing
+    ['.. attribute:: value', '   :no-index:', '']
     """
     updated: list[str] = []
-    for line in lines:
+    for index, line in enumerate(lines):
         updated.append(line)
-        if line.startswith(".. attribute:: "):
+        if not line.startswith(".. attribute:: "):
+            continue
+        option_lines = itertools.takewhile(
+            lambda candidate: candidate.startswith("   :"),
+            lines[index + 1 :],
+        )
+        if not any(
+            option.strip() in {":no-index:", ":noindex:"} for option in option_lines
+        ):
             updated.append("   :no-index:")
     lines[:] = updated
 
