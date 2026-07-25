@@ -34,10 +34,9 @@ import dataclasses
 import inspect
 import itertools
 import re
+import sys
 import typing as t
 import weakref
-
-from sphinx.ext.autodoc import ClassDocumenter, ExceptionDocumenter
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -137,13 +136,19 @@ def _add_attribute_no_index(lines: list[str]) -> None:
     lines[:] = updated
 
 
-def _coalesce_attribute_directives(lines: list[str]) -> list[str]:
+def _coalesce_attribute_directives(
+    lines: list[str],
+    documented: t.Iterable[str] = (),
+) -> list[str]:
     """Keep the first complete directive block for each attribute name.
 
     Parameters
     ----------
     lines : list[str]
         Fully processed class and initializer docstring lines.
+    documented : typing.Iterable[str]
+        Attribute names emitted by an earlier docstring from the same
+        documenter invocation.
 
     Returns
     -------
@@ -165,7 +170,7 @@ def _coalesce_attribute_directives(lines: list[str]) -> list[str]:
     ... )
     ['.. attribute:: value', '', '   Class description.', 'Initializer.']
     """
-    seen: set[str] = set()
+    seen = set(documented)
     coalesced: list[str] = []
     index = 0
     while index < len(lines):
@@ -397,9 +402,10 @@ def record_documented_fields(
 ) -> None:
     """Record fields emitted by final processed class docstrings.
 
-    Called by the class documenter after every ``autodoc-process-docstring``
-    listener has run. The application-local record carries the exact owner
-    and final emitted attribute names into ``autodoc-skip-member``.
+    Installed after extension initialization as the final
+    ``autodoc-process-docstring`` listener. The application-local record
+    carries the exact owner and final emitted attribute names into
+    ``autodoc-skip-member``.
 
     Parameters
     ----------
@@ -423,10 +429,18 @@ def record_documented_fields(
     """
     if what not in _CLASS_LIKE_AUTODOC_TYPES or not isinstance(obj, type):
         return
-    names = _attribute_directive_names(lines)
     previous = _PROCESSED_FIELDS.get(app)
-    if previous is not None and previous.options is options and previous.owner is obj:
-        names |= previous.names
+    documented = (
+        previous.names
+        if previous is not None
+        and previous.options is options
+        and previous.owner is obj
+        else frozenset()
+    )
+    lines[:] = _coalesce_attribute_directives(lines, documented)
+    if options.no_index or options.noindex:
+        _add_attribute_no_index(lines)
+    names = _attribute_directive_names(lines) | documented
     _PROCESSED_FIELDS[app] = _ProcessedFields(
         options=options,
         owner=obj,
@@ -434,59 +448,8 @@ def record_documented_fields(
     )
 
 
-class _DocumentedFieldDocumenterMixin:
-    """Finalize field directives after every docstring listener."""
-
-    def process_doc(self, docstrings: list[list[str]]) -> t.Iterator[str]:
-        """Process and record the selected class docstrings.
-
-        Parameters
-        ----------
-        docstrings : list[list[str]]
-            Raw docstrings selected by the Sphinx documenter.
-
-        Yields
-        ------
-        str
-            Final lines after listener processing and index propagation.
-
-        Examples
-        --------
-        >>> callable(_DocumentedFieldDocumenterMixin.process_doc)
-        True
-        """
-        processed = _coalesce_attribute_directives(
-            list(super().process_doc(docstrings))  # type: ignore[misc]
-        )
-        if self.options.no_index or self.options.noindex:  # type: ignore[attr-defined]
-            _add_attribute_no_index(processed)
-        record_documented_fields(
-            self.env.app,  # type: ignore[attr-defined]
-            self.objtype,  # type: ignore[attr-defined]
-            self.fullname,  # type: ignore[attr-defined]
-            self.object,  # type: ignore[attr-defined]
-            self.options,  # type: ignore[attr-defined]
-            processed,
-        )
-        yield from processed
-
-
-class GpClassDocumenter(  # type: ignore[misc]
-    _DocumentedFieldDocumenterMixin,
-    ClassDocumenter,
-):
-    """Class documenter that finalizes emitted field directives."""
-
-
-class GpExceptionDocumenter(  # type: ignore[misc]
-    _DocumentedFieldDocumenterMixin,
-    ExceptionDocumenter,
-):
-    """Exception documenter that finalizes emitted field directives."""
-
-
-def _clear_processed_fields(app: Sphinx) -> None:
-    """Clear the application's processed field record before a build.
+def _prepare_documented_fields(app: Sphinx) -> None:
+    """Install field finalization after every extension has initialized.
 
     Parameters
     ----------
@@ -495,10 +458,15 @@ def _clear_processed_fields(app: Sphinx) -> None:
 
     Examples
     --------
-    >>> callable(_clear_processed_fields)
+    >>> callable(_prepare_documented_fields)
     True
     """
     _PROCESSED_FIELDS.pop(app, None)
+    app.connect(
+        "autodoc-process-docstring",
+        record_documented_fields,
+        priority=sys.maxsize,
+    )
 
 
 def skip_documented_fields(
@@ -564,7 +532,7 @@ def skip_documented_fields(
 
 
 def register(app: Sphinx) -> None:
-    """Register field-aware class and exception documenters.
+    """Register late field finalization and member filtering.
 
     Parameters
     ----------
@@ -576,7 +544,9 @@ def register(app: Sphinx) -> None:
     >>> register  # doctest: +ELLIPSIS
     <function register at 0x...>
     """
-    app.add_autodocumenter(GpClassDocumenter, override=True)
-    app.add_autodocumenter(GpExceptionDocumenter, override=True)
-    app.connect("builder-inited", _clear_processed_fields)
     app.connect("autodoc-skip-member", skip_documented_fields)
+    app.connect(
+        "builder-inited",
+        _prepare_documented_fields,
+        priority=sys.maxsize,
+    )

@@ -1110,6 +1110,143 @@ def test_inherited_field_metadata_does_not_hide_overriding_members(
     assert f"Render the {kind} override." in html
 
 
+_CUSTOM_DOCUMENTERS_SOURCE = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    import typing as t
+
+    from sphinx.ext.autodoc import ClassDocumenter, ExceptionDocumenter
+
+
+    class MarkedClassDocumenter(ClassDocumenter):
+        def process_doc(self, docstrings: list[list[str]]) -> t.Iterator[str]:
+            yield from super().process_doc(docstrings)
+            yield "Custom class documenter marker."
+
+
+    class MarkedExceptionDocumenter(ExceptionDocumenter):
+        def process_doc(self, docstrings: list[list[str]]) -> t.Iterator[str]:
+            yield from super().process_doc(docstrings)
+            yield "Custom exception documenter marker."
+
+
+    def setup(app):
+        app.add_autodocumenter(MarkedClassDocumenter, override=True)
+        app.add_autodocumenter(MarkedExceptionDocumenter, override=True)
+        return {"parallel_read_safe": True}
+    """
+)
+
+_COMPOSED_DOCUMENTERS_MODULE_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+
+    class Record:
+        """A record with one documented field.
+
+        Attributes
+        ----------
+        value : int
+            Record value.
+        """
+
+        value: int
+
+
+    class FieldError(Exception):
+        """An error with one documented field.
+
+        Attributes
+        ----------
+        code : int
+            Error code.
+        """
+
+        code: int
+    '''
+)
+
+
+@pytest.fixture(
+    scope="module",
+    params=("before", "after"),
+    ids=("custom-before", "custom-after"),
+)
+def composed_documenters_html_result(
+    request: pytest.FixtureRequest,
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build with custom documenters on either side of this extension."""
+    order = t.cast("str", request.param)
+    extensions = (
+        ["custom_documenters", "sphinx_autodoc_typehints_gp"]
+        if order == "before"
+        else ["sphinx_autodoc_typehints_gp", "custom_documenters"]
+    )
+    conf = textwrap.dedent(
+        f"""\
+        import sys
+
+        sys.path.insert(0, r"__SCENARIO_SRCDIR__")
+
+        extensions = ["sphinx.ext.autodoc", {", ".join(map(repr, extensions))}]
+        autodoc_default_options = {{"members": True, "undoc-members": True}}
+        """
+    )
+    cache_root = tmp_path_factory.mktemp(f"composed-documenters-{order}")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile(
+                "conf.py",
+                conf.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("custom_documenters.py", _CUSTOM_DOCUMENTERS_SOURCE),
+            ScenarioFile(
+                "composed_documenters_demo.py",
+                _COMPOSED_DOCUMENTERS_MODULE_SOURCE,
+            ),
+            ScenarioFile(
+                "index.rst",
+                textwrap.dedent(
+                    """\
+                    Demo
+                    ====
+
+                    .. autoclass:: composed_documenters_demo.Record
+
+                    .. autoexception:: composed_documenters_demo.FieldError
+                    """
+                ),
+            ),
+        ),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("composed_documenters_demo", "custom_documenters"),
+    )
+
+
+@pytest.mark.integration
+def test_field_finalization_composes_with_custom_documenters(
+    composed_documenters_html_result: SharedSphinxResult,
+) -> None:
+    """Custom documenters and field finalization both remain active."""
+    attributes = _attribute_names(composed_documenters_html_result)
+    html = read_output(composed_documenters_html_result, "index.html")
+
+    assert "Custom class documenter marker." in html
+    assert "Custom exception documenter marker." in html
+    assert attributes.count("Record.value") == 1
+    assert attributes.count("FieldError.code") == 1
+    assert "duplicate object description" not in (
+        composed_documenters_html_result.warnings
+    )
+
+
 _FILTERED_DOCSTRING_CONF_PY = textwrap.dedent(
     """\
     from __future__ import annotations
