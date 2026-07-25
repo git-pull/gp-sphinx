@@ -65,7 +65,7 @@ jobs:
         if: matrix.python-version == '3.14'
         run: uv run pytest --cov=./ --cov-report=xml
 
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
         if: matrix.python-version == '3.14'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
