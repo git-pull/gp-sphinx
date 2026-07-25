@@ -41,6 +41,22 @@ if t.TYPE_CHECKING:
 class RenderConfig:
     """Configuration for the renderer.
 
+    Attributes
+    ----------
+    group_title_prefix : str
+        String prepended to every argument group heading. Empty leaves
+        titles as argparse reports them.
+    show_defaults : bool
+        Whether an argument's default value is rendered.
+    show_choices : bool
+        Whether an argument's accepted values are rendered.
+    show_types : bool
+        Whether an argument's converter type name is rendered.
+    register_xref_targets : bool
+        Whether the render registers cross-reference targets. ``False``
+        still emits full markup and HTML anchors but no inventory entries
+        or implicit section labels.
+
     Examples
     --------
     >>> config = RenderConfig()

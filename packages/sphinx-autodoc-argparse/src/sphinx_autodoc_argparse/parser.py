@@ -20,6 +20,40 @@ NO_DEFAULT = object()
 class ArgumentInfo:
     """Represents a single CLI argument.
 
+    Attributes
+    ----------
+    names : list[str]
+        Option strings such as ``["-v", "--verbose"]``, or a single-element
+        list holding ``dest`` for a positional.
+    help : str | None
+        Help text, or ``None`` when the argument used ``argparse.SUPPRESS``.
+    default : object
+        Default value as argparse holds it. ``NO_DEFAULT`` when the default
+        was suppressed, which is distinct from a default of ``None``.
+    default_string : str | None
+        Display form of ``default``, or ``None`` when suppressed.
+    choices : list[object] | None
+        Accepted values, or ``None`` when the argument is unconstrained.
+    required : bool
+        Whether the parser rejects a command line that omits the argument.
+        Positionals are required unless ``nargs`` makes them optional.
+    metavar : str | None
+        Placeholder shown in usage, with tuple metavars joined by spaces.
+        ``None`` falls back to argparse's derived name.
+    nargs : str | int | None
+        Value count argparse accepts — a count, one of ``"?"``/``"*"``/
+        ``"+"``, or ``None`` for a single value.
+    action : str
+        Action name such as ``"store"`` or ``"store_true"``, mapped back
+        from the private argparse action class.
+    type_name : str | None
+        Name of the callable that converts the raw string, or ``None`` when
+        no ``type=`` was given.
+    const : object
+        Value stored by const-style actions such as ``store_const``.
+    dest : str
+        Attribute name the parsed value lands on in the namespace.
+
     Examples
     --------
     >>> info = ArgumentInfo(
@@ -99,6 +133,14 @@ class ArgumentInfo:
 class MutuallyExclusiveGroup:
     """Arguments that cannot be used together.
 
+    Attributes
+    ----------
+    arguments : list[ArgumentInfo]
+        Members of the group, in declaration order, with suppressed
+        arguments dropped.
+    required : bool
+        Whether the parser demands exactly one member on the command line.
+
     Examples
     --------
     >>> group = MutuallyExclusiveGroup(arguments=[], required=True)
@@ -113,6 +155,19 @@ class MutuallyExclusiveGroup:
 @dataclasses.dataclass
 class ArgumentGroup:
     """Named group of arguments.
+
+    Attributes
+    ----------
+    title : str
+        Group heading, such as ``"options"``. Empty when argparse left the
+        group untitled.
+    description : str | None
+        Prose shown under the heading, or ``None`` when the group has none.
+    arguments : list[ArgumentInfo]
+        Arguments belonging to the group that are not in a mutually
+        exclusive group.
+    mutually_exclusive : list[MutuallyExclusiveGroup]
+        Mutually exclusive groups nested in this group, each listed once.
 
     Examples
     --------
@@ -136,6 +191,18 @@ class ArgumentGroup:
 class SubcommandInfo:
     """A subparser/subcommand.
 
+    Attributes
+    ----------
+    name : str
+        Primary name the subcommand was registered under.
+    aliases : list[str]
+        Further names bound to the same subparser, empty when there are
+        none.
+    help : str | None
+        Help text from the subparser listing, or ``None`` when absent.
+    parser : ParserInfo
+        Extraction of the subparser itself, so nesting recurses.
+
     Examples
     --------
     >>> sub = SubcommandInfo(
@@ -157,6 +224,30 @@ class SubcommandInfo:
 @dataclasses.dataclass
 class ParserInfo:
     """Complete parsed ArgumentParser.
+
+    Attributes
+    ----------
+    prog : str
+        Program name argparse reports, such as ``"myapp sync"`` for a
+        subparser.
+    usage : str | None
+        Usage string the parser was constructed with, or ``None`` when it
+        relies on the generated one.
+    bare_usage : str
+        Usage argparse's formatter produces, stripped of the ``usage:``
+        prefix and ANSI codes.
+    description : str | None
+        Prose shown above the argument listing, or ``None``.
+    epilog : str | None
+        Prose shown below the argument listing, or ``None``.
+    argument_groups : list[ArgumentGroup]
+        Non-empty argument groups, in parser order.
+    subcommands : list[SubcommandInfo] | None
+        Registered subcommands, or ``None`` when the parser has no
+        subparsers.
+    subcommand_dest : str | None
+        Namespace attribute the chosen subcommand name lands on, or
+        ``None`` when there are no subparsers.
 
     Examples
     --------
