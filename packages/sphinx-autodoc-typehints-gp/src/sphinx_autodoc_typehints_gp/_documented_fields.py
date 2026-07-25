@@ -38,6 +38,8 @@ import sys
 import typing as t
 import weakref
 
+from sphinx.ext.autodoc import ALL
+
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
     from sphinx.ext.autodoc._legacy_class_based._directive_options import (  # type: ignore[import-not-found]
@@ -436,6 +438,7 @@ def _is_concrete_non_field_member(klass: type, name: str) -> bool:
     >>> class Service:
     ...     @property
     ...     def status(self) -> str:
+    ...         '''Return the service status.'''
     ...         return "ready"
     >>> _is_concrete_non_field_member(Service, "status")
     True
@@ -457,6 +460,84 @@ def _is_concrete_non_field_member(klass: type, name: str) -> bool:
         or inspect.ismethoddescriptor(exposed)
     )
     return looks_concrete and not _is_declared_field(klass, name)
+
+
+def _concrete_member_will_render(
+    klass: type,
+    name: str,
+    options: Options,
+) -> bool:
+    """Return whether autodoc will render a concrete non-field member.
+
+    Parameters
+    ----------
+    klass : type
+        Class being documented.
+    name : str
+        Concrete member name under consideration.
+    options : Options
+        Options controlling member selection for the class documenter.
+
+    Returns
+    -------
+    bool
+        Whether the concrete member can replace its ``Attributes`` entry.
+
+    Examples
+    --------
+    >>> class Selected:
+    ...     members = ALL
+    ...     exclude_members: set[str] = set()
+    ...     private_members = None
+    ...     special_members = None
+    ...     undoc_members = None
+    >>> class Service:
+    ...     @property
+    ...     def status(self) -> str:
+    ...         '''Return the service status.'''
+    ...         return "ready"
+    >>> _concrete_member_will_render(
+    ...     Service,
+    ...     "status",
+    ...     t.cast("Options", Selected()),
+    ... )
+    True
+
+    >>> Selected.exclude_members = {"status"}
+    >>> _concrete_member_will_render(
+    ...     Service,
+    ...     "status",
+    ...     t.cast("Options", Selected()),
+    ... )
+    False
+    """
+    if not _is_concrete_non_field_member(klass, name):
+        return False
+
+    members = options.members
+    if members is None or (members is not ALL and name not in members):
+        return False
+    excluded = options.exclude_members
+    if isinstance(excluded, set) and name in excluded:
+        return False
+
+    if members is ALL:
+        if name.startswith("__") and name.endswith("__"):
+            special = options.special_members
+            if special is None or (special is not ALL and name not in special):
+                return False
+        elif name.startswith("_"):
+            private = options.private_members
+            if private is None or (private is not ALL and name not in private):
+                return False
+
+    annotations = _declared_annotations(klass)
+    if name in annotations and _is_class_var(annotations[name]):
+        return bool(options.undoc_members)
+    if options.undoc_members:
+        return True
+    exposed = inspect.getattr_static(klass, name, _UNSET)
+    return inspect.getdoc(exposed) is not None
 
 
 def record_documented_fields(
@@ -509,7 +590,7 @@ def record_documented_fields(
     concrete_members = {
         field_name
         for field_name in _attribute_directive_names(lines)
-        if _is_concrete_non_field_member(obj, field_name)
+        if _concrete_member_will_render(obj, field_name, options)
     }
     lines[:] = _coalesce_attribute_directives(
         lines,

@@ -1065,6 +1065,110 @@ def non_field_members_html_result(
     )
 
 
+_CONCRETE_MEMBER_VISIBILITY_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+
+    class PlainItem:
+        """An item whose property is documented as an attribute.
+
+        Attributes
+        ----------
+        value : int
+            Plain fallback field documentation.
+        """
+
+        @property
+        def value(self) -> int:
+            """Return the concrete value."""
+            return 1
+
+
+    class ExcludedItem:
+        """An item whose property is excluded from member output.
+
+        Attributes
+        ----------
+        value : int
+            Excluded fallback field documentation.
+        """
+
+        @property
+        def value(self) -> int:
+            """Return the excluded concrete value."""
+            return 2
+    '''
+)
+
+_CONCRETE_MEMBER_VISIBILITY_CONF_PY = _CONF_PY.replace(
+    'autodoc_default_options = {"members": True, "undoc-members": True}\n',
+    "",
+)
+
+
+@pytest.fixture(scope="module")
+def concrete_member_visibility_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build without selecting the concrete property for member output."""
+    index = textwrap.dedent(
+        """\
+        Demo
+        ====
+
+        .. autoclass:: concrete_member_visibility_demo.PlainItem
+
+        .. autoclass:: concrete_member_visibility_demo.ExcludedItem
+           :members:
+           :exclude-members: value
+        """
+    )
+    cache_root = tmp_path_factory.mktemp("concrete-member-visibility")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile(
+                "conf.py",
+                _CONCRETE_MEMBER_VISIBILITY_CONF_PY.replace(
+                    "__SCENARIO_SRCDIR__",
+                    SCENARIO_SRCDIR_TOKEN,
+                ),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile(
+                "concrete_member_visibility_demo.py",
+                _CONCRETE_MEMBER_VISIBILITY_SOURCE,
+            ),
+            ScenarioFile(
+                "index.rst",
+                index,
+            ),
+        ),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("concrete_member_visibility_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_unselected_concrete_member_keeps_field_documentation(
+    concrete_member_visibility_html_result: SharedSphinxResult,
+) -> None:
+    """An unselected property does not remove its Attributes description."""
+    attributes = _attribute_names(concrete_member_visibility_html_result)
+    html = read_output(concrete_member_visibility_html_result, "index.html")
+
+    assert attributes.count("PlainItem.value") == 1
+    assert attributes.count("ExcludedItem.value") == 1
+    assert "Plain fallback field documentation." in html
+    assert "Excluded fallback field documentation." in html
+    assert "duplicate object description" not in (
+        concrete_member_visibility_html_result.warnings
+    )
+
+
 @pytest.mark.integration
 def test_concrete_members_named_in_attributes_are_described_once(
     non_field_members_html_result: SharedSphinxResult,
