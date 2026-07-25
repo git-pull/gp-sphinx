@@ -171,6 +171,16 @@ class _QuotedClassVar:
     registry: "t.ClassVar[dict[str, str]]" = {}
 
 
+class _TupleFieldsLookalike:
+    """A regular class with an unrelated tuple-valued ``_fields``."""
+
+    _fields = ("matches",)
+
+    def matches(self, other: str) -> bool:
+        """Return whether ``other`` is non-empty."""
+        return bool(other)
+
+
 class _BaseOptions(t.TypedDict):
     """Options every caller may pass."""
 
@@ -278,6 +288,12 @@ _DECLARED_FIELD_FIXTURES: list[_DeclaredFieldFixture] = [
         expected=False,
     ),
     _DeclaredFieldFixture(
+        test_id="tuple-fields-lookalike",
+        klass=_TupleFieldsLookalike,
+        name="matches",
+        expected=False,
+    ),
+    _DeclaredFieldFixture(
         test_id="typeddict-own-key",
         klass=_Options,
         name="retries",
@@ -342,6 +358,10 @@ def test_own_annotations_does_not_evaluate_deferred_annotation() -> None:
     assert calls == []
     assert _own_annotations(deferred) == {}
     assert calls == []
+    materialized = deferred.__annotations__
+    assert calls == ["evaluated"]
+    assert _own_annotations(deferred) == materialized
+    assert calls == ["evaluated"]
 
 
 # ---------------------------------------------------------------------------
@@ -536,6 +556,22 @@ _FIELDS_MODULE_SOURCE = textwrap.dedent(
             self.value = value
 
 
+    class BothDocumented:
+        """A value whose class docstring supplies field documentation.
+
+        Attributes
+        ----------
+        value : int
+            Class-owned field documentation.
+        """
+
+        value: int
+
+        def __init__(self, value: int) -> None:
+            """Initialize the value."""
+            self.value = value
+
+
     class BaseOptions(t.TypedDict):
         """Options every caller may pass.
 
@@ -582,6 +618,9 @@ _FIELDS_INDEX_RST = textwrap.dedent(
 
     .. autoclass:: documented_fields_demo.InitDocumented
        :class-doc-from: init
+
+    .. autoclass:: documented_fields_demo.BothDocumented
+       :class-doc-from: both
 
     .. autoclass:: documented_fields_demo.BaseOptions
 
@@ -695,6 +734,19 @@ def test_initializer_attributes_are_described_once(
 
     assert attributes.count("InitDocumented.value") == 1
     assert "Initializer-owned field documentation." in read_output(
+        documented_fields_html_result, "index.html"
+    )
+
+
+@pytest.mark.integration
+def test_combined_class_and_initializer_attributes_are_described_once(
+    documented_fields_html_result: SharedSphinxResult,
+) -> None:
+    """``class-doc-from=both`` retains fields emitted by either docstring."""
+    attributes = _attribute_names(documented_fields_html_result)
+
+    assert attributes.count("BothDocumented.value") == 1
+    assert "Class-owned field documentation." in read_output(
         documented_fields_html_result, "index.html"
     )
 
@@ -925,7 +977,7 @@ _REMOVE_ATTRIBUTES_SOURCE = textwrap.dedent(
 
 
     def setup(app):
-        app.connect("autodoc-process-docstring", remove_attributes)
+        app.connect("autodoc-process-docstring", remove_attributes, priority=1000)
         return {"parallel_read_safe": True}
     """
 )
@@ -995,3 +1047,53 @@ def test_removed_attributes_section_leaves_autodoc_field(
         filtered_docstring_html_result,
         "index.html",
     )
+
+
+_NATIVE_ANNOTATION_MODULE_SOURCE = textwrap.dedent(
+    '''\
+    class NativeField:
+        """A class using the runtime's native annotation behavior.
+
+        Attributes
+        ----------
+        value : int
+            Natively annotated field.
+        """
+
+        value: int
+    '''
+)
+
+
+@pytest.fixture(scope="module")
+def native_annotation_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a project without postponed-annotation imports."""
+    cache_root = tmp_path_factory.mktemp("native-annotation-html")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("native_annotation_demo.py", _NATIVE_ANNOTATION_MODULE_SOURCE),
+            _conf_file(),
+            ScenarioFile(
+                "index.rst",
+                "Demo\n====\n\n.. autoclass:: native_annotation_demo.NativeField\n",
+            ),
+        ),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("native_annotation_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_native_annotation_field_is_described_once(
+    native_annotation_html_result: SharedSphinxResult,
+) -> None:
+    """Native deferred annotations still identify ordinary fields."""
+    attributes = _attribute_names(native_annotation_html_result)
+
+    assert attributes.count("NativeField.value") == 1
+    assert "duplicate object description" not in native_annotation_html_result.warnings
