@@ -163,6 +163,14 @@ class _CallableDefaults:
     result_type: type = str
 
 
+class _InheritedCallableDefaults(_CallableDefaults):
+    """A subclass inheriting callable dataclass field defaults."""
+
+
+class _InheritedDescriptorGauge(_DescriptorGauge):
+    """A subclass inheriting a descriptor-backed dataclass field."""
+
+
 class _AnnotatedMethod:
     """A class retaining an annotation for a same-named method."""
 
@@ -293,6 +301,24 @@ _DECLARED_FIELD_FIXTURES: list[_DeclaredFieldFixture] = [
         test_id="class-valued-dataclass-field",
         klass=_CallableDefaults,
         name="result_type",
+        expected=True,
+    ),
+    _DeclaredFieldFixture(
+        test_id="inherited-callable-dataclass-field",
+        klass=_InheritedCallableDefaults,
+        name="converter",
+        expected=True,
+    ),
+    _DeclaredFieldFixture(
+        test_id="inherited-class-valued-dataclass-field",
+        klass=_InheritedCallableDefaults,
+        name="result_type",
+        expected=True,
+    ),
+    _DeclaredFieldFixture(
+        test_id="inherited-descriptor-dataclass-field",
+        klass=_InheritedDescriptorGauge,
+        name="reading",
         expected=True,
     ),
     _DeclaredFieldFixture(
@@ -545,6 +571,24 @@ _FIELDS_MODULE_SOURCE = textwrap.dedent(
         level: int = IntegerField()
 
 
+    @dataclasses.dataclass
+    class CallableDefaults:
+        converter: t.Callable[[str], str] = str.upper
+        result_type: type = str
+
+
+    class InheritedCallableDefaults(CallableDefaults):
+        """A record inheriting callable field defaults.
+
+        Attributes
+        ----------
+        converter : typing.Callable[[str], str]
+            Conversion function inherited from the base dataclass.
+        result_type : type
+            Result type inherited from the base dataclass.
+        """
+
+
     class Outer:
         """A namespace for related records."""
 
@@ -652,6 +696,9 @@ _FIELDS_INDEX_RST = textwrap.dedent(
 
     .. autoclass:: documented_fields_demo.DescriptorGauge
 
+    .. autoclass:: documented_fields_demo.InheritedCallableDefaults
+       :inherited-members:
+
     .. autoclass:: documented_fields_demo.Outer.NestedPoint
 
     .. autoclass:: documented_fields_demo.InitDocumented
@@ -750,6 +797,20 @@ def test_documented_descriptor_dataclass_field_keeps_its_description(
     assert "Current descriptor-backed level." in read_output(
         documented_fields_html_result, "index.html"
     )
+
+
+@pytest.mark.integration
+def test_inherited_callable_dataclass_fields_keep_their_descriptions(
+    documented_fields_html_result: SharedSphinxResult,
+) -> None:
+    """Inherited callable defaults remain fields rather than methods."""
+    attributes = _attribute_names(documented_fields_html_result)
+    html = read_output(documented_fields_html_result, "index.html")
+
+    assert attributes.count("InheritedCallableDefaults.converter") == 1
+    assert attributes.count("InheritedCallableDefaults.result_type") == 1
+    assert "Conversion function inherited from the base dataclass." in html
+    assert "Result type inherited from the base dataclass." in html
 
 
 @pytest.mark.integration

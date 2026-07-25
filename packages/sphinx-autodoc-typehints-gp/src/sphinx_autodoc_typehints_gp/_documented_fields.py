@@ -352,8 +352,9 @@ def _is_declared_field(klass: type, name: str) -> bool:
     if name in annotations and _is_class_var(annotations[name]):
         return False
 
-    own_annotations = _own_annotations(klass)
+    mro = getattr(klass, "__mro__", (klass,))
     exposed = inspect.getattr_static(klass, name, _UNSET)
+    member_owner = next((base for base in mro if name in vars(base)), None)
     is_non_field_member = (
         isinstance(exposed, property | staticmethod | classmethod | type)
         or inspect.isroutine(exposed)
@@ -362,24 +363,32 @@ def _is_declared_field(klass: type, name: str) -> bool:
 
     fields = getattr(klass, "_fields", None)
     if issubclass(klass, tuple) and isinstance(fields, tuple) and name in fields:
-        own_fields = vars(klass).get("_fields")
-        owns_field = (
-            isinstance(own_fields, tuple)
-            and name in own_fields
-            and name in own_annotations
-        )
-        return owns_field or not is_non_field_member
+        field_owner = None
+        for base in mro:
+            base_fields = vars(base).get("_fields")
+            if (
+                isinstance(base_fields, tuple)
+                and name in base_fields
+                and name in _own_annotations(base)
+            ):
+                field_owner = base
+                break
+        return field_owner is member_owner or not is_non_field_member
 
     if dataclasses.is_dataclass(klass):
         if name not in {field.name for field in dataclasses.fields(klass)}:
             return False
-        own_fields = vars(klass).get("__dataclass_fields__")
-        owns_field = (
-            isinstance(own_fields, dict)
-            and name in own_fields
-            and name in own_annotations
-        )
-        return owns_field or not is_non_field_member
+        field_owner = None
+        for base in mro:
+            base_fields = vars(base).get("__dataclass_fields__")
+            if (
+                isinstance(base_fields, dict)
+                and name in base_fields
+                and name in _own_annotations(base)
+            ):
+                field_owner = base
+                break
+        return field_owner is member_owner or not is_non_field_member
 
     if t.is_typeddict(klass):
         return name in (
