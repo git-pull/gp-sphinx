@@ -499,6 +499,8 @@ def _concrete_member_will_render(
     klass: type,
     name: str,
     options: Options,
+    *,
+    inherit_docstrings: bool = True,
 ) -> bool:
     """Return whether autodoc will render a concrete non-field member.
 
@@ -510,6 +512,8 @@ def _concrete_member_will_render(
         Concrete member name under consideration.
     options : Options
         Options controlling member selection for the class documenter.
+    inherit_docstrings : bool
+        Whether autodoc may inherit documentation from a base member.
 
     Returns
     -------
@@ -524,6 +528,7 @@ def _concrete_member_will_render(
     ...     private_members = None
     ...     special_members = None
     ...     undoc_members = None
+    ...     inherited_members = None
     >>> class Service:
     ...     @property
     ...     def status(self) -> str:
@@ -555,6 +560,16 @@ def _concrete_member_will_render(
         return False
 
     if members is ALL:
+        member_owner = next(
+            (
+                base
+                for base in getattr(klass, "__mro__", (klass,))
+                if name in vars(base)
+            ),
+            None,
+        )
+        if member_owner is not klass and not options.inherited_members:
+            return False
         if name.startswith("__") and name.endswith("__"):
             special = options.special_members
             if special is None or (special is not ALL and name not in special):
@@ -570,7 +585,9 @@ def _concrete_member_will_render(
     if options.undoc_members:
         return True
     exposed = inspect.getattr_static(klass, name, _UNSET)
-    return inspect.getdoc(exposed) is not None
+    if inherit_docstrings:
+        return inspect.getdoc(exposed) is not None
+    return getattr(exposed, "__doc__", None) is not None
 
 
 def record_documented_fields(
@@ -623,7 +640,12 @@ def record_documented_fields(
     concrete_members = {
         field_name
         for field_name in _attribute_directive_names(lines)
-        if _concrete_member_will_render(obj, field_name, options)
+        if _concrete_member_will_render(
+            obj,
+            field_name,
+            options,
+            inherit_docstrings=app.config.autodoc_inherit_docstrings,
+        )
     }
     lines[:] = _coalesce_attribute_directives(
         lines,

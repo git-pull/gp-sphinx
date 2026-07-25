@@ -1151,12 +1151,53 @@ _CONCRETE_MEMBER_VISIBILITY_SOURCE = textwrap.dedent(
 
         #: Source-owned registry documentation.
         registry: t.ClassVar[dict[str, str]] = {}
+
+
+    class BaseItem:
+        @property
+        def value(self) -> int:
+            """Return the inherited concrete value."""
+            return 3
+
+
+    class InheritedItem(BaseItem):
+        """An item whose concrete property is not selected.
+
+        Attributes
+        ----------
+        value : int
+            Inherited-property fallback documentation.
+        """
+
+
+    class BaseOverride:
+        @property
+        def value(self) -> int:
+            """Return the base concrete value."""
+            return 4
+
+
+    class UndocumentedOverride(BaseOverride):
+        """An item overriding a property without a docstring.
+
+        Attributes
+        ----------
+        value : int
+            Undocumented-override fallback documentation.
+        """
+
+        @property
+        def value(self) -> int:
+            return 5
     '''
 )
 
-_CONCRETE_MEMBER_VISIBILITY_CONF_PY = _CONF_PY.replace(
-    'autodoc_default_options = {"members": True, "undoc-members": True}\n',
-    "",
+_CONCRETE_MEMBER_VISIBILITY_CONF_PY = (
+    _CONF_PY.replace(
+        'autodoc_default_options = {"members": True, "undoc-members": True}\n',
+        "",
+    )
+    + "autodoc_inherit_docstrings = False\n"
 )
 
 
@@ -1180,6 +1221,12 @@ def concrete_member_visibility_html_result(
            :members:
 
         .. autoclass:: concrete_member_visibility_demo.SourceDocumentedSettings
+           :members:
+
+        .. autoclass:: concrete_member_visibility_demo.InheritedItem
+           :members:
+
+        .. autoclass:: concrete_member_visibility_demo.UndocumentedOverride
            :members:
         """
     )
@@ -1241,6 +1288,23 @@ def test_source_documented_classvar_replaces_field_fallback(
     assert attributes.count("SourceDocumentedSettings.registry") == 1
     assert "Source-owned registry documentation." in html
     assert "Stale registry fallback." not in html
+    assert "duplicate object description" not in (
+        concrete_member_visibility_html_result.warnings
+    )
+
+
+@pytest.mark.integration
+def test_non_rendered_property_keeps_field_fallback(
+    concrete_member_visibility_html_result: SharedSphinxResult,
+) -> None:
+    """Unselected or undocumented properties retain Attributes docs."""
+    attributes = _attribute_names(concrete_member_visibility_html_result)
+    html = read_output(concrete_member_visibility_html_result, "index.html")
+
+    assert attributes.count("InheritedItem.value") == 1
+    assert "Inherited-property fallback documentation." in html
+    assert attributes.count("UndocumentedOverride.value") == 1
+    assert "Undocumented-override fallback documentation." in html
     assert "duplicate object description" not in (
         concrete_member_visibility_html_result.warnings
     )
