@@ -428,6 +428,8 @@ def record_documented_fields(
     <function record_documented_fields at 0x...>
     """
     if what not in _CLASS_LIKE_AUTODOC_TYPES or not isinstance(obj, type):
+        if options.no_index or options.noindex:
+            _add_attribute_no_index(lines)
         return
     previous = _PROCESSED_FIELDS.get(app)
     documented = (

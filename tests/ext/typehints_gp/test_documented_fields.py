@@ -1449,6 +1449,23 @@ _NO_INDEX_MODULE_SOURCE = textwrap.dedent(
     '''
 )
 
+_NO_INDEX_ATTRIBUTES_SOURCE = textwrap.dedent(
+    '''\
+    """A module rendered outside the Python object index.
+
+    Attributes
+    ----------
+    MODULE_VALUE : int
+        Visible but unregistered module field.
+    """
+
+    from __future__ import annotations
+
+
+    MODULE_VALUE: int = 1
+    '''
+)
+
 _LATE_ATTRIBUTE_SOURCE = textwrap.dedent(
     """\
     import sys
@@ -1491,6 +1508,10 @@ def no_index_html_result(
         files=(
             ScenarioFile("no_index_demo.py", _NO_INDEX_MODULE_SOURCE),
             ScenarioFile(
+                "no_index_module_demo.py",
+                _NO_INDEX_ATTRIBUTES_SOURCE,
+            ),
+            ScenarioFile(
                 "conf.py",
                 _NO_INDEX_CONF_PY.replace(
                     "__SCENARIO_SRCDIR__",
@@ -1505,6 +1526,9 @@ def no_index_html_result(
                     """\
                     Demo
                     ====
+
+                    .. automodule:: no_index_module_demo
+                       :no-index:
 
                     .. autoclass:: no_index_demo.NoIndexField
                        :no-index:
@@ -1525,7 +1549,11 @@ def no_index_html_result(
     return build_shared_sphinx_result(
         cache_root,
         scenario,
-        purge_modules=("late_attribute", "no_index_demo"),
+        purge_modules=(
+            "late_attribute",
+            "no_index_demo",
+            "no_index_module_demo",
+        ),
     )
 
 
@@ -1552,6 +1580,21 @@ def test_no_index_applies_to_emitted_attribute(
         no_index_html_result, "index.html"
     )
     assert "invalid option" not in no_index_html_result.warnings
+
+
+@pytest.mark.integration
+def test_no_index_applies_to_module_attribute(
+    no_index_html_result: SharedSphinxResult,
+) -> None:
+    """A no-index module keeps emitted fields out of the inventory."""
+    attributes = _attribute_names(no_index_html_result)
+    objects = no_index_html_result.app.env.domains.python_domain.objects
+
+    assert sum(name.endswith("MODULE_VALUE") for name in attributes) == 1
+    assert "Visible but unregistered module field." in read_output(
+        no_index_html_result, "index.html"
+    )
+    assert "no_index_module_demo.MODULE_VALUE" not in objects
 
 
 @pytest.mark.integration
