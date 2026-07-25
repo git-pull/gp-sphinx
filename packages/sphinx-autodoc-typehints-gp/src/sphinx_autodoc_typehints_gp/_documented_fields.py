@@ -139,6 +139,7 @@ def _add_attribute_no_index(lines: list[str]) -> None:
 def _coalesce_attribute_directives(
     lines: list[str],
     documented: t.Iterable[str] = (),
+    excluded: t.Iterable[str] = (),
 ) -> list[str]:
     """Keep the first complete directive block for each attribute name.
 
@@ -149,6 +150,8 @@ def _coalesce_attribute_directives(
     documented : typing.Iterable[str]
         Attribute names emitted by an earlier docstring from the same
         documenter invocation.
+    excluded : typing.Iterable[str]
+        Attribute names whose concrete members are authoritative.
 
     Returns
     -------
@@ -169,8 +172,15 @@ def _coalesce_attribute_directives(
     ...     ]
     ... )
     ['.. attribute:: value', '', '   Class description.', 'Initializer.']
+
+    >>> _coalesce_attribute_directives(
+    ...     [".. attribute:: value", "", "   Stale description."],
+    ...     excluded={"value"},
+    ... )
+    []
     """
     seen = set(documented)
+    excluded_names = set(excluded)
     coalesced: list[str] = []
     index = 0
     while index < len(lines):
@@ -188,7 +198,7 @@ def _coalesce_attribute_directives(
                 break
             block_end += 1
 
-        if name not in seen:
+        if name not in seen and name not in excluded_names:
             seen.add(name)
             coalesced.extend(lines[index:block_end])
         index = block_end
@@ -401,6 +411,54 @@ def _is_declared_field(klass: type, name: str) -> bool:
     return not is_non_field_member
 
 
+def _is_concrete_non_field_member(klass: type, name: str) -> bool:
+    """Return whether a concrete member should own its documentation.
+
+    Properties, methods, nested classes, and ``ClassVar`` values carry
+    signatures or values that an ``Attributes`` entry cannot preserve.
+    Callable and class-valued dataclass defaults remain fields when
+    :func:`_is_declared_field` confirms their metadata lineage.
+
+    Parameters
+    ----------
+    klass : type
+        Class being documented.
+    name : str
+        Member name under consideration.
+
+    Returns
+    -------
+    bool
+        Whether autodoc's concrete member description is authoritative.
+
+    Examples
+    --------
+    >>> class Service:
+    ...     @property
+    ...     def status(self) -> str:
+    ...         return "ready"
+    >>> _is_concrete_non_field_member(Service, "status")
+    True
+
+    >>> @dataclasses.dataclass
+    ... class Converter:
+    ...     callback: t.Callable[[str], str] = str.upper
+    >>> _is_concrete_non_field_member(Converter, "callback")
+    False
+    """
+    annotations = _declared_annotations(klass)
+    if name in annotations and _is_class_var(annotations[name]):
+        return True
+
+    exposed = inspect.getattr_static(klass, name, _UNSET)
+    looks_concrete = (
+        isinstance(exposed, property | staticmethod | classmethod | type)
+        or inspect.isroutine(exposed)
+        or inspect.ismethoddescriptor(exposed)
+    )
+    return looks_concrete and not _is_declared_field(klass, name)
+
+
 def record_documented_fields(
     app: Sphinx,
     what: str,
@@ -448,7 +506,16 @@ def record_documented_fields(
         and previous.owner is obj
         else frozenset()
     )
-    lines[:] = _coalesce_attribute_directives(lines, documented)
+    concrete_members = {
+        field_name
+        for field_name in _attribute_directive_names(lines)
+        if _is_concrete_non_field_member(obj, field_name)
+    }
+    lines[:] = _coalesce_attribute_directives(
+        lines,
+        documented,
+        concrete_members,
+    )
     if options.no_index or options.noindex:
         _add_attribute_no_index(lines)
     names = _attribute_directive_names(lines) | documented

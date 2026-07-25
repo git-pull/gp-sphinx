@@ -1066,6 +1066,36 @@ def non_field_members_html_result(
 
 
 @pytest.mark.integration
+def test_concrete_members_named_in_attributes_are_described_once(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """Concrete properties, methods, and ClassVars replace stale field docs."""
+    members = _described_members(get_doctree(non_field_members_html_result, "index"))
+    names = [member.fullname for member in members]
+    concrete_names = (
+        "Facade.registry",
+        "Facade.quoted_registry",
+        "Facade.summary",
+        "AnnotatedMethod.action",
+        "Gauge.doubled",
+        "DataRecord.label",
+        "DataRecord.render",
+        "DataRecord.registry",
+        "TupleRecord.label",
+        "TupleRecord.render",
+        "TupleRecord.registry",
+    )
+
+    assert {name: names.count(name) for name in concrete_names} == dict.fromkeys(
+        concrete_names,
+        1,
+    )
+    assert "duplicate object description" not in (
+        non_field_members_html_result.warnings
+    )
+
+
+@pytest.mark.integration
 def test_property_named_in_attributes_still_renders(
     non_field_members_html_result: SharedSphinxResult,
 ) -> None:
