@@ -628,6 +628,48 @@ def _prepare_documented_fields(app: Sphinx) -> None:
     )
 
 
+def _clear_documented_fields(
+    app: Sphinx,
+    what: str,
+    name: str,
+    obj: t.Any,
+    options: Options,
+    args: str | None,
+    retann: str | None,
+) -> None:
+    """Clear a prior owner when a class documenter starts.
+
+    ``autodoc-process-signature`` runs before documenter content even when a
+    custom ``get_doc()`` returns ``None`` and suppresses the docstring event.
+    Clearing at that boundary prevents a nested documenter reusing its
+    parent's options from inheriting the parent's field record.
+
+    Parameters
+    ----------
+    app : Sphinx
+        Sphinx application instance being built.
+    what : str
+        Type of object whose signature is being processed.
+    name : str
+        Fully qualified autodoc name.
+    obj : typing.Any
+        Object whose signature is being processed.
+    options : Options
+        Options shared by the current autodoc directive.
+    args : str | None
+        Rendered positional signature.
+    retann : str | None
+        Rendered return annotation.
+
+    Examples
+    --------
+    >>> _clear_documented_fields  # doctest: +ELLIPSIS
+    <function _clear_documented_fields at 0x...>
+    """
+    if what in _CLASS_LIKE_AUTODOC_TYPES and isinstance(obj, type):
+        _PROCESSED_FIELDS.pop(app, None)
+
+
 def skip_documented_fields(
     app: Sphinx,
     what: str,
@@ -704,6 +746,11 @@ def register(app: Sphinx) -> None:
     <function register at 0x...>
     """
     app.connect("autodoc-skip-member", skip_documented_fields)
+    app.connect(
+        "autodoc-process-signature",
+        _clear_documented_fields,
+        priority=0,
+    )
     app.connect(
         "builder-inited",
         _prepare_documented_fields,

@@ -1442,6 +1442,107 @@ def test_field_finalization_composes_with_custom_documenters(
     )
 
 
+_NESTED_NO_DOCUMENTER_SOURCE = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    from sphinx.ext.autodoc import ClassDocumenter
+
+
+    class NestedNoDocDocumenter(ClassDocumenter):
+        def get_doc(self) -> list[list[str]] | None:
+            if self.fullname.endswith(".Outer.Nested"):
+                return None
+            return super().get_doc()
+
+
+    def setup(app):
+        app.add_autodocumenter(NestedNoDocDocumenter, override=True)
+        return {"parallel_read_safe": True}
+    """
+)
+
+_NESTED_NO_DOCUMENTER_MODULE_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+
+    class Outer:
+        """An outer class with a documented field.
+
+        Attributes
+        ----------
+        value : int
+            Outer field documentation.
+        """
+
+        value: int
+
+        class Nested:
+            value: int
+    '''
+)
+
+
+@pytest.fixture(scope="module")
+def nested_no_documenter_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a nested class whose custom documenter emits no docstring."""
+    conf = _CONF_PY.replace(
+        '    "sphinx_autodoc_typehints_gp",\n',
+        '    "sphinx_autodoc_typehints_gp",\n    "nested_no_documenter",\n',
+    )
+    cache_root = tmp_path_factory.mktemp("nested-no-documenter")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile(
+                "conf.py",
+                conf.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile(
+                "nested_no_documenter.py",
+                _NESTED_NO_DOCUMENTER_SOURCE,
+            ),
+            ScenarioFile(
+                "nested_no_documenter_demo.py",
+                _NESTED_NO_DOCUMENTER_MODULE_SOURCE,
+            ),
+            ScenarioFile(
+                "index.rst",
+                textwrap.dedent(
+                    """\
+                    Demo
+                    ====
+
+                    .. autoclass:: nested_no_documenter_demo.Outer
+                    """
+                ),
+            ),
+        ),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("nested_no_documenter", "nested_no_documenter_demo"),
+    )
+
+
+@pytest.mark.integration
+def test_nested_documenter_without_docstring_clears_outer_field_state(
+    nested_no_documenter_html_result: SharedSphinxResult,
+) -> None:
+    """A nested class cannot inherit field suppression from its owner."""
+    attributes = _attribute_names(nested_no_documenter_html_result)
+    html = read_output(nested_no_documenter_html_result, "index.html")
+
+    assert attributes.count("Outer.value") == 1
+    assert sum(name.endswith("Nested.value") for name in attributes) == 1
+    assert "Outer field documentation." in html
+    assert "nested_no_documenter_demo.Outer.Nested.value" in html
+
+
 _FILTERED_DOCSTRING_CONF_PY = textwrap.dedent(
     """\
     from __future__ import annotations
