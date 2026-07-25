@@ -1260,7 +1260,51 @@ _NO_INDEX_MODULE_SOURCE = textwrap.dedent(
         """
 
         value: int
+
+
+    class LateNoIndex:
+        """A class whose field directive is replaced by a later processor.
+
+        Attributes
+        ----------
+        value : int
+            Documentation replaced by the later processor.
+        """
+
+        value: int
+        replacement: int
     '''
+)
+
+_LATE_ATTRIBUTE_SOURCE = textwrap.dedent(
+    """\
+    import sys
+
+
+    def replace_attribute(app, what, name, obj, options, lines):
+        if what == "class" and name == "no_index_demo.LateNoIndex":
+            lines[:] = [
+                "Replacement class documentation.",
+                "",
+                ".. attribute:: replacement",
+                "",
+                "   Added by the last docstring processor.",
+            ]
+
+
+    def setup(app):
+        app.connect(
+            "autodoc-process-docstring",
+            replace_attribute,
+            priority=sys.maxsize,
+        )
+        return {"parallel_read_safe": True}
+    """
+)
+
+_NO_INDEX_CONF_PY = _CONF_PY.replace(
+    '    "sphinx_autodoc_typehints_gp",\n',
+    '    "sphinx_autodoc_typehints_gp",\n    "late_attribute",\n',
 )
 
 
@@ -1273,7 +1317,15 @@ def no_index_html_result(
     scenario = SphinxScenario(
         files=(
             ScenarioFile("no_index_demo.py", _NO_INDEX_MODULE_SOURCE),
-            _conf_file(),
+            ScenarioFile(
+                "conf.py",
+                _NO_INDEX_CONF_PY.replace(
+                    "__SCENARIO_SRCDIR__",
+                    SCENARIO_SRCDIR_TOKEN,
+                ),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("late_attribute.py", _LATE_ATTRIBUTE_SOURCE),
             ScenarioFile(
                 "index.rst",
                 textwrap.dedent(
@@ -1289,6 +1341,9 @@ def no_index_html_result(
 
                     .. autoclass:: no_index_demo.IndentedNoIndex
                        :no-index:
+
+                    .. autoclass:: no_index_demo.LateNoIndex
+                       :no-index:
                     """
                 ),
             ),
@@ -1297,7 +1352,7 @@ def no_index_html_result(
     return build_shared_sphinx_result(
         cache_root,
         scenario,
-        purge_modules=("no_index_demo",),
+        purge_modules=("late_attribute", "no_index_demo"),
     )
 
 
@@ -1324,3 +1379,20 @@ def test_no_index_applies_to_emitted_attribute(
         no_index_html_result, "index.html"
     )
     assert "invalid option" not in no_index_html_result.warnings
+
+
+@pytest.mark.integration
+def test_no_index_applies_after_last_docstring_listener(
+    no_index_html_result: SharedSphinxResult,
+) -> None:
+    """Final field directives stay visible without entering the inventory."""
+    attributes = _attribute_names(no_index_html_result)
+    objects = no_index_html_result.app.env.domains.python_domain.objects
+
+    assert attributes.count("LateNoIndex.value") == 1
+    assert attributes.count("LateNoIndex.replacement") == 1
+    assert "Added by the last docstring processor." in read_output(
+        no_index_html_result, "index.html"
+    )
+    assert "no_index_demo.LateNoIndex.value" not in objects
+    assert "no_index_demo.LateNoIndex.replacement" not in objects

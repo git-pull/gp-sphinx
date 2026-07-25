@@ -22,7 +22,6 @@ from __future__ import annotations
 import ast
 import builtins
 import inspect
-import itertools
 import logging
 import sys
 import typing as t
@@ -319,44 +318,6 @@ def _strip_hidden_doctest_examples(lines: list[str]) -> None:
     lines[:] = kept
 
 
-def _add_attribute_no_index(lines: list[str]) -> None:
-    """Apply ``:no-index:`` to emitted attribute directives.
-
-    Parameters
-    ----------
-    lines : list[str]
-        Processed docstring lines, modified in place.
-
-    Examples
-    --------
-    >>> body = [".. attribute:: value", "", "   Description."]
-    >>> _add_attribute_no_index(body)
-    >>> body
-    ['.. attribute:: value', '   :no-index:', '', '   Description.']
-
-    >>> existing = [".. attribute:: value", "   :no-index:", ""]
-    >>> _add_attribute_no_index(existing)
-    >>> existing
-    ['.. attribute:: value', '   :no-index:', '']
-    """
-    updated: list[str] = []
-    for index, line in enumerate(lines):
-        updated.append(line)
-        if not line.startswith(".. attribute:: "):
-            continue
-        option_lines = itertools.takewhile(
-            lambda candidate: (
-                candidate[:1].isspace() and candidate.lstrip().startswith(":")
-            ),
-            lines[index + 1 :],
-        )
-        if not any(
-            option.strip() in {":no-index:", ":noindex:"} for option in option_lines
-        ):
-            updated.append("   :no-index:")
-    lines[:] = updated
-
-
 def process_docstring(
     app: Sphinx,
     what: str,
@@ -396,8 +357,6 @@ def process_docstring(
     from sphinx_autodoc_typehints_gp._numpy_docstring import process_numpy_docstring
 
     lines[:] = process_numpy_docstring(lines)
-    if options.no_index or options.noindex:
-        _add_attribute_no_index(lines)
 
 
 def record_typehints(
