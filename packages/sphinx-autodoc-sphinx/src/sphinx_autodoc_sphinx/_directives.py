@@ -78,6 +78,25 @@ class UnknownConfigValueError(LookupError):
 class SphinxConfigValue:
     """Recorded metadata for a config value registered via ``setup()``.
 
+    Attributes
+    ----------
+    module_name : str
+        Dotted module whose ``setup()`` registered the value.
+    name : str
+        ``conf.py`` name users assign to, such as
+        ``"argparse_show_types"``.
+    default : object
+        Value Sphinx uses when ``conf.py`` leaves the option out.
+    rebuild : str
+        Sphinx rebuild condition — ``"env"``, ``"html"``, or ``""`` when a
+        change needs no rebuild.
+    types : object
+        Accepted types for the value, either a tuple of types or a Sphinx
+        ``ENUM``. ``()`` when the registration constrains nothing.
+    description : str
+        Prose passed to ``app.add_config_value()``, rendered under the
+        ``confval``. Empty when the registration supplies none.
+
     Examples
     --------
     >>> value = SphinxConfigValue(

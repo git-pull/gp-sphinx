@@ -32,6 +32,16 @@ if t.TYPE_CHECKING:
 class DomainInfo:
     """Recorded metadata for one documented domain class.
 
+    Attributes
+    ----------
+    cls : type[Domain]
+        The domain class itself; its module and name supply the rendered
+        heading and link target.
+    registered : bool
+        Whether the module's ``setup()`` passed the class to
+        ``app.add_domain()``. ``False`` marks a class found by a module
+        scan alone.
+
     Examples
     --------
     >>> from sphinx_autodoc_argparse.domain import ArgparseDomain

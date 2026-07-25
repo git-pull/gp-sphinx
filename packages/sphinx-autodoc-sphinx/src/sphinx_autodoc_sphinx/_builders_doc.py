@@ -32,6 +32,16 @@ if t.TYPE_CHECKING:
 class BuilderInfo:
     """Recorded metadata for one documented builder class.
 
+    Attributes
+    ----------
+    cls : type[Builder]
+        The builder class itself; its module and name supply the rendered
+        heading and link target.
+    registered : bool
+        Whether the module's ``setup()`` passed the class to
+        ``app.add_builder()``. ``False`` marks a class found by a module
+        scan alone.
+
     Examples
     --------
     >>> from sphinx.builders.dummy import DummyBuilder
