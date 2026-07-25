@@ -1170,6 +1170,16 @@ _CONCRETE_MEMBER_VISIBILITY_SOURCE = textwrap.dedent(
         """
 
 
+    class BoundaryItem(BaseItem):
+        """An item whose base is the inherited-members boundary.
+
+        Attributes
+        ----------
+        value : int
+            Boundary-property fallback documentation.
+        """
+
+
     class BaseOverride:
         @property
         def value(self) -> int:
@@ -1225,6 +1235,10 @@ def concrete_member_visibility_html_result(
 
         .. autoclass:: concrete_member_visibility_demo.InheritedItem
            :members:
+
+        .. autoclass:: concrete_member_visibility_demo.BoundaryItem
+           :members:
+           :inherited-members: BaseItem
 
         .. autoclass:: concrete_member_visibility_demo.UndocumentedOverride
            :members:
@@ -1303,6 +1317,8 @@ def test_non_rendered_property_keeps_field_fallback(
 
     assert attributes.count("InheritedItem.value") == 1
     assert "Inherited-property fallback documentation." in html
+    assert attributes.count("BoundaryItem.value") == 1
+    assert "Boundary-property fallback documentation." in html
     assert attributes.count("UndocumentedOverride.value") == 1
     assert "Undocumented-override fallback documentation." in html
     assert "duplicate object description" not in (

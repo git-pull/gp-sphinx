@@ -568,8 +568,14 @@ def _concrete_member_will_render(
             ),
             None,
         )
-        if member_owner is not klass and not options.inherited_members:
-            return False
+        if member_owner is not klass:
+            inherited_members = options.inherited_members
+            if (
+                member_owner is None
+                or not inherited_members
+                or member_owner.__name__ in inherited_members
+            ):
+                return False
         if name.startswith("__") and name.endswith("__"):
             special = options.special_members
             if special is None or (special is not ALL and name not in special):
