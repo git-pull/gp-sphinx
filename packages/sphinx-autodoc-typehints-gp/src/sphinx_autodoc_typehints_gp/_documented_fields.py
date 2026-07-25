@@ -28,6 +28,8 @@ disagree, and a field the ``Attributes`` section leaves out still renders.
 
 from __future__ import annotations
 
+import ast
+import dataclasses
 import inspect
 import re
 import sys
@@ -93,13 +95,11 @@ def _numpy_attribute_names(doc: str | None) -> frozenset[str]:
 def _own_annotations(klass: type) -> dict[str, t.Any]:
     """Return the annotations declared in *klass*'s own body.
 
-    Read straight off the class rather than through
-    :func:`typing.get_type_hints`, which resolves a string annotation with
-    :func:`eval` and can import a module the build never asked for. Only
-    ``ClassVar`` is ever read back out of the values, so leaving them
-    unresolved costs nothing. A class that cannot carry annotations at all —
-    :class:`object`, :class:`tuple`, :class:`dict` — and annotations that
-    fail to materialize both count as declaring nothing.
+    Read the class namespace rather than resolving annotations. On Python
+    3.14, accessing ``klass.__annotations__`` can execute a deferred
+    annotation; a mapping not yet materialized therefore counts as declaring
+    nothing. Named tuples, dataclasses, and typed dictionaries are classified
+    from their own field metadata before this conservative fallback is used.
 
     Parameters
     ----------
@@ -122,8 +122,8 @@ def _own_annotations(klass: type) -> dict[str, t.Any]:
     {}
     """
     try:
-        annotations = klass.__annotations__
-    except Exception:
+        annotations = vars(klass).get("__annotations__")
+    except TypeError:
         return {}
     return dict(annotations) if isinstance(annotations, dict) else {}
 
@@ -187,6 +187,14 @@ def _is_class_var(annotation: t.Any) -> bool:
     >>> _is_class_var(int)
     False
     """
+    while isinstance(annotation, str):
+        try:
+            unquoted = ast.literal_eval(annotation)
+        except (SyntaxError, ValueError):
+            break
+        if not isinstance(unquoted, str) or unquoted == annotation:
+            break
+        annotation = unquoted
     if isinstance(annotation, str):
         return _CLASS_VAR_RE.match(annotation) is not None
     return annotation is t.ClassVar or t.get_origin(annotation) is t.ClassVar
@@ -238,10 +246,24 @@ def _is_declared_field(klass: type, name: str) -> bool:
     if isinstance(fields, tuple) and name in fields:
         return True
 
+    if dataclasses.is_dataclass(klass):
+        return name in {field.name for field in dataclasses.fields(klass)}
+
+    if t.is_typeddict(klass):
+        return name in (
+            getattr(klass, "__required_keys__", frozenset())
+            | getattr(klass, "__optional_keys__", frozenset())
+        )
+
     annotations = _declared_annotations(klass)
     if name not in annotations or _is_class_var(annotations[name]):
         return False
-    return not isinstance(inspect.getattr_static(klass, name, None), property)
+    exposed = inspect.getattr_static(klass, name, _UNSET)
+    return not (
+        isinstance(exposed, property | staticmethod | classmethod | type)
+        or inspect.isroutine(exposed)
+        or inspect.ismethoddescriptor(exposed)
+    )
 
 
 def _exposes_another_member(klass: type, name: str, obj: t.Any) -> bool:
@@ -286,6 +308,10 @@ def _exposes_another_member(klass: type, name: str, obj: t.Any) -> bool:
     """
     exposed = inspect.getattr_static(klass, name, _UNSET)
     if exposed is _UNSET or exposed is obj:
+        return False
+    if dataclasses.is_dataclass(klass) and name in {
+        field.name for field in dataclasses.fields(klass)
+    }:
         return False
     return not (
         inspect.ismemberdescriptor(exposed)

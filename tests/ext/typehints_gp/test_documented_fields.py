@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import dataclasses
 import inspect
+import sys
 import textwrap
 import typing as t
 
@@ -15,6 +16,7 @@ from sphinx_autodoc_typehints_gp._documented_fields import (
     _exposes_another_member,
     _is_declared_field,
     _numpy_attribute_names,
+    _own_annotations,
 )
 from tests._sphinx_scenarios import (
     SCENARIO_SRCDIR_TOKEN,
@@ -164,6 +166,43 @@ class _Gauge:
         return self.reading * self.scale
 
 
+class _IntegerField:
+    """Store an integer while exposing a class-level default."""
+
+    def __get__(self, obj: object | None, owner: type | None = None) -> int:
+        """Return the stored value or the class-level default."""
+        if obj is None:
+            return 0
+        return t.cast("int", vars(obj).get("_reading", 0))
+
+    def __set__(self, obj: object, value: int) -> None:
+        """Store ``value`` on ``obj``."""
+        vars(obj)["_reading"] = value
+
+
+@dataclasses.dataclass
+class _DescriptorGauge:
+    """A dataclass whose field is backed by a descriptor."""
+
+    reading: int = _IntegerField()  # type: ignore[assignment]
+
+
+class _AnnotatedMethod:
+    """A class retaining an annotation for a same-named method."""
+
+    matches: t.Callable[[str], bool]
+
+    def matches(self, other: str) -> bool:  # type: ignore[no-redef]
+        """Return whether ``other`` is non-empty."""
+        return bool(other)
+
+
+class _QuotedClassVar:
+    """A class with an explicitly quoted postponed annotation."""
+
+    registry: "t.ClassVar[dict[str, str]]" = {}
+
+
 class _BaseOptions(t.TypedDict):
     """Options every caller may pass."""
 
@@ -253,6 +292,24 @@ _DECLARED_FIELD_FIXTURES: list[_DeclaredFieldFixture] = [
         expected=False,
     ),
     _DeclaredFieldFixture(
+        test_id="descriptor-dataclass-field",
+        klass=_DescriptorGauge,
+        name="reading",
+        expected=True,
+    ),
+    _DeclaredFieldFixture(
+        test_id="annotated-method",
+        klass=_AnnotatedMethod,
+        name="matches",
+        expected=False,
+    ),
+    _DeclaredFieldFixture(
+        test_id="quoted-classvar",
+        klass=_QuotedClassVar,
+        name="registry",
+        expected=False,
+    ),
+    _DeclaredFieldFixture(
         test_id="typeddict-own-key",
         klass=_Options,
         name="retries",
@@ -286,6 +343,37 @@ def test_is_declared_field(
 ) -> None:
     """Declared fields count; methods, properties, and ClassVars do not."""
     assert _is_declared_field(klass, name) is expected
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 14),
+    reason="deferred annotations are the Python 3.14 default",
+)
+def test_own_annotations_does_not_evaluate_deferred_annotation() -> None:
+    """Reading field names does not execute a deferred annotation."""
+    namespace: dict[str, t.Any] = {"calls": []}
+    source = compile(
+        textwrap.dedent(
+            """\
+            def marker():
+                calls.append("evaluated")
+                return int
+
+            class Deferred:
+                value: marker()
+            """
+        ),
+        "<deferred-annotation>",
+        "exec",
+        dont_inherit=True,
+    )
+    exec(source, namespace)
+    calls = t.cast("list[str]", namespace["calls"])
+    deferred = t.cast("type", namespace["Deferred"])
+
+    assert calls == []
+    assert _own_annotations(deferred) == {}
+    assert calls == []
 
 
 # ---------------------------------------------------------------------------
@@ -512,6 +600,29 @@ _FIELDS_MODULE_SOURCE = textwrap.dedent(
         scale: int = 1
 
 
+    class IntegerField:
+        def __get__(self, obj, owner=None):
+            if obj is None:
+                return 0
+            return vars(obj).get("_level", 0)
+
+        def __set__(self, obj, value):
+            vars(obj)["_level"] = value
+
+
+    @dataclasses.dataclass
+    class DescriptorGauge:
+        """A gauge whose field is backed by a descriptor.
+
+        Attributes
+        ----------
+        level : int
+            Current descriptor-backed level.
+        """
+
+        level: int = IntegerField()
+
+
     class BaseOptions(t.TypedDict):
         """Options every caller may pass.
 
@@ -551,6 +662,8 @@ _FIELDS_INDEX_RST = textwrap.dedent(
     .. autoclass:: documented_fields_demo.Rule
 
     .. autoclass:: documented_fields_demo.Gauge
+
+    .. autoclass:: documented_fields_demo.DescriptorGauge
 
     .. autoclass:: documented_fields_demo.BaseOptions
 
@@ -630,6 +743,19 @@ def test_documented_slotted_dataclass_fields_keep_their_descriptions(
 
 
 @pytest.mark.integration
+def test_documented_descriptor_dataclass_field_keeps_its_description(
+    documented_fields_html_result: SharedSphinxResult,
+) -> None:
+    """A descriptor-backed dataclass field is described once."""
+    attributes = _attribute_names(documented_fields_html_result)
+
+    assert attributes.count("DescriptorGauge.level") == 1
+    assert "Current descriptor-backed level." in read_output(
+        documented_fields_html_result, "index.html"
+    )
+
+
+@pytest.mark.integration
 def test_documented_typeddict_keys_keep_their_descriptions(
     documented_fields_html_result: SharedSphinxResult,
 ) -> None:
@@ -673,16 +799,35 @@ _NON_FIELD_MODULE_SOURCE = textwrap.dedent(
         ----------
         registry : dict[str, str]
             Backends registered so far.
+        quoted_registry : dict[str, str]
+            Backends registered through an explicitly quoted ClassVar.
         summary : str
             One-line description of the registry.
         """
 
         registry: t.ClassVar[dict[str, str]] = {}
+        quoted_registry: "t.ClassVar[dict[str, str]]" = {}
 
         @property
         def summary(self) -> str:
             """Return how many backends are registered."""
             return f"{len(self.registry)} backends"
+
+
+    class AnnotatedMethod:
+        """A facade with an annotation retained for a same-named method.
+
+        Attributes
+        ----------
+        action : Callable[[], str]
+            Action advertised by the facade.
+        """
+
+        action: t.Callable[[], str]
+
+        def action(self) -> str:
+            """Return the action result."""
+            return "done"
 
 
     @dataclasses.dataclass(slots=True)
@@ -712,6 +857,8 @@ _NON_FIELD_INDEX_RST = textwrap.dedent(
     ====
 
     .. autoclass:: non_field_members_demo.Facade
+
+    .. autoclass:: non_field_members_demo.AnnotatedMethod
 
     .. autoclass:: non_field_members_demo.Gauge
     """
@@ -778,3 +925,32 @@ def test_classvar_named_in_attributes_still_renders(
         for member in members
         if member.fullname == "Facade.registry" and "{}" in member.signature
     ] == ["registry: ClassVar[dict[str, str]] = {}"]
+
+
+@pytest.mark.integration
+def test_quoted_classvar_named_in_attributes_still_renders(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """An explicitly quoted ClassVar keeps its autodoc-rendered value."""
+    members = _described_members(get_doctree(non_field_members_html_result, "index"))
+
+    assert [
+        member.signature
+        for member in members
+        if member.fullname == "Facade.quoted_registry" and "{}" in member.signature
+    ] == ["quoted_registry: ClassVar[dict[str, str]] = {}"]
+
+
+@pytest.mark.integration
+def test_annotated_same_name_method_still_renders(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """An annotation does not turn a same-named method into a field."""
+    members = _described_members(get_doctree(non_field_members_html_result, "index"))
+
+    assert ("method", "AnnotatedMethod.action") in [
+        (member.objtype, member.fullname) for member in members
+    ]
+    assert "Return the action result." in read_output(
+        non_field_members_html_result, "index.html"
+    )
