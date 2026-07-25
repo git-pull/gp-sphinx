@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import dataclasses
+import inspect
 import textwrap
 import typing as t
 
@@ -11,6 +12,7 @@ from docutils import nodes
 from sphinx import addnodes
 
 from sphinx_autodoc_typehints_gp._documented_fields import (
+    _exposes_another_member,
     _is_declared_field,
     _numpy_attribute_names,
 )
@@ -149,6 +151,19 @@ class _Rule:
         return self.label == other
 
 
+@dataclasses.dataclass(slots=True)
+class _Gauge:
+    """A rule whose fields live in slots."""
+
+    reading: int
+    scale: int = 1
+
+    @property
+    def scaled(self) -> int:
+        """Return the reading multiplied by the scale."""
+        return self.reading * self.scale
+
+
 class _BaseOptions(t.TypedDict):
     """Options every caller may pass."""
 
@@ -226,6 +241,18 @@ _DECLARED_FIELD_FIXTURES: list[_DeclaredFieldFixture] = [
         expected=False,
     ),
     _DeclaredFieldFixture(
+        test_id="slotted-dataclass-field",
+        klass=_Gauge,
+        name="reading",
+        expected=True,
+    ),
+    _DeclaredFieldFixture(
+        test_id="slotted-dataclass-property",
+        klass=_Gauge,
+        name="scaled",
+        expected=False,
+    ),
+    _DeclaredFieldFixture(
         test_id="typeddict-own-key",
         klass=_Options,
         name="retries",
@@ -259,6 +286,92 @@ def test_is_declared_field(
 ) -> None:
     """Declared fields count; methods, properties, and ClassVars do not."""
     assert _is_declared_field(klass, name) is expected
+
+
+# ---------------------------------------------------------------------------
+# _exposes_another_member
+# ---------------------------------------------------------------------------
+
+_AUTODOC_SENTINEL = object()
+
+
+class _ExposedMemberFixture(t.NamedTuple):
+    """Test case for _exposes_another_member().
+
+    Attributes
+    ----------
+    test_id : str
+        Short identifier used as the pytest parameter id.
+    klass : type
+        Class being documented.
+    name : str
+        Member name under consideration.
+    obj : t.Any
+        Member autodoc would be filtering.
+    expected : bool
+        Whether the class is expected to expose a different member.
+    """
+
+    test_id: str
+    klass: type
+    name: str
+    obj: t.Any
+    expected: bool
+
+
+_EXPOSED_MEMBER_FIXTURES: list[_ExposedMemberFixture] = [
+    _ExposedMemberFixture(
+        test_id="namedtuple-descriptor-is-the-member",
+        klass=_Point,
+        name="x",
+        obj=inspect.getattr_static(_Point, "x"),
+        expected=False,
+    ),
+    _ExposedMemberFixture(
+        test_id="namedtuple-descriptor-is-not-the-member",
+        klass=_Point,
+        name="x",
+        obj=_AUTODOC_SENTINEL,
+        expected=True,
+    ),
+    _ExposedMemberFixture(
+        test_id="typeddict-key-exposes-nothing",
+        klass=_Options,
+        name="retries",
+        obj=_AUTODOC_SENTINEL,
+        expected=False,
+    ),
+    _ExposedMemberFixture(
+        test_id="slot-stands-for-the-member",
+        klass=_Gauge,
+        name="reading",
+        obj=_AUTODOC_SENTINEL,
+        expected=False,
+    ),
+    _ExposedMemberFixture(
+        test_id="method-is-another-member",
+        klass=_Gauge,
+        name="__init__",
+        obj=_AUTODOC_SENTINEL,
+        expected=True,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    list(_ExposedMemberFixture._fields),
+    _EXPOSED_MEMBER_FIXTURES,
+    ids=[fixture.test_id for fixture in _EXPOSED_MEMBER_FIXTURES],
+)
+def test_exposes_another_member(
+    test_id: str,
+    klass: type,
+    name: str,
+    obj: t.Any,
+    expected: bool,
+) -> None:
+    """A slot stands for its field; anything else must be the member itself."""
+    assert _exposes_another_member(klass, name, obj) is expected
 
 
 # ---------------------------------------------------------------------------
@@ -383,6 +496,22 @@ _FIELDS_MODULE_SOURCE = textwrap.dedent(
         weight: int = 0
 
 
+    @dataclasses.dataclass(slots=True)
+    class Gauge:
+        """A gauge whose fields live in slots.
+
+        Attributes
+        ----------
+        reading : int
+            Most recent reading.
+        scale : int
+            Multiplier applied to the reading.
+        """
+
+        reading: int
+        scale: int = 1
+
+
     class BaseOptions(t.TypedDict):
         """Options every caller may pass.
 
@@ -420,6 +549,8 @@ _FIELDS_INDEX_RST = textwrap.dedent(
     .. autoclass:: documented_fields_demo.Span
 
     .. autoclass:: documented_fields_demo.Rule
+
+    .. autoclass:: documented_fields_demo.Gauge
 
     .. autoclass:: documented_fields_demo.BaseOptions
 
@@ -485,6 +616,20 @@ def test_documented_dataclass_fields_keep_their_descriptions(
 
 
 @pytest.mark.integration
+def test_documented_slotted_dataclass_fields_keep_their_descriptions(
+    documented_fields_html_result: SharedSphinxResult,
+) -> None:
+    """A field held in a slot is described once, with or without a default."""
+    attributes = _attribute_names(documented_fields_html_result)
+
+    assert attributes.count("Gauge.reading") == 1
+    assert attributes.count("Gauge.scale") == 1
+    assert "Multiplier applied to the reading." in read_output(
+        documented_fields_html_result, "index.html"
+    )
+
+
+@pytest.mark.integration
 def test_documented_typeddict_keys_keep_their_descriptions(
     documented_fields_html_result: SharedSphinxResult,
 ) -> None:
@@ -517,6 +662,7 @@ _NON_FIELD_MODULE_SOURCE = textwrap.dedent(
     '''\
     from __future__ import annotations
 
+    import dataclasses
     import typing as t
 
 
@@ -537,6 +683,26 @@ _NON_FIELD_MODULE_SOURCE = textwrap.dedent(
         def summary(self) -> str:
             """Return how many backends are registered."""
             return f"{len(self.registry)} backends"
+
+
+    @dataclasses.dataclass(slots=True)
+    class Gauge:
+        """A gauge whose fields live in slots.
+
+        Attributes
+        ----------
+        reading : int
+            Most recent reading.
+        doubled : int
+            The reading multiplied by two.
+        """
+
+        reading: int
+
+        @property
+        def doubled(self) -> int:
+            """Return the reading multiplied by two."""
+            return self.reading * 2
     '''
 )
 
@@ -546,6 +712,8 @@ _NON_FIELD_INDEX_RST = textwrap.dedent(
     ====
 
     .. autoclass:: non_field_members_demo.Facade
+
+    .. autoclass:: non_field_members_demo.Gauge
     """
 )
 
@@ -577,12 +745,25 @@ def test_property_named_in_attributes_still_renders(
     """A property stays autodoc's to render even when Attributes names it."""
     members = _described_members(get_doctree(non_field_members_html_result, "index"))
 
-    assert [member.fullname for member in members if member.objtype == "property"] == [
-        "Facade.summary"
+    assert ("property", "Facade.summary") in [
+        (member.objtype, member.fullname) for member in members
     ]
     assert "Return how many backends are registered." in read_output(
         non_field_members_html_result, "index.html"
     )
+
+
+@pytest.mark.integration
+def test_slotted_property_named_in_attributes_still_renders(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """Holding fields in slots does not make a property one of them."""
+    members = _described_members(get_doctree(non_field_members_html_result, "index"))
+
+    assert ("property", "Gauge.doubled") in [
+        (member.objtype, member.fullname) for member in members
+    ]
+    assert [member.fullname for member in members].count("Gauge.reading") == 1
 
 
 @pytest.mark.integration
