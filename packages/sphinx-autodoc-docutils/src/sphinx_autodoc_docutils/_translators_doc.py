@@ -37,6 +37,19 @@ if t.TYPE_CHECKING:
 class TranslatorInfo:
     """Recorded metadata for one documented translator class.
 
+    Attributes
+    ----------
+    cls : type[nodes.NodeVisitor]
+        The translator class itself; its module and name supply the
+        rendered heading and link target.
+    builder_name : str
+        Builder the translator was bound to via ``app.set_translator()``,
+        such as ``"html"``. Empty when the class was found by a module scan
+        rather than a registration call.
+    override : bool
+        Whether the ``set_translator()`` call passed ``override=True``,
+        replacing a translator another extension already installed.
+
     Examples
     --------
     >>> from docutils.writers.html5_polyglot import HTMLTranslator

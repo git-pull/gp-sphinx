@@ -55,6 +55,16 @@ _CATEGORY_MIXINS: tuple[str, ...] = (
 class NodeInfo:
     """Recorded metadata for one documented node class.
 
+    Attributes
+    ----------
+    cls : type[nodes.Element]
+        The node class itself; its module and name supply the rendered
+        heading and link target.
+    handlers : tuple[str, ...]
+        Builder formats the module passed visit/depart pairs for in
+        ``app.add_node()``, such as ``("html",)``. Empty when the class was
+        found by a module scan rather than a registration call.
+
     Examples
     --------
     >>> from sphinx_ux_badges import BadgeNode
