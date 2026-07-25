@@ -249,12 +249,38 @@ def _is_declared_field(klass: type, name: str) -> bool:
     >>> _is_declared_field(Point, "magnitude")
     False
     """
+    annotations = _declared_annotations(klass)
+    if name in annotations and _is_class_var(annotations[name]):
+        return False
+
+    own_annotations = _own_annotations(klass)
+    exposed = inspect.getattr_static(klass, name, _UNSET)
+    is_non_field_member = (
+        isinstance(exposed, property | staticmethod | classmethod | type)
+        or inspect.isroutine(exposed)
+        or inspect.ismethoddescriptor(exposed)
+    )
+
     fields = getattr(klass, "_fields", None)
     if issubclass(klass, tuple) and isinstance(fields, tuple) and name in fields:
-        return True
+        own_fields = vars(klass).get("_fields")
+        owns_field = (
+            isinstance(own_fields, tuple)
+            and name in own_fields
+            and name in own_annotations
+        )
+        return owns_field or not is_non_field_member
 
     if dataclasses.is_dataclass(klass):
-        return name in {field.name for field in dataclasses.fields(klass)}
+        if name not in {field.name for field in dataclasses.fields(klass)}:
+            return False
+        own_fields = vars(klass).get("__dataclass_fields__")
+        owns_field = (
+            isinstance(own_fields, dict)
+            and name in own_fields
+            and name in own_annotations
+        )
+        return owns_field or not is_non_field_member
 
     if t.is_typeddict(klass):
         return name in (
@@ -262,15 +288,9 @@ def _is_declared_field(klass: type, name: str) -> bool:
             | getattr(klass, "__optional_keys__", frozenset())
         )
 
-    annotations = _declared_annotations(klass)
-    if name not in annotations or _is_class_var(annotations[name]):
+    if name not in annotations:
         return False
-    exposed = inspect.getattr_static(klass, name, _UNSET)
-    return not (
-        isinstance(exposed, property | staticmethod | classmethod | type)
-        or inspect.isroutine(exposed)
-        or inspect.ismethoddescriptor(exposed)
-    )
+    return not is_non_field_member
 
 
 def record_documented_fields(

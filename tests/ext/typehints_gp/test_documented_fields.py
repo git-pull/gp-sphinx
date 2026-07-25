@@ -155,6 +155,14 @@ class _DescriptorGauge:
     reading: int = _IntegerField()  # type: ignore[assignment]
 
 
+@dataclasses.dataclass
+class _CallableDefaults:
+    """A dataclass whose field defaults are themselves callable."""
+
+    converter: t.Callable[[str], str] = str.upper
+    result_type: type = str
+
+
 class _AnnotatedMethod:
     """A class retaining an annotation for a same-named method."""
 
@@ -273,6 +281,18 @@ _DECLARED_FIELD_FIXTURES: list[_DeclaredFieldFixture] = [
         test_id="descriptor-dataclass-field",
         klass=_DescriptorGauge,
         name="reading",
+        expected=True,
+    ),
+    _DeclaredFieldFixture(
+        test_id="callable-dataclass-field",
+        klass=_CallableDefaults,
+        name="converter",
+        expected=True,
+    ),
+    _DeclaredFieldFixture(
+        test_id="class-valued-dataclass-field",
+        klass=_CallableDefaults,
+        name="result_type",
         expected=True,
     ),
     _DeclaredFieldFixture(
@@ -844,6 +864,69 @@ _NON_FIELD_MODULE_SOURCE = textwrap.dedent(
         def doubled(self) -> int:
             """Return the reading multiplied by two."""
             return self.reading * 2
+
+
+    @dataclasses.dataclass
+    class BaseRecord:
+        label: str = ""
+        render: str = ""
+        registry: int = 0
+
+
+    class DataRecord(BaseRecord):
+        """A dataclass subclass replacing inherited fields.
+
+        Attributes
+        ----------
+        label : str
+            Legacy label field documentation.
+        render : str
+            Legacy render field documentation.
+        registry : int
+            Legacy registry field documentation.
+        """
+
+        @property
+        def label(self) -> str:
+            """Return the dataclass override label."""
+            return "record"
+
+        def render(self) -> str:
+            """Render the dataclass override."""
+            return self.label
+
+        registry: t.ClassVar[dict[str, str]] = {"kind": "dataclass"}
+
+
+    class BaseTuple(t.NamedTuple):
+        label: str
+        render: str
+        registry: int
+
+
+    class TupleRecord(BaseTuple):
+        """A named-tuple subclass replacing inherited fields.
+
+        Attributes
+        ----------
+        label : str
+            Legacy label field documentation.
+        render : str
+            Legacy render field documentation.
+        registry : int
+            Legacy registry field documentation.
+        """
+
+        @property
+        def label(self) -> str:
+            """Return the namedtuple override label."""
+            return "tuple"
+
+        def render(self) -> str:
+            """Render the namedtuple override."""
+            return self.label
+
+        registry: t.ClassVar[dict[str, str]] = {"kind": "namedtuple"}
     '''
 )
 
@@ -857,6 +940,10 @@ _NON_FIELD_INDEX_RST = textwrap.dedent(
     .. autoclass:: non_field_members_demo.AnnotatedMethod
 
     .. autoclass:: non_field_members_demo.Gauge
+
+    .. autoclass:: non_field_members_demo.DataRecord
+
+    .. autoclass:: non_field_members_demo.TupleRecord
     """
 )
 
@@ -950,6 +1037,41 @@ def test_annotated_same_name_method_still_renders(
     assert "Return the action result." in read_output(
         non_field_members_html_result, "index.html"
     )
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    ("owner", "kind"),
+    [
+        ("DataRecord", "dataclass"),
+        ("TupleRecord", "namedtuple"),
+    ],
+)
+def test_inherited_field_metadata_does_not_hide_overriding_members(
+    non_field_members_html_result: SharedSphinxResult,
+    owner: str,
+    kind: str,
+) -> None:
+    """Subclass properties, methods, and ClassVars retain their rendering."""
+    members = _described_members(get_doctree(non_field_members_html_result, "index"))
+    rendered = [member for member in members if member.fullname.startswith(f"{owner}.")]
+    html = read_output(non_field_members_html_result, "index.html")
+
+    assert ("property", f"{owner}.label") in [
+        (member.objtype, member.fullname) for member in rendered
+    ]
+    assert ("method", f"{owner}.render") in [
+        (member.objtype, member.fullname) for member in rendered
+    ]
+    registry_signatures = [
+        member.signature
+        for member in rendered
+        if member.fullname == f"{owner}.registry" and "ClassVar" in member.signature
+    ]
+    assert len(registry_signatures) == 1
+    assert f"'kind': '{kind}'" in registry_signatures[0]
+    assert f"Return the {kind} override label." in html
+    assert f"Render the {kind} override." in html
 
 
 _FILTERED_DOCSTRING_CONF_PY = textwrap.dedent(
