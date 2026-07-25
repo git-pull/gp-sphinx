@@ -4,9 +4,9 @@ A class that declares fields hands autodoc one member per field.
 :class:`typing.NamedTuple` compiles each into a ``_tuplegetter`` descriptor
 whose ``__doc__`` is the boilerplate ``"Alias for field number N"``; a
 dataclass field or a :class:`typing.TypedDict` key arrives as a bare
-annotation. Autodoc emits a ``py:attribute`` for all of them — the
-boilerplate counts as a real docstring, and ``undoc-members`` covers the
-rest.
+annotation; a field of a ``slots=True`` dataclass arrives as autodoc's slot
+sentinel. Autodoc emits a ``py:attribute`` for all of them — the boilerplate
+counts as a real docstring, and ``undoc-members`` covers the rest.
 
 When the owning class docstring carries a NumPy ``Attributes`` section naming
 that field, :mod:`sphinx_autodoc_typehints_gp._numpy_docstring` has already
@@ -244,6 +244,56 @@ def _is_declared_field(klass: type, name: str) -> bool:
     return not isinstance(inspect.getattr_static(klass, name, None), property)
 
 
+def _exposes_another_member(klass: type, name: str, obj: t.Any) -> bool:
+    """Return whether *klass* exposes something other than *obj* under *name*.
+
+    A :class:`typing.NamedTuple` field is a descriptor autodoc hands over as
+    is, so comparing identity confirms the member and the field are one
+    object. A :class:`typing.TypedDict` key and a dataclass field without a
+    default put nothing on the class, leaving nothing to compare against.
+
+    ``@dataclasses.dataclass(slots=True)`` sits between the two: the field
+    lives in a slot, so the class exposes the ``member_descriptor`` that
+    reads it while autodoc hands over its own slot sentinel. The two are
+    never the same object even though they stand for the same field, so the
+    slot the class declares for *name* counts as a match.
+
+    Parameters
+    ----------
+    klass : type
+        Class being documented.
+    name : str
+        Member name under consideration.
+    obj : t.Any
+        The member autodoc is filtering.
+
+    Returns
+    -------
+    bool
+        Whether the class exposes a different member under that name.
+
+    Examples
+    --------
+    >>> import dataclasses
+    >>> @dataclasses.dataclass(slots=True)
+    ... class Point:
+    ...     x: int
+    >>> _exposes_another_member(Point, "x", object())
+    False
+
+    >>> _exposes_another_member(Point, "__init__", object())
+    True
+    """
+    exposed = inspect.getattr_static(klass, name, _UNSET)
+    if exposed is _UNSET or exposed is obj:
+        return False
+    return not (
+        inspect.ismemberdescriptor(exposed)
+        and getattr(exposed, "__name__", None) == name
+        and getattr(exposed, "__objclass__", None) in klass.__mro__
+    )
+
+
 def _documented_class(app: Sphinx) -> type | None:
     """Return the class whose members autodoc is currently filtering.
 
@@ -298,9 +348,8 @@ def skip_documented_fields(
     - a class documenter is running and its class still resolves;
     - that class declares *name* as a field, through ``_fields`` or through
       an annotation on itself or a base;
-    - *obj* is the attribute the class exposes under *name*, where the class
-      exposes one at all — a :class:`typing.TypedDict` key and a dataclass
-      field without a default leave nothing on the class to compare against;
+    - the class exposes no member under *name* other than *obj* itself or
+      the slot it declares for it;
     - the class docstring's ``Attributes`` section describes *name*.
 
     Returns ``None`` in every other case, leaving the member to autodoc and
@@ -340,9 +389,7 @@ def skip_documented_fields(
 
     if not _is_declared_field(owner, name):
         return None
-
-    exposed = inspect.getattr_static(owner, name, _UNSET)
-    if exposed is not _UNSET and exposed is not obj:
+    if _exposes_another_member(owner, name, obj):
         return None
     if name not in _numpy_attribute_names(owner.__doc__):
         return None
