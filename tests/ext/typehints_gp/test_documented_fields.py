@@ -1,4 +1,4 @@
-"""Tests for sphinx_autodoc_typehints_gp._namedtuple_fields."""
+"""Tests for sphinx_autodoc_typehints_gp._documented_fields."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import typing as t
 
 import pytest
 
-from sphinx_autodoc_typehints_gp._namedtuple_fields import _numpy_attribute_names
+from sphinx_autodoc_typehints_gp._documented_fields import _numpy_attribute_names
 from tests._sphinx_scenarios import (
     SCENARIO_SRCDIR_TOKEN,
     ScenarioFile,

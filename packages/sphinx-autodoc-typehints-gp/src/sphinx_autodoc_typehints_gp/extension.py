@@ -627,11 +627,11 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
     from sphinx_autodoc_typehints_gp._default_xref_transform import (
         register as register_default_xref_transform,
     )
+    from sphinx_autodoc_typehints_gp._documented_fields import (
+        register as register_documented_field_skip,
+    )
     from sphinx_autodoc_typehints_gp._field_xref_transform import (
         register as register_field_xref_transform,
-    )
-    from sphinx_autodoc_typehints_gp._namedtuple_fields import (
-        register as register_namedtuple_field_skip,
     )
     from sphinx_autodoc_typehints_gp._param_defaults import (
         update_synthetic_defvalues,
@@ -673,7 +673,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         # process_docstring turns an Attributes section into `.. attribute::`
         # directives; this drops autodoc's own copy of the same fields so the
         # Python domain sees one description per object.
-        register_namedtuple_field_skip(app)
+        register_documented_field_skip(app)
     except ExtensionError as exc:
         if "Unknown event name" not in str(exc):
             raise

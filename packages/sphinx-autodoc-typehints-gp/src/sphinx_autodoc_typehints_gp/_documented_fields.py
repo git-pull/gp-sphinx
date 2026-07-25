@@ -1,9 +1,12 @@
 """Drop autodoc field stubs a NumPy ``Attributes`` section already describes.
 
-:class:`typing.NamedTuple` compiles every field into a ``_tuplegetter``
-descriptor whose ``__doc__`` is the boilerplate ``"Alias for field number N"``.
-Autodoc counts that boilerplate as a real docstring, so the field is emitted as
-its own ``py:attribute`` regardless of how ``undoc-members`` is set.
+A class that declares fields hands autodoc one member per field.
+:class:`typing.NamedTuple` compiles each into a ``_tuplegetter`` descriptor
+whose ``__doc__`` is the boilerplate ``"Alias for field number N"``; a
+dataclass field or a :class:`typing.TypedDict` key arrives as a bare
+annotation. Autodoc emits a ``py:attribute`` for all of them — the
+boilerplate counts as a real docstring, and ``undoc-members`` covers the
+rest.
 
 When the owning class docstring carries a NumPy ``Attributes`` section naming
 that field, :mod:`sphinx_autodoc_typehints_gp._numpy_docstring` has already
@@ -26,6 +29,7 @@ disagree, and a field the ``Attributes`` section leaves out still renders.
 from __future__ import annotations
 
 import inspect
+import re
 import sys
 import typing as t
 
@@ -38,6 +42,8 @@ if t.TYPE_CHECKING:
     )
 
 _ATTRIBUTE_DIRECTIVE = ".. attribute:: "
+_UNSET = object()
+_CLASS_VAR_RE = re.compile(r"\s*(?:\w+\.)*ClassVar\b")
 
 
 def _numpy_attribute_names(doc: str | None) -> frozenset[str]:
@@ -82,6 +88,160 @@ def _numpy_attribute_names(doc: str | None) -> frozenset[str]:
         for line in lines
         if line.startswith(_ATTRIBUTE_DIRECTIVE)
     )
+
+
+def _own_annotations(klass: type) -> dict[str, t.Any]:
+    """Return the annotations declared in *klass*'s own body.
+
+    Read straight off the class rather than through
+    :func:`typing.get_type_hints`, which resolves a string annotation with
+    :func:`eval` and can import a module the build never asked for. Only
+    ``ClassVar`` is ever read back out of the values, so leaving them
+    unresolved costs nothing. A class that cannot carry annotations at all —
+    :class:`object`, :class:`tuple`, :class:`dict` — and annotations that
+    fail to materialize both count as declaring nothing.
+
+    Parameters
+    ----------
+    klass : type
+        Class to read annotations from.
+
+    Returns
+    -------
+    dict[str, t.Any]
+        Annotations the class body declares, left unresolved.
+
+    Examples
+    --------
+    >>> class Point:
+    ...     x: int
+    >>> _own_annotations(Point)
+    {'x': 'int'}
+
+    >>> _own_annotations(object)
+    {}
+    """
+    try:
+        annotations = klass.__annotations__
+    except Exception:
+        return {}
+    return dict(annotations) if isinstance(annotations, dict) else {}
+
+
+def _declared_annotations(klass: type) -> dict[str, t.Any]:
+    """Return the annotations *klass* declares, inherited ones included.
+
+    Walking the MRO picks up a dataclass field a base class declares. A
+    :class:`typing.TypedDict` keeps no base ``TypedDict`` in its MRO but
+    merges inherited keys into its own annotations, so those arrive too.
+
+    Parameters
+    ----------
+    klass : type
+        Class whose declared fields are being resolved.
+
+    Returns
+    -------
+    dict[str, t.Any]
+        Annotations by name, the most derived declaration winning.
+
+    Examples
+    --------
+    >>> class Base:
+    ...     x: int
+    >>> class Child(Base):
+    ...     y: str
+    >>> sorted(_declared_annotations(Child))
+    ['x', 'y']
+    """
+    collected: dict[str, t.Any] = {}
+    for base in reversed(getattr(klass, "__mro__", (klass,))):
+        collected.update(_own_annotations(base))
+    return collected
+
+
+def _is_class_var(annotation: t.Any) -> bool:
+    """Return whether *annotation* marks a class-level constant.
+
+    Handles both the resolved form and the string a module using
+    ``from __future__ import annotations`` leaves behind.
+
+    Parameters
+    ----------
+    annotation : t.Any
+        An unresolved annotation value.
+
+    Returns
+    -------
+    bool
+        Whether the annotation is a :data:`typing.ClassVar`.
+
+    Examples
+    --------
+    >>> _is_class_var(t.ClassVar[int])
+    True
+
+    >>> _is_class_var("t.ClassVar[int]")
+    True
+
+    >>> _is_class_var(int)
+    False
+    """
+    if isinstance(annotation, str):
+        return _CLASS_VAR_RE.match(annotation) is not None
+    return annotation is t.ClassVar or t.get_origin(annotation) is t.ClassVar
+
+
+def _is_declared_field(klass: type, name: str) -> bool:
+    """Return whether *klass* declares *name* as one of its fields.
+
+    A :class:`typing.NamedTuple` lists its fields in ``_fields``. Every other
+    shape — dataclass field, :class:`typing.TypedDict` key, annotated
+    instance attribute — declares them by annotation. A ``ClassVar``
+    annotates a class-level constant rather than a field, and a name the
+    class exposes as a :class:`property` belongs to that property, so neither
+    counts.
+
+    Parameters
+    ----------
+    klass : type
+        Class being documented.
+    name : str
+        Member name under consideration.
+
+    Returns
+    -------
+    bool
+        Whether the member is a field the class declares.
+
+    Examples
+    --------
+    >>> import dataclasses
+    >>> @dataclasses.dataclass
+    ... class Point:
+    ...     x: int
+    ...     origin: t.ClassVar[int] = 0
+    ...
+    ...     @property
+    ...     def magnitude(self) -> int:
+    ...         return self.x
+    >>> _is_declared_field(Point, "x")
+    True
+
+    >>> _is_declared_field(Point, "origin")
+    False
+
+    >>> _is_declared_field(Point, "magnitude")
+    False
+    """
+    fields = getattr(klass, "_fields", None)
+    if isinstance(fields, tuple) and name in fields:
+        return True
+
+    annotations = _declared_annotations(klass)
+    if name not in annotations or _is_class_var(annotations[name]):
+        return False
+    return not isinstance(inspect.getattr_static(klass, name, None), property)
 
 
 def _documented_class(app: Sphinx) -> type | None:
@@ -136,9 +296,11 @@ def skip_documented_fields(
 
     - autodoc is not already skipping the member;
     - a class documenter is running and its class still resolves;
-    - that class exposes a ``_fields`` tuple containing *name*
-      (:class:`typing.NamedTuple` and anything shaped like it);
-    - *obj* is the attribute the class itself exposes under *name*;
+    - that class declares *name* as a field, through ``_fields`` or through
+      an annotation on itself or a base;
+    - *obj* is the attribute the class exposes under *name*, where the class
+      exposes one at all — a :class:`typing.TypedDict` key and a dataclass
+      field without a default leave nothing on the class to compare against;
     - the class docstring's ``Attributes`` section describes *name*.
 
     Returns ``None`` in every other case, leaving the member to autodoc and
@@ -176,10 +338,11 @@ def skip_documented_fields(
     if owner is None:
         return None
 
-    fields = getattr(owner, "_fields", None)
-    if not isinstance(fields, tuple) or name not in fields:
+    if not _is_declared_field(owner, name):
         return None
-    if inspect.getattr_static(owner, name, None) is not obj:
+
+    exposed = inspect.getattr_static(owner, name, _UNSET)
+    if exposed is not _UNSET and exposed is not obj:
         return None
     if name not in _numpy_attribute_names(owner.__doc__):
         return None
