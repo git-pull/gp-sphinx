@@ -179,6 +179,16 @@ class SphinxViteBuilderConfig:
     Built once per Sphinx app at ``builder-inited`` time from
     ``app.config``; passed by value to the orchestration layer so the
     hooks don't carry a reference to the live mutable Sphinx config.
+
+    Attributes
+    ----------
+    mode : Mode
+        Orchestration mode resolved from ``sphinx_vite_builder_mode``.
+        ``Mode.PROD`` makes the orchestration a no-op.
+    vite_root : pathlib.Path | None
+        Absolute path to the Vite project, or ``None`` when
+        ``sphinx_vite_builder_root`` is unset and there is nothing to
+        spawn.
     """
 
     mode: Mode
