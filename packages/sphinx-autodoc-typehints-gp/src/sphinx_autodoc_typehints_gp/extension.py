@@ -345,7 +345,9 @@ def _add_attribute_no_index(lines: list[str]) -> None:
         if not line.startswith(".. attribute:: "):
             continue
         option_lines = itertools.takewhile(
-            lambda candidate: candidate.startswith("   :"),
+            lambda candidate: (
+                candidate[:1].isspace() and candidate.lstrip().startswith(":")
+            ),
             lines[index + 1 :],
         )
         if not any(

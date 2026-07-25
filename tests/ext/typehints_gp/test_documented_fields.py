@@ -1126,6 +1126,18 @@ _NO_INDEX_MODULE_SOURCE = textwrap.dedent(
         """
 
         value: int
+
+
+    class IndentedNoIndex:
+        """A class whose manual field uses wider option indentation.
+
+        .. attribute:: value
+            :no-index:
+
+            Widely indented unregistered field.
+        """
+
+        value: int
     '''
 )
 
@@ -1151,6 +1163,9 @@ def no_index_html_result(
                        :no-index:
 
                     .. autoclass:: no_index_demo.ExistingNoIndex
+                       :no-index:
+
+                    .. autoclass:: no_index_demo.IndentedNoIndex
                        :no-index:
                     """
                 ),
@@ -1182,3 +1197,8 @@ def test_no_index_applies_to_emitted_attribute(
         no_index_html_result, "index.html"
     )
     assert "duplicate option" not in no_index_html_result.warnings
+    assert attributes.count("IndentedNoIndex.value") == 1
+    assert "Widely indented unregistered field." in read_output(
+        no_index_html_result, "index.html"
+    )
+    assert "invalid option" not in no_index_html_result.warnings
