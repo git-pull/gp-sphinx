@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import dataclasses
-import inspect
 import sys
 import textwrap
 import typing as t
@@ -13,9 +12,8 @@ from docutils import nodes
 from sphinx import addnodes
 
 from sphinx_autodoc_typehints_gp._documented_fields import (
-    _exposes_another_member,
+    _attribute_directive_names,
     _is_declared_field,
-    _numpy_attribute_names,
     _own_annotations,
 )
 from tests._sphinx_scenarios import (
@@ -29,99 +27,69 @@ from tests._sphinx_scenarios import (
 )
 
 # ---------------------------------------------------------------------------
-# _numpy_attribute_names
+# _attribute_directive_names
 # ---------------------------------------------------------------------------
 
 
-class _AttributeNamesFixture(t.NamedTuple):
-    """Test case for _numpy_attribute_names().
+class _AttributeDirectiveNamesFixture(t.NamedTuple):
+    """Test case for _attribute_directive_names().
 
     Attributes
     ----------
     test_id : str
         Short identifier used as the pytest parameter id.
-    doc : str | None
-        Docstring handed to the parser.
+    lines : list[str]
+        Processed docstring lines handed to the collector.
     expected : frozenset[str]
-        Names the ``Attributes`` section is expected to describe.
+        Names the directives are expected to describe.
     """
 
     test_id: str
-    doc: str | None
+    lines: list[str]
     expected: frozenset[str]
 
 
-_ATTRIBUTE_NAMES_FIXTURES: list[_AttributeNamesFixture] = [
-    _AttributeNamesFixture(
-        test_id="none",
-        doc=None,
+_ATTRIBUTE_DIRECTIVE_NAMES_FIXTURES: list[_AttributeDirectiveNamesFixture] = [
+    _AttributeDirectiveNamesFixture(
+        test_id="empty",
+        lines=[],
         expected=frozenset(),
     ),
-    _AttributeNamesFixture(
+    _AttributeDirectiveNamesFixture(
         test_id="summary-only",
-        doc="A point.",
+        lines=["A point."],
         expected=frozenset(),
     ),
-    _AttributeNamesFixture(
-        test_id="indented-section",
-        doc="""A point.
-
-        Attributes
-        ----------
-        x : int
-            Horizontal offset.
-        y : int
-            Vertical offset.
-        """,
+    _AttributeDirectiveNamesFixture(
+        test_id="attribute-directives",
+        lines=[
+            ".. attribute:: x",
+            "",
+            "   Horizontal offset.",
+            ".. attribute:: y",
+        ],
         expected=frozenset({"x", "y"}),
     ),
-    _AttributeNamesFixture(
-        test_id="other-sections-ignored",
-        doc="""Build a point.
-
-        Parameters
-        ----------
-        x : int
-            Horizontal offset.
-
-        Returns
-        -------
-        Point
-            The point.
-        """,
+    _AttributeDirectiveNamesFixture(
+        test_id="other-directive",
+        lines=[".. method:: build()"],
         expected=frozenset(),
-    ),
-    _AttributeNamesFixture(
-        test_id="attributes-among-other-sections",
-        doc="""A point.
-
-        Attributes
-        ----------
-        x : int
-            Horizontal offset.
-
-        Examples
-        --------
-        >>> Point(1, 2).x
-        1
-        """,
-        expected=frozenset({"x"}),
     ),
 ]
 
 
 @pytest.mark.parametrize(
-    list(_AttributeNamesFixture._fields),
-    _ATTRIBUTE_NAMES_FIXTURES,
-    ids=[fixture.test_id for fixture in _ATTRIBUTE_NAMES_FIXTURES],
+    list(_AttributeDirectiveNamesFixture._fields),
+    _ATTRIBUTE_DIRECTIVE_NAMES_FIXTURES,
+    ids=[fixture.test_id for fixture in _ATTRIBUTE_DIRECTIVE_NAMES_FIXTURES],
 )
-def test_numpy_attribute_names(
+def test_attribute_directive_names(
     test_id: str,
-    doc: str | None,
+    lines: list[str],
     expected: frozenset[str],
 ) -> None:
-    """Only an Attributes section contributes documented member names."""
-    assert _numpy_attribute_names(doc) == expected
+    """Only emitted attribute directives contribute documented names."""
+    assert _attribute_directive_names(lines) == expected
 
 
 # ---------------------------------------------------------------------------
@@ -377,92 +345,6 @@ def test_own_annotations_does_not_evaluate_deferred_annotation() -> None:
 
 
 # ---------------------------------------------------------------------------
-# _exposes_another_member
-# ---------------------------------------------------------------------------
-
-_AUTODOC_SENTINEL = object()
-
-
-class _ExposedMemberFixture(t.NamedTuple):
-    """Test case for _exposes_another_member().
-
-    Attributes
-    ----------
-    test_id : str
-        Short identifier used as the pytest parameter id.
-    klass : type
-        Class being documented.
-    name : str
-        Member name under consideration.
-    obj : t.Any
-        Member autodoc would be filtering.
-    expected : bool
-        Whether the class is expected to expose a different member.
-    """
-
-    test_id: str
-    klass: type
-    name: str
-    obj: t.Any
-    expected: bool
-
-
-_EXPOSED_MEMBER_FIXTURES: list[_ExposedMemberFixture] = [
-    _ExposedMemberFixture(
-        test_id="namedtuple-descriptor-is-the-member",
-        klass=_Point,
-        name="x",
-        obj=inspect.getattr_static(_Point, "x"),
-        expected=False,
-    ),
-    _ExposedMemberFixture(
-        test_id="namedtuple-descriptor-is-not-the-member",
-        klass=_Point,
-        name="x",
-        obj=_AUTODOC_SENTINEL,
-        expected=True,
-    ),
-    _ExposedMemberFixture(
-        test_id="typeddict-key-exposes-nothing",
-        klass=_Options,
-        name="retries",
-        obj=_AUTODOC_SENTINEL,
-        expected=False,
-    ),
-    _ExposedMemberFixture(
-        test_id="slot-stands-for-the-member",
-        klass=_Gauge,
-        name="reading",
-        obj=_AUTODOC_SENTINEL,
-        expected=False,
-    ),
-    _ExposedMemberFixture(
-        test_id="method-is-another-member",
-        klass=_Gauge,
-        name="__init__",
-        obj=_AUTODOC_SENTINEL,
-        expected=True,
-    ),
-]
-
-
-@pytest.mark.parametrize(
-    list(_ExposedMemberFixture._fields),
-    _EXPOSED_MEMBER_FIXTURES,
-    ids=[fixture.test_id for fixture in _EXPOSED_MEMBER_FIXTURES],
-)
-def test_exposes_another_member(
-    test_id: str,
-    klass: type,
-    name: str,
-    obj: t.Any,
-    expected: bool,
-) -> None:
-    """A slot stands for its field; anything else must be the member itself."""
-    assert _exposes_another_member(klass, name, obj) is expected
-
-
-# ---------------------------------------------------------------------------
 # autodoc-skip-member integration
 # ---------------------------------------------------------------------------
 
@@ -623,6 +505,37 @@ _FIELDS_MODULE_SOURCE = textwrap.dedent(
         level: int = IntegerField()
 
 
+    class Outer:
+        """A namespace for related records."""
+
+        class NestedPoint(t.NamedTuple):
+            """A point nested under another class.
+
+            Attributes
+            ----------
+            x : int
+                Nested horizontal offset.
+            """
+
+            x: int
+
+
+    class InitDocumented:
+        """A value whose initializer supplies its field documentation."""
+
+        value: int
+
+        def __init__(self, value: int) -> None:
+            """Initialize the value.
+
+            Attributes
+            ----------
+            value : int
+                Initializer-owned field documentation.
+            """
+            self.value = value
+
+
     class BaseOptions(t.TypedDict):
         """Options every caller may pass.
 
@@ -664,6 +577,11 @@ _FIELDS_INDEX_RST = textwrap.dedent(
     .. autoclass:: documented_fields_demo.Gauge
 
     .. autoclass:: documented_fields_demo.DescriptorGauge
+
+    .. autoclass:: documented_fields_demo.Outer.NestedPoint
+
+    .. autoclass:: documented_fields_demo.InitDocumented
+       :class-doc-from: init
 
     .. autoclass:: documented_fields_demo.BaseOptions
 
@@ -751,6 +669,32 @@ def test_documented_descriptor_dataclass_field_keeps_its_description(
 
     assert attributes.count("DescriptorGauge.level") == 1
     assert "Current descriptor-backed level." in read_output(
+        documented_fields_html_result, "index.html"
+    )
+
+
+@pytest.mark.integration
+def test_documented_nested_class_field_keeps_its_description(
+    documented_fields_html_result: SharedSphinxResult,
+) -> None:
+    """A nested class field is described once."""
+    attributes = _attribute_names(documented_fields_html_result)
+
+    assert attributes.count("NestedPoint.x") == 1
+    assert "Nested horizontal offset." in read_output(
+        documented_fields_html_result, "index.html"
+    )
+
+
+@pytest.mark.integration
+def test_initializer_attributes_are_described_once(
+    documented_fields_html_result: SharedSphinxResult,
+) -> None:
+    """``class-doc-from=init`` follows the processed initializer docstring."""
+    attributes = _attribute_names(documented_fields_html_result)
+
+    assert attributes.count("InitDocumented.value") == 1
+    assert "Initializer-owned field documentation." in read_output(
         documented_fields_html_result, "index.html"
     )
 
@@ -953,4 +897,101 @@ def test_annotated_same_name_method_still_renders(
     ]
     assert "Return the action result." in read_output(
         non_field_members_html_result, "index.html"
+    )
+
+
+_FILTERED_DOCSTRING_CONF_PY = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    import sys
+
+    sys.path.insert(0, r"__SCENARIO_SRCDIR__")
+
+    extensions = [
+        "sphinx.ext.autodoc",
+        "sphinx_autodoc_typehints_gp",
+        "remove_attributes",
+    ]
+    autodoc_default_options = {"members": True, "undoc-members": True}
+    """
+)
+
+_REMOVE_ATTRIBUTES_SOURCE = textwrap.dedent(
+    """\
+    def remove_attributes(app, what, name, obj, options, lines):
+        if what == "class" and name == "filtered_docstring_demo.Filtered":
+            lines[:] = ["Replacement class documentation."]
+
+
+    def setup(app):
+        app.connect("autodoc-process-docstring", remove_attributes)
+        return {"parallel_read_safe": True}
+    """
+)
+
+_FILTERED_DOCSTRING_MODULE_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+
+    class Filtered:
+        """A class whose Attributes section is removed before rendering.
+
+        Attributes
+        ----------
+        value : int
+            Documentation that a later processor removes.
+        """
+
+        value: int
+    '''
+)
+
+
+@pytest.fixture(scope="module")
+def filtered_docstring_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a project with a later docstring processor."""
+    cache_root = tmp_path_factory.mktemp("filtered-docstring-html")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile(
+                "conf.py",
+                _FILTERED_DOCSTRING_CONF_PY.replace(
+                    "__SCENARIO_SRCDIR__",
+                    SCENARIO_SRCDIR_TOKEN,
+                ),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("remove_attributes.py", _REMOVE_ATTRIBUTES_SOURCE),
+            ScenarioFile(
+                "filtered_docstring_demo.py",
+                _FILTERED_DOCSTRING_MODULE_SOURCE,
+            ),
+            ScenarioFile(
+                "index.rst",
+                "Demo\n====\n\n.. autoclass:: filtered_docstring_demo.Filtered\n",
+            ),
+        ),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("filtered_docstring_demo", "remove_attributes"),
+    )
+
+
+@pytest.mark.integration
+def test_removed_attributes_section_leaves_autodoc_field(
+    filtered_docstring_html_result: SharedSphinxResult,
+) -> None:
+    """The skip decision follows the final processed docstring."""
+    attributes = _attribute_names(filtered_docstring_html_result)
+
+    assert attributes.count("Filtered.value") == 1
+    assert "Replacement class documentation." in read_output(
+        filtered_docstring_html_result,
+        "index.html",
     )

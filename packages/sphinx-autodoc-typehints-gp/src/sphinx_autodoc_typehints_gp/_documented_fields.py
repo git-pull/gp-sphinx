@@ -21,9 +21,10 @@ descriptions of one object reach the Python domain, and it warns:
 Because this package owns the ``.. attribute::`` directive that wins, it also
 owns suppressing the loser. :func:`skip_documented_fields` hooks
 ``autodoc-skip-member`` and drops autodoc's copy — and nothing else. The
-member names it treats as already described are read back out of the very
-preprocessor that emitted the competing directives, so the two cannot
-disagree, and a field the ``Attributes`` section leaves out still renders.
+member names it treats as already described are recorded from the exact
+processed class docstring that emitted the competing directives, so another
+docstring processor and a field the ``Attributes`` section leaves out both
+remain authoritative.
 """
 
 from __future__ import annotations
@@ -32,10 +33,8 @@ import ast
 import dataclasses
 import inspect
 import re
-import sys
 import typing as t
-
-from sphinx_autodoc_typehints_gp._numpy_docstring import process_numpy_docstring
+import weakref
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -48,43 +47,44 @@ _UNSET = object()
 _CLASS_VAR_RE = re.compile(r"\s*(?:\w+\.)*ClassVar\b")
 
 
-def _numpy_attribute_names(doc: str | None) -> frozenset[str]:
-    """Return the member names an ``Attributes`` section of *doc* describes.
+class _ProcessedFields(t.NamedTuple):
+    """Fields emitted for the class whose members are being filtered.
 
-    Runs the same preprocessor that emits the competing ``.. attribute::``
-    directives and collects the names it produced, so the skip decision and
-    the rendered directives can never disagree about what is documented.
+    Attributes
+    ----------
+    owner : type
+        Exact class whose processed docstring emitted the fields.
+    names : frozenset[str]
+        Attribute directive names in that processed docstring.
+    """
+
+    owner: type
+    names: frozenset[str]
+
+
+_PROCESSED_FIELDS: weakref.WeakKeyDictionary[Sphinx, _ProcessedFields] = (
+    weakref.WeakKeyDictionary()
+)
+
+
+def _attribute_directive_names(lines: t.Iterable[str]) -> frozenset[str]:
+    """Return attribute names emitted in processed docstring *lines*.
 
     Parameters
     ----------
-    doc : str | None
-        A class docstring, or ``None``.
+    lines : typing.Iterable[str]
+        Final processed autodoc docstring lines.
 
     Returns
     -------
     frozenset[str]
-        Names the docstring emits an ``.. attribute::`` directive for.
+        Names carried by ``.. attribute::`` directives.
 
     Examples
     --------
-    >>> _numpy_attribute_names('''A point.
-    ...
-    ...     Attributes
-    ...     ----------
-    ...     x : int
-    ...         Horizontal offset.
-    ...     ''')
+    >>> _attribute_directive_names([".. attribute:: x", "", "summary"])
     frozenset({'x'})
-
-    >>> _numpy_attribute_names("Summary only.")
-    frozenset()
-
-    >>> _numpy_attribute_names(None)
-    frozenset()
     """
-    if not doc:
-        return frozenset()
-    lines = process_numpy_docstring(inspect.cleandoc(doc).splitlines())
     return frozenset(
         line[len(_ATTRIBUTE_DIRECTIVE) :].strip()
         for line in lines
@@ -266,95 +266,63 @@ def _is_declared_field(klass: type, name: str) -> bool:
     )
 
 
-def _exposes_another_member(klass: type, name: str, obj: t.Any) -> bool:
-    """Return whether *klass* exposes something other than *obj* under *name*.
+def record_documented_fields(
+    app: Sphinx,
+    what: str,
+    name: str,
+    obj: t.Any,
+    options: Options,
+    lines: list[str],
+) -> None:
+    """Record fields emitted by an actual processed class docstring.
 
-    A :class:`typing.NamedTuple` field is a descriptor autodoc hands over as
-    is, so comparing identity confirms the member and the field are one
-    object. A :class:`typing.TypedDict` key and a dataclass field without a
-    default put nothing on the class, leaving nothing to compare against.
-
-    ``@dataclasses.dataclass(slots=True)`` sits between the two: the field
-    lives in a slot, so the class exposes the ``member_descriptor`` that
-    reads it while autodoc hands over its own slot sentinel. The two are
-    never the same object even though they stand for the same field, so the
-    slot the class declares for *name* counts as a match.
-
-    Parameters
-    ----------
-    klass : type
-        Class being documented.
-    name : str
-        Member name under consideration.
-    obj : t.Any
-        The member autodoc is filtering.
-
-    Returns
-    -------
-    bool
-        Whether the class exposes a different member under that name.
-
-    Examples
-    --------
-    >>> import dataclasses
-    >>> @dataclasses.dataclass(slots=True)
-    ... class Point:
-    ...     x: int
-    >>> _exposes_another_member(Point, "x", object())
-    False
-
-    >>> _exposes_another_member(Point, "__init__", object())
-    True
-    """
-    exposed = inspect.getattr_static(klass, name, _UNSET)
-    if exposed is _UNSET or exposed is obj:
-        return False
-    if dataclasses.is_dataclass(klass) and name in {
-        field.name for field in dataclasses.fields(klass)
-    }:
-        return False
-    return not (
-        inspect.ismemberdescriptor(exposed)
-        and getattr(exposed, "__name__", None) == name
-        and getattr(exposed, "__objclass__", None) in klass.__mro__
-    )
-
-
-def _documented_class(app: Sphinx) -> type | None:
-    """Return the class whose members autodoc is currently filtering.
-
-    ``autodoc-skip-member`` is handed the member but not its owner.
-    ``Documenter.document_members`` records the module name and the head of
-    the object path on the current document before filtering starts, so the
-    owner can be walked back out of :data:`sys.modules`.
+    Connected late to ``autodoc-process-docstring``. Sphinx processes a
+    class's docstring immediately before filtering that class's members, so
+    the application-local record carries the exact owner and final emitted
+    attribute names into ``autodoc-skip-member``.
 
     Parameters
     ----------
     app : Sphinx
-        The Sphinx application instance.
-
-    Returns
-    -------
-    type | None
-        The class being documented, or ``None`` when no class is in scope or
-        the recorded path no longer resolves to one.
+        Sphinx application instance being built.
+    what : str
+        Type of object whose docstring was processed.
+    name : str
+        Fully qualified autodoc name.
+    obj : typing.Any
+        Object whose docstring was processed.
+    options : Options
+        Options given to the autodoc directive.
+    lines : list[str]
+        Processed docstring lines at this event priority.
 
     Examples
     --------
-    >>> _documented_class  # doctest: +ELLIPSIS
-    <function _documented_class at 0x...>
+    >>> record_documented_fields  # doctest: +ELLIPSIS
+    <function record_documented_fields at 0x...>
     """
-    current = app.env.current_document
-    if not current.autodoc_class:
-        return None
-    owner: t.Any = sys.modules.get(current.autodoc_module)
-    if owner is None:
-        return None
-    for part in current.autodoc_class.split("."):
-        owner = getattr(owner, part, None)
-        if owner is None:
-            return None
-    return owner if isinstance(owner, type) else None
+    if what != "class" or not isinstance(obj, type):
+        return
+    _PROCESSED_FIELDS[app] = _ProcessedFields(
+        owner=obj,
+        names=_attribute_directive_names(lines),
+    )
+
+
+def _clear_processed_fields(app: Sphinx) -> None:
+    """Clear the application's processed field record before a build.
+
+    Parameters
+    ----------
+    app : Sphinx
+        Sphinx application instance being built.
+
+    Examples
+    --------
+    >>> callable(_clear_processed_fields)
+    True
+    """
+    _PROCESSED_FIELDS.pop(app, None)
 
 
 def skip_documented_fields(
@@ -371,12 +339,11 @@ def skip_documented_fields(
     one of these holds:
 
     - autodoc is not already skipping the member;
-    - a class documenter is running and its class still resolves;
+    - an exact class and processed docstring were recorded;
     - that class declares *name* as a field, through ``_fields`` or through
       an annotation on itself or a base;
-    - the class exposes no member under *name* other than *obj* itself or
-      the slot it declares for it;
-    - the class docstring's ``Attributes`` section describes *name*.
+    - the processed class docstring emitted an attribute directive for
+      *name*.
 
     Returns ``None`` in every other case, leaving the member to autodoc and
     to any other handler.
@@ -409,15 +376,13 @@ def skip_documented_fields(
     if skip or what != "class":
         return None
 
-    owner = _documented_class(app)
-    if owner is None:
+    processed = _PROCESSED_FIELDS.get(app)
+    if processed is None:
         return None
 
-    if not _is_declared_field(owner, name):
+    if not _is_declared_field(processed.owner, name):
         return None
-    if _exposes_another_member(owner, name, obj):
-        return None
-    if name not in _numpy_attribute_names(owner.__doc__):
+    if name not in processed.names:
         return None
     return True
 
@@ -435,4 +400,10 @@ def register(app: Sphinx) -> None:
     >>> register  # doctest: +ELLIPSIS
     <function register at 0x...>
     """
+    app.connect("builder-inited", _clear_processed_fields)
+    app.connect(
+        "autodoc-process-docstring",
+        record_documented_fields,
+        priority=999,
+    )
     app.connect("autodoc-skip-member", skip_documented_fields)
