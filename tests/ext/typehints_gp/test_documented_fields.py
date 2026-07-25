@@ -588,7 +588,13 @@ _FIELDS_MODULE_SOURCE = textwrap.dedent(
         value: int
 
         def __init__(self, value: int) -> None:
-            """Initialize the value."""
+            """Initialize the value.
+
+            Attributes
+            ----------
+            value : int
+                Initializer-owned duplicate field documentation.
+            """
             self.value = value
 
 
@@ -767,6 +773,9 @@ def test_combined_class_and_initializer_attributes_are_described_once(
 
     assert attributes.count("BothDocumented.value") == 1
     assert "Class-owned field documentation." in read_output(
+        documented_fields_html_result, "index.html"
+    )
+    assert "Initializer-owned duplicate field documentation." not in read_output(
         documented_fields_html_result, "index.html"
     )
 

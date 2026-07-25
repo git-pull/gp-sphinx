@@ -136,6 +136,59 @@ def _add_attribute_no_index(lines: list[str]) -> None:
     lines[:] = updated
 
 
+def _coalesce_attribute_directives(lines: list[str]) -> list[str]:
+    """Keep the first complete directive block for each attribute name.
+
+    Parameters
+    ----------
+    lines : list[str]
+        Fully processed class and initializer docstring lines.
+
+    Returns
+    -------
+    list[str]
+        Lines with later directive blocks for the same attribute removed.
+
+    Examples
+    --------
+    >>> _coalesce_attribute_directives(
+    ...     [
+    ...         ".. attribute:: value",
+    ...         "",
+    ...         "   Class description.",
+    ...         "Initializer.",
+    ...         ".. attribute:: value",
+    ...         "",
+    ...         "   Initializer copy.",
+    ...     ]
+    ... )
+    ['.. attribute:: value', '', '   Class description.', 'Initializer.']
+    """
+    seen: set[str] = set()
+    coalesced: list[str] = []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        if not line.startswith(_ATTRIBUTE_DIRECTIVE):
+            coalesced.append(line)
+            index += 1
+            continue
+
+        name = line[len(_ATTRIBUTE_DIRECTIVE) :].strip()
+        block_end = index + 1
+        while block_end < len(lines):
+            candidate = lines[block_end]
+            if candidate and not candidate[:1].isspace():
+                break
+            block_end += 1
+
+        if name not in seen:
+            seen.add(name)
+            coalesced.extend(lines[index:block_end])
+        index = block_end
+    return coalesced
+
+
 def _own_annotations(klass: type) -> dict[str, t.Any]:
     """Return the annotations declared in *klass*'s own body.
 
@@ -401,7 +454,9 @@ class _DocumentedFieldDocumenterMixin:
         >>> callable(_DocumentedFieldDocumenterMixin.process_doc)
         True
         """
-        processed = list(super().process_doc(docstrings))  # type: ignore[misc]
+        processed = _coalesce_attribute_directives(
+            list(super().process_doc(docstrings))  # type: ignore[misc]
+        )
         if self.options.no_index or self.options.noindex:  # type: ignore[attr-defined]
             _add_attribute_no_index(processed)
         record_documented_fields(
