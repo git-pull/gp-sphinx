@@ -318,6 +318,29 @@ def _strip_hidden_doctest_examples(lines: list[str]) -> None:
     lines[:] = kept
 
 
+def _add_attribute_no_index(lines: list[str]) -> None:
+    """Apply ``:no-index:`` to emitted attribute directives.
+
+    Parameters
+    ----------
+    lines : list[str]
+        Processed docstring lines, modified in place.
+
+    Examples
+    --------
+    >>> body = [".. attribute:: value", "", "   Description."]
+    >>> _add_attribute_no_index(body)
+    >>> body
+    ['.. attribute:: value', '   :no-index:', '', '   Description.']
+    """
+    updated: list[str] = []
+    for line in lines:
+        updated.append(line)
+        if line.startswith(".. attribute:: "):
+            updated.append("   :no-index:")
+    lines[:] = updated
+
+
 def process_docstring(
     app: Sphinx,
     what: str,
@@ -357,6 +380,8 @@ def process_docstring(
     from sphinx_autodoc_typehints_gp._numpy_docstring import process_numpy_docstring
 
     lines[:] = process_numpy_docstring(lines)
+    if options.no_index or options.noindex:
+        _add_attribute_no_index(lines)
 
 
 def record_typehints(

@@ -1097,3 +1097,68 @@ def test_native_annotation_field_is_described_once(
 
     assert attributes.count("NativeField.value") == 1
     assert "duplicate object description" not in native_annotation_html_result.warnings
+
+
+_NO_INDEX_MODULE_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+
+    class NoIndexField:
+        """A class rendered outside the Python object index.
+
+        Attributes
+        ----------
+        value : int
+            Visible but unregistered field.
+        """
+
+        value: int
+    '''
+)
+
+
+@pytest.fixture(scope="module")
+def no_index_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a project whose class opts out of object registration."""
+    cache_root = tmp_path_factory.mktemp("no-index-html")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("no_index_demo.py", _NO_INDEX_MODULE_SOURCE),
+            _conf_file(),
+            ScenarioFile(
+                "index.rst",
+                textwrap.dedent(
+                    """\
+                    Demo
+                    ====
+
+                    .. autoclass:: no_index_demo.NoIndexField
+                       :no-index:
+                    """
+                ),
+            ),
+        ),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("no_index_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_no_index_applies_to_emitted_attribute(
+    no_index_html_result: SharedSphinxResult,
+) -> None:
+    """A no-index class keeps its field visible but unregistered."""
+    attributes = _attribute_names(no_index_html_result)
+    objects = no_index_html_result.app.env.domains.python_domain.objects
+
+    assert attributes.count("NoIndexField.value") == 1
+    assert "Visible but unregistered field." in read_output(
+        no_index_html_result, "index.html"
+    )
+    assert "no_index_demo.NoIndexField.value" not in objects
