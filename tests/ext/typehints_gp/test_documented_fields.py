@@ -197,6 +197,12 @@ class _TupleFieldsLookalike:
         return bool(other)
 
 
+class _RuntimeDefaults:
+    """A class exposing an unannotated data attribute."""
+
+    timeout = 30
+
+
 class _BaseOptions(t.TypedDict):
     """Options every caller may pass."""
 
@@ -338,6 +344,12 @@ _DECLARED_FIELD_FIXTURES: list[_DeclaredFieldFixture] = [
         klass=_TupleFieldsLookalike,
         name="matches",
         expected=False,
+    ),
+    _DeclaredFieldFixture(
+        test_id="runtime-data-attribute",
+        klass=_RuntimeDefaults,
+        name="timeout",
+        expected=True,
     ),
     _DeclaredFieldFixture(
         test_id="typeddict-own-key",
@@ -905,6 +917,18 @@ _NON_FIELD_MODULE_SOURCE = textwrap.dedent(
     import typing as t
 
 
+    class RuntimeDefaults:
+        """Runtime defaults exposed as ordinary data attributes.
+
+        Attributes
+        ----------
+        timeout : int
+            Maximum wait in seconds.
+        """
+
+        timeout = 30
+
+
     class Facade:
         """A facade over registered backends.
 
@@ -1031,6 +1055,8 @@ _NON_FIELD_INDEX_RST = textwrap.dedent(
     """\
     Demo
     ====
+
+    .. autoclass:: non_field_members_demo.RuntimeDefaults
 
     .. autoclass:: non_field_members_demo.Facade
 
@@ -1166,6 +1192,21 @@ def test_unselected_concrete_member_keeps_field_documentation(
     assert "Excluded fallback field documentation." in html
     assert "duplicate object description" not in (
         concrete_member_visibility_html_result.warnings
+    )
+
+
+@pytest.mark.integration
+def test_documented_runtime_data_attribute_is_described_once(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """An unannotated data member remains an Attributes-owned field."""
+    attributes = _attribute_names(non_field_members_html_result)
+    html = read_output(non_field_members_html_result, "index.html")
+
+    assert attributes.count("RuntimeDefaults.timeout") == 1
+    assert "Maximum wait in seconds." in html
+    assert "duplicate object description" not in (
+        non_field_members_html_result.warnings
     )
 
 

@@ -323,10 +323,10 @@ def _is_declared_field(klass: type, name: str) -> bool:
 
     A :class:`typing.NamedTuple` lists its fields in ``_fields``. Every other
     shape — dataclass field, :class:`typing.TypedDict` key, annotated
-    instance attribute — declares them by annotation. A ``ClassVar``
-    annotates a class-level constant rather than a field, and a name the
-    class exposes as a :class:`property` belongs to that property, so neither
-    counts.
+    instance attribute, or ordinary runtime data attribute — declares data
+    rather than behavior. A ``ClassVar`` annotates a class-level constant
+    rather than a field, and a name the class exposes as a
+    :class:`property` belongs to that property, so neither counts.
 
     Parameters
     ----------
@@ -409,7 +409,7 @@ def _is_declared_field(klass: type, name: str) -> bool:
         )
 
     if name not in annotations:
-        return False
+        return exposed is not _UNSET and not is_non_field_member
     return not is_non_field_member
 
 
