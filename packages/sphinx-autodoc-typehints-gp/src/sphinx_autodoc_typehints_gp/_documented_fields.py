@@ -122,9 +122,12 @@ def _own_annotations(klass: type) -> dict[str, t.Any]:
     {}
     """
     try:
-        annotations = vars(klass).get("__annotations__")
+        namespace = vars(klass)
     except TypeError:
         return {}
+    annotations = namespace.get("__annotations__")
+    if not isinstance(annotations, dict):
+        annotations = namespace.get("__annotations_cache__")
     return dict(annotations) if isinstance(annotations, dict) else {}
 
 
@@ -243,7 +246,7 @@ def _is_declared_field(klass: type, name: str) -> bool:
     False
     """
     fields = getattr(klass, "_fields", None)
-    if isinstance(fields, tuple) and name in fields:
+    if issubclass(klass, tuple) and isinstance(fields, tuple) and name in fields:
         return True
 
     if dataclasses.is_dataclass(klass):
