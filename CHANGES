@@ -26,8 +26,9 @@ A class that documents its fields in an `Attributes` section drew a
 duplicate object description warning for each of them: the section
 rendered an `.. attribute::` directive, and autodoc rendered the same
 field again. Autodoc's copy is dropped, leaving the description the
-`Attributes` entry wrote — for `NamedTuple` fields, dataclass fields,
-and `TypedDict` keys alike, including keys a base `TypedDict` declares.
+`Attributes` entry wrote — for `NamedTuple` fields, dataclass fields
+whether or not the dataclass uses `slots=True`, and `TypedDict` keys
+including those a base `TypedDict` declares.
 
 A field the section omits still renders, so it remains visible as
 something to document. A method, property, or `ClassVar` that shares a
