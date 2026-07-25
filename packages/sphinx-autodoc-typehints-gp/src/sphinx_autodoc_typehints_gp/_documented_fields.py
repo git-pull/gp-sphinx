@@ -33,6 +33,7 @@ import ast
 import dataclasses
 import inspect
 import re
+import sys
 import typing as t
 import weakref
 
@@ -52,12 +53,15 @@ class _ProcessedFields(t.NamedTuple):
 
     Attributes
     ----------
+    options : object
+        Exact options object shared by one class documenter invocation.
     owner : type
         Exact class whose processed docstring emitted the fields.
     names : frozenset[str]
         Attribute directive names in that processed docstring.
     """
 
+    options: object
     owner: type
     names: frozenset[str]
 
@@ -306,9 +310,18 @@ def record_documented_fields(
     """
     if what != "class" or not isinstance(obj, type):
         return
+    names = _attribute_directive_names(lines)
+    previous = _PROCESSED_FIELDS.get(app)
+    if (
+        previous is not None
+        and previous.options is options
+        and previous.owner is obj
+    ):
+        names |= previous.names
     _PROCESSED_FIELDS[app] = _ProcessedFields(
+        options=options,
         owner=obj,
-        names=_attribute_directive_names(lines),
+        names=names,
     )
 
 
@@ -407,6 +420,6 @@ def register(app: Sphinx) -> None:
     app.connect(
         "autodoc-process-docstring",
         record_documented_fields,
-        priority=999,
+        priority=sys.maxsize,
     )
     app.connect("autodoc-skip-member", skip_documented_fields)
