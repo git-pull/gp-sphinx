@@ -312,11 +312,7 @@ def record_documented_fields(
         return
     names = _attribute_directive_names(lines)
     previous = _PROCESSED_FIELDS.get(app)
-    if (
-        previous is not None
-        and previous.options is options
-        and previous.owner is obj
-    ):
+    if previous is not None and previous.options is options and previous.owner is obj:
         names |= previous.names
     _PROCESSED_FIELDS[app] = _ProcessedFields(
         options=options,
