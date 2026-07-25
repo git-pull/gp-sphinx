@@ -30,6 +30,25 @@ class FuroThemeOptions(t.TypedDict, total=False):
     """Typed subset of Furo theme options used by gp-sphinx.
 
     All keys are optional — pass only what you want to override.
+
+    Attributes
+    ----------
+    footer_icons : list[FooterIconDict]
+        Icon links rendered in the page footer, in display order.
+    source_repository : str
+        Repository URL the "Edit this page" link points at. Empty until a
+        project supplies it.
+    source_branch : str
+        Branch the edit link targets, such as ``"main"``.
+    source_directory : str
+        Path from the repository root to the docs sources, such as
+        ``"docs/"``.
+    light_logo : str
+        Logo path, relative to ``html_static_path``, shown in light mode.
+    dark_logo : str
+        Logo path, relative to ``html_static_path``, shown in dark mode.
+    mask_icon : str
+        Path to the Safari pinned-tab mask icon.
     """
 
     footer_icons: list[FooterIconDict]
