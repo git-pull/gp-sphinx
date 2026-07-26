@@ -68,6 +68,11 @@ _UNSET = object()
 _CLASS_VAR_RE = re.compile(r"\s*(?:\w+\.)*ClassVar\b")
 _OBJECT_DIRECTIVE_RE = re.compile(r"^\s*\.\. (?:\w+:)?[\w-]+::\s+([^\s(=:]+)")
 _RENDERED_FIELD_RE = re.compile(r"^\s*:(?:type|value):(?:\s|$)")
+# ``autodoc-skip-member`` stops at the first listener returning a decision, and
+# a project's own ``conf.py`` connects at the default priority. Answering after
+# it leaves the project's explicit decision authoritative, which is what this
+# module's docstring already promises.
+_LATE_SKIP_PRIORITY = 800
 _DIRECTIVE_OPTION_RE = re.compile(r"^\s*:(?:type|value|no-index|noindex):(?:\s|$)")
 
 
@@ -1421,7 +1426,11 @@ def register(app: Sphinx) -> None:
     """
     app.add_autodocumenter(GpPropertyDocumenter, override=True)
     app.add_autodocumenter(GpMethodDocumenter, override=True)
-    app.connect("autodoc-skip-member", skip_documented_fields)
+    app.connect(
+        "autodoc-skip-member",
+        skip_documented_fields,
+        priority=_LATE_SKIP_PRIORITY,
+    )
     app.connect(
         "autodoc-process-signature",
         _clear_documented_fields,

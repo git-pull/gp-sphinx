@@ -2175,6 +2175,84 @@ def test_showing_undocumented_class_vars_restores_them(
 
 
 # ---------------------------------------------------------------------------
+# a consumer's explicit skip decision
+# ---------------------------------------------------------------------------
+
+_CONSUMER_SKIP_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+    import typing as t
+
+
+    class Registry:
+        """A registry carrying a class variable nothing describes.
+
+        Attributes
+        ----------
+        described : str
+            Described class variable.
+        """
+
+        described: t.ClassVar[str] = "described-value"
+
+        undescribed: t.ClassVar[str] = "undescribed-value"
+    '''
+)
+
+_CONSUMER_SKIP_CONF_EXTRA = textwrap.dedent(
+    '''\
+
+    def _keep_undescribed(app, what, name, obj, skip, options):
+        """Refuse to withhold one member the extension would drop."""
+        if name == "undescribed":
+            return False
+        return None
+
+
+    def setup(app):
+        app.connect("autodoc-skip-member", _keep_undescribed)
+    '''
+)
+
+
+@pytest.fixture(scope="module")
+def consumer_skip_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a project whose own handler refuses one skip."""
+    conf = _CONF_PY.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN)
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("consumer_skip_demo.py", _CONSUMER_SKIP_SOURCE),
+            ScenarioFile(
+                "conf.py", conf + _CONSUMER_SKIP_CONF_EXTRA, substitute_srcdir=True
+            ),
+            ScenarioFile(
+                "index.rst",
+                "Demo\n====\n\n.. autoclass:: consumer_skip_demo.Registry\n",
+            ),
+        ),
+    )
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("consumer-skip"),
+        scenario,
+        purge_modules=("consumer_skip_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_a_consumer_refusing_to_skip_a_member_is_obeyed(
+    consumer_skip_html_result: SharedSphinxResult,
+) -> None:
+    """Returning ``False`` outranks the extension's own withholding."""
+    attributes = _attribute_names(consumer_skip_html_result)
+
+    assert attributes.count("Registry.undescribed") == 1
+    assert attributes.count("Registry.described") == 1
+
+
+# ---------------------------------------------------------------------------
 # a described member renders the signature autodoc would have rendered
 # ---------------------------------------------------------------------------
 
