@@ -65,21 +65,21 @@ ScenarioInputValue: t.TypeAlias = (
     | int
     | float
     | bool
-    | None
     | list["ScenarioInputValue"]
     | tuple["ScenarioInputValue", ...]
     | set["ScenarioInputValue"]
     | frozenset["ScenarioInputValue"]
     | dict[str, "ScenarioInputValue"]
+    | None
 )
 FrozenScenarioValue: t.TypeAlias = (
     str
     | int
     | float
     | bool
-    | None
     | tuple["FrozenScenarioValue", ...]
     | dict[str, "FrozenScenarioValue"]
+    | None
 )
 
 
