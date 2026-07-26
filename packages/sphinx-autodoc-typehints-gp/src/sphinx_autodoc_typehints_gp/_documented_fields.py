@@ -74,6 +74,18 @@ _CLASS_VAR_RE = re.compile(r"\s*(?:\w+\.)*ClassVar\b")
 _OBJECT_DIRECTIVE_RE = re.compile(r"^\s*\.\. (?:\w+:)?[\w-]+::\s+([^\s(=:]+)")
 _RENDERED_FIELD_RE = re.compile(r"^\s*:(?:type|value):(?:\s|$)")
 _DIRECTIVE_OPTION_RE = re.compile(r"^\s*:(?:type|value|no-index|noindex):(?:\s|$)")
+_NUMPY_SECTION_NAMES = frozenset(
+    {
+        "Examples",
+        "Notes",
+        "Parameters",
+        "Raises",
+        "References",
+        "Returns",
+        "See Also",
+        "Yields",
+    }
+)
 
 
 class _ProcessedFields(t.NamedTuple):
@@ -437,6 +449,105 @@ def _is_declared_field(klass: type, name: str) -> bool:
     return not is_non_field_member
 
 
+def _describing_bases(owner: t.Any) -> t.Iterator[type]:
+    """Yield every base that could describe one of *owner*'s members.
+
+    Walks the MRO and ``__orig_bases__`` together. A
+    :class:`typing.TypedDict` keeps no base in its MRO -- it inherits
+    from :class:`dict` -- so the class that declared an inherited key is
+    reachable only through ``__orig_bases__``.
+
+    Parameters
+    ----------
+    owner : typing.Any
+        Class whose bases are being searched.
+
+    Yields
+    ------
+    type
+        Each base, nearest first, without repeats.
+
+    Examples
+    --------
+    >>> class Base:
+    ...     pass
+    >>> class Child(Base):
+    ...     pass
+    >>> [base.__name__ for base in _describing_bases(Child)]
+    ['Base']
+    """
+    seen: set[type] = set()
+    queue = [
+        *getattr(owner, "__mro__", (owner,))[1:],
+        *getattr(owner, "__orig_bases__", ()),
+    ]
+    while queue:
+        base = queue.pop(0)
+        if not isinstance(base, type) or base is object or base in seen:
+            continue
+        seen.add(base)
+        yield base
+        queue.extend(getattr(base, "__orig_bases__", ()))
+
+
+def _numpy_attributes(docstring: str) -> dict[str, _FieldDoc]:
+    r"""Return what a NumPy ``Attributes`` section states, by member name.
+
+    Parameters
+    ----------
+    docstring : str
+        Class docstring, already dedented.
+
+    Returns
+    -------
+    dict[str, _FieldDoc]
+        Description and declared type for each entry.
+
+    Examples
+    --------
+    >>> section = [
+    ...     "Summary.",
+    ...     "",
+    ...     "Attributes",
+    ...     "----------",
+    ...     "x : int",
+    ...     "    Offset.",
+    ... ]
+    >>> _numpy_attributes("\n".join(section))
+    {'x': _FieldDoc(prose=['Offset.'], declared_type='int')}
+    """
+    lines = docstring.splitlines()
+    entries: dict[str, _FieldDoc] = {}
+    inside = False
+    name = ""
+    declared = ""
+    prose: list[str] = []
+
+    def flush() -> None:
+        if name:
+            entries[name] = _FieldDoc(prose=list(prose), declared_type=declared)
+
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if not inside:
+            following = lines[index + 1].strip() if index + 1 < len(lines) else ""
+            inside = stripped == "Attributes" and set(following) == {"-"}
+            continue
+        if set(stripped) == {"-"}:
+            continue
+        if stripped and not line[:1].isspace():
+            flush()
+            name, _, declared = (part.strip() for part in stripped.partition(":"))
+            prose = []
+            if not declared and stripped in _NUMPY_SECTION_NAMES:
+                name = ""
+                break
+        elif stripped:
+            prose.append(stripped)
+    flush()
+    return entries
+
+
 def _has_attribute_comment(klass: type, name: str) -> bool:
     """Return whether a source comment or attribute docstring describes *name*.
 
@@ -462,6 +573,29 @@ def _has_attribute_comment(klass: type, name: str) -> bool:
     >>> _has_attribute_comment(_ProcessedFields, "names")
     False
     """
+    return bool(_attribute_comment(klass, name))
+
+
+def _attribute_comment(klass: type, name: str) -> list[str]:
+    """Return the source comment or attribute docstring describing *name*.
+
+    Parameters
+    ----------
+    klass : type
+        Class being documented.
+    name : str
+        Member name under consideration.
+
+    Returns
+    -------
+    list[str]
+        Description lines, empty when the source describes nothing.
+
+    Examples
+    --------
+    >>> _attribute_comment(_ProcessedFields, "names")
+    []
+    """
     for base in getattr(klass, "__mro__", (klass,)):
         module = getattr(base, "__module__", None)
         qualname = getattr(base, "__qualname__", None)
@@ -472,9 +606,10 @@ def _has_attribute_comment(klass: type, name: str) -> bool:
             analyzer.analyze()
         except PycodeError:
             continue
-        if (qualname, name) in analyzer.attr_docs:
-            return True
-    return False
+        comment = analyzer.attr_docs.get((qualname, name))
+        if comment:
+            return [line for line in comment if line.strip()]
+    return []
 
 
 def _has_module_comment(module: t.Any, name: str) -> bool:
@@ -890,6 +1025,45 @@ def active_field_doc(name: str) -> _FieldDoc | None:
     return _ACTIVE_FIELD_DOCS[-1].get(name)
 
 
+def _inherited_field_doc(owner: t.Any, name: str) -> _FieldDoc | None:
+    """Return what a base class says about *name*, if anything does.
+
+    A field a base declares reaches the subclass whether or not the
+    subclass repeats it: a dataclass inherits its bases' fields, and a
+    typed dictionary inherits its bases' keys. The description stays
+    behind on the base, so the subclass entry renders bare unless the
+    bases are consulted. Both description styles count -- a NumPy
+    ``Attributes`` entry and a description at the assignment.
+
+    Parameters
+    ----------
+    owner : typing.Any
+        Class the member is being documented on.
+    name : str
+        Member name under consideration.
+
+    Returns
+    -------
+    _FieldDoc | None
+        The nearest base's description, or ``None``.
+
+    Examples
+    --------
+    >>> _inherited_field_doc(_ProcessedFields, "names") is None
+    True
+    """
+    if not isinstance(owner, type):
+        return None
+    for base in _describing_bases(owner):
+        entry = _numpy_attributes(inspect.getdoc(base) or "").get(name)
+        if entry is not None and entry.prose:
+            return entry
+        comment = _attribute_comment(base, name)
+        if comment:
+            return _FieldDoc(prose=comment, declared_type="")
+    return None
+
+
 class FieldDocFallbackMixin:
     """Describe a bare member from its owner's ``Attributes`` entry.
 
@@ -965,6 +1139,11 @@ class FieldDocFallbackMixin:
         if not self.objpath:
             return t.cast("list[list[str]] | None", doc)
         fallback = active_field_doc(self.objpath[-1])
+        if fallback is None:
+            fallback = _inherited_field_doc(
+                getattr(self, "parent", None),
+                self.objpath[-1],
+            )
         if fallback is None:
             return t.cast("list[list[str]] | None", doc)
         lines = list(fallback.prose)

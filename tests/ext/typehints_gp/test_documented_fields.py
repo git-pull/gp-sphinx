@@ -2180,6 +2180,101 @@ def test_showing_undocumented_class_vars_restores_them(
 
 
 # ---------------------------------------------------------------------------
+# a field a base class describes
+# ---------------------------------------------------------------------------
+
+_INHERITED_DESC_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+    import dataclasses
+    import typing as t
+
+
+    @dataclasses.dataclass
+    class ServerBase:
+        """Server-scoped options.
+
+        Attributes
+        ----------
+        activity_action : str | None
+            Which windows raise an alert on activity.
+        """
+
+        activity_action: str | None = None
+
+
+    @dataclasses.dataclass
+    class Options(ServerBase):
+        """Container for every option."""
+
+
+    class KeyBase(t.TypedDict):
+        """Keys a subclass builds on."""
+
+        directory: str
+        """Path for the worktree."""
+
+
+    class Config(KeyBase):
+        """Config declaring one key and inheriting another."""
+
+        label: str
+    '''
+)
+
+
+@pytest.fixture(scope="module")
+def inherited_description_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a class and a typed dictionary that inherit descriptions."""
+    index = textwrap.dedent(
+        """\
+        Demo
+        ====
+
+        .. autoclass:: inherited_desc_demo.Options
+           :inherited-members:
+
+        .. autoclass:: inherited_desc_demo.Config
+        """
+    )
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("inherited_desc_demo.py", _INHERITED_DESC_SOURCE),
+            _conf_file(),
+            ScenarioFile("index.rst", index),
+        ),
+    )
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("inherited-desc"),
+        scenario,
+        purge_modules=("inherited_desc_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_a_field_described_by_a_base_class_carries_that_description(
+    inherited_description_html_result: SharedSphinxResult,
+) -> None:
+    """An inherited dataclass field keeps the base's Attributes entry."""
+    html = read_output(inherited_description_html_result, "index.html")
+
+    assert "Which windows raise an alert on activity." in html
+
+
+@pytest.mark.integration
+def test_a_key_described_by_a_base_typed_dict_carries_that_description(
+    inherited_description_html_result: SharedSphinxResult,
+) -> None:
+    """A TypedDict base is reachable only through ``__orig_bases__``."""
+    html = read_output(inherited_description_html_result, "index.html")
+
+    assert "Path for the worktree." in html
+
+
+# ---------------------------------------------------------------------------
 # a module constant the module docstring describes
 # ---------------------------------------------------------------------------
 
