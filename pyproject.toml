@@ -230,6 +230,14 @@ convention = "numpy"
 "packages/sphinx-autodoc-fastmcp/src/sphinx_autodoc_fastmcp/_transforms.py" = ["BLE001"]
 "packages/sphinx-autodoc-pytest-fixtures/src/sphinx_autodoc_pytest_fixtures/_store.py" = ["BLE001"]
 "packages/sphinx-autodoc-typehints-gp/src/sphinx_autodoc_typehints_gp/rendering.py" = ["BLE001"]
+# S102: these suites compile fixture, annotation, and dataclass source
+# strings into throwaway modules so the extensions can be driven against
+# shapes that only exist for the test — deferred annotations, positional
+# -only fixture params, `TYPE_CHECKING` aliases. The source is a literal
+# in the test file, not user input.
+"tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures.py" = ["S102"]
+"tests/ext/pytest_fixtures/test_type_checking_alias.py" = ["S102"]
+"tests/ext/typehints_gp/test_documented_fields.py" = ["S102"]
 
 [tool.pytest.ini_options]
 addopts = "-s --tb=short --no-header --showlocals --doctest-modules"
