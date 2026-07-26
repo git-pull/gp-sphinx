@@ -1105,6 +1105,30 @@ _NON_FIELD_MODULE_SOURCE = textwrap.dedent(
             self.parsed = raw.strip()
 
 
+    class Callables:
+        """A class whose Attributes name callables and a nested class.
+
+        Attributes
+        ----------
+        Handler : type
+            Nested handler documentation.
+        dispatch : Callable
+            Dispatch documentation.
+        build : Callable
+            Build documentation.
+        """
+
+        class Handler:
+            pass
+
+        def dispatch(self, key: str) -> None:
+            pass
+
+        @staticmethod
+        def build() -> None:
+            pass
+
+
     @dataclasses.dataclass
     class BaseLabel:
         label: str = ""
@@ -1161,6 +1185,8 @@ _NON_FIELD_INDEX_RST = textwrap.dedent(
     .. autoclass:: non_field_members_demo.Meter
 
     .. autoclass:: non_field_members_demo.DerivedLabel
+
+    .. autoclass:: non_field_members_demo.Callables
     """
 )
 
@@ -1728,6 +1754,21 @@ def test_init_var_named_in_attributes_keeps_its_description(
 
     assert _attribute_names(non_field_members_html_result).count("Ingest.raw") == 1
     assert "Payload handed to the initializer only." in html
+
+
+@pytest.mark.integration
+def test_described_callables_and_nested_classes_keep_their_prose(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """An Attributes entry survives whatever kind of member it names."""
+    html = read_output(non_field_members_html_result, "index.html")
+
+    assert "Nested handler documentation." in html
+    assert "Dispatch documentation." in html
+    assert "Build documentation." in html
+    assert "duplicate object description" not in (
+        non_field_members_html_result.warnings
+    )
 
 
 @pytest.mark.integration

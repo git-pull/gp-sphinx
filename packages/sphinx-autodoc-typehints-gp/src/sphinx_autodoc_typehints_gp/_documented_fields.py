@@ -42,7 +42,7 @@ import weakref
 
 from docutils.statemachine import StringList
 from sphinx.errors import PycodeError
-from sphinx.ext.autodoc import Documenter, PropertyDocumenter
+from sphinx.ext.autodoc import Documenter, MethodDocumenter, PropertyDocumenter
 from sphinx.pycode import ModuleAnalyzer
 
 if t.TYPE_CHECKING:
@@ -829,6 +829,18 @@ class GpPropertyDocumenter(FieldDocFallbackMixin, PropertyDocumenter):  # type: 
     priority = PropertyDocumenter.priority + 1
 
 
+class GpMethodDocumenter(FieldDocFallbackMixin, MethodDocumenter):  # type: ignore[misc]
+    """``MethodDocumenter`` that honors an owner's ``Attributes`` entry.
+
+    An ``Attributes`` section is for attributes, so naming a method there
+    is a docstring the author should rework. Rendering the entry keeps
+    that decision theirs; deleting it silently does not.
+    """
+
+    objtype = "method"
+    priority = MethodDocumenter.priority + 1
+
+
 class _RenderedFieldsDocumenterMixin:
     """Resolve field ownership after the wrapped documenter renders members."""
 
@@ -894,7 +906,7 @@ def _wrap_documenter(documenter: type[Documenter]) -> type[Documenter]:
         return documenter
     wrapped = type(
         f"RenderedFields{documenter.__name__}",
-        (_RenderedFieldsDocumenterMixin, documenter),
+        (_RenderedFieldsDocumenterMixin, FieldDocFallbackMixin, documenter),
         {"__module__": documenter.__module__},
     )
     return t.cast("type[Documenter]", wrapped)
@@ -1146,6 +1158,7 @@ def register(app: Sphinx) -> None:
     <function register at 0x...>
     """
     app.add_autodocumenter(GpPropertyDocumenter, override=True)
+    app.add_autodocumenter(GpMethodDocumenter, override=True)
     app.connect("autodoc-skip-member", skip_documented_fields)
     app.connect(
         "autodoc-process-signature",
