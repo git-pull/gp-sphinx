@@ -5,7 +5,20 @@ import typing as t
 
 
 class SetupDict(t.TypedDict):
-    """Return type for Sphinx extension setup()."""
+    """Return type for Sphinx extension setup().
+
+    Attributes
+    ----------
+    version : str
+        Extension version Sphinx records for cache invalidation.
+    env_version : int
+        Schema version of the extension's environment data; bumping it
+        makes Sphinx discard the cached environment.
+    parallel_read_safe : bool
+        Whether the extension tolerates parallel reading of source files.
+    parallel_write_safe : bool
+        Whether the extension tolerates parallel writing of output files.
+    """
 
     version: str
     env_version: int

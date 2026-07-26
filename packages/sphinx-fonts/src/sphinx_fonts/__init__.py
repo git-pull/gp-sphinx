@@ -34,7 +34,17 @@ CDN_TEMPLATE = (
 
 
 class SetupDict(t.TypedDict):
-    """Return type for Sphinx extension setup()."""
+    """Return type for Sphinx extension setup().
+
+    Attributes
+    ----------
+    version : str
+        Extension version Sphinx records for cache invalidation.
+    parallel_read_safe : bool
+        Whether the extension tolerates parallel reading of source files.
+    parallel_write_safe : bool
+        Whether the extension tolerates parallel writing of output files.
+    """
 
     version: str
     parallel_read_safe: bool

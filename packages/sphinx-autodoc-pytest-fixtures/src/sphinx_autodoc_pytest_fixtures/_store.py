@@ -55,7 +55,21 @@ def _resolve_builtin_url(name: str, app: t.Any) -> str | None:
 
 
 class FixtureStoreDict(t.TypedDict):
-    """Typed shape of the extension-owned env domaindata namespace."""
+    """Typed shape of the extension-owned env domaindata namespace.
+
+    Attributes
+    ----------
+    fixtures : dict[str, FixtureMeta]
+        Registry of documented fixtures, keyed by canonical dotted name.
+        The only authored entry; the other two are derived from it.
+    public_to_canon : dict[str, str | None]
+        Short fixture name to its canonical name, powering short-name
+        cross-references. ``None`` marks a name that several modules
+        define, which stays ambiguous rather than resolving.
+    reverse_deps : dict[str, list[str]]
+        Canonical name to the sorted canonical names that request it,
+        backing the "Used by" listing. Self-edges are excluded.
+    """
 
     fixtures: dict[str, FixtureMeta]
     public_to_canon: dict[str, str | None]

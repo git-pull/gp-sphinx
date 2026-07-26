@@ -34,6 +34,16 @@ if t.TYPE_CHECKING:
 class ParserInfo:
     """Recorded metadata for one documented parser class.
 
+    Attributes
+    ----------
+    cls : type[Parser]
+        The parser class itself; its module and name supply the rendered
+        heading and link target.
+    registered_via : str
+        Name of the ``Sphinx`` method that registered the parser, currently
+        ``"add_source_parser"``. Empty when the class was found by a module
+        scan rather than a registration call.
+
     Examples
     --------
     >>> from docutils.parsers.rst import Parser

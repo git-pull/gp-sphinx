@@ -25,6 +25,14 @@ if t.TYPE_CHECKING:
 class ToctreeSection(t.NamedTuple):
     """One section of pages grouped by toctree caption.
 
+    Attributes
+    ----------
+    caption : str | None
+        Toctree caption, or ``None`` for an uncaptioned toctree and for the
+        trailing section holding pages no toctree reached.
+    docnames : list[str]
+        Docnames listed under the caption, in toctree order.
+
     Examples
     --------
     >>> ToctreeSection(caption="API", docnames=["api/index"])

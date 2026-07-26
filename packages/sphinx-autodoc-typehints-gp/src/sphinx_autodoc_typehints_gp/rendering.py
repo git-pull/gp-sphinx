@@ -41,6 +41,18 @@ _LITERAL_DISPLAY_PATTERN = re.compile(
 class AnnotationDisplay:
     """Normalized annotation display metadata for UI and table renderers.
 
+    Attributes
+    ----------
+    text : str
+        Annotation rendered for display, after optional ``None`` stripping
+        and ``Literal[...]`` collapsing. Empty when the annotation is
+        absent.
+    is_literal_enum : bool
+        Whether every member of ``text`` is a literal value, which lets the
+        renderer emit choice chips instead of a type xref.
+    literal_members : tuple[str, ...]
+        The individual literal values. Empty unless ``is_literal_enum``.
+
     Examples
     --------
     >>> display = AnnotationDisplay(

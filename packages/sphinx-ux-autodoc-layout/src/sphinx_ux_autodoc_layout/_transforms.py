@@ -91,7 +91,24 @@ _MANAGED_SPHINXEXT_OBJTYPES: tuple[str, ...] = ("builder", "domain")
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class DescLayoutProfile:
-    """Typed layout policy for a managed ``addnodes.desc`` entry."""
+    """Typed layout policy for a managed ``addnodes.desc`` entry.
+
+    Attributes
+    ----------
+    domain : str
+        Sphinx domain of the entry, such as ``"py"`` or ``"rst"``. Half of
+        the key the transform looks a profile up by.
+    objtype : str
+        Object type within the domain, such as ``"class"`` or
+        ``"directive:option"``. The other half of the lookup key.
+    slug : str
+        Identifier baked into the entry's CSS class, unique across
+        domain/objtype pairs.
+    allow_signature_fold : bool
+        Whether long signatures and field regions may collapse behind a
+        toggle. ``False`` keeps entries whose signature carries no
+        parameters, such as attributes and modules, always expanded.
+    """
 
     domain: str
     objtype: str

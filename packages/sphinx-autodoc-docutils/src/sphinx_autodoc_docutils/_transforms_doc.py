@@ -37,6 +37,16 @@ _TRANSFORM_CALLS: tuple[str, ...] = ("add_transform", "add_post_transform")
 class TransformInfo:
     """Recorded metadata for one documented transform class.
 
+    Attributes
+    ----------
+    cls : type[Transform]
+        The transform class itself; its module and name supply the rendered
+        heading and link target.
+    registered_via : str
+        Name of the ``Sphinx`` method that registered the transform, either
+        ``"add_transform"`` or ``"add_post_transform"``. Empty when the
+        class was found by a module scan rather than a registration call.
+
     Examples
     --------
     >>> from docutils.transforms.misc import Transitions
