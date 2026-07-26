@@ -2469,6 +2469,29 @@ class Registry:
     \"\"\"
 
     lookup: t.ClassVar[dict[str, str]] = {{}}
+
+
+class Level(enum.IntEnum):
+    \"\"\"A shape under test.{level}
+    \"\"\"
+
+    LOW = 1
+    HIGH = 2
+
+
+class Perm(enum.Flag):
+    \"\"\"A shape under test.{perm}
+    \"\"\"
+
+    READ = enum.auto()
+    WRITE = enum.auto()
+
+
+class Commented:
+    \"\"\"A shape under test.{commented}
+    \"\"\"
+
+    legacy = 0  # type: int
 """
 
 
@@ -2503,6 +2526,15 @@ _PARITY_ENTRIES: dict[str, tuple[tuple[str, str, str], ...]] = {
         ("nickname", "str", "Not-required key."),
     ),
     "registry": (("lookup", "dict[str, str]", "Class variable."),),
+    "level": (
+        ("LOW", "Level", "Lowest level."),
+        ("HIGH", "Level", "Highest level."),
+    ),
+    "perm": (
+        ("READ", "Perm", "Read permission."),
+        ("WRITE", "Perm", "Write permission."),
+    ),
+    "commented": (("legacy", "int", "Annotated by a type comment."),),
 }
 
 _PARITY_PREAMBLE = textwrap.dedent(
@@ -2528,6 +2560,9 @@ def _parity_source(*, described: bool) -> str:
 
 
 _PARITY_CLASSES = (
+    "Level",
+    "Perm",
+    "Commented",
     "Safety",
     "Tier",
     "Constants",
@@ -2583,6 +2618,32 @@ def test_describing_a_member_keeps_the_signature_autodoc_renders(
 
     assert rendered["plain"], "the undescribed copy rendered nothing to compare"
     assert rendered["described"] == rendered["plain"]
+
+
+@pytest.mark.integration
+def test_parity_covers_every_shape_it_names(
+    signature_parity_html_result: SharedSphinxResult,
+) -> None:
+    """A shape missing from the twin cannot let the comparison pass empty.
+
+    The parity assertion compares two dictionaries. A shape that stopped
+    rendering on both sides would drop out of both and still compare
+    equal, so the table's coverage is pinned separately from its content.
+    """
+    doctree = get_doctree(signature_parity_html_result, "index")
+    plain = {
+        signature.get("fullname", "")
+        for signature in doctree.findall(addnodes.desc_signature)
+        if signature.parent.get("objtype") == "attribute"
+        and (signature.get("module") or "") == "parity_plain_demo"
+    }
+    named = {
+        f"{section.capitalize()}.{name}"
+        for section, fields in _PARITY_ENTRIES.items()
+        for name, _type, _description in fields
+    }
+
+    assert named - plain == set()
 
 
 _CUSTOM_DOCUMENTERS_SOURCE = textwrap.dedent(
