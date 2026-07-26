@@ -29,7 +29,16 @@ which diagnostics fire. See the
 `ruff format` now formats Python code blocks embedded in Markdown, which
 reflows snippets in the READMEs and docs pages. Contributors who run the
 formatter on an older ruff will see those blocks revert, so upgrade
-before committing. (#73)
+before committing.
+
+Linting now runs ruff's default rule set alongside the linters this
+workspace picks explicitly. An explicit `select` replaces that default
+set rather than adding to it, so the config uses `extend-select`; the
+set is much larger than the old selection, and contributors will see
+diagnostics from linters the workspace never named. Rules that flag a
+deliberate idiom — blind excepts guarding a docs build against foreign
+code, `exec` in the suites that synthesise test modules — carry a scoped
+per-file ignore with its reasoning in `pyproject.toml`. (#73)
 
 ## gp-sphinx 0.0.1a36 (2026-07-26)
 
