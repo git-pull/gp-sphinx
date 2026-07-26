@@ -458,10 +458,8 @@ def _repository_url_from_package_json(manifest: dict[str, t.Any]) -> str:
         return repo
     if isinstance(repo, dict):
         url = str(repo.get("url", ""))
-        if url.startswith("git+"):
-            url = url[len("git+") :]
-        if url.endswith(".git"):
-            url = url[: -len(".git")]
+        url = url.removeprefix("git+")
+        url = url.removesuffix(".git")
         return url
     return ""
 
@@ -937,14 +935,18 @@ _CLUSTER_HEADINGS: tuple[tuple[str, str, str], ...] = (
     (
         "autodoc",
         "Autodoc extensions",
-        "Domain-specific autodoc extensions: each adds directives that "
-        "generate documentation from a particular source-construct family.",
+        (
+            "Domain-specific autodoc extensions: each adds directives that "
+            "generate documentation from a particular source-construct family."
+        ),
     ),
     (
         "ux",
         "UX components",
-        "Badge primitives, layout presenters, and other shared "
-        "rendering helpers consumed by the autodoc family.",
+        (
+            "Badge primitives, layout presenters, and other shared "
+            "rendering helpers consumed by the autodoc family."
+        ),
     ),
     (
         "highlighting",
@@ -954,8 +956,10 @@ _CLUSTER_HEADINGS: tuple[tuple[str, str, str], ...] = (
     (
         "build-seo",
         "Build & SEO",
-        "PEP 517 backends, build orchestration, and crawl-indexing "
-        "extensions auto-loaded by gp-sphinx when ``docs_url`` is set.",
+        (
+            "PEP 517 backends, build orchestration, and crawl-indexing "
+            "extensions auto-loaded by gp-sphinx when ``docs_url`` is set."
+        ),
     ),
 )
 
@@ -1612,10 +1616,12 @@ def _live_signature_markdown(package_name: str) -> str:
     # in E2). Directives that emit H1 via parse_text_to_nodes do NOT
     # set the page title — Sphinx's title extraction has already run.
     lines = [
-        f"Public callables in `{record.module_name}` rendered from the "
-        "running interpreter at docs-build time. Drift between this "
-        "block and the prose elsewhere on the page indicates a stale "
-        "docstring or signature comment.",
+        (
+            f"Public callables in `{record.module_name}` rendered from the "
+            "running interpreter at docs-build time. Drift between this "
+            "block and the prose elsewhere on the page indicates a stale "
+            "docstring or signature comment."
+        ),
         "",
     ]
     for name, sig in pairs:
@@ -1693,9 +1699,11 @@ def _kitchen_sink_markdown(package_name: str) -> str:
 
     # Body-only: stub supplies anchor + H1 so Sphinx finds a page title.
     lines = [
-        "Every directive and role this package registers, exercised once "
-        "on the same page — useful as a reference card for downstream "
-        "authors and as a visual-regression target.",
+        (
+            "Every directive and role this package registers, exercised once "
+            "on the same page — useful as a reference card for downstream "
+            "authors and as a visual-regression target."
+        ),
         "",
     ]
     if directives_seen:
@@ -1815,9 +1823,11 @@ def _surface_changelog_markdown(package_name: str) -> str:
 
     # Body-only: stub supplies anchor + H1 so Sphinx finds a page title.
     lines = [
-        "Comparison of the package's currently-registered directives, "
-        "roles, and config values against the snapshot stored at "
-        f"`docs/_static/surface-snapshots/{package_name}.json`.",
+        (
+            "Comparison of the package's currently-registered directives, "
+            "roles, and config values against the snapshot stored at "
+            f"`docs/_static/surface-snapshots/{package_name}.json`."
+        ),
         "",
     ]
     if not snapshot_path.is_file():
@@ -1928,8 +1938,10 @@ def _package_dependents_markdown(package_name: str) -> str:
     dependents = _package_dependents(package_name)
     # Body-only: stub supplies anchor + H1 so Sphinx finds a page title.
     lines = [
-        f"Workspace packages that declare a `{package_name}` dependency in "
-        "their `pyproject.toml` `[project].dependencies` array.",
+        (
+            f"Workspace packages that declare a `{package_name}` dependency in "
+            "their `pyproject.toml` `[project].dependencies` array."
+        ),
         "",
     ]
     if not dependents:

@@ -26,13 +26,13 @@ import typing as t
 from docutils import nodes
 
 if t.TYPE_CHECKING:
-    from collections.abc import Set
+    from collections.abc import Set as AbstractSet
 
 
 def get_description(
     doctree: nodes.document,
     description_length: int,
-    known_titles: Set[str] = frozenset(),
+    known_titles: AbstractSet[str] = frozenset(),
 ) -> str:
     """Return a plain-text description extracted from ``doctree``.
 
@@ -83,7 +83,7 @@ class DescriptionParser(nodes.NodeVisitor):
         document: nodes.document,
         *,
         desc_len: int,
-        known_titles: Set[str] = frozenset(),
+        known_titles: AbstractSet[str] = frozenset(),
     ) -> None:
         super().__init__(document)
         self.description = ""

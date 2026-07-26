@@ -12,7 +12,6 @@ from __future__ import annotations
 import importlib.metadata
 import pathlib
 import textwrap
-import typing as t
 
 import pytest
 from gp_furo_theme import THEME_NAME, get_theme_path, get_vite_root, setup
@@ -24,9 +23,6 @@ from tests._sphinx_scenarios import (
     build_shared_sphinx_result,
     read_output,
 )
-
-if t.TYPE_CHECKING:
-    pass
 
 
 def test_theme_path_exists() -> None:

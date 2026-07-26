@@ -26,12 +26,12 @@ _DECLARATION = re.compile(r"(--gp-sphinx-badge-[\w-]+):\s*([^;]+);")
 _VAR_REFERENCE = re.compile(r"var\((--gp-sphinx-badge-[\w-]+)\)")
 _TOKEN_SUFFIX = re.compile(r"-(bg|fg|border)$")
 
-_ROOT_BLOCK = re.compile(r":root \{(.*?)\n\}", re.S)
+_ROOT_BLOCK = re.compile(r":root \{(.*?)\n\}", re.DOTALL)
 _MEDIA_DARK_BLOCK = re.compile(
     r"@media \(prefers-color-scheme: dark\) \{(.*?)\n\}\n",
-    re.S,
+    re.DOTALL,
 )
-_BODY_DARK_BLOCK = re.compile(r'\nbody\[data-theme="dark"\] \{(.*?)\n\}', re.S)
+_BODY_DARK_BLOCK = re.compile(r'\nbody\[data-theme="dark"\] \{(.*?)\n\}', re.DOTALL)
 
 
 def _palette_css() -> str:

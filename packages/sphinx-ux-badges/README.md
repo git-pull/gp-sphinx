@@ -27,13 +27,15 @@ Then build badges in your directives or transforms:
 ```python
 from sphinx_ux_badges import build_badge, build_badge_group, build_toolbar
 
-group = build_badge_group([
-    build_badge(
-        "readonly",
-        tooltip="Read-only",
-        classes=["gp-sphinx-fastmcp__safety-readonly"],
-    ),
-])
+group = build_badge_group(
+    [
+        build_badge(
+            "readonly",
+            tooltip="Read-only",
+            classes=["gp-sphinx-fastmcp__safety-readonly"],
+        ),
+    ]
+)
 ```
 
 ## Documentation

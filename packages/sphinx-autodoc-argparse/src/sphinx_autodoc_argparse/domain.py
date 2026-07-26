@@ -34,7 +34,7 @@ from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 
 if t.TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator, Set
+    from collections.abc import Iterable, Iterator, Set as AbstractSet
 
     from docutils import nodes
     from docutils.nodes import Element
@@ -299,7 +299,7 @@ class ArgparseDomain(Domain):
 
     def merge_domaindata(
         self,
-        docnames: Set[str],
+        docnames: AbstractSet[str],
         otherdata: dict[str, t.Any],
     ) -> None:
         """Merge sibling worker's ``domaindata`` under parallel builds."""

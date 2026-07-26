@@ -22,8 +22,6 @@ if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
     from sphinx.domains.python import PythonDomain
 
-    pass
-
 logger = sphinx_logging.getLogger(__name__)
 
 _PARAMETER_FIELD_LABELS = frozenset(

@@ -33,7 +33,11 @@ fastmcp_area_map = {
 }
 fastmcp_model_module = "myproject.models"
 fastmcp_model_classes = {"SessionInfo", "WindowInfo"}
-fastmcp_section_badge_map = {"Inspect": "readonly", "Act": "mutating", "Destroy": "destructive"}
+fastmcp_section_badge_map = {
+    "Inspect": "readonly",
+    "Act": "mutating",
+    "Destroy": "destructive",
+}
 fastmcp_section_badge_pages = {"tools/index", "index"}
 fastmcp_collector_mode = "register"  # or "introspect"
 ```

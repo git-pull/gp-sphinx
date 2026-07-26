@@ -1304,8 +1304,10 @@ def test_doc_pytest_plugin_get_module_fixture_entries_warns_when_no_fixtures(
     assert result is None
     assert warning_calls == [
         (
-            "auto-pytest-plugin found no pytest fixtures in %r; "
-            "skipping generated fixture sections",
+            (
+                "auto-pytest-plugin found no pytest fixtures in %r; "
+                "skipping generated fixture sections"
+            ),
             ("fixture_mod",),
         )
     ]
