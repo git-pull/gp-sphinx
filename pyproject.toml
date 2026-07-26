@@ -241,7 +241,7 @@ convention = "numpy"
 # shapes that only exist for the test — deferred annotations, positional
 # -only fixture params, `TYPE_CHECKING` aliases. The source is a literal
 # in the test file, not user input.
-"tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures.py" = ["S102"]
+"tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures.py" = ["FLY002", "S102"]
 "tests/ext/pytest_fixtures/test_type_checking_alias.py" = ["S102"]
 "tests/ext/typehints_gp/test_documented_fields.py" = ["S102"]
 # PYI046: `_FixtureMarker` is used — `_detection._get_fixture_marker`
@@ -250,6 +250,13 @@ convention = "numpy"
 # reads as dead to it. Making it public would export an internal
 # normalisation detail just to satisfy the check.
 "packages/sphinx-autodoc-pytest-fixtures/src/sphinx_autodoc_pytest_fixtures/_models.py" = ["PYI046"]
+# FLY002: both joins assemble line-oriented text — a Python program fed
+# to a subprocess here, and the expected RST block that
+# `_build_autofixtures_directive_text` emits line by line in
+# `test_sphinx_pytest_fixtures.py` above. One literal per output line is
+# what keeps them readable and reviewable in a diff; an f-string
+# carrying embedded newlines is neither.
+"scripts/ci/package_tools.py" = ["FLY002"]
 
 [tool.pytest.ini_options]
 addopts = "-s --tb=short --no-header --showlocals --doctest-modules"
