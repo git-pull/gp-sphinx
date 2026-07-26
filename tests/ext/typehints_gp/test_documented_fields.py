@@ -2175,6 +2175,79 @@ def test_showing_undocumented_class_vars_restores_them(
 
 
 # ---------------------------------------------------------------------------
+# a typed-dictionary key declared by a separate base
+# ---------------------------------------------------------------------------
+
+_INHERITED_KEY_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+    import typing as t
+
+
+    class BaseOptions(t.TypedDict):
+        """Options a subclass builds on."""
+
+        inherited: str
+
+
+    class Options(BaseOptions):
+        """Options declaring one key and inheriting another.
+
+        Attributes
+        ----------
+        inherited : str
+            Key the base declares.
+        own : int
+            Key this class declares.
+        """
+
+        own: int
+    '''
+)
+
+
+@pytest.fixture(scope="module")
+def inherited_key_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a typed dictionary whose base is documented first."""
+    index = textwrap.dedent(
+        """\
+        Demo
+        ====
+
+        .. autoclass:: inherited_key_demo.BaseOptions
+
+        .. autoclass:: inherited_key_demo.Options
+        """
+    )
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("inherited_key_demo.py", _INHERITED_KEY_SOURCE),
+            _conf_file(),
+            ScenarioFile("index.rst", index),
+        ),
+    )
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("inherited-key"),
+        scenario,
+        purge_modules=("inherited_key_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_a_key_declared_by_a_base_keeps_its_annotation(
+    inherited_key_html_result: SharedSphinxResult,
+) -> None:
+    """Documenting the base does not strip the subclass's inherited key."""
+    signatures = _attribute_signatures(inherited_key_html_result)
+
+    assert signatures["Options.inherited"] == "inherited: str"
+    assert signatures["Options.own"] == "own: int"
+
+
+# ---------------------------------------------------------------------------
 # a consumer's explicit skip decision
 # ---------------------------------------------------------------------------
 

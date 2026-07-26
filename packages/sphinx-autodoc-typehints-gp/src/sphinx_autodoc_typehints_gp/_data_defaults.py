@@ -129,3 +129,28 @@ class GpAttributeDocumenter(FieldDocFallbackMixin, AttributeDocumenter):  # type
             return
         else:
             super().add_line(result, source, *lineno)
+
+    def update_annotations(self, parent: t.Any) -> None:
+        """Merge type-comment annotations, except into a typed dictionary.
+
+        Autodoc materializes ``parent.__annotations__`` so that a ``#
+        type:`` comment can join it. A :class:`typing.TypedDict` computes
+        its annotations lazily and merges every base's, so materializing
+        one base's annotations severs that merge: every key the subclass
+        inherits disappears from its own mapping, and from the page. A
+        typed dictionary declares its keys by annotation alone and has no
+        type comments to merge, so it keeps its lazy mapping instead.
+
+        Parameters
+        ----------
+        parent : typing.Any
+            Class the member being documented belongs to.
+
+        Examples
+        --------
+        >>> GpAttributeDocumenter.update_annotations  # doctest: +ELLIPSIS
+        <function GpAttributeDocumenter.update_annotations at 0x...>
+        """
+        if isinstance(parent, type) and t.is_typeddict(parent):
+            return
+        super().update_annotations(parent)
