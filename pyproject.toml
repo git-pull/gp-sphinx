@@ -40,10 +40,6 @@ sphinx-vite-builder = { workspace = true }
 [tool.uv.exclude-newer-package]
 # Adopt gp-libs releases immediately, bypassing the global cooldown.
 gp-libs = false
-# TEMPORARY - REVERT BEFORE MERGE. ruff 0.16.0 released 2026-07-23 and is
-# still inside the 3-day cooldown, so the resolver cannot see it. Drop this
-# line once the cooldown clears; the version floor is what holds ruff 0.16.
-ruff = false
 
 [dependency-groups]
 dev = [

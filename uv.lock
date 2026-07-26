@@ -13,7 +13,6 @@ exclude-newer-span = "P3D"
 
 [options.exclude-newer-package]
 gp-libs = false
-ruff = false
 
 [manifest]
 members = [
