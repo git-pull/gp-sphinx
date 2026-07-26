@@ -41,7 +41,9 @@ import typing as t
 import weakref
 
 from docutils.statemachine import StringList
+from sphinx.errors import PycodeError
 from sphinx.ext.autodoc import Documenter, PropertyDocumenter
+from sphinx.pycode import ModuleAnalyzer
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -417,6 +419,46 @@ def _is_declared_field(klass: type, name: str) -> bool:
     if name not in annotations:
         return exposed is not _UNSET and not is_non_field_member
     return not is_non_field_member
+
+
+def _has_attribute_comment(klass: type, name: str) -> bool:
+    """Return whether a source comment or attribute docstring describes *name*.
+
+    Mirrors the lookup autodoc performs in
+    ``AttributeDocumenter.get_attribute_comment``, so a class variable
+    described at its assignment -- including one a base class in another
+    package describes -- is never mistaken for an undescribed one.
+
+    Parameters
+    ----------
+    klass : type
+        Class being documented.
+    name : str
+        Member name under consideration.
+
+    Returns
+    -------
+    bool
+        Whether any class in the MRO carries a description for *name*.
+
+    Examples
+    --------
+    >>> _has_attribute_comment(_ProcessedFields, "names")
+    False
+    """
+    for base in getattr(klass, "__mro__", (klass,)):
+        module = getattr(base, "__module__", None)
+        qualname = getattr(base, "__qualname__", None)
+        if not isinstance(module, str) or not isinstance(qualname, str):
+            continue
+        try:
+            analyzer = ModuleAnalyzer.for_module(module)
+            analyzer.analyze()
+        except PycodeError:
+            continue
+        if (qualname, name) in analyzer.attr_docs:
+            return True
+    return False
 
 
 def _mark_attribute_directives(lines: list[str], owner: str) -> None:
@@ -952,6 +994,41 @@ def _clear_documented_fields(
         _PROCESSED_FIELDS.pop(app, None)
 
 
+def _is_undescribed_class_var(app: Sphinx, klass: type, name: str) -> bool:
+    """Return whether *name* is a class variable nothing describes.
+
+    A class variable carries no docstring of its own, so autodoc renders
+    it as an annotation and a value with no prose beneath. Withholding
+    that entry keeps a reference page to the members someone wrote about;
+    ``gp_typehints_show_undocumented_class_vars`` restores them.
+
+    Parameters
+    ----------
+    app : Sphinx
+        Sphinx application instance being built.
+    klass : type
+        Class whose members are being filtered.
+    name : str
+        Member name under consideration.
+
+    Returns
+    -------
+    bool
+        Whether the member is an undescribed class variable.
+
+    Examples
+    --------
+    >>> _is_undescribed_class_var  # doctest: +ELLIPSIS
+    <function _is_undescribed_class_var at 0x...>
+    """
+    if getattr(app.config, "gp_typehints_show_undocumented_class_vars", False):
+        return False
+    annotations = _declared_annotations(klass)
+    if name not in annotations or not _is_class_var(annotations[name]):
+        return False
+    return not _has_attribute_comment(klass, name)
+
+
 def skip_documented_fields(
     app: Sphinx,
     what: str,
@@ -1007,9 +1084,12 @@ def skip_documented_fields(
     if processed is None or processed.options is not options:
         return None
 
-    if not _is_declared_field(processed.owner, name):
-        return None
     if name not in processed.names:
+        if _is_undescribed_class_var(app, processed.owner, name):
+            return True
+        return None
+
+    if not _is_declared_field(processed.owner, name):
         return None
     return True
 

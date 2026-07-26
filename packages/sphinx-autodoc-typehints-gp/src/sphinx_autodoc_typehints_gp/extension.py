@@ -658,6 +658,12 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         rebuild="env",
         types=frozenset({bool}),
     )
+    app.add_config_value(
+        "gp_typehints_show_undocumented_class_vars",
+        default=False,
+        rebuild="env",
+        types=frozenset({bool}),
+    )
     app.add_autodocumenter(GpDataDocumenter, override=True)
     app.add_autodocumenter(GpAttributeDocumenter, override=True)
     register_default_xref_transform(app)

@@ -1770,6 +1770,121 @@ def test_inherited_field_metadata_does_not_hide_overriding_members(
     assert f"Render the {kind} override." in html
 
 
+# ---------------------------------------------------------------------------
+# visibility of class variables nothing describes
+# ---------------------------------------------------------------------------
+
+_CLASS_VAR_VISIBILITY_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+    import typing as t
+
+
+    class Registry:
+        """A registry carrying class variables of every description state.
+
+        Attributes
+        ----------
+        described : str
+            Described by the Attributes section.
+        """
+
+        described: t.ClassVar[str] = "described-value"
+
+        #: Described by a source comment.
+        commented: t.ClassVar[str] = "commented-value"
+
+        undescribed: t.ClassVar[str] = "undescribed-value"
+
+        plain_constant = "plain-value"
+    '''
+)
+
+_CLASS_VAR_VISIBILITY_INDEX_RST = textwrap.dedent(
+    """\
+    Demo
+    ====
+
+    .. autoclass:: class_var_visibility_demo.Registry
+    """
+)
+
+
+def _class_var_visibility_scenario(*, show_undocumented: bool) -> SphinxScenario:
+    """Return a scenario pinning the undocumented class-variable policy."""
+    conf = _CONF_PY.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN)
+    if show_undocumented:
+        conf += "gp_typehints_show_undocumented_class_vars = True\n"
+    return SphinxScenario(
+        files=(
+            ScenarioFile("class_var_visibility_demo.py", _CLASS_VAR_VISIBILITY_SOURCE),
+            ScenarioFile("conf.py", conf, substitute_srcdir=True),
+            ScenarioFile("index.rst", _CLASS_VAR_VISIBILITY_INDEX_RST),
+        ),
+    )
+
+
+@pytest.fixture(scope="module")
+def class_var_visibility_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build with the shipped undocumented class-variable policy."""
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("class-var-visibility"),
+        _class_var_visibility_scenario(show_undocumented=False),
+        purge_modules=("class_var_visibility_demo",),
+    )
+
+
+@pytest.fixture(scope="module")
+def shown_class_var_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build with undocumented class variables restored."""
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("class-var-shown"),
+        _class_var_visibility_scenario(show_undocumented=True),
+        purge_modules=("class_var_visibility_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_undescribed_class_var_is_not_rendered(
+    class_var_visibility_html_result: SharedSphinxResult,
+) -> None:
+    """A class variable nothing describes stays out of the reference."""
+    assert (
+        _attribute_names(class_var_visibility_html_result).count("Registry.undescribed")
+        == 0
+    )
+
+
+@pytest.mark.integration
+def test_described_class_vars_survive_the_visibility_default(
+    class_var_visibility_html_result: SharedSphinxResult,
+) -> None:
+    """Only a class variable without any description is withheld."""
+    attributes = _attribute_names(class_var_visibility_html_result)
+    html = read_output(class_var_visibility_html_result, "index.html")
+
+    assert attributes.count("Registry.described") == 1
+    assert attributes.count("Registry.commented") == 1
+    assert attributes.count("Registry.plain_constant") == 1
+    assert "Described by the Attributes section." in html
+    assert "Described by a source comment." in html
+
+
+@pytest.mark.integration
+def test_showing_undocumented_class_vars_restores_them(
+    shown_class_var_html_result: SharedSphinxResult,
+) -> None:
+    """The opt-in brings a class variable nothing describes back."""
+    assert (
+        _attribute_names(shown_class_var_html_result).count("Registry.undescribed") == 1
+    )
+
+
 _CUSTOM_DOCUMENTERS_SOURCE = textwrap.dedent(
     """\
     from __future__ import annotations
