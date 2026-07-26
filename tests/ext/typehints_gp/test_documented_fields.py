@@ -1199,15 +1199,119 @@ _CONCRETE_MEMBER_VISIBILITY_SOURCE = textwrap.dedent(
         @property
         def value(self) -> int:
             return 5
+
+
+    class EmptyDocItem:
+        """An item whose concrete property has an empty docstring.
+
+        Attributes
+        ----------
+        value : int
+            Empty-doc fallback documentation.
+        """
+
+        @property
+        def value(self) -> int:
+            """"""
+            return 6
+
+
+    class PrivateMetadataItem:
+        """An item whose concrete property is marked private.
+
+        Attributes
+        ----------
+        value : int
+            Private-metadata fallback documentation.
+        """
+
+        @property
+        def value(self) -> int:
+            """Return a hidden value.
+
+            :meta private:
+            """
+            return 7
+
+
+    class PublicMetadataItem:
+        """An item whose private property is marked public.
+
+        Attributes
+        ----------
+        _value : int
+            Stale public-metadata fallback.
+        """
+
+        @property
+        def _value(self) -> int:
+            """Return the metadata-exposed value.
+
+            :meta public:
+            """
+            return 8
+
+
+    class ListenerSkippedItem:
+        """An item whose concrete property is skipped by a listener.
+
+        Attributes
+        ----------
+        value : int
+            Listener-skipped fallback documentation.
+        """
+
+        @property
+        def value(self) -> int:
+            """Return the listener-skipped value."""
+            return 9
     '''
 )
 
-_CONCRETE_MEMBER_VISIBILITY_CONF_PY = (
-    _CONF_PY.replace(
-        'autodoc_default_options = {"members": True, "undoc-members": True}\n',
-        "",
-    )
-    + "autodoc_inherit_docstrings = False\n"
+_SOURCE_MEMBER_VISIBILITY_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+    import typing as t
+
+
+    class BaseRegistry:
+        #: Inherited source description.
+        registry: t.ClassVar[dict[str, str]] = {}
+
+
+    class InheritedRegistry(BaseRegistry):
+        """Settings with an inherited source-documented ClassVar.
+
+        Attributes
+        ----------
+        registry : dict[str, str]
+            Inherited stale fallback.
+        """
+    '''
+)
+
+_CONCRETE_MEMBER_VISIBILITY_CONF_PY = _CONF_PY.replace(
+    'autodoc_default_options = {"members": True, "undoc-members": True}\n',
+    "",
+) + textwrap.dedent(
+    """\
+        autodoc_inherit_docstrings = False
+
+
+        def _skip_listener_value(app, what, name, obj, skip, options):
+            if (
+                what in {"class", "exception"}
+                and name == "value"
+                and obj.__doc__ == "Return the listener-skipped value."
+            ):
+                return True
+            return None
+
+
+        def setup(app):
+            app.connect("autodoc-skip-member", _skip_listener_value)
+        """
 )
 
 
@@ -1242,6 +1346,18 @@ def concrete_member_visibility_html_result(
 
         .. autoclass:: concrete_member_visibility_demo.UndocumentedOverride
            :members:
+
+        .. autoclass:: concrete_member_visibility_demo.EmptyDocItem
+           :members:
+
+        .. autoclass:: concrete_member_visibility_demo.PrivateMetadataItem
+           :members:
+
+        .. autoclass:: concrete_member_visibility_demo.PublicMetadataItem
+           :members:
+
+        .. autoclass:: concrete_member_visibility_demo.ListenerSkippedItem
+           :members:
         """
     )
     cache_root = tmp_path_factory.mktemp("concrete-member-visibility")
@@ -1269,6 +1385,49 @@ def concrete_member_visibility_html_result(
         cache_root,
         scenario,
         purge_modules=("concrete_member_visibility_demo",),
+    )
+
+
+@pytest.fixture(scope="module")
+def source_member_visibility_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build an inherited source-documented ClassVar."""
+    index = textwrap.dedent(
+        """\
+        Demo
+        ====
+
+        .. autoclass:: source_member_visibility_demo.InheritedRegistry
+           :members:
+           :inherited-members:
+        """
+    )
+    cache_root = tmp_path_factory.mktemp("source-member-visibility")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile(
+                "conf.py",
+                _CONF_PY.replace(
+                    'autodoc_default_options = {"members": True, "undoc-members": True}\n',
+                    "",
+                ).replace(
+                    "__SCENARIO_SRCDIR__",
+                    SCENARIO_SRCDIR_TOKEN,
+                ),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile(
+                "source_member_visibility_demo.py",
+                _SOURCE_MEMBER_VISIBILITY_SOURCE,
+            ),
+            ScenarioFile("index.rst", index),
+        ),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("source_member_visibility_demo",),
     )
 
 
@@ -1323,6 +1482,49 @@ def test_non_rendered_property_keeps_field_fallback(
     assert "Undocumented-override fallback documentation." in html
     assert "duplicate object description" not in (
         concrete_member_visibility_html_result.warnings
+    )
+
+
+@pytest.mark.integration
+def test_final_member_selection_controls_field_fallback(
+    concrete_member_visibility_html_result: SharedSphinxResult,
+) -> None:
+    """Final docstring metadata and listeners decide fallback ownership."""
+    attributes = _attribute_names(concrete_member_visibility_html_result)
+    members = _described_members(
+        get_doctree(concrete_member_visibility_html_result, "index")
+    )
+    names = [member.fullname for member in members]
+    html = read_output(concrete_member_visibility_html_result, "index.html")
+
+    assert attributes.count("EmptyDocItem.value") == 1
+    assert "Empty-doc fallback documentation." in html
+    assert attributes.count("PrivateMetadataItem.value") == 1
+    assert "Private-metadata fallback documentation." in html
+    assert attributes.count("PublicMetadataItem._value") == 0
+    assert names.count("PublicMetadataItem._value") == 1
+    assert "Return the metadata-exposed value." in html
+    assert "Stale public-metadata fallback." not in html
+    assert attributes.count("ListenerSkippedItem.value") == 1
+    assert "Listener-skipped fallback documentation." in html
+    assert "duplicate object description" not in (
+        concrete_member_visibility_html_result.warnings
+    )
+
+
+@pytest.mark.integration
+def test_rendered_source_classvar_controls_field_fallback(
+    source_member_visibility_html_result: SharedSphinxResult,
+) -> None:
+    """Rendered inherited source docs replace the field fallback."""
+    attributes = _attribute_names(source_member_visibility_html_result)
+    html = read_output(source_member_visibility_html_result, "index.html")
+
+    assert attributes.count("InheritedRegistry.registry") == 1
+    assert "Inherited source description." in html
+    assert "Inherited stale fallback." not in html
+    assert "duplicate object description" not in (
+        source_member_visibility_html_result.warnings
     )
 
 
