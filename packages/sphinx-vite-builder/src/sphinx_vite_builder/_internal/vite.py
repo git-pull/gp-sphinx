@@ -22,7 +22,6 @@ import os
 import pathlib
 import shutil
 import textwrap
-import typing as t
 
 from .bus import AsyncioBus
 from .errors import (
@@ -395,9 +394,3 @@ __all__: tuple[str, ...] = (
     "vite_build_command",
     "vite_watch_command",
 )
-
-
-# Re-exports for type-checker friendliness when consumers import
-# the orchestration module directly.
-_AsyncProcess: t.TypeAlias = AsyncProcess
-_AsyncioBus: t.TypeAlias = AsyncioBus
