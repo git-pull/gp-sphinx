@@ -38,9 +38,6 @@ import signal
 import sys
 import typing as t
 
-if t.TYPE_CHECKING:
-    pass
-
 _module_logger = logging.getLogger(__name__)
 
 
