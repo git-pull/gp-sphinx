@@ -274,7 +274,7 @@ def _is_em_dash_separator(text: str) -> bool:
     False
     """
     stripped = text.lstrip()
-    return stripped.startswith(_EN_DASH + " ") or stripped.startswith("-- ")
+    return stripped.startswith((_EN_DASH + " ", "-- "))
 
 
 _PROSE_FIELD_TOKENS: t.Final = (
