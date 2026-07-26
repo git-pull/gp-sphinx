@@ -1105,6 +1105,25 @@ _NON_FIELD_MODULE_SOURCE = textwrap.dedent(
             self.parsed = raw.strip()
 
 
+    @dataclasses.dataclass
+    class BaseLabel:
+        label: str = ""
+
+
+    class DerivedLabel(BaseLabel):
+        """A rule overriding a field with an undocumented property.
+
+        Attributes
+        ----------
+        label : str
+            Derived label documentation.
+        """
+
+        @property
+        def label(self) -> str:
+            return "derived"
+
+
     class Meter:
         """A meter whose reading property carries no docstring.
 
@@ -1140,6 +1159,8 @@ _NON_FIELD_INDEX_RST = textwrap.dedent(
     .. autoclass:: non_field_members_demo.Ingest
 
     .. autoclass:: non_field_members_demo.Meter
+
+    .. autoclass:: non_field_members_demo.DerivedLabel
     """
 )
 
@@ -1707,6 +1728,17 @@ def test_init_var_named_in_attributes_keeps_its_description(
 
     assert _attribute_names(non_field_members_html_result).count("Ingest.raw") == 1
     assert "Payload handed to the initializer only." in html
+
+
+@pytest.mark.integration
+def test_inherited_docstring_does_not_replace_the_description(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """A docstring inherited from a base value describes that value, not this."""
+    html = read_output(non_field_members_html_result, "index.html")
+
+    assert "Derived label documentation." in html
+    assert "str(object=" not in html
 
 
 @pytest.mark.integration

@@ -766,7 +766,36 @@ class FieldDocFallbackMixin:
     render.
     """
 
+    object: t.Any
     objpath: list[str]
+    parent: t.Any
+
+    def _describes_itself(self) -> bool:
+        """Return whether the docstring autodoc found belongs to this member.
+
+        A member with no docstring of its own still receives one when
+        autodoc walks the MRO: a property overriding an inherited
+        dataclass field inherits the *default value's* docstring, so
+        ``str.__doc__`` arrives as though it described the property. A
+        ``#:`` comment is a description of this member wherever it sits
+        in the MRO, so it counts.
+
+        Returns
+        -------
+        bool
+            Whether a description of this member itself exists.
+
+        Examples
+        --------
+        >>> FieldDocFallbackMixin._describes_itself  # doctest: +ELLIPSIS
+        <function FieldDocFallbackMixin._describes_itself at 0x...>
+        """
+        own = getattr(self.object, "__doc__", None)
+        if isinstance(own, str) and own.strip():
+            return True
+        if isinstance(self.parent, type) and self.objpath:
+            return _has_attribute_comment(self.parent, self.objpath[-1])
+        return False
 
     def get_doc(self) -> list[list[str]] | None:
         """Return the member's own docstring, or its owner's description.
@@ -782,7 +811,8 @@ class FieldDocFallbackMixin:
         <function FieldDocFallbackMixin.get_doc at 0x...>
         """
         doc = t.cast(t.Any, super()).get_doc()
-        if doc and any(line.strip() for block in doc for line in block):
+        described = bool(doc) and any(line.strip() for block in doc for line in block)
+        if described and self._describes_itself():
             return t.cast("list[list[str]] | None", doc)
         if not self.objpath:
             return t.cast("list[list[str]] | None", doc)
