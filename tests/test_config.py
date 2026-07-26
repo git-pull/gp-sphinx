@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pathlib
+import typing as t
 
 import pytest
 
@@ -12,6 +13,7 @@ from gp_sphinx.config import (
     make_linkcode_resolve,
     make_workspace_linkcode_resolve,
     merge_sphinx_config,
+    skip_machinery_members,
 )
 from gp_sphinx.defaults import DEFAULT_EXTENSIONS, DEFAULT_MYST_EXTENSIONS
 
@@ -709,3 +711,78 @@ def test_merge_sphinx_config_linkcode_auto_added_with_workspace_resolver(
         linkcode_resolve=resolver,
     )
     assert "sphinx.ext.linkcode" in result["extensions"]
+
+
+class MachineryFixture(t.NamedTuple):
+    """Test case for skip_machinery_members().
+
+    Attributes
+    ----------
+    test_id : str
+        Human-readable label for the parametrized case.
+    name : str
+        Member name autodoc offers to the handler.
+    expected : bool | None
+        ``True`` to hide the member, ``None`` to defer to other handlers.
+    """
+
+    test_id: str
+    name: str
+    expected: bool | None
+
+
+_MACHINERY_FIXTURES: list[MachineryFixture] = [
+    MachineryFixture(test_id="abc-impl", name="_abc_impl", expected=True),
+    MachineryFixture(test_id="is-protocol", name="_is_protocol", expected=True),
+    MachineryFixture(
+        test_id="is-runtime-protocol",
+        name="_is_runtime_protocol",
+        expected=True,
+    ),
+    MachineryFixture(test_id="namedtuple-fields", name="_fields", expected=True),
+    MachineryFixture(
+        test_id="namedtuple-field-defaults",
+        name="_field_defaults",
+        expected=True,
+    ),
+    MachineryFixture(test_id="authored-private", name="_resolve", expected=None),
+    MachineryFixture(test_id="namedtuple-method", name="_replace", expected=None),
+    MachineryFixture(test_id="dunder", name="__init__", expected=None),
+    MachineryFixture(test_id="public", name="timeout", expected=None),
+]
+
+
+@pytest.mark.parametrize(
+    list(MachineryFixture._fields),
+    _MACHINERY_FIXTURES,
+    ids=[f.test_id for f in _MACHINERY_FIXTURES],
+)
+def test_skip_machinery_members(
+    test_id: str,
+    name: str,
+    expected: bool | None,
+) -> None:
+    """Names Python injects are hidden; everything else defers."""
+    assert skip_machinery_members(None, "class", name, None, False, None) is expected
+
+
+def test_skip_machinery_members_defers_to_a_consumer() -> None:
+    """gp-sphinx connects late so a consumer's own handler decides first."""
+    connected: list[tuple[str, object, int]] = []
+
+    class _FakeApp:
+        def add_js_file(self, *args: object, **kwargs: object) -> None: ...
+        def add_lexer(self, *args: object, **kwargs: object) -> None: ...
+        def connect(
+            self,
+            event: str,
+            handler: object,
+            priority: int = 500,
+        ) -> None:
+            connected.append((event, handler, priority))
+
+    gp_sphinx.config.setup(t.cast("t.Any", _FakeApp()))
+    skips = [c for c in connected if c[0] == "autodoc-skip-member"]
+    assert len(skips) == 1
+    assert skips[0][1] is skip_machinery_members
+    assert skips[0][2] > 500

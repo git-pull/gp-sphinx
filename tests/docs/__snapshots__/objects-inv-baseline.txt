@@ -12,7 +12,6 @@ argparse:program	myapp myothersubcommand
 argparse:program	myapp mysubcommand
 argparse:subcommand	myapp myothersubcommand
 argparse:subcommand	myapp mysubcommand
-py:attribute	gp_demo_api.DemoAbstractBase._abc_impl
 py:attribute	gp_demo_api.DemoClass.demo_attr
 py:attribute	sphinx_ux_badges.BadgeSpec.classes
 py:attribute	sphinx_ux_badges.BadgeSpec.fill

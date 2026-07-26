@@ -778,12 +778,94 @@ def _inject_fowt_prevention(
     context["metatags"] = context.get("metatags", "") + snippet
 
 
+MACHINERY_MEMBERS: frozenset[str] = frozenset(
+    {
+        "_abc_impl",
+        "_is_protocol",
+        "_is_runtime_protocol",
+        "_fields",
+        "_field_defaults",
+    }
+)
+"""Private names Python's own machinery attaches to a class.
+
+:class:`abc.ABCMeta`, :class:`typing.Protocol`, and
+:func:`typing.NamedTuple` each write attributes into the classes they
+build. No author declares them, so no docstring can reach them, yet
+:data:`DEFAULT_AUTODOC_OPTIONS` turns ``private-members`` on and autodoc
+renders every one as an entry with a name and nothing else.
+
+Members that carry their own docstring are absent: ``_replace`` and
+``_asdict`` render describing themselves and are worth keeping.
+
+Examples
+--------
+>>> "_abc_impl" in MACHINERY_MEMBERS
+True
+>>> "_replace" in MACHINERY_MEMBERS
+False
+"""
+
+_MACHINERY_SKIP_PRIORITY: t.Final = 900
+
+
+def skip_machinery_members(
+    app: t.Any,
+    what: str,
+    name: str,
+    obj: t.Any,
+    skip: bool,
+    options: t.Any,
+) -> bool | None:
+    """Hide a member Python's machinery wrote, defer on everything else.
+
+    Parameters
+    ----------
+    app : typing.Any
+        The Sphinx application object.
+    what : str
+        Kind of object the member belongs to.
+    name : str
+        Bare member name autodoc is considering.
+    obj : typing.Any
+        The member itself.
+    skip : bool
+        Whether autodoc would skip the member on its own.
+    options : typing.Any
+        Options given to the directive.
+
+    Returns
+    -------
+    bool | None
+        ``True`` to hide a name from :data:`MACHINERY_MEMBERS`, otherwise
+        ``None`` so another handler decides.
+
+    Notes
+    -----
+    ``autodoc-skip-member`` resolves by first non-``None`` answer, and
+    gp-sphinx connects this late. A project wanting one of these members
+    on the page registers its own handler, which is asked first and can
+    answer ``False`` to keep it.
+
+    Examples
+    --------
+    >>> skip_machinery_members(None, "class", "_abc_impl", None, False, None)
+    True
+    >>> skip_machinery_members(None, "class", "timeout", None, False, None) is None
+    True
+    """
+    if name in MACHINERY_MEMBERS:
+        return True
+    return None
+
+
 def setup(app: Sphinx) -> None:
     """Configure Sphinx app hooks for gp-sphinx workarounds.
 
     Registers the bundled ``spa-nav.js`` script, wires the copy-button
-    configuration bridge, the FOWT-prevention head snippet, and
-    connects the ``remove_tabs_js`` post-build hook.
+    configuration bridge, the FOWT-prevention head snippet, hides the
+    private names Python's machinery writes, and connects the
+    ``remove_tabs_js`` post-build hook.
 
     Parameters
     ----------
@@ -794,5 +876,10 @@ def setup(app: Sphinx) -> None:
     app.connect("html-page-context", _inject_copybutton_bridge)
     app.connect("html-page-context", _inject_fowt_prevention)
     app.connect("build-finished", remove_tabs_js)
+    app.connect(
+        "autodoc-skip-member",
+        skip_machinery_members,
+        priority=_MACHINERY_SKIP_PRIORITY,
+    )
     app.add_lexer("myst", MystLexer)
     app.add_lexer("myst-md", MystLexer)
