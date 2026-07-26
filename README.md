@@ -25,6 +25,7 @@ Replace your `docs/conf.py` with:
 
 ```python
 """Sphinx configuration for my-project."""
+
 from __future__ import annotations
 
 from gp_sphinx.config import merge_sphinx_config

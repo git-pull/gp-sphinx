@@ -33,7 +33,7 @@ SIGKILL teardown on signal / `atexit`.
 ```python
 # docs/conf.py
 extensions = ["sphinx_vite_builder"]
-sphinx_vite_builder_mode = "auto"        # "auto" | "dev" | "prod"
+sphinx_vite_builder_mode = "auto"  # "auto" | "dev" | "prod"
 sphinx_vite_builder_root = "/abs/path/to/web"
 ```
 

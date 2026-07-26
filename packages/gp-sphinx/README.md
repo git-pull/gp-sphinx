@@ -20,6 +20,7 @@ Replace ~300 lines of duplicated `docs/conf.py` with ~10 lines:
 
 ```python
 """Sphinx configuration for my-project."""
+
 from __future__ import annotations
 
 from gp_sphinx.config import merge_sphinx_config

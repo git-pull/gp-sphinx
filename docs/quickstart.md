@@ -62,6 +62,7 @@ In your project's `docs/conf.py`:
 
 ```python
 """Sphinx configuration for my-project."""
+
 from __future__ import annotations
 
 from gp_sphinx.config import merge_sphinx_config
@@ -145,6 +146,7 @@ Create a file `my_module.py` next to your `docs/` directory:
 
 ```python
 """Demo module for the autodoc design system."""
+
 from __future__ import annotations
 
 from typing import Any
