@@ -2174,6 +2174,188 @@ def test_showing_undocumented_class_vars_restores_them(
     )
 
 
+# ---------------------------------------------------------------------------
+# a described member renders the signature autodoc would have rendered
+# ---------------------------------------------------------------------------
+
+_PARITY_BODIES = """\
+class Safety(enum.Enum):
+    \"\"\"A shape under test.{safety}
+    \"\"\"
+
+    READONLY = "readonly"
+
+
+class Tier(enum.StrEnum):
+    \"\"\"A shape under test.{tier}
+    \"\"\"
+
+    BASIC = "basic"
+
+
+class Constants:
+    \"\"\"A shape under test.{constants}
+    \"\"\"
+
+    bare = 30
+    annotated: int = 3
+    alias = dict[str, int]
+
+
+@dataclasses.dataclass
+class Rule:
+    \"\"\"A shape under test.{rule}
+    \"\"\"
+
+    required: str
+    defaulted: int = 0
+
+
+@dataclasses.dataclass(slots=True)
+class Gauge:
+    \"\"\"A shape under test.{gauge}
+    \"\"\"
+
+    reading: int = 1
+
+
+class Span(t.NamedTuple):
+    \"\"\"A shape under test.{span}
+    \"\"\"
+
+    start: int
+    stop: int = 10
+
+
+class Payload(t.TypedDict):
+    \"\"\"A shape under test.{payload}
+    \"\"\"
+
+    label: str
+    nickname: t.NotRequired[str]
+
+
+class Registry:
+    \"\"\"A shape under test.{registry}
+    \"\"\"
+
+    lookup: t.ClassVar[dict[str, str]] = {{}}
+"""
+
+
+def _parity_section(entries: tuple[tuple[str, str, str], ...]) -> str:
+    """Return a NumPy ``Attributes`` section describing *entries*."""
+    lines = ["", "", "    Attributes", "    ----------"]
+    for name, type_, description in entries:
+        lines.append(f"    {name} : {type_}")
+        lines.append(f"        {description}")
+    return "\n".join(lines)
+
+
+_PARITY_ENTRIES: dict[str, tuple[tuple[str, str, str], ...]] = {
+    "safety": (("READONLY", "Safety", "Read-only tier."),),
+    "tier": (("BASIC", "Tier", "Basic tier."),),
+    "constants": (
+        ("bare", "int", "Unannotated constant."),
+        ("annotated", "int", "Annotated constant."),
+        ("alias", "type", "Generic alias."),
+    ),
+    "rule": (
+        ("required", "str", "Field with no default."),
+        ("defaulted", "int", "Field with a default."),
+    ),
+    "gauge": (("reading", "int", "Slot-held field."),),
+    "span": (
+        ("start", "int", "Tuple field."),
+        ("stop", "int", "Tuple field with a default."),
+    ),
+    "payload": (
+        ("label", "str", "Required key."),
+        ("nickname", "str", "Not-required key."),
+    ),
+    "registry": (("lookup", "dict[str, str]", "Class variable."),),
+}
+
+_PARITY_PREAMBLE = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    import dataclasses
+    import enum
+    import typing as t
+
+
+    """
+)
+
+
+def _parity_source(*, described: bool) -> str:
+    """Return one parity module, with or without its Attributes sections."""
+    sections = {
+        key: (_parity_section(entries) if described else "")
+        for key, entries in _PARITY_ENTRIES.items()
+    }
+    return _PARITY_PREAMBLE + _PARITY_BODIES.format(**sections)
+
+
+_PARITY_CLASSES = (
+    "Safety",
+    "Tier",
+    "Constants",
+    "Rule",
+    "Gauge",
+    "Span",
+    "Payload",
+    "Registry",
+)
+
+
+@pytest.fixture(scope="module")
+def signature_parity_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build described and undescribed copies of one set of class bodies."""
+    index = "Demo\n====\n\n" + "\n".join(
+        f".. autoclass:: parity_{flavor}_demo.{name}\n"
+        for flavor in ("described", "plain")
+        for name in _PARITY_CLASSES
+    )
+    conf = _CONF_PY.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN)
+    conf += "gp_typehints_show_undocumented_class_vars = True\n"
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("parity_described_demo.py", _parity_source(described=True)),
+            ScenarioFile("parity_plain_demo.py", _parity_source(described=False)),
+            ScenarioFile("conf.py", conf, substitute_srcdir=True),
+            ScenarioFile("index.rst", index),
+        ),
+    )
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("signature-parity"),
+        scenario,
+        purge_modules=("parity_described_demo", "parity_plain_demo"),
+    )
+
+
+@pytest.mark.integration
+def test_describing_a_member_keeps_the_signature_autodoc_renders(
+    signature_parity_html_result: SharedSphinxResult,
+) -> None:
+    """Describing a member costs the reader nothing autodoc would show."""
+    doctree = get_doctree(signature_parity_html_result, "index")
+    rendered: dict[str, dict[str, str]] = {"described": {}, "plain": {}}
+    for signature in doctree.findall(addnodes.desc_signature):
+        if signature.parent.get("objtype") != "attribute":
+            continue
+        module = signature.get("module") or ""
+        flavor = module.removeprefix("parity_").removesuffix("_demo")
+        if flavor in rendered:
+            rendered[flavor][signature.get("fullname", "")] = signature.astext()
+
+    assert rendered["plain"], "the undescribed copy rendered nothing to compare"
+    assert rendered["described"] == rendered["plain"]
+
+
 _CUSTOM_DOCUMENTERS_SOURCE = textwrap.dedent(
     """\
     from __future__ import annotations
