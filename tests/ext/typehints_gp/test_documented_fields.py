@@ -101,6 +101,19 @@ def test_attribute_directive_names(
 _MARKER_PREFIX = ".. gp-sphinx-documented-field: demo.Item "
 
 
+def test_field_doc_bodies_drops_the_directive_options() -> None:
+    """A directive's own options never become part of its description."""
+    lines = [
+        "   .. gp-sphinx-documented-field: demo.Item value",
+        "   .. attribute:: value",
+        "      :no-index:",
+        "",
+        "      Horizontal offset.",
+    ]
+
+    assert _field_doc_bodies(lines, _MARKER_PREFIX) == {"value": ["Horizontal offset."]}
+
+
 def test_field_doc_bodies_drops_the_trailing_type_field() -> None:
     """A member's own directive supplies the type, so the body omits it."""
     lines = [

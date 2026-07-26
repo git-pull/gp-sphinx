@@ -57,7 +57,7 @@ _CLASS_LIKE_AUTODOC_TYPES = frozenset({"class", "exception"})
 _UNSET = object()
 _CLASS_VAR_RE = re.compile(r"\s*(?:\w+\.)*ClassVar\b")
 _OBJECT_DIRECTIVE_RE = re.compile(r"^\s*\.\. (?:\w+:)?[\w-]+::\s+([^\s(=:]+)")
-_RENDERED_FIELD_RE = re.compile(r"^\s*:(?:type|value):(?:\s|$)")
+_RENDERED_FIELD_RE = re.compile(r"^\s*:(?:type|value|no-index|noindex):(?:\s|$)")
 
 
 class _ProcessedFields(t.NamedTuple):
@@ -608,7 +608,12 @@ def _resolve_marked_fields(
 
 
 def _strip_rendered_fields(body: list[str]) -> list[str]:
-    """Drop the ``:type:`` and ``:value:`` entries and surrounding blanks.
+    """Drop what the member's own directive states, and surrounding blanks.
+
+    The type and value are dropped because the member renders both from
+    the annotation itself. ``:no-index:`` is dropped because it is the
+    directive's own option: left in place it becomes a ``No-index`` field
+    in the reattached description.
 
     Parameters
     ----------
@@ -626,6 +631,9 @@ def _strip_rendered_fields(body: list[str]) -> list[str]:
     ['Horizontal offset.']
 
     >>> _strip_rendered_fields([":type: int", "   wrapped", "Offset."])
+    ['Offset.']
+
+    >>> _strip_rendered_fields([":no-index:", "", "Offset."])
     ['Offset.']
     """
     kept: list[str] = []
