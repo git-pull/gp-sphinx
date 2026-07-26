@@ -18,6 +18,16 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Development
+
+#### CI actions updated to current majors
+
+Workflow actions moved to their current major releases: `actions/checkout` v7,
+`actions/cache` v6, `actions/setup-python` v7, `actions/setup-node` v7,
+`astral-sh/setup-uv` v9.0.0, and `codecov/codecov-action` v7. Workflow behavior
+is unchanged, though setup-uv no longer prunes the uv cache, so the first run
+after this repopulates it.
+
 ## gp-sphinx 0.0.1a35 (2026-07-19)
 
 ### Fixes
