@@ -23,22 +23,11 @@ $ uv add gp-sphinx --prerelease allow
 #### `sphinx-autodoc-typehints-gp`: Declared fields described once
 
 A class that documents its fields in an `Attributes` section drew a
-duplicate object description warning for each of them: the section
-rendered an `.. attribute::` directive, and autodoc rendered the same
-field again. Autodoc's copy is dropped, leaving the description the
-`Attributes` entry wrote — for `NamedTuple` fields, dataclass fields
-whether they use slots or descriptors, and `TypedDict` keys including
-those a base `TypedDict` declares. Nested classes and classes whose
-documentation includes `__init__` receive the same treatment.
-
-A field the section omits still renders, so it remains visible as
-something to document. A method, property, or `ClassVar` that shares a
-name with an `Attributes` entry stays autodoc's to render, since only
-autodoc carries its signature or value. The decision follows the
-processed docstring, so another processor can remove or replace an
-`Attributes` section without also hiding the field. Fields emitted for a
-class using `:no-index:` stay visible without entering the Python object
-inventory. (#70)
+duplicate object description warning for each one, because the section
+and autodoc both rendered the field. Autodoc's copy is dropped, for
+`NamedTuple` fields, dataclass fields including slotted ones, and
+`TypedDict` keys. A field the section omits still renders, as does a
+method, property, or `ClassVar` sharing a name with an entry. (#70)
 
 ### Development
 
