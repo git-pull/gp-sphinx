@@ -21,7 +21,7 @@ from sphinx.locale import _
 from sphinx.roles import XRefRole
 
 if t.TYPE_CHECKING:
-    from collections.abc import Iterator, Set
+    from collections.abc import Iterator, Set as AbstractSet
 
     from docutils import nodes
     from sphinx.application import Sphinx
@@ -49,7 +49,7 @@ class DemoArchiveBuilder(Builder):
         """Return the in-archive URI for a document."""
         return f"{docname}.txt"
 
-    def prepare_writing(self, docnames: Set[str]) -> None:
+    def prepare_writing(self, docnames: AbstractSet[str]) -> None:
         """No writer state is needed for the demo."""
 
     def write_doc(self, docname: str, doctree: nodes.document) -> None:
