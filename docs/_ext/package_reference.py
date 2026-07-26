@@ -458,10 +458,8 @@ def _repository_url_from_package_json(manifest: dict[str, t.Any]) -> str:
         return repo
     if isinstance(repo, dict):
         url = str(repo.get("url", ""))
-        if url.startswith("git+"):
-            url = url[len("git+") :]
-        if url.endswith(".git"):
-            url = url[: -len(".git")]
+        url = url.removeprefix("git+")
+        url = url.removesuffix(".git")
         return url
     return ""
 
