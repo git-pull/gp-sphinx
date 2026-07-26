@@ -228,7 +228,13 @@ convention = "numpy"
 "packages/sphinx-autodoc-argparse/src/sphinx_autodoc_argparse/directive.py" = ["BLE001"]
 "packages/sphinx-autodoc-fastmcp/src/sphinx_autodoc_fastmcp/_directives.py" = ["BLE001"]
 "packages/sphinx-autodoc-fastmcp/src/sphinx_autodoc_fastmcp/_transforms.py" = ["BLE001"]
-"packages/sphinx-autodoc-pytest-fixtures/src/sphinx_autodoc_pytest_fixtures/_store.py" = ["BLE001"]
+# S110 rides along on `_store.py`: the intersphinx probe in
+# `_resolve_builtin_link` is opportunistic, so a failure there means
+# "the inventory has no usable answer" — the same outcome as a miss, and
+# the very next statement supplies it from the static
+# `PYTEST_BUILTIN_LINKS` map. The `pass` is that fallthrough; logging it
+# would put a warning a docs author cannot act on into every build.
+"packages/sphinx-autodoc-pytest-fixtures/src/sphinx_autodoc_pytest_fixtures/_store.py" = ["BLE001", "S110"]
 "packages/sphinx-autodoc-typehints-gp/src/sphinx_autodoc_typehints_gp/rendering.py" = ["BLE001"]
 # S102: these suites compile fixture, annotation, and dataclass source
 # strings into throwaway modules so the extensions can be driven against
