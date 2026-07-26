@@ -18,6 +18,17 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Fixes
+
+#### `sphinx-autodoc-typehints-gp`: Declared fields described once
+
+A class that documents its fields in an `Attributes` section drew a
+duplicate object description warning for each one, because the section
+and autodoc both rendered the field. Autodoc's copy is dropped, for
+`NamedTuple` fields, dataclass fields including slotted ones, and
+`TypedDict` keys. A field the section omits still renders, as does a
+method, property, or `ClassVar` sharing a name with an entry. (#70)
+
 ### Development
 
 #### CI actions updated to current majors
