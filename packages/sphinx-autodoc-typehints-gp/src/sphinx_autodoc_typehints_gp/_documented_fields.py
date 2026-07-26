@@ -26,6 +26,16 @@ members; a wrapper around the final registered documenter removes the
 fallback only when a concrete directive was actually emitted. The member
 names come from the exact processed class docstring, so other docstring and
 skip handlers remain authoritative.
+
+A directive written from docstring text knows only what its author typed, so
+on its own it would drop the annotation and the value autodoc renders from
+the live class. Every field directive that survives therefore has autodoc
+compute its own ``:type:`` and ``:value:`` header options, through the
+registered attribute documenter and the real class, and folds them into the
+emitted block. Describing a member costs the reader nothing: a plain constant
+keeps ``= 30``, a dataclass field keeps ``: int = 0``, and a slot, a
+defaultless field, and a typed-dictionary key keep the value autodoc withholds
+for them.
 """
 
 from __future__ import annotations
@@ -57,7 +67,8 @@ _CLASS_LIKE_AUTODOC_TYPES = frozenset({"class", "exception"})
 _UNSET = object()
 _CLASS_VAR_RE = re.compile(r"\s*(?:\w+\.)*ClassVar\b")
 _OBJECT_DIRECTIVE_RE = re.compile(r"^\s*\.\. (?:\w+:)?[\w-]+::\s+([^\s(=:]+)")
-_RENDERED_FIELD_RE = re.compile(r"^\s*:(?:type|value|no-index|noindex):(?:\s|$)")
+_RENDERED_FIELD_RE = re.compile(r"^\s*:(?:type|value):(?:\s|$)")
+_DIRECTIVE_OPTION_RE = re.compile(r"^\s*:(?:type|value|no-index|noindex):(?:\s|$)")
 
 
 class _ProcessedFields(t.NamedTuple):
@@ -639,7 +650,7 @@ def _strip_rendered_fields(body: list[str]) -> list[str]:
     kept: list[str] = []
     dropping = False
     for line in body:
-        if _RENDERED_FIELD_RE.match(line) is not None:
+        if _DIRECTIVE_OPTION_RE.match(line) is not None:
             dropping = True
             continue
         if dropping:
@@ -841,16 +852,266 @@ class GpMethodDocumenter(FieldDocFallbackMixin, MethodDocumenter):  # type: igno
     priority = MethodDocumenter.priority + 1
 
 
+class _DirectiveEnrichment(t.NamedTuple):
+    """Placement of autodoc's header options in a field directive block.
+
+    Attributes
+    ----------
+    insert_at : int
+        Block-relative index the option lines are inserted at.
+    option_lines : list[str]
+        Indented ``:type:`` and ``:value:`` lines to insert.
+    drop : tuple[int, int]
+        Half-open block-relative range of body lines the options replace.
+    """
+
+    insert_at: int
+    option_lines: list[str]
+    drop: tuple[int, int]
+
+
+def _body_type_field(block: list[str], start: int) -> tuple[int, int]:
+    """Return the range holding the authored ``:type:`` field.
+
+    Parameters
+    ----------
+    block : list[str]
+        Directive line first, followed by its options and content.
+    start : int
+        First block index past the directive's own option lines.
+
+    Returns
+    -------
+    tuple[int, int]
+        Half-open range of the field, empty when the body carries none.
+
+    Examples
+    --------
+    >>> _body_type_field([".. attribute:: x", "", "   :type: int", ""], 1)
+    (2, 3)
+
+    >>> _body_type_field([".. attribute:: x", "", "   Offset."], 1)
+    (1, 1)
+    """
+    for index in range(start, len(block)):
+        line = block[index]
+        stripped = line.lstrip()
+        if not stripped.startswith(":type:"):
+            continue
+        width = len(line) - len(stripped)
+        end = index + 1
+        while end < len(block):
+            candidate = block[end]
+            candidate_stripped = candidate.lstrip()
+            if (
+                not candidate_stripped
+                or len(candidate) - len(candidate_stripped) <= width
+            ):
+                break
+            end += 1
+        return (index, end)
+    return (start, start)
+
+
+def _plan_enrichment(
+    block: list[str],
+    options: t.Sequence[str],
+) -> _DirectiveEnrichment:
+    """Place autodoc's header options inside a field directive *block*.
+
+    The options join whatever option block the directive already carries, at
+    that block's own indentation, so a manually written ``:no-index:`` keeps
+    the field list docutils parsed it into. An authored ``:type:`` in the body
+    is dropped only when autodoc supplies one, so a member autodoc has no
+    annotation for keeps the type its ``Attributes`` entry wrote.
+
+    Parameters
+    ----------
+    block : list[str]
+        Directive line first, followed by its options and content.
+    options : typing.Sequence[str]
+        Stripped header option lines autodoc emitted for the member.
+
+    Returns
+    -------
+    _DirectiveEnrichment
+        Where the options go and which body lines they replace.
+
+    Examples
+    --------
+    >>> _plan_enrichment(
+    ...     [".. attribute:: x", "", "   Offset.", "", "   :type: int"],
+    ...     [":type: int", ":value: 3"],
+    ... )
+    _DirectiveEnrichment(insert_at=1, option_lines=['   :type: int', '   :value: 3'], drop=(4, 5))
+
+    >>> _plan_enrichment(
+    ...     [".. attribute:: x", "    :no-index:", "", "   Offset."],
+    ...     [":value: 3"],
+    ... )
+    _DirectiveEnrichment(insert_at=2, option_lines=['    :value: 3'], drop=(2, 2))
+    """  # noqa: E501
+    directive = block[0]
+    indent = directive[: len(directive) - len(directive.lstrip())]
+    option_indent = f"{indent}   "
+    run_end = 1
+    while run_end < len(block):
+        candidate = block[run_end]
+        stripped = candidate.lstrip()
+        candidate_indent = candidate[: len(candidate) - len(stripped)]
+        if not stripped.startswith(":") or len(candidate_indent) <= len(indent):
+            break
+        if run_end == 1:
+            option_indent = candidate_indent
+        run_end += 1
+    drop = (run_end, run_end)
+    if any(option.startswith(":type:") for option in options):
+        drop = _body_type_field(block, run_end)
+    return _DirectiveEnrichment(
+        insert_at=run_end,
+        option_lines=[f"{option_indent}{option}" for option in options],
+        drop=drop,
+    )
+
+
+def _member_header_options(owner: t.Any, name: str) -> list[str]:
+    """Return the header options autodoc would emit for *name*.
+
+    The registered attribute documenter renders the header into a throwaway
+    result list, so its annotation lookup, its mock, slot, and hidden-value
+    gating, and this package's own ``:value:`` curation all apply exactly as
+    they would to a member autodoc rendered itself. A name the class does not
+    expose raises out of ``import_object`` and contributes nothing.
+
+    Parameters
+    ----------
+    owner : typing.Any
+        Class documenter whose docstring emitted the field directive.
+    name : str
+        Bare member name the directive describes.
+
+    Returns
+    -------
+    list[str]
+        Stripped ``:type:`` and ``:value:`` lines, empty when neither applies.
+
+    Examples
+    --------
+    >>> _member_header_options  # doctest: +ELLIPSIS
+    <function _member_header_options at 0x...>
+    """
+    documenter = t.cast(
+        "type[Documenter] | None",
+        owner.documenters.get("attribute"),
+    )
+    if documenter is None or not name.isidentifier():
+        return []
+    member = documenter(
+        owner.directive,
+        f"{owner.modname}::" + ".".join((*owner.objpath, name)),
+        owner.indent,
+    )
+    bridge = owner.directive
+    captured = StringList()
+    result = bridge.result
+    bridge.result = captured
+    try:
+        if member.parse_name() and member.import_object(raiseerror=True):
+            if isinstance(member.object, t.TypeVar | t.NewType):
+                # Autodoc documents a type alias as a class and prints
+                # "alias of X" rather than a value; its raw repr is not
+                # something it would ever render.
+                return []
+            member.add_directive_header("")
+    except (AttributeError, ImportError, TypeError, ValueError):
+        return []
+    finally:
+        bridge.result = result
+    return [
+        line.strip() for line in captured if _RENDERED_FIELD_RE.match(line) is not None
+    ]
+
+
+def _enrich_marked_fields(
+    owner: t.Any,
+    lines: StringList,
+    marker_prefix: str,
+    names: t.Container[str],
+) -> None:
+    """Give each surviving field directive autodoc's type and value.
+
+    Parameters
+    ----------
+    owner : typing.Any
+        Class documenter whose docstring emitted the field directives.
+    lines : docutils.statemachine.StringList
+        Generated autodoc reStructuredText, modified in place.
+    marker_prefix : str
+        Marker prefix identifying the current class documenter.
+    names : typing.Container[str]
+        Field names no concrete member directive replaced.
+
+    Examples
+    --------
+    >>> _enrich_marked_fields  # doctest: +ELLIPSIS
+    <function _enrich_marked_fields at 0x...>
+    """
+    index = 0
+    while index < len(lines):
+        stripped = lines[index].lstrip()
+        if not stripped.startswith(marker_prefix):
+            index += 1
+            continue
+
+        name = stripped[len(marker_prefix) :].strip()
+        directive_index = index + 1
+        index = directive_index
+        if name not in names or directive_index >= len(lines):
+            continue
+        directive = lines[directive_index]
+        if not directive.lstrip().startswith(_ATTRIBUTE_DIRECTIVE):
+            continue
+
+        width = len(directive) - len(directive.lstrip())
+        block_end = directive_index + 1
+        while block_end < len(lines):
+            candidate = lines[block_end]
+            candidate_stripped = candidate.lstrip()
+            if candidate_stripped and len(candidate) - len(candidate_stripped) <= width:
+                break
+            block_end += 1
+
+        options = _member_header_options(owner, name)
+        if not options:
+            index = block_end
+            continue
+
+        plan = _plan_enrichment(list(lines.data[directive_index:block_end]), options)
+        source, offset = lines.info(directive_index)
+        for position in reversed(range(*plan.drop)):
+            del lines[directive_index + position]
+        for position, option in enumerate(plan.option_lines):
+            lines.insert(
+                directive_index + plan.insert_at + position,
+                option,
+                source,
+                offset or 0,
+            )
+        index = block_end + len(plan.option_lines) - (plan.drop[1] - plan.drop[0])
+
+
 class _RenderedFieldsDocumenterMixin:
     """Resolve field ownership after the wrapped documenter renders members."""
 
     directive: t.Any
+    documenters: dict[str, type[Documenter]]
     fullname: str
     indent: str
+    modname: str
     objpath: list[str]
 
     def document_members(self, all_members: bool = False) -> None:
-        """Render members, then remove only replaced field directives.
+        """Render members, then enrich or remove each field directive.
 
         Parameters
         ----------
@@ -873,15 +1134,16 @@ class _RenderedFieldsDocumenterMixin:
         _ACTIVE_FIELD_DOCS.append(_field_doc_bodies(result, marker_prefix))
         try:
             t.cast(t.Any, super()).document_members(all_members)
+            rendered = _rendered_field_names(
+                result.data[member_start:],
+                self.objpath,
+                candidates,
+                self.indent,
+            )
+            _enrich_marked_fields(self, result, marker_prefix, candidates - rendered)
+            _resolve_marked_fields(result, self.fullname, rendered)
         finally:
             _ACTIVE_FIELD_DOCS.pop()
-        rendered = _rendered_field_names(
-            result.data[member_start:],
-            self.objpath,
-            candidates,
-            self.indent,
-        )
-        _resolve_marked_fields(result, self.fullname, rendered)
 
 
 def _wrap_documenter(documenter: type[Documenter]) -> type[Documenter]:

@@ -13,9 +13,11 @@ from sphinx import addnodes
 
 from sphinx_autodoc_typehints_gp._documented_fields import (
     _attribute_directive_names,
+    _DirectiveEnrichment,
     _field_doc_bodies,
     _is_declared_field,
     _own_annotations,
+    _plan_enrichment,
 )
 from tests._sphinx_scenarios import (
     SCENARIO_SRCDIR_TOKEN,
@@ -126,6 +128,93 @@ def test_field_doc_bodies_drops_the_trailing_type_field() -> None:
     ]
 
     assert _field_doc_bodies(lines, _MARKER_PREFIX) == {"value": ["Horizontal offset."]}
+
+
+# ---------------------------------------------------------------------------
+# _plan_enrichment
+# ---------------------------------------------------------------------------
+
+
+class _PlanEnrichmentFixture(t.NamedTuple):
+    """Test case for _plan_enrichment().
+
+    Attributes
+    ----------
+    test_id : str
+        Short identifier used as the pytest parameter id.
+    block : list[str]
+        Directive line first, followed by its options and content.
+    options : list[str]
+        Stripped header option lines autodoc emitted for the member.
+    expected : _DirectiveEnrichment
+        Placement the planner is expected to choose.
+    """
+
+    test_id: str
+    block: list[str]
+    options: list[str]
+    expected: _DirectiveEnrichment
+
+
+_PLAN_ENRICHMENT_FIXTURES: list[_PlanEnrichmentFixture] = [
+    _PlanEnrichmentFixture(
+        test_id="type-replaces-body-field",
+        block=[".. attribute:: x", "", "   Offset.", "", "   :type: int"],
+        options=[":type: int", ":value: 3"],
+        expected=_DirectiveEnrichment(
+            insert_at=1,
+            option_lines=["   :type: int", "   :value: 3"],
+            drop=(4, 5),
+        ),
+    ),
+    _PlanEnrichmentFixture(
+        test_id="value-alone-keeps-body-field",
+        block=[".. attribute:: x", "", "   Offset.", "", "   :type: Safety"],
+        options=[":value: 'readonly'"],
+        expected=_DirectiveEnrichment(
+            insert_at=1,
+            option_lines=["   :value: 'readonly'"],
+            drop=(1, 1),
+        ),
+    ),
+    _PlanEnrichmentFixture(
+        test_id="joins-existing-option-block",
+        block=[".. attribute:: x", "    :no-index:", "", "   Offset."],
+        options=[":type: int"],
+        expected=_DirectiveEnrichment(
+            insert_at=2,
+            option_lines=["    :type: int"],
+            drop=(2, 2),
+        ),
+    ),
+    _PlanEnrichmentFixture(
+        test_id="indented-block",
+        block=[
+            "   .. attribute:: x",
+            "",
+            "      Offset.",
+            "",
+            "      :type: int",
+            "         wrapped",
+        ],
+        options=[":type: int"],
+        expected=_DirectiveEnrichment(
+            insert_at=1,
+            option_lines=["      :type: int"],
+            drop=(4, 6),
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "case",
+    _PLAN_ENRICHMENT_FIXTURES,
+    ids=lambda case: case.test_id,
+)
+def test_plan_enrichment(case: _PlanEnrichmentFixture) -> None:
+    """Header options join the option block and replace an authored type."""
+    assert _plan_enrichment(case.block, case.options) == case.expected
 
 
 # ---------------------------------------------------------------------------
@@ -500,6 +589,15 @@ def _attribute_names(result: SharedSphinxResult) -> list[str]:
         for member in _described_members(get_doctree(result, "index"))
         if member.objtype == "attribute"
     ]
+
+
+def _attribute_signatures(result: SharedSphinxResult) -> dict[str, str]:
+    """Return the rendered signature of every attribute description."""
+    return {
+        member.fullname: member.signature
+        for member in _described_members(get_doctree(result, "index"))
+        if member.objtype == "attribute"
+    }
 
 
 _CONF_PY = textwrap.dedent(
@@ -931,6 +1029,21 @@ def test_documented_typeddict_keys_keep_their_descriptions(
 
 
 @pytest.mark.integration
+def test_documented_fields_keep_their_annotation_and_value(
+    documented_fields_html_result: SharedSphinxResult,
+) -> None:
+    """Describing a field costs it none of what autodoc renders."""
+    signatures = _attribute_signatures(documented_fields_html_result)
+
+    assert signatures["Point.x"] == "x: int"
+    assert signatures["Rule.label"] == "label: str"
+    assert signatures["Rule.weight"] == "weight: int = 0"
+    assert signatures["Gauge.reading"] == "reading: int"
+    assert signatures["Gauge.scale"] == "scale: int"
+    assert signatures["Options.retries"] == "retries: int"
+
+
+@pytest.mark.integration
 def test_undocumented_field_still_renders(
     documented_fields_html_result: SharedSphinxResult,
 ) -> None:
@@ -1105,6 +1218,21 @@ _NON_FIELD_MODULE_SOURCE = textwrap.dedent(
             self.parsed = raw.strip()
 
 
+    class Aliases:
+        """A class whose Attributes name type aliases.
+
+        Attributes
+        ----------
+        Token : TypeVar
+            Token alias documentation.
+        UserId : NewType
+            User id alias documentation.
+        """
+
+        Token = t.TypeVar("Token")
+        UserId = t.NewType("UserId", int)
+
+
     class Callables:
         """A class whose Attributes name callables and a nested class.
 
@@ -1160,6 +1288,33 @@ _NON_FIELD_MODULE_SOURCE = textwrap.dedent(
         @property
         def reading(self) -> int:
             return 1
+
+
+    class Curated:
+        """Plain fields whose values autodoc curates or withholds.
+
+        Attributes
+        ----------
+        HUGE : list[str]
+            Constant too long to print in a signature.
+        SECRET : str
+            Value the entry withholds.
+
+            :meta hide-value:
+        """
+
+        HUGE = ["x" * 60] * 20
+        SECRET = "s3cret"
+
+
+    class Absent:
+        """A class describing a member it never declares.
+
+        Attributes
+        ----------
+        ghost : int
+            Description of a member nothing exposes.
+        """
     '''
 )
 
@@ -1187,6 +1342,12 @@ _NON_FIELD_INDEX_RST = textwrap.dedent(
     .. autoclass:: non_field_members_demo.DerivedLabel
 
     .. autoclass:: non_field_members_demo.Callables
+
+    .. autoclass:: non_field_members_demo.Aliases
+
+    .. autoclass:: non_field_members_demo.Curated
+
+    .. autoclass:: non_field_members_demo.Absent
     """
 )
 
@@ -1658,6 +1819,10 @@ def test_documented_runtime_data_attribute_is_described_once(
 
     assert attributes.count("RuntimeDefaults.timeout") == 1
     assert "Maximum wait in seconds." in html
+    assert (
+        _attribute_signatures(non_field_members_html_result)["RuntimeDefaults.timeout"]
+        == "timeout = 30"
+    )
     assert "duplicate object description" not in (
         non_field_members_html_result.warnings
     )
@@ -1757,6 +1922,17 @@ def test_init_var_named_in_attributes_keeps_its_description(
 
 
 @pytest.mark.integration
+def test_described_type_alias_gains_no_value(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """A type alias renders no value, as autodoc renders none for one."""
+    signatures = _attribute_signatures(non_field_members_html_result)
+
+    assert signatures["Aliases.Token"] == "Token"
+    assert signatures["Aliases.UserId"] == "UserId"
+
+
+@pytest.mark.integration
 def test_described_callables_and_nested_classes_keep_their_prose(
     non_field_members_html_result: SharedSphinxResult,
 ) -> None:
@@ -1767,6 +1943,33 @@ def test_described_callables_and_nested_classes_keep_their_prose(
     assert "Dispatch documentation." in html
     assert "Build documentation." in html
     assert "duplicate object description" not in (
+        non_field_members_html_result.warnings
+    )
+
+
+@pytest.mark.integration
+def test_documented_field_values_stay_curated_and_hidden(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """An enriched value passes through the gating autodoc applies to its own."""
+    signatures = _attribute_signatures(non_field_members_html_result)
+
+    assert signatures["Curated.HUGE"] == "HUGE = <...truncated, 1280 chars>"
+    assert signatures["Curated.SECRET"] == "SECRET"
+
+
+@pytest.mark.integration
+def test_field_describing_an_absent_member_renders_quietly(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """A described name the class never exposes gains no header and no warning."""
+    signatures = _attribute_signatures(non_field_members_html_result)
+
+    assert signatures["Absent.ghost"] == "ghost"
+    assert "Description of a member nothing exposes." in read_output(
+        non_field_members_html_result, "index.html"
+    )
+    assert "non_field_members_demo.Absent.ghost" not in (
         non_field_members_html_result.warnings
     )
 
