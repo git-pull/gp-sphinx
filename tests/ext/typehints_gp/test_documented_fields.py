@@ -15,6 +15,7 @@ from sphinx_autodoc_typehints_gp._documented_fields import (
     _attribute_directive_names,
     _DirectiveEnrichment,
     _field_doc_bodies,
+    _FieldDoc,
     _is_declared_field,
     _own_annotations,
     _plan_enrichment,
@@ -113,7 +114,9 @@ def test_field_doc_bodies_drops_the_directive_options() -> None:
         "      Horizontal offset.",
     ]
 
-    assert _field_doc_bodies(lines, _MARKER_PREFIX) == {"value": ["Horizontal offset."]}
+    assert _field_doc_bodies(lines, _MARKER_PREFIX) == {
+        "value": _FieldDoc(prose=["Horizontal offset."], declared_type="")
+    }
 
 
 def test_field_doc_bodies_drops_the_trailing_type_field() -> None:
@@ -127,7 +130,9 @@ def test_field_doc_bodies_drops_the_trailing_type_field() -> None:
         "      :type: int",
     ]
 
-    assert _field_doc_bodies(lines, _MARKER_PREFIX) == {"value": ["Horizontal offset."]}
+    assert _field_doc_bodies(lines, _MARKER_PREFIX) == {
+        "value": _FieldDoc(prose=["Horizontal offset."], declared_type="int")
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -2239,6 +2244,28 @@ def test_a_described_module_constant_is_data_not_an_attribute(
     }
 
     assert objtypes == {"LIMIT": "data"}
+
+
+@pytest.mark.integration
+def test_a_described_module_constant_keeps_its_declared_type(
+    module_field_html_result: SharedSphinxResult,
+) -> None:
+    """An unannotated constant keeps the type only its entry declares.
+
+    The source writes ``LIMIT = 99``, so autodoc has no annotation to
+    render. The ``Attributes`` entry declaring ``LIMIT : int`` is then the
+    only statement of the type anywhere, and dropping it costs the reader
+    the one thing the author wrote it for.
+    """
+    doctree = get_doctree(module_field_html_result, "index")
+    stated = [
+        signature.parent.astext()
+        for signature in doctree.findall(addnodes.desc_signature)
+        if signature.get("fullname") == "LIMIT"
+    ]
+
+    assert stated, "the module constant did not render at all"
+    assert "int" in stated[0]
 
 
 @pytest.mark.integration

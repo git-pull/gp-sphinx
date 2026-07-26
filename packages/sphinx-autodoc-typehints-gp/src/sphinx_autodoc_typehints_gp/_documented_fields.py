@@ -673,6 +673,49 @@ def _resolve_marked_fields(
             del lines[block_index]
 
 
+class _FieldDoc(t.NamedTuple):
+    """What one field directive states about a member.
+
+    Attributes
+    ----------
+    prose : list[str]
+        Description lines, dedented to column zero.
+    declared_type : str
+        Type the entry declared, or ``""`` when it declared none.
+    """
+
+    prose: list[str]
+    declared_type: str
+
+
+def _declared_type(body: list[str]) -> str:
+    """Return the type a field directive declares, if it declares one.
+
+    Parameters
+    ----------
+    body : list[str]
+        Directive body lines, dedented to column zero.
+
+    Returns
+    -------
+    str
+        The declared type, or ``""``.
+
+    Examples
+    --------
+    >>> _declared_type(["Horizontal offset.", "", ":type: int"])
+    'int'
+
+    >>> _declared_type(["Horizontal offset."])
+    ''
+    """
+    for line in body:
+        stripped = line.strip()
+        if stripped.startswith(":type:"):
+            return stripped[len(":type:") :].strip()
+    return ""
+
+
 def _strip_rendered_fields(body: list[str]) -> list[str]:
     """Drop what the member's own directive states, and surrounding blanks.
 
@@ -723,7 +766,7 @@ def _strip_rendered_fields(body: list[str]) -> list[str]:
 def _field_doc_bodies(
     lines: t.Iterable[str],
     marker_prefix: str,
-) -> dict[str, list[str]]:
+) -> dict[str, _FieldDoc]:
     """Return the prose each marked field directive carries.
 
     The type and value are dropped: the member's own directive renders
@@ -739,8 +782,8 @@ def _field_doc_bodies(
 
     Returns
     -------
-    dict[str, list[str]]
-        Description lines by field name, dedented to column zero.
+    dict[str, _FieldDoc]
+        Description and declared type by field name.
 
     Examples
     --------
@@ -755,9 +798,9 @@ def _field_doc_bodies(
     ...     ],
     ...     ".. gp-sphinx-documented-field: demo.Item ",
     ... )
-    {'value': ['Horizontal offset.']}
+    {'value': _FieldDoc(prose=['Horizontal offset.'], declared_type='int')}
     """
-    bodies: dict[str, list[str]] = {}
+    bodies: dict[str, _FieldDoc] = {}
     lines = list(lines)
     for index, line in enumerate(lines):
         stripped = line.lstrip()
@@ -781,13 +824,14 @@ def _field_doc_bodies(
                 break
             block.append(candidate)
 
-        body = _strip_rendered_fields(textwrap.dedent("\n".join(block)).splitlines())
+        dedented = textwrap.dedent("\n".join(block)).splitlines()
+        body = _strip_rendered_fields(dedented)
         if body:
-            bodies[name] = body
+            bodies[name] = _FieldDoc(prose=body, declared_type=_declared_type(dedented))
     return bodies
 
 
-_ACTIVE_FIELD_DOCS: list[dict[str, list[str]]] = []
+_ACTIVE_FIELD_DOCS: list[dict[str, _FieldDoc]] = []
 _ACTIVE_MODULE_FIELDS: list[frozenset[str]] = []
 
 
@@ -818,7 +862,7 @@ def active_module_field(name: str) -> bool:
     return bool(_ACTIVE_MODULE_FIELDS) and name in _ACTIVE_MODULE_FIELDS[-1]
 
 
-def active_field_doc(name: str) -> list[str] | None:
+def active_field_doc(name: str) -> _FieldDoc | None:
     """Return the ``Attributes`` prose for *name* on the class being rendered.
 
     Consulted by the attribute documenter while a class documents its
@@ -833,8 +877,8 @@ def active_field_doc(name: str) -> list[str] | None:
 
     Returns
     -------
-    list[str] | None
-        Description lines, or ``None`` when nothing described *name*.
+    _FieldDoc | None
+        Description and declared type, or ``None`` when nothing described *name*.
 
     Examples
     --------
@@ -923,7 +967,38 @@ class FieldDocFallbackMixin:
         fallback = active_field_doc(self.objpath[-1])
         if fallback is None:
             return t.cast("list[list[str]] | None", doc)
-        return [list(fallback)]
+        lines = list(fallback.prose)
+        if fallback.declared_type and not self._owner_annotates():
+            lines += ["", f":type: {fallback.declared_type}"]
+        return [lines]
+
+    def _owner_annotates(self) -> bool:
+        """Return whether the owner annotates this member itself.
+
+        An annotated member has its type rendered into the signature, so
+        repeating the entry's declaration would state it twice. An
+        unannotated one -- a plain module constant, a bare class
+        constant -- has the entry as the only statement of its type
+        anywhere, and dropping it loses what the author wrote.
+
+        Returns
+        -------
+        bool
+            Whether the owner declares an annotation for this member.
+
+        Examples
+        --------
+        >>> FieldDocFallbackMixin._owner_annotates  # doctest: +ELLIPSIS
+        <function FieldDocFallbackMixin._owner_annotates at 0x...>
+        """
+        if not self.objpath:
+            return False
+        name = self.objpath[-1]
+        parent = getattr(self, "parent", None)
+        if isinstance(parent, type):
+            return name in _declared_annotations(parent)
+        annotations = getattr(parent, "__annotations__", None)
+        return isinstance(annotations, dict) and name in annotations
 
 
 class GpPropertyDocumenter(FieldDocFallbackMixin, PropertyDocumenter):  # type: ignore[misc]
