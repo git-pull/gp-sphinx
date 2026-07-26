@@ -13,6 +13,7 @@ from sphinx import addnodes
 
 from sphinx_autodoc_typehints_gp._documented_fields import (
     _attribute_directive_names,
+    _field_doc_bodies,
     _is_declared_field,
     _own_annotations,
 )
@@ -90,6 +91,28 @@ def test_attribute_directive_names(
 ) -> None:
     """Only emitted attribute directives contribute documented names."""
     assert _attribute_directive_names(lines) == expected
+
+
+# ---------------------------------------------------------------------------
+# _field_doc_bodies
+# ---------------------------------------------------------------------------
+
+
+_MARKER_PREFIX = ".. gp-sphinx-documented-field: demo.Item "
+
+
+def test_field_doc_bodies_drops_the_trailing_type_field() -> None:
+    """A member's own directive supplies the type, so the body omits it."""
+    lines = [
+        "   .. gp-sphinx-documented-field: demo.Item value",
+        "   .. attribute:: value",
+        "",
+        "      Horizontal offset.",
+        "",
+        "      :type: int",
+    ]
+
+    assert _field_doc_bodies(lines, _MARKER_PREFIX) == {"value": ["Horizontal offset."]}
 
 
 # ---------------------------------------------------------------------------
@@ -1048,6 +1071,39 @@ _NON_FIELD_MODULE_SOURCE = textwrap.dedent(
             return self.label
 
         registry: t.ClassVar[dict[str, str]] = {"kind": "namedtuple"}
+
+
+    @dataclasses.dataclass
+    class Ingest:
+        """A dataclass taking an init-only value.
+
+        Attributes
+        ----------
+        raw : str
+            Payload handed to the initializer only.
+        parsed : str
+            Payload after parsing.
+        """
+
+        raw: dataclasses.InitVar[str]
+        parsed: str = ""
+
+        def __post_init__(self, raw: str) -> None:
+            self.parsed = raw.strip()
+
+
+    class Meter:
+        """A meter whose reading property carries no docstring.
+
+        Attributes
+        ----------
+        reading : int
+            Most recent meter reading.
+        """
+
+        @property
+        def reading(self) -> int:
+            return 1
     '''
 )
 
@@ -1067,6 +1123,10 @@ _NON_FIELD_INDEX_RST = textwrap.dedent(
     .. autoclass:: non_field_members_demo.DataRecord
 
     .. autoclass:: non_field_members_demo.TupleRecord
+
+    .. autoclass:: non_field_members_demo.Ingest
+
+    .. autoclass:: non_field_members_demo.Meter
     """
 )
 
@@ -1613,6 +1673,37 @@ def test_classvar_named_in_attributes_still_renders(
         for member in members
         if member.fullname == "Facade.registry" and "{}" in member.signature
     ] == ["registry: ClassVar[dict[str, str]] = {}"]
+
+
+@pytest.mark.integration
+def test_classvar_named_in_attributes_keeps_its_description(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """A documented ClassVar carries the description its entry wrote."""
+    html = read_output(non_field_members_html_result, "index.html")
+
+    assert "Backends registered so far." in html
+
+
+@pytest.mark.integration
+def test_init_var_named_in_attributes_keeps_its_description(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """An init-only dataclass field carries its Attributes description."""
+    html = read_output(non_field_members_html_result, "index.html")
+
+    assert _attribute_names(non_field_members_html_result).count("Ingest.raw") == 1
+    assert "Payload handed to the initializer only." in html
+
+
+@pytest.mark.integration
+def test_undocumented_property_keeps_its_description(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """A property without a docstring falls back to its Attributes entry."""
+    html = read_output(non_field_members_html_result, "index.html")
+
+    assert "Most recent meter reading." in html
 
 
 @pytest.mark.integration

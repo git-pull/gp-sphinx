@@ -29,6 +29,7 @@ import typing as t
 
 from sphinx.ext.autodoc import AttributeDocumenter, DataDocumenter
 
+from sphinx_autodoc_typehints_gp._documented_fields import FieldDocFallbackMixin
 from sphinx_autodoc_typehints_gp._resolvers import (
     ResolveContext,
     Resolver,
@@ -113,7 +114,7 @@ class GpDataDocumenter(DataDocumenter):
             super().add_line(result, source, *lineno)
 
 
-class GpAttributeDocumenter(AttributeDocumenter):
+class GpAttributeDocumenter(FieldDocFallbackMixin, AttributeDocumenter):  # type: ignore[misc]
     """``AttributeDocumenter`` that curates ``:value:`` text via the resolver chain."""
 
     objtype = "attribute"

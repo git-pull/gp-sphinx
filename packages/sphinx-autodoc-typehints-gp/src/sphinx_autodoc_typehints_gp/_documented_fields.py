@@ -36,11 +36,12 @@ import inspect
 import itertools
 import re
 import sys
+import textwrap
 import typing as t
 import weakref
 
 from docutils.statemachine import StringList
-from sphinx.ext.autodoc import Documenter
+from sphinx.ext.autodoc import Documenter, PropertyDocumenter
 
 if t.TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -54,6 +55,7 @@ _CLASS_LIKE_AUTODOC_TYPES = frozenset({"class", "exception"})
 _UNSET = object()
 _CLASS_VAR_RE = re.compile(r"\s*(?:\w+\.)*ClassVar\b")
 _OBJECT_DIRECTIVE_RE = re.compile(r"^\s*\.\. (?:\w+:)?[\w-]+::\s+([^\s(=:]+)")
+_RENDERED_FIELD_RE = re.compile(r"^\s*:(?:type|value):(?:\s|$)")
 
 
 class _ProcessedFields(t.NamedTuple):
@@ -563,6 +565,190 @@ def _resolve_marked_fields(
             del lines[block_index]
 
 
+def _strip_rendered_fields(body: list[str]) -> list[str]:
+    """Drop the ``:type:`` and ``:value:`` entries and surrounding blanks.
+
+    Parameters
+    ----------
+    body : list[str]
+        Description lines dedented to column zero.
+
+    Returns
+    -------
+    list[str]
+        The description alone.
+
+    Examples
+    --------
+    >>> _strip_rendered_fields(["Horizontal offset.", "", ":type: int"])
+    ['Horizontal offset.']
+
+    >>> _strip_rendered_fields([":type: int", "   wrapped", "Offset."])
+    ['Offset.']
+    """
+    kept: list[str] = []
+    dropping = False
+    for line in body:
+        if _RENDERED_FIELD_RE.match(line) is not None:
+            dropping = True
+            continue
+        if dropping:
+            if not line.strip() or line[:1].isspace():
+                continue
+            dropping = False
+        kept.append(line)
+    while kept and not kept[0].strip():
+        kept.pop(0)
+    while kept and not kept[-1].strip():
+        kept.pop()
+    return kept
+
+
+def _field_doc_bodies(
+    lines: t.Iterable[str],
+    marker_prefix: str,
+) -> dict[str, list[str]]:
+    """Return the prose each marked field directive carries.
+
+    The type and value are dropped: the member's own directive renders
+    both from the annotation itself, which is what a class variable's
+    entry cannot express.
+
+    Parameters
+    ----------
+    lines : typing.Iterable[str]
+        Generated reStructuredText holding marked field directives.
+    marker_prefix : str
+        Marker prefix identifying the current class documenter.
+
+    Returns
+    -------
+    dict[str, list[str]]
+        Description lines by field name, dedented to column zero.
+
+    Examples
+    --------
+    >>> _field_doc_bodies(
+    ...     [
+    ...         "   .. gp-sphinx-documented-field: demo.Item value",
+    ...         "   .. attribute:: value",
+    ...         "",
+    ...         "      Horizontal offset.",
+    ...         "",
+    ...         "      :type: int",
+    ...     ],
+    ...     ".. gp-sphinx-documented-field: demo.Item ",
+    ... )
+    {'value': ['Horizontal offset.']}
+    """
+    bodies: dict[str, list[str]] = {}
+    lines = list(lines)
+    for index, line in enumerate(lines):
+        stripped = line.lstrip()
+        if not stripped.startswith(marker_prefix):
+            continue
+        name = stripped[len(marker_prefix) :].strip()
+        marker_indent = len(line) - len(stripped)
+        directive_index = index + 1
+        if directive_index >= len(lines) or not lines[
+            directive_index
+        ].lstrip().startswith(_ATTRIBUTE_DIRECTIVE):
+            continue
+
+        block: list[str] = []
+        for candidate in lines[directive_index + 1 :]:
+            candidate_stripped = candidate.lstrip()
+            if (
+                candidate_stripped
+                and len(candidate) - len(candidate_stripped) <= marker_indent
+            ):
+                break
+            block.append(candidate)
+
+        body = _strip_rendered_fields(textwrap.dedent("\n".join(block)).splitlines())
+        if body:
+            bodies[name] = body
+    return bodies
+
+
+_ACTIVE_FIELD_DOCS: list[dict[str, list[str]]] = []
+
+
+def active_field_doc(name: str) -> list[str] | None:
+    """Return the ``Attributes`` prose for *name* on the class being rendered.
+
+    Consulted by the attribute documenter while a class documents its
+    members, so a member autodoc renders concretely — a class variable, a
+    slot-free pseudo-field, an undocumented property — can carry the
+    description its owner's ``Attributes`` entry wrote.
+
+    Parameters
+    ----------
+    name : str
+        Bare member name under consideration.
+
+    Returns
+    -------
+    list[str] | None
+        Description lines, or ``None`` when nothing described *name*.
+
+    Examples
+    --------
+    >>> active_field_doc("value") is None
+    True
+    """
+    if not _ACTIVE_FIELD_DOCS:
+        return None
+    return _ACTIVE_FIELD_DOCS[-1].get(name)
+
+
+class FieldDocFallbackMixin:
+    """Describe a bare member from its owner's ``Attributes`` entry.
+
+    A class variable, an init-only dataclass field, and a property
+    without a docstring all reach the page as a signature with nothing
+    beneath it: ``NonDataDescriptorMixin.get_doc`` returns ``None`` for a
+    plain class-level value, and an undocumented property has no
+    docstring to return. A ``#:`` source comment is the one description
+    autodoc already reattaches at that point. This does the same for the
+    description the owning class wrote, so the entry keeps the prose its
+    author supplied alongside the annotation and value only autodoc can
+    render.
+    """
+
+    objpath: list[str]
+
+    def get_doc(self) -> list[list[str]] | None:
+        """Return the member's own docstring, or its owner's description.
+
+        Returns
+        -------
+        list[list[str]] | None
+            Docstring blocks, or ``None`` when nothing describes the member.
+
+        Examples
+        --------
+        >>> FieldDocFallbackMixin.get_doc  # doctest: +ELLIPSIS
+        <function FieldDocFallbackMixin.get_doc at 0x...>
+        """
+        doc = t.cast(t.Any, super()).get_doc()
+        if doc and any(line.strip() for block in doc for line in block):
+            return t.cast("list[list[str]] | None", doc)
+        if not self.objpath:
+            return t.cast("list[list[str]] | None", doc)
+        fallback = active_field_doc(self.objpath[-1])
+        if fallback is None:
+            return t.cast("list[list[str]] | None", doc)
+        return [list(fallback)]
+
+
+class GpPropertyDocumenter(FieldDocFallbackMixin, PropertyDocumenter):  # type: ignore[misc]
+    """``PropertyDocumenter`` that honors an owner's ``Attributes`` entry."""
+
+    objtype = "property"
+    priority = PropertyDocumenter.priority + 1
+
+
 class _RenderedFieldsDocumenterMixin:
     """Resolve field ownership after the wrapped documenter renders members."""
 
@@ -592,7 +778,11 @@ class _RenderedFieldsDocumenterMixin:
             if line.lstrip().startswith(marker_prefix)
         }
         member_start = len(result)
-        t.cast(t.Any, super()).document_members(all_members)
+        _ACTIVE_FIELD_DOCS.append(_field_doc_bodies(result, marker_prefix))
+        try:
+            t.cast(t.Any, super()).document_members(all_members)
+        finally:
+            _ACTIVE_FIELD_DOCS.pop()
         rendered = _rendered_field_names(
             result.data[member_start:],
             self.objpath,
@@ -837,6 +1027,7 @@ def register(app: Sphinx) -> None:
     >>> register  # doctest: +ELLIPSIS
     <function register at 0x...>
     """
+    app.add_autodocumenter(GpPropertyDocumenter, override=True)
     app.connect("autodoc-skip-member", skip_documented_fields)
     app.connect(
         "autodoc-process-signature",
