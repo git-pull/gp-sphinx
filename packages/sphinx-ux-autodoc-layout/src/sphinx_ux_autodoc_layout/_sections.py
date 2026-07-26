@@ -41,7 +41,7 @@ _SECTION_KIND_CLASS: dict[str, str] = {
 class ApiFactRow:
     """Typed fact row rendered inside a shared ``gp-sphinx-api-facts`` section.
 
-    Parameters
+    Attributes
     ----------
     label : str
         Field label displayed in the facts grid.
