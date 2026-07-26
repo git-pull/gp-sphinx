@@ -216,6 +216,20 @@ convention = "numpy"
 "tests/ext/api_style/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/fastmcp/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
 "tests/ext/docutils/*.py" = ["D", "E501", "UP", "A", "B", "COM", "EM", "TRY", "PERF", "RUF", "SIM", "FA100"]
+# BLE001: these modules sit on a boundary where the other side is
+# arbitrary user or third-party code — introspecting a documented
+# project's modules, stringifying whatever annotation autodoc hands
+# over, asking Sphinx's builder to resolve a URI, importing a user's
+# argparse parser factory, reading intersphinx's untyped inventory.
+# Each catch degrades to a fallback or a reported docutils error so one
+# bad object cannot abort the whole docs build; narrowing them would let
+# an exotic exception from foreign code escape and do exactly that.
+"packages/gp-sphinx/src/gp_sphinx/config.py" = ["BLE001"]
+"packages/sphinx-autodoc-argparse/src/sphinx_autodoc_argparse/directive.py" = ["BLE001"]
+"packages/sphinx-autodoc-fastmcp/src/sphinx_autodoc_fastmcp/_directives.py" = ["BLE001"]
+"packages/sphinx-autodoc-fastmcp/src/sphinx_autodoc_fastmcp/_transforms.py" = ["BLE001"]
+"packages/sphinx-autodoc-pytest-fixtures/src/sphinx_autodoc_pytest_fixtures/_store.py" = ["BLE001"]
+"packages/sphinx-autodoc-typehints-gp/src/sphinx_autodoc_typehints_gp/rendering.py" = ["BLE001"]
 
 [tool.pytest.ini_options]
 addopts = "-s --tb=short --no-header --showlocals --doctest-modules"
