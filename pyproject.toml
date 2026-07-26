@@ -244,6 +244,12 @@ convention = "numpy"
 "tests/ext/pytest_fixtures/test_sphinx_pytest_fixtures.py" = ["S102"]
 "tests/ext/pytest_fixtures/test_type_checking_alias.py" = ["S102"]
 "tests/ext/typehints_gp/test_documented_fields.py" = ["S102"]
+# PYI046: `_FixtureMarker` is used — `_detection._get_fixture_marker`
+# returns it — but the rule only looks inside the defining file, so a
+# protocol that is private to the package rather than to the module
+# reads as dead to it. Making it public would export an internal
+# normalisation detail just to satisfy the check.
+"packages/sphinx-autodoc-pytest-fixtures/src/sphinx_autodoc_pytest_fixtures/_models.py" = ["PYI046"]
 
 [tool.pytest.ini_options]
 addopts = "-s --tb=short --no-header --showlocals --doctest-modules"
