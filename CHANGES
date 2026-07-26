@@ -14,9 +14,18 @@ $ pip install --user --upgrade --pre gp-sphinx
 $ uv add gp-sphinx --prerelease allow
 ```
 
-## gp-sphinx 0.0.1a36 (unreleased)
+## gp-sphinx 0.0.1a37 (unreleased)
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
+
+## gp-sphinx 0.0.1a36 (2026-07-26)
+
+gp-sphinx 0.0.1a36 makes a class that documents its fields in an
+`Attributes` section render each field once. `NamedTuple` fields,
+dataclass fields, and `TypedDict` keys no longer draw a duplicate object
+description warning, and the dataclasses behind the argparse, FastMCP,
+and theme extensions now describe what each field holds in the API
+reference.
 
 ### Fixes
 
