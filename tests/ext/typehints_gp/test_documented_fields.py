@@ -2175,6 +2175,84 @@ def test_showing_undocumented_class_vars_restores_them(
 
 
 # ---------------------------------------------------------------------------
+# a module constant the module docstring describes
+# ---------------------------------------------------------------------------
+
+_MODULE_FIELD_SOURCE = '''\
+"""Module describing the constant it declares.
+
+Attributes
+----------
+LIMIT : int
+    Maximum retries before giving up.
+"""
+
+from __future__ import annotations
+
+LIMIT = 99
+'''
+
+
+@pytest.fixture(scope="module")
+def module_field_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a module whose docstring describes its own constant."""
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("module_field_demo.py", _MODULE_FIELD_SOURCE),
+            _conf_file(),
+            ScenarioFile(
+                "index.rst",
+                "Demo\n====\n\n.. automodule:: module_field_demo\n   :members:\n",
+            ),
+        ),
+    )
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("module-field"),
+        scenario,
+        purge_modules=("module_field_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_a_described_module_constant_keeps_its_value(
+    module_field_html_result: SharedSphinxResult,
+) -> None:
+    """A module constant keeps the value only the live module supplies."""
+    members = _described_members(get_doctree(module_field_html_result, "index"))
+    signatures = {member.fullname: member.signature for member in members}
+
+    assert signatures["LIMIT"] == "module_field_demo.LIMIT = 99"
+
+
+@pytest.mark.integration
+def test_a_described_module_constant_is_data_not_an_attribute(
+    module_field_html_result: SharedSphinxResult,
+) -> None:
+    """A module constant is data; only a class member is an attribute."""
+    members = _described_members(get_doctree(module_field_html_result, "index"))
+    objtypes = {
+        member.fullname: member.objtype
+        for member in members
+        if member.fullname.endswith("LIMIT")
+    }
+
+    assert objtypes == {"LIMIT": "data"}
+
+
+@pytest.mark.integration
+def test_a_described_module_constant_carries_its_description(
+    module_field_html_result: SharedSphinxResult,
+) -> None:
+    """The description the module docstring wrote reaches the entry."""
+    html = read_output(module_field_html_result, "index.html")
+
+    assert "Maximum retries before giving up." in html
+    assert "duplicate object description" not in module_field_html_result.warnings
+
+
+# ---------------------------------------------------------------------------
 # a typed-dictionary key declared by a separate base
 # ---------------------------------------------------------------------------
 
@@ -3085,10 +3163,14 @@ def test_no_index_applies_to_module_attribute(
     no_index_html_result: SharedSphinxResult,
 ) -> None:
     """A no-index module keeps emitted fields out of the inventory."""
-    attributes = _attribute_names(no_index_html_result)
+    described = [
+        member.fullname
+        for member in _described_members(get_doctree(no_index_html_result, "index"))
+        if member.objtype in {"attribute", "data"}
+    ]
     objects = no_index_html_result.app.env.domains.python_domain.objects
 
-    assert sum(name.endswith("MODULE_VALUE") for name in attributes) == 1
+    assert sum(name.endswith("MODULE_VALUE") for name in described) == 1
     assert "Visible but unregistered module field." in read_output(
         no_index_html_result, "index.html"
     )

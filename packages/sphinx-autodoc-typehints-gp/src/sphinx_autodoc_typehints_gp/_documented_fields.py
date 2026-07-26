@@ -64,15 +64,15 @@ if t.TYPE_CHECKING:
 _ATTRIBUTE_DIRECTIVE = ".. attribute:: "
 _FIELD_MARKER = ".. gp-sphinx-documented-field: "
 _CLASS_LIKE_AUTODOC_TYPES = frozenset({"class", "exception"})
+_MODULE_AUTODOC_TYPE = "module"
+# Sphinx runs event listeners in ascending priority and stops at the first
+# non-None answer, so anything above its default of 500 answers after the
+# handlers a project connects for itself.
+_LATE_SKIP_PRIORITY = 800
 _UNSET = object()
 _CLASS_VAR_RE = re.compile(r"\s*(?:\w+\.)*ClassVar\b")
 _OBJECT_DIRECTIVE_RE = re.compile(r"^\s*\.\. (?:\w+:)?[\w-]+::\s+([^\s(=:]+)")
 _RENDERED_FIELD_RE = re.compile(r"^\s*:(?:type|value):(?:\s|$)")
-# ``autodoc-skip-member`` stops at the first listener returning a decision, and
-# a project's own ``conf.py`` connects at the default priority. Answering after
-# it leaves the project's explicit decision authoritative, which is what this
-# module's docstring already promises.
-_LATE_SKIP_PRIORITY = 800
 _DIRECTIVE_OPTION_RE = re.compile(r"^\s*:(?:type|value|no-index|noindex):(?:\s|$)")
 
 
@@ -477,6 +477,46 @@ def _has_attribute_comment(klass: type, name: str) -> bool:
     return False
 
 
+def _has_module_comment(module: t.Any, name: str) -> bool:
+    """Return whether a source comment or docstring describes module *name*.
+
+    Mirrors the lookup autodoc performs in
+    ``DataDocumenter.get_module_comment``, so a module constant described at
+    its assignment keeps that description rather than the one an
+    ``Attributes`` entry supplies.
+
+    Parameters
+    ----------
+    module : typing.Any
+        Module the member belongs to.
+    name : str
+        Member name under consideration.
+
+    Returns
+    -------
+    bool
+        Whether the module source carries a description for *name*.
+
+    Examples
+    --------
+    >>> import sys
+    >>> _has_module_comment(sys, "path")
+    False
+
+    >>> _has_module_comment(t, "Any")
+    False
+    """
+    modname = getattr(module, "__name__", None)
+    if not isinstance(modname, str):
+        return False
+    try:
+        analyzer = ModuleAnalyzer.for_module(modname)
+        analyzer.analyze()
+    except PycodeError:
+        return False
+    return ("", name) in analyzer.attr_docs
+
+
 def _mark_attribute_directives(lines: list[str], owner: str) -> None:
     """Mark field directives until autodoc finishes rendering members.
 
@@ -516,7 +556,8 @@ def _rendered_field_names(
     lines : typing.Iterable[str]
         Generated member output added after the class docstring.
     object_path : typing.Iterable[str]
-        Class path used in generated Python directives.
+        Class path used in generated Python directives. Empty at module
+        scope, where a member directive names the member alone.
     candidates : typing.Iterable[str]
         Marked field names under consideration.
     indent : str
@@ -539,9 +580,18 @@ def _rendered_field_names(
     ...     "   ",
     ... )
     frozenset({'value'})
+
+    >>> _rendered_field_names(
+    ...     [".. py:data:: LIMIT", ".. py:class:: Item"],
+    ...     [],
+    ...     {"LIMIT"},
+    ...     "",
+    ... )
+    frozenset({'LIMIT'})
     """
     candidate_names = set(candidates)
-    object_prefix = f"{'.'.join(object_path)}."
+    path = list(object_path)
+    object_prefix = f"{'.'.join(path)}." if path else ""
     rendered: set[str] = set()
     for line in lines:
         if not line.startswith(f"{indent}.. "):
@@ -738,6 +788,34 @@ def _field_doc_bodies(
 
 
 _ACTIVE_FIELD_DOCS: list[dict[str, list[str]]] = []
+_ACTIVE_MODULE_FIELDS: list[frozenset[str]] = []
+
+
+def active_module_field(name: str) -> bool:
+    """Return whether the module being rendered describes *name*.
+
+    Consulted by the data documenter's ``can_document_member``. Autodoc
+    documents a module constant only when the source carries a ``#:``
+    comment or an annotation for it; a name the module docstring described
+    is just as deliberate, so it becomes documentable too, and autodoc
+    renders the annotation and value that only the live module knows.
+
+    Parameters
+    ----------
+    name : str
+        Bare member name under consideration.
+
+    Returns
+    -------
+    bool
+        Whether the module's ``Attributes`` section named *name*.
+
+    Examples
+    --------
+    >>> active_module_field("LIMIT")
+    False
+    """
+    return bool(_ACTIVE_MODULE_FIELDS) and name in _ACTIVE_MODULE_FIELDS[-1]
 
 
 def active_field_doc(name: str) -> list[str] | None:
@@ -793,8 +871,12 @@ class FieldDocFallbackMixin:
         autodoc walks the MRO: a property overriding an inherited
         dataclass field inherits the *default value's* docstring, so
         ``str.__doc__`` arrives as though it described the property. A
-        ``#:`` comment is a description of this member wherever it sits
-        in the MRO, so it counts.
+        module constant is worse still — ``LIMIT = 99`` hands autodoc the
+        whole of :class:`int`'s docstring — so a docstring a member shares
+        with its own type describes the type, not the member; autodoc
+        applies the same rule when it decides which members are
+        documented. A ``#:`` comment or attribute docstring is a
+        description of this member wherever it sits, so it counts.
 
         Returns
         -------
@@ -807,10 +889,16 @@ class FieldDocFallbackMixin:
         <function FieldDocFallbackMixin._describes_itself at 0x...>
         """
         own = getattr(self.object, "__doc__", None)
-        if isinstance(own, str) and own.strip():
+        if (
+            isinstance(own, str)
+            and own.strip()
+            and own != getattr(type(self.object), "__doc__", None)
+        ):
             return True
         if isinstance(self.parent, type) and self.objpath:
             return _has_attribute_comment(self.parent, self.objpath[-1])
+        if inspect.ismodule(self.parent) and self.objpath:
+            return _has_module_comment(self.parent, self.objpath[-1])
         return False
 
     def get_doc(self) -> list[list[str]] | None:
@@ -1151,6 +1239,88 @@ class _RenderedFieldsDocumenterMixin:
             _ACTIVE_FIELD_DOCS.pop()
 
 
+class _ModuleFieldsDocumenterMixin:
+    """Hand a module's ``Attributes`` prose to the members autodoc renders.
+
+    A class hands its field descriptions to a directive it owns, because
+    the description is the only thing that knows the field exists. A module
+    constant is the other way round: the live module holds the value, and
+    only autodoc can render it. So the module's entries are opened up as
+    documentable members, the prose is offered to whichever documenter
+    picks each one up, and every entry autodoc rendered has its directive
+    removed. An entry autodoc still declines to render keeps its directive.
+    """
+
+    directive: t.Any
+    fullname: str
+    indent: str
+    objpath: list[str]
+
+    def document_members(self, all_members: bool = False) -> None:
+        """Render members with the module's field descriptions in scope.
+
+        Parameters
+        ----------
+        all_members : bool
+            Whether the wrapped documenter was asked to include every member.
+
+        Examples
+        --------
+        >>> _ModuleFieldsDocumenterMixin.document_members  # doctest: +ELLIPSIS
+        <function _ModuleFieldsDocumenterMixin.document_members at 0x...>
+        """
+        result = t.cast(StringList, self.directive.result)
+        marker_prefix = f"{_FIELD_MARKER}{self.fullname} "
+        candidates = {
+            line.lstrip()[len(marker_prefix) :].strip()
+            for line in result
+            if line.lstrip().startswith(marker_prefix)
+        }
+        member_start = len(result)
+        _ACTIVE_FIELD_DOCS.append(_field_doc_bodies(result, marker_prefix))
+        _ACTIVE_MODULE_FIELDS.append(frozenset(candidates))
+        try:
+            t.cast(t.Any, super()).document_members(all_members)
+            rendered = _rendered_field_names(
+                result.data[member_start:],
+                self.objpath,
+                candidates,
+                self.indent,
+            )
+            _resolve_marked_fields(result, self.fullname, rendered)
+        finally:
+            _ACTIVE_MODULE_FIELDS.pop()
+            _ACTIVE_FIELD_DOCS.pop()
+
+
+def _wrap_module_documenter(documenter: type[Documenter]) -> type[Documenter]:
+    """Wrap the registered module documenter without replacing its behavior.
+
+    Parameters
+    ----------
+    documenter : type[sphinx.ext.autodoc.Documenter]
+        Final module documenter registered by the loaded extension stack.
+
+    Returns
+    -------
+    type[sphinx.ext.autodoc.Documenter]
+        A subclass resolving module field directives after member rendering.
+
+    Examples
+    --------
+    >>> _wrap_module_documenter  # doctest: +ELLIPSIS
+    <function _wrap_module_documenter at 0x...>
+    """
+    if issubclass(documenter, _ModuleFieldsDocumenterMixin):
+        return documenter
+    wrapped = type(
+        f"ModuleFields{documenter.__name__}",
+        (_ModuleFieldsDocumenterMixin, documenter),
+        {"__module__": documenter.__module__},
+    )
+    return t.cast("type[Documenter]", wrapped)
+
+
 def _wrap_documenter(documenter: type[Documenter]) -> type[Documenter]:
     """Wrap a registered class-like documenter without replacing its behavior.
 
@@ -1194,6 +1364,10 @@ def record_documented_fields(
     carries declared fields into ``autodoc-skip-member``; transient markers
     carry other field directives into post-render ownership resolution.
 
+    A module docstring records nothing: nothing about a module constant is
+    the docstring's to own, so its entries are only marked, and the marks
+    open each name up to autodoc and carry the prose to it.
+
     Parameters
     ----------
     app : Sphinx
@@ -1217,6 +1391,8 @@ def record_documented_fields(
     if what not in _CLASS_LIKE_AUTODOC_TYPES or not isinstance(obj, type):
         if options.no_index or options.noindex:
             _add_attribute_no_index(lines)
+        if what == _MODULE_AUTODOC_TYPE and inspect.ismodule(obj):
+            _mark_attribute_directives(lines, name)
         return
     previous = _PROCESSED_FIELDS.get(app)
     documented = (
@@ -1241,8 +1417,9 @@ def record_documented_fields(
 def _prepare_documented_fields(app: Sphinx) -> None:
     """Install field finalization after every extension has initialized.
 
-    Wrap the final class and exception documenters already registered by the
-    extension stack, then install the final docstring processor.
+    Wrap the final class, exception, and module documenters already
+    registered by the extension stack, then install the final docstring
+    processor.
 
     Parameters
     ----------
@@ -1262,6 +1439,12 @@ def _prepare_documented_fields(app: Sphinx) -> None:
                 _wrap_documenter(documenter),
                 override=True,
             )
+    module_documenter = app.registry.documenters.get(_MODULE_AUTODOC_TYPE)
+    if module_documenter is not None:
+        app.add_autodocumenter(
+            _wrap_module_documenter(module_documenter),
+            override=True,
+        )
     app.connect(
         "autodoc-process-docstring",
         record_documented_fields,
@@ -1367,7 +1550,10 @@ def skip_documented_fields(
       *name*.
 
     Returns ``None`` in every other case, leaving the member to autodoc and
-    to any other handler.
+    to any other handler. Sphinx stops at the first handler to answer, so
+    this one is connected to answer last: a project that says outright
+    whether one of its own members belongs on the page has settled the
+    question, and no default of ours should reach autodoc ahead of it.
 
     Parameters
     ----------
