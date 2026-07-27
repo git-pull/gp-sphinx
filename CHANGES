@@ -14,9 +14,22 @@ $ pip install --user --upgrade --pre gp-sphinx
 $ uv add gp-sphinx --prerelease allow
 ```
 
-## gp-sphinx 0.0.1a37 (unreleased)
+## gp-sphinx 0.1.0a38 (unreleased)
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
+
+## gp-sphinx 0.1.0a37 (2026-07-26)
+
+gp-sphinx 0.1.0a37 gives every class-level name — a field, a
+typed-dictionary key, an enum member, a class variable, a plain
+constant — exactly one description on the reference page, and keeps the
+signature autodoc reads off the live class beside it. A description
+written on the base class now reaches the subclasses inheriting it, and
+a constant described in its module docstring renders the value the live
+module holds. The one change that can remove entries from a page you
+already publish is that a class variable nothing describes is withheld
+rather than shipped bare; see {ref}`class-level-names` for the rules
+each shape follows and the config value that restores them.
 
 ### Breaking changes
 

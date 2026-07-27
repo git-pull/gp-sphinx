@@ -1,6 +1,6 @@
 [project]
 name = "gp-sphinx"
-version = "0.0.1a36"
+version = "0.1.0a37"
 description = "Shared Sphinx documentation platform for git-pull projects"
 requires-python = ">=3.10,<4.0"
 authors = [
@@ -26,16 +26,16 @@ readme = "README.md"
 keywords = ["sphinx", "documentation", "configuration"]
 dependencies = [
   "sphinx>=8.1,<9",
-  "sphinx-gp-theme==0.0.1a36",
-  "sphinx-fonts==0.0.1a36",
+  "sphinx-gp-theme==0.1.0a37",
+  "sphinx-fonts==0.1.0a37",
   "myst-parser",
   "docutils",
-  "sphinx-autodoc-typehints-gp==0.0.1a36",
+  "sphinx-autodoc-typehints-gp==0.1.0a37",
   "sphinx-inline-tabs",
   "sphinx-copybutton",
-  "sphinx-gp-opengraph==0.0.1a36",
-  "sphinx-gp-sitemap==0.0.1a36",
-  "sphinx-gp-llms==0.0.1a36",
+  "sphinx-gp-opengraph==0.1.0a37",
+  "sphinx-gp-sitemap==0.1.0a37",
+  "sphinx-gp-llms==0.1.0a37",
   "sphinxext-rediraffe",
   "sphinx-design",
   "linkify-it-py",
@@ -44,7 +44,7 @@ dependencies = [
 
 [project.optional-dependencies]
 argparse = [
-  "sphinx-autodoc-argparse==0.0.1a36",
+  "sphinx-autodoc-argparse==0.1.0a37",
 ]
 
 [project.urls]
