@@ -93,17 +93,18 @@ browser helpers, autodoc filter, and lexer aliases into the Sphinx app:
 | `app.connect("html-page-context", _inject_copybutton_bridge)` | Adds copybutton prompt settings to the page context so copied examples stay prompt-aware after SPA navigation |
 | `app.connect("html-page-context", _inject_fowt_prevention)` | Injects the early theme script that prevents a flash of the wrong theme before Furo initializes |
 | `app.connect("build-finished", remove_tabs_js)` | Removes `_static/tabs.js` after HTML builds as a `sphinx-inline-tabs` workaround |
-| `app.connect("autodoc-skip-member", skip_machinery_members, priority=900)` | Hides the {py:data}`gp_sphinx.config.MACHINERY_MEMBERS` names that `abc`, {py:class}`typing.Protocol`, and {py:func}`typing.NamedTuple` write into a class |
+| `app.connect("autodoc-skip-member", skip_machinery_members, priority=900)` | Hides the {py:data}`gp_sphinx.config.MACHINERY_MEMBERS` names that {py:class}`abc.ABCMeta`, {py:class}`typing.Protocol`, and {py:class}`typing.NamedTuple` write into a class |
 | `app.add_lexer("myst", MystLexer)` | Registers the MyST lexer alias used by Markdown examples |
 | `app.add_lexer("myst-md", MystLexer)` | Registers the alternate MyST lexer alias used by Markdown examples |
 
 `private-members` is on by default, so without that filter every
-{py:class}`~pydantic.BaseModel` subclass ships an `_abc_impl` entry and
-every {py:func}`~typing.NamedTuple` ships `_fields` and
-`_field_defaults` — names no docstring can reach, because no author
-wrote them. Since `autodoc-skip-member` takes the first non-`None`
-answer and this handler is connected late, a project that wants one of
-them on the page registers its own handler and answers `False`.
+[pydantic](https://docs.pydantic.dev/) model subclass ships an
+`_abc_impl` entry and every {py:class}`~typing.NamedTuple` ships
+`_fields` and `_field_defaults` — names no docstring can reach, because
+no author wrote them. Since `autodoc-skip-member` takes the first
+non-`None` answer and this handler is connected late, a project that
+wants one of them on the page registers its own handler and answers
+`False`.
 
 ## Always-set coordinator values
 

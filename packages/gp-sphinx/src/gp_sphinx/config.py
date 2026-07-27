@@ -790,7 +790,7 @@ MACHINERY_MEMBERS: frozenset[str] = frozenset(
 """Private names Python's own machinery attaches to a class.
 
 :class:`abc.ABCMeta`, :class:`typing.Protocol`, and
-:func:`typing.NamedTuple` each write attributes into the classes they
+:class:`typing.NamedTuple` each write attributes into the classes they
 build. No author declares them, so no docstring can reach them, yet
 :data:`DEFAULT_AUTODOC_OPTIONS` turns ``private-members`` on and autodoc
 renders every one as an entry with a name and nothing else.
