@@ -100,8 +100,18 @@ root `AGENTS.md`; docs pages here usually spell the py-domain forms
 explicitly (`{py:func}`, `{py:data}`, `{py:mod}`). A `{ref}` must
 match its target's anchor exactly — anchors mix hyphen and underscore
 forms, sometimes inside one anchor (`from-docs_url`). `just
-build-docs` catches a broken cross-reference; nothing else does — so
-build the docs before you commit.
+build-docs` catches a broken `{ref}`; nothing else does — so build the
+docs before you commit.
+
+A py-domain role is not covered by that build check. `nitpicky` is
+unset, so an unresolved `{py:class}` or `{py:data}` renders as plain
+text and the build stays silent — a clean build is no evidence the
+link works. Two ways to get one wrong: citing a symbol nothing
+autodocs (add the directive, or drop the role), and citing a project
+absent from `intersphinx_mapping` in `docs/conf.py`, which currently
+maps only `py` and `sphinx` — every other project is a Markdown link.
+Confirm by opening the built page and checking the name sits inside an
+`<a>`.
 
 Link the first prose mention of any symbol that has a useful
 destination on that page. This includes Python objects, gp-sphinx
@@ -142,3 +152,5 @@ reshaping another page.
   cross-reference exact — and generated sections to their directives?
 - Did `just build-docs` stay clean — no new warning, no broken
   cross-reference?
+- Did you open the built page and confirm each new py-domain role
+  rendered as a link? A silent build does not prove it.
