@@ -18,6 +18,77 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Breaking changes
+
+#### An undescribed class variable is withheld from the reference
+
+A `ClassVar` nobody describes no longer renders. Class variables are
+often internal — a registry, a cached sentinel, a counter — and a page
+listing them bare says less than one that omits them. The cost is that a
+class variable you meant to publish goes missing rather than looking
+empty.
+
+Describe it — in an `Attributes` entry, a docstring under the
+assignment, or a `#:` comment — and it returns. To render them all
+regardless, set `gp_typehints_show_undocumented_class_vars = True`. See
+{ref}`class-level-names`. (#72)
+
+### What's new
+
+#### A description written on the base reaches every subclass
+
+A dataclass field or typed-dictionary key described where it is declared
+now carries that description to every subclass inheriting it. A base
+documenting a wide option set no longer obliges each subclass to restate
+it. (#72)
+
+#### Module constants render their value
+
+A constant described in its module docstring's `Attributes` section now
+renders the value the live module holds, and registers in the Python
+domain as data, so a cross-reference to it resolves. (#72)
+
+#### Machinery members stay off the page
+
+`private-members` is on by default, so the private attributes Python's
+own machinery writes into a class — an abstract base's registry cache, a
+named tuple's field list — reached the page as names no docstring could
+describe. They are filtered out. A project wanting one back answers from
+its own `autodoc-skip-member` handler, which is asked first. (#72)
+
+### Fixes
+
+#### A described member keeps its description
+
+An `Attributes` entry naming a class variable, an init-only field, a
+property, a method, or a nested class lost its description once autodoc
+rendered that member, leaving the entry empty. Each now carries the
+prose its author wrote. (#72)
+
+#### A described member keeps its signature
+
+Describing a member cost the reader the annotation and value autodoc
+computes from the live class — an enum member rendered without its
+value, a constant without any. Both are restored. (#72)
+
+#### Documenting a typed dictionary keeps its subclasses' keys
+
+Documenting a typed dictionary alongside its subclasses made every key
+the subclasses inherit disappear from their own pages. (#72)
+
+### Documentation
+
+#### Class-level names have a how-to
+
+The rules every class-level name follows — the three places a
+description can live, what each shape renders, and which names are
+withheld — are written down. See {ref}`class-level-names`. (#72)
+
+#### More fields describe themselves in the API reference
+
+The layout, badges, and Vite-builder packages now say what each field
+holds rather than rendering a bare name and its type. (#72)
+
 ### Development
 
 #### Lint toolchain: ruff 0.16
