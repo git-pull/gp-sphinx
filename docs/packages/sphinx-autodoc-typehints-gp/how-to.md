@@ -32,8 +32,81 @@ and skips its own plain-text duplicates — cooperation, not conflict.
 - No text-level race conditions with Napoleon.
 - Hides incidental doctest setup marked `# doctest: +HIDE` from rendered
   docstrings, so plumbing can execute without cluttering the example.
+- Gives every class-level name — fields, keys, enum members, class
+  variables — exactly one description, wherever you wrote it. See
+  {ref}`class-level-names`.
 - Exposes reusable helpers for annotation display classification and rendered
   type paragraphs used by the other autodoc packages.
+
+(class-level-names)=
+
+## Describing class-level names
+
+A class declares more than methods. `NamedTuple` fields, dataclass fields
+including {py:class}`~dataclasses.InitVar`, {py:class}`~typing.TypedDict`
+keys, {py:class}`~enum.Enum` members, {py:data}`~typing.ClassVar`
+declarations, and plain constants all reach your reference page. Each one
+gets its description exactly once, from whichever of three places you
+wrote it in.
+
+A NumPy `Attributes` entry in the class docstring is the usual choice,
+because it keeps every field's prose together where a reader meets the
+class:
+
+```python
+class Retry(t.NamedTuple):
+    """How often to retry, and how long to wait.
+
+    Attributes
+    ----------
+    attempts : int
+        Total tries, including the first.
+    backoff : float
+        Seconds multiplied by the attempt number between tries.
+    """
+
+    attempts: int
+    backoff: float
+```
+
+A docstring directly under the assignment, or a `#:` comment above it,
+counts equally. Reach for those when a field's explanation is long enough
+to crowd the class docstring:
+
+```python
+class Limits:
+    #: Requests allowed per minute before throttling starts.
+    rate: t.ClassVar[int] = 60
+
+    timeout: t.ClassVar[float] = 5.0
+    """Seconds to wait for a response before giving up."""
+```
+
+Describing a name costs you nothing in the rendered signature. The entry
+keeps whatever autodoc computed for it — an enum member still shows its
+value, a dataclass field its annotation and its default.
+
+Write the description on the class that *declares* the name. A subclass
+that inherits the field inherits the description with it, so a base class
+documenting forty fields does not oblige each subclass to repeat them.
+
+### What happens to a name you describe nowhere
+
+A field nobody describes reaches the page as a bare name with a type and
+no prose. That is the honest result: the reader can see the field exists
+and that nothing was said about it.
+
+A `ClassVar` nobody describes is withheld from the page instead. Class
+variables are frequently internal — a registry, a cached sentinel, a
+counter — and a reference page listing them bare says less than one that
+omits them. The trade-off is that an undescribed class variable goes
+missing rather than looking empty, so a name you *meant* to publish
+disappears until you describe it. If your project would rather see them
+all, turn them back on:
+
+```python
+gp_typehints_show_undocumented_class_vars = True
+```
 
 ## Hiding incidental doctest setup
 

@@ -27,8 +27,12 @@ from __future__ import annotations
 
 import typing as t
 
-from sphinx.ext.autodoc import AttributeDocumenter, DataDocumenter
+from sphinx.ext.autodoc import AttributeDocumenter, DataDocumenter, ModuleDocumenter
 
+from sphinx_autodoc_typehints_gp._documented_fields import (
+    FieldDocFallbackMixin,
+    active_module_field,
+)
 from sphinx_autodoc_typehints_gp._resolvers import (
     ResolveContext,
     Resolver,
@@ -96,11 +100,53 @@ def _curate_value_line(
     return f"{_VALUE_PREFIX}{text}"
 
 
-class GpDataDocumenter(DataDocumenter):
-    """``DataDocumenter`` that curates ``:value:`` text via the resolver chain."""
+class GpDataDocumenter(FieldDocFallbackMixin, DataDocumenter):
+    """``DataDocumenter`` that curates ``:value:`` text via the resolver chain.
+
+    Also documents a module constant the module docstring described.
+    Autodoc reaches for its data documenter only for a name the source
+    annotates or comments; a name an ``Attributes`` section describes is
+    just as deliberate, and routing it here is what lets the entry keep
+    the value only the live module can supply.
+    """
 
     objtype = "data"
     priority = DataDocumenter.priority + 1
+
+    @classmethod
+    def can_document_member(
+        cls,
+        member: t.Any,
+        membername: str,
+        isattr: bool,
+        parent: t.Any,
+    ) -> bool:
+        """Return whether this documenter should render *membername*.
+
+        Parameters
+        ----------
+        member : typing.Any
+            The member object under consideration.
+        membername : str
+            Bare member name.
+        isattr : bool
+            Whether autodoc classified the member as an attribute.
+        parent : typing.Any
+            Documenter of the object the member belongs to.
+
+        Returns
+        -------
+        bool
+            Whether the member is module data this documenter renders.
+
+        Examples
+        --------
+        >>> GpDataDocumenter.can_document_member(1, "LIMIT", False, None)
+        False
+        """
+        if super().can_document_member(member, membername, isattr, parent):
+            return True
+        return isinstance(parent, ModuleDocumenter) and active_module_field(membername)
 
     def add_line(self, line: str, source: str, *lineno: int) -> None:
         """Curate ``:value:`` lines; pass everything else through unchanged."""
@@ -113,11 +159,36 @@ class GpDataDocumenter(DataDocumenter):
             super().add_line(result, source, *lineno)
 
 
-class GpAttributeDocumenter(AttributeDocumenter):
+class GpAttributeDocumenter(FieldDocFallbackMixin, AttributeDocumenter):  # type: ignore[misc]
     """``AttributeDocumenter`` that curates ``:value:`` text via the resolver chain."""
 
     objtype = "attribute"
     priority = AttributeDocumenter.priority + 1
+
+    def update_annotations(self, parent: t.Any) -> None:
+        """Merge type-comment annotations, except into a typed dictionary.
+
+        Autodoc materializes ``parent.__annotations__`` so a ``# type:``
+        comment can join it. A :class:`typing.TypedDict` computes its
+        annotations lazily and merges every base's, so materializing a
+        base's annotations severs that merge and every key the subclass
+        inherits disappears from the page. A typed dictionary declares its
+        keys by annotation alone and has no type comments to merge, so it
+        keeps its own lazy mapping.
+
+        Parameters
+        ----------
+        parent : typing.Any
+            Class the member being documented belongs to.
+
+        Examples
+        --------
+        >>> GpAttributeDocumenter.update_annotations  # doctest: +ELLIPSIS
+        <function GpAttributeDocumenter.update_annotations at 0x...>
+        """
+        if isinstance(parent, type) and t.is_typeddict(parent):
+            return
+        super().update_annotations(parent)
 
     def add_line(self, line: str, source: str, *lineno: int) -> None:
         """Curate ``:value:`` lines; pass everything else through unchanged."""

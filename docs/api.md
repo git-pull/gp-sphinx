@@ -56,3 +56,15 @@ globals().update(conf)
 ```{eval-rst}
 .. autofunction:: gp_sphinx.config.setup
 ```
+
+## skip_machinery_members
+
+Python writes a handful of private attributes into the classes it
+builds, and `private-members` is on by default, so autodoc would render
+each one as a name with nothing after it. This handler hides them.
+
+```{eval-rst}
+.. autofunction:: gp_sphinx.config.skip_machinery_members
+
+.. autodata:: gp_sphinx.config.MACHINERY_MEMBERS
+```

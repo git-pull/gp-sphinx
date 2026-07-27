@@ -13,8 +13,12 @@ from sphinx import addnodes
 
 from sphinx_autodoc_typehints_gp._documented_fields import (
     _attribute_directive_names,
+    _DirectiveEnrichment,
+    _field_doc_bodies,
+    _FieldDoc,
     _is_declared_field,
     _own_annotations,
+    _plan_enrichment,
 )
 from tests._sphinx_scenarios import (
     SCENARIO_SRCDIR_TOKEN,
@@ -90,6 +94,132 @@ def test_attribute_directive_names(
 ) -> None:
     """Only emitted attribute directives contribute documented names."""
     assert _attribute_directive_names(lines) == expected
+
+
+# ---------------------------------------------------------------------------
+# _field_doc_bodies
+# ---------------------------------------------------------------------------
+
+
+_MARKER_PREFIX = ".. gp-sphinx-documented-field: demo.Item "
+
+
+def test_field_doc_bodies_drops_the_directive_options() -> None:
+    """A directive's own options never become part of its description."""
+    lines = [
+        "   .. gp-sphinx-documented-field: demo.Item value",
+        "   .. attribute:: value",
+        "      :no-index:",
+        "",
+        "      Horizontal offset.",
+    ]
+
+    assert _field_doc_bodies(lines, _MARKER_PREFIX) == {
+        "value": _FieldDoc(prose=["Horizontal offset."], declared_type="")
+    }
+
+
+def test_field_doc_bodies_drops_the_trailing_type_field() -> None:
+    """A member's own directive supplies the type, so the body omits it."""
+    lines = [
+        "   .. gp-sphinx-documented-field: demo.Item value",
+        "   .. attribute:: value",
+        "",
+        "      Horizontal offset.",
+        "",
+        "      :type: int",
+    ]
+
+    assert _field_doc_bodies(lines, _MARKER_PREFIX) == {
+        "value": _FieldDoc(prose=["Horizontal offset."], declared_type="int")
+    }
+
+
+# ---------------------------------------------------------------------------
+# _plan_enrichment
+# ---------------------------------------------------------------------------
+
+
+class _PlanEnrichmentFixture(t.NamedTuple):
+    """Test case for _plan_enrichment().
+
+    Attributes
+    ----------
+    test_id : str
+        Short identifier used as the pytest parameter id.
+    block : list[str]
+        Directive line first, followed by its options and content.
+    options : list[str]
+        Stripped header option lines autodoc emitted for the member.
+    expected : _DirectiveEnrichment
+        Placement the planner is expected to choose.
+    """
+
+    test_id: str
+    block: list[str]
+    options: list[str]
+    expected: _DirectiveEnrichment
+
+
+_PLAN_ENRICHMENT_FIXTURES: list[_PlanEnrichmentFixture] = [
+    _PlanEnrichmentFixture(
+        test_id="type-replaces-body-field",
+        block=[".. attribute:: x", "", "   Offset.", "", "   :type: int"],
+        options=[":type: int", ":value: 3"],
+        expected=_DirectiveEnrichment(
+            insert_at=1,
+            option_lines=["   :type: int", "   :value: 3"],
+            drop=(4, 5),
+        ),
+    ),
+    _PlanEnrichmentFixture(
+        test_id="value-alone-keeps-body-field",
+        block=[".. attribute:: x", "", "   Offset.", "", "   :type: Safety"],
+        options=[":value: 'readonly'"],
+        expected=_DirectiveEnrichment(
+            insert_at=1,
+            option_lines=["   :value: 'readonly'"],
+            drop=(1, 1),
+        ),
+    ),
+    _PlanEnrichmentFixture(
+        test_id="joins-existing-option-block",
+        block=[".. attribute:: x", "    :no-index:", "", "   Offset."],
+        options=[":type: int"],
+        expected=_DirectiveEnrichment(
+            insert_at=2,
+            option_lines=["    :type: int"],
+            drop=(2, 2),
+        ),
+    ),
+    _PlanEnrichmentFixture(
+        test_id="indented-block",
+        block=[
+            "   .. attribute:: x",
+            "",
+            "      Offset.",
+            "",
+            "      :type: int",
+            "         wrapped",
+        ],
+        options=[":type: int"],
+        expected=_DirectiveEnrichment(
+            insert_at=1,
+            option_lines=["      :type: int"],
+            drop=(4, 6),
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "case",
+    _PLAN_ENRICHMENT_FIXTURES,
+    ids=lambda case: case.test_id,
+)
+def test_plan_enrichment(case: _PlanEnrichmentFixture) -> None:
+    """Header options join the option block and replace an authored type."""
+    assert _plan_enrichment(case.block, case.options) == case.expected
 
 
 # ---------------------------------------------------------------------------
@@ -464,6 +594,15 @@ def _attribute_names(result: SharedSphinxResult) -> list[str]:
         for member in _described_members(get_doctree(result, "index"))
         if member.objtype == "attribute"
     ]
+
+
+def _attribute_signatures(result: SharedSphinxResult) -> dict[str, str]:
+    """Return the rendered signature of every attribute description."""
+    return {
+        member.fullname: member.signature
+        for member in _described_members(get_doctree(result, "index"))
+        if member.objtype == "attribute"
+    }
 
 
 _CONF_PY = textwrap.dedent(
@@ -895,6 +1034,21 @@ def test_documented_typeddict_keys_keep_their_descriptions(
 
 
 @pytest.mark.integration
+def test_documented_fields_keep_their_annotation_and_value(
+    documented_fields_html_result: SharedSphinxResult,
+) -> None:
+    """Describing a field costs it none of what autodoc renders."""
+    signatures = _attribute_signatures(documented_fields_html_result)
+
+    assert signatures["Point.x"] == "x: int"
+    assert signatures["Rule.label"] == "label: str"
+    assert signatures["Rule.weight"] == "weight: int = 0"
+    assert signatures["Gauge.reading"] == "reading: int"
+    assert signatures["Gauge.scale"] == "scale: int"
+    assert signatures["Options.retries"] == "retries: int"
+
+
+@pytest.mark.integration
 def test_undocumented_field_still_renders(
     documented_fields_html_result: SharedSphinxResult,
 ) -> None:
@@ -1048,6 +1202,124 @@ _NON_FIELD_MODULE_SOURCE = textwrap.dedent(
             return self.label
 
         registry: t.ClassVar[dict[str, str]] = {"kind": "namedtuple"}
+
+
+    @dataclasses.dataclass
+    class Ingest:
+        """A dataclass taking an init-only value.
+
+        Attributes
+        ----------
+        raw : str
+            Payload handed to the initializer only.
+        parsed : str
+            Payload after parsing.
+        """
+
+        raw: dataclasses.InitVar[str]
+        parsed: str = ""
+
+        def __post_init__(self, raw: str) -> None:
+            self.parsed = raw.strip()
+
+
+    class Aliases:
+        """A class whose Attributes name type aliases.
+
+        Attributes
+        ----------
+        Token : TypeVar
+            Token alias documentation.
+        UserId : NewType
+            User id alias documentation.
+        """
+
+        Token = t.TypeVar("Token")
+        UserId = t.NewType("UserId", int)
+
+
+    class Callables:
+        """A class whose Attributes name callables and a nested class.
+
+        Attributes
+        ----------
+        Handler : type
+            Nested handler documentation.
+        dispatch : Callable
+            Dispatch documentation.
+        build : Callable
+            Build documentation.
+        """
+
+        class Handler:
+            pass
+
+        def dispatch(self, key: str) -> None:
+            pass
+
+        @staticmethod
+        def build() -> None:
+            pass
+
+
+    @dataclasses.dataclass
+    class BaseLabel:
+        label: str = ""
+
+
+    class DerivedLabel(BaseLabel):
+        """A rule overriding a field with an undocumented property.
+
+        Attributes
+        ----------
+        label : str
+            Derived label documentation.
+        """
+
+        @property
+        def label(self) -> str:
+            return "derived"
+
+
+    class Meter:
+        """A meter whose reading property carries no docstring.
+
+        Attributes
+        ----------
+        reading : int
+            Most recent meter reading.
+        """
+
+        @property
+        def reading(self) -> int:
+            return 1
+
+
+    class Curated:
+        """Plain fields whose values autodoc curates or withholds.
+
+        Attributes
+        ----------
+        HUGE : list[str]
+            Constant too long to print in a signature.
+        SECRET : str
+            Value the entry withholds.
+
+            :meta hide-value:
+        """
+
+        HUGE = ["x" * 60] * 20
+        SECRET = "s3cret"
+
+
+    class Absent:
+        """A class describing a member it never declares.
+
+        Attributes
+        ----------
+        ghost : int
+            Description of a member nothing exposes.
+        """
     '''
 )
 
@@ -1067,6 +1339,20 @@ _NON_FIELD_INDEX_RST = textwrap.dedent(
     .. autoclass:: non_field_members_demo.DataRecord
 
     .. autoclass:: non_field_members_demo.TupleRecord
+
+    .. autoclass:: non_field_members_demo.Ingest
+
+    .. autoclass:: non_field_members_demo.Meter
+
+    .. autoclass:: non_field_members_demo.DerivedLabel
+
+    .. autoclass:: non_field_members_demo.Callables
+
+    .. autoclass:: non_field_members_demo.Aliases
+
+    .. autoclass:: non_field_members_demo.Curated
+
+    .. autoclass:: non_field_members_demo.Absent
     """
 )
 
@@ -1538,6 +1824,10 @@ def test_documented_runtime_data_attribute_is_described_once(
 
     assert attributes.count("RuntimeDefaults.timeout") == 1
     assert "Maximum wait in seconds." in html
+    assert (
+        _attribute_signatures(non_field_members_html_result)["RuntimeDefaults.timeout"]
+        == "timeout = 30"
+    )
     assert "duplicate object description" not in (
         non_field_members_html_result.warnings
     )
@@ -1616,6 +1906,101 @@ def test_classvar_named_in_attributes_still_renders(
 
 
 @pytest.mark.integration
+def test_classvar_named_in_attributes_keeps_its_description(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """A documented ClassVar carries the description its entry wrote."""
+    html = read_output(non_field_members_html_result, "index.html")
+
+    assert "Backends registered so far." in html
+
+
+@pytest.mark.integration
+def test_init_var_named_in_attributes_keeps_its_description(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """An init-only dataclass field carries its Attributes description."""
+    html = read_output(non_field_members_html_result, "index.html")
+
+    assert _attribute_names(non_field_members_html_result).count("Ingest.raw") == 1
+    assert "Payload handed to the initializer only." in html
+
+
+@pytest.mark.integration
+def test_described_type_alias_gains_no_value(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """A type alias renders no value, as autodoc renders none for one."""
+    signatures = _attribute_signatures(non_field_members_html_result)
+
+    assert signatures["Aliases.Token"] == "Token"
+    assert signatures["Aliases.UserId"] == "UserId"
+
+
+@pytest.mark.integration
+def test_described_callables_and_nested_classes_keep_their_prose(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """An Attributes entry survives whatever kind of member it names."""
+    html = read_output(non_field_members_html_result, "index.html")
+
+    assert "Nested handler documentation." in html
+    assert "Dispatch documentation." in html
+    assert "Build documentation." in html
+    assert "duplicate object description" not in (
+        non_field_members_html_result.warnings
+    )
+
+
+@pytest.mark.integration
+def test_documented_field_values_stay_curated_and_hidden(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """An enriched value passes through the gating autodoc applies to its own."""
+    signatures = _attribute_signatures(non_field_members_html_result)
+
+    assert signatures["Curated.HUGE"] == "HUGE = <...truncated, 1280 chars>"
+    assert signatures["Curated.SECRET"] == "SECRET"
+
+
+@pytest.mark.integration
+def test_field_describing_an_absent_member_renders_quietly(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """A described name the class never exposes gains no header and no warning."""
+    signatures = _attribute_signatures(non_field_members_html_result)
+
+    assert signatures["Absent.ghost"] == "ghost"
+    assert "Description of a member nothing exposes." in read_output(
+        non_field_members_html_result, "index.html"
+    )
+    assert "non_field_members_demo.Absent.ghost" not in (
+        non_field_members_html_result.warnings
+    )
+
+
+@pytest.mark.integration
+def test_inherited_docstring_does_not_replace_the_description(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """A docstring inherited from a base value describes that value, not this."""
+    html = read_output(non_field_members_html_result, "index.html")
+
+    assert "Derived label documentation." in html
+    assert "str(object=" not in html
+
+
+@pytest.mark.integration
+def test_undocumented_property_keeps_its_description(
+    non_field_members_html_result: SharedSphinxResult,
+) -> None:
+    """A property without a docstring falls back to its Attributes entry."""
+    html = read_output(non_field_members_html_result, "index.html")
+
+    assert "Most recent meter reading." in html
+
+
+@pytest.mark.integration
 def test_quoted_classvar_named_in_attributes_still_renders(
     non_field_members_html_result: SharedSphinxResult,
 ) -> None:
@@ -1677,6 +2062,710 @@ def test_inherited_field_metadata_does_not_hide_overriding_members(
     assert f"'kind': '{kind}'" in registry_signatures[0]
     assert f"Return the {kind} override label." in html
     assert f"Render the {kind} override." in html
+
+
+# ---------------------------------------------------------------------------
+# visibility of class variables nothing describes
+# ---------------------------------------------------------------------------
+
+_CLASS_VAR_VISIBILITY_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+    import typing as t
+
+
+    class Registry:
+        """A registry carrying class variables of every description state.
+
+        Attributes
+        ----------
+        described : str
+            Described by the Attributes section.
+        """
+
+        described: t.ClassVar[str] = "described-value"
+
+        #: Described by a source comment.
+        commented: t.ClassVar[str] = "commented-value"
+
+        undescribed: t.ClassVar[str] = "undescribed-value"
+
+        plain_constant = "plain-value"
+    '''
+)
+
+_CLASS_VAR_VISIBILITY_INDEX_RST = textwrap.dedent(
+    """\
+    Demo
+    ====
+
+    .. autoclass:: class_var_visibility_demo.Registry
+    """
+)
+
+
+def _class_var_visibility_scenario(*, show_undocumented: bool) -> SphinxScenario:
+    """Return a scenario pinning the undocumented class-variable policy."""
+    conf = _CONF_PY.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN)
+    if show_undocumented:
+        conf += "gp_typehints_show_undocumented_class_vars = True\n"
+    return SphinxScenario(
+        files=(
+            ScenarioFile("class_var_visibility_demo.py", _CLASS_VAR_VISIBILITY_SOURCE),
+            ScenarioFile("conf.py", conf, substitute_srcdir=True),
+            ScenarioFile("index.rst", _CLASS_VAR_VISIBILITY_INDEX_RST),
+        ),
+    )
+
+
+@pytest.fixture(scope="module")
+def class_var_visibility_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build with the shipped undocumented class-variable policy."""
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("class-var-visibility"),
+        _class_var_visibility_scenario(show_undocumented=False),
+        purge_modules=("class_var_visibility_demo",),
+    )
+
+
+@pytest.fixture(scope="module")
+def shown_class_var_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build with undocumented class variables restored."""
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("class-var-shown"),
+        _class_var_visibility_scenario(show_undocumented=True),
+        purge_modules=("class_var_visibility_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_undescribed_class_var_is_not_rendered(
+    class_var_visibility_html_result: SharedSphinxResult,
+) -> None:
+    """A class variable nothing describes stays out of the reference."""
+    assert (
+        _attribute_names(class_var_visibility_html_result).count("Registry.undescribed")
+        == 0
+    )
+
+
+@pytest.mark.integration
+def test_described_class_vars_survive_the_visibility_default(
+    class_var_visibility_html_result: SharedSphinxResult,
+) -> None:
+    """Only a class variable without any description is withheld."""
+    attributes = _attribute_names(class_var_visibility_html_result)
+    html = read_output(class_var_visibility_html_result, "index.html")
+
+    assert attributes.count("Registry.described") == 1
+    assert attributes.count("Registry.commented") == 1
+    assert attributes.count("Registry.plain_constant") == 1
+    assert "Described by the Attributes section." in html
+    assert "Described by a source comment." in html
+
+
+@pytest.mark.integration
+def test_showing_undocumented_class_vars_restores_them(
+    shown_class_var_html_result: SharedSphinxResult,
+) -> None:
+    """The opt-in brings a class variable nothing describes back."""
+    assert (
+        _attribute_names(shown_class_var_html_result).count("Registry.undescribed") == 1
+    )
+
+
+# ---------------------------------------------------------------------------
+# a field a base class describes
+# ---------------------------------------------------------------------------
+
+_INHERITED_DESC_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+    import dataclasses
+    import typing as t
+
+
+    @dataclasses.dataclass
+    class ServerBase:
+        """Server-scoped options.
+
+        Attributes
+        ----------
+        activity_action : str | None
+            Which windows raise an alert on activity.
+        """
+
+        activity_action: str | None = None
+
+
+    @dataclasses.dataclass
+    class Options(ServerBase):
+        """Container for every option."""
+
+
+    class KeyBase(t.TypedDict):
+        """Keys a subclass builds on."""
+
+        directory: str
+        """Path for the worktree."""
+
+
+    class Config(KeyBase):
+        """Config declaring one key and inheriting another."""
+
+        label: str
+    '''
+)
+
+
+@pytest.fixture(scope="module")
+def inherited_description_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a class and a typed dictionary that inherit descriptions."""
+    index = textwrap.dedent(
+        """\
+        Demo
+        ====
+
+        .. autoclass:: inherited_desc_demo.Options
+           :inherited-members:
+
+        .. autoclass:: inherited_desc_demo.Config
+        """
+    )
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("inherited_desc_demo.py", _INHERITED_DESC_SOURCE),
+            _conf_file(),
+            ScenarioFile("index.rst", index),
+        ),
+    )
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("inherited-desc"),
+        scenario,
+        purge_modules=("inherited_desc_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_a_field_described_by_a_base_class_carries_that_description(
+    inherited_description_html_result: SharedSphinxResult,
+) -> None:
+    """An inherited dataclass field keeps the base's Attributes entry."""
+    html = read_output(inherited_description_html_result, "index.html")
+
+    assert "Which windows raise an alert on activity." in html
+
+
+@pytest.mark.integration
+def test_a_key_described_by_a_base_typed_dict_carries_that_description(
+    inherited_description_html_result: SharedSphinxResult,
+) -> None:
+    """A TypedDict base is reachable only through ``__orig_bases__``."""
+    html = read_output(inherited_description_html_result, "index.html")
+
+    assert "Path for the worktree." in html
+
+
+# ---------------------------------------------------------------------------
+# a module constant the module docstring describes
+# ---------------------------------------------------------------------------
+
+_MODULE_FIELD_SOURCE = '''\
+"""Module describing the constant it declares.
+
+Attributes
+----------
+LIMIT : int
+    Maximum retries before giving up.
+"""
+
+from __future__ import annotations
+
+LIMIT = 99
+'''
+
+
+@pytest.fixture(scope="module")
+def module_field_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a module whose docstring describes its own constant."""
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("module_field_demo.py", _MODULE_FIELD_SOURCE),
+            _conf_file(),
+            ScenarioFile(
+                "index.rst",
+                "Demo\n====\n\n.. automodule:: module_field_demo\n   :members:\n",
+            ),
+        ),
+    )
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("module-field"),
+        scenario,
+        purge_modules=("module_field_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_a_described_module_constant_keeps_its_value(
+    module_field_html_result: SharedSphinxResult,
+) -> None:
+    """A module constant keeps the value only the live module supplies."""
+    members = _described_members(get_doctree(module_field_html_result, "index"))
+    signatures = {member.fullname: member.signature for member in members}
+
+    assert signatures["LIMIT"] == "module_field_demo.LIMIT = 99"
+
+
+@pytest.mark.integration
+def test_a_described_module_constant_is_data_not_an_attribute(
+    module_field_html_result: SharedSphinxResult,
+) -> None:
+    """A module constant is data; only a class member is an attribute."""
+    members = _described_members(get_doctree(module_field_html_result, "index"))
+    objtypes = {
+        member.fullname: member.objtype
+        for member in members
+        if member.fullname.endswith("LIMIT")
+    }
+
+    assert objtypes == {"LIMIT": "data"}
+
+
+@pytest.mark.integration
+def test_a_described_module_constant_keeps_its_declared_type(
+    module_field_html_result: SharedSphinxResult,
+) -> None:
+    """An unannotated constant keeps the type only its entry declares.
+
+    The source writes ``LIMIT = 99``, so autodoc has no annotation to
+    render. The ``Attributes`` entry declaring ``LIMIT : int`` is then the
+    only statement of the type anywhere, and dropping it costs the reader
+    the one thing the author wrote it for.
+    """
+    doctree = get_doctree(module_field_html_result, "index")
+    stated = [
+        signature.parent.astext()
+        for signature in doctree.findall(addnodes.desc_signature)
+        if signature.get("fullname") == "LIMIT"
+    ]
+
+    assert stated, "the module constant did not render at all"
+    assert "int" in stated[0]
+
+
+@pytest.mark.integration
+def test_a_described_module_constant_carries_its_description(
+    module_field_html_result: SharedSphinxResult,
+) -> None:
+    """The description the module docstring wrote reaches the entry."""
+    html = read_output(module_field_html_result, "index.html")
+
+    assert "Maximum retries before giving up." in html
+    assert "duplicate object description" not in module_field_html_result.warnings
+
+
+# ---------------------------------------------------------------------------
+# a typed-dictionary key declared by a separate base
+# ---------------------------------------------------------------------------
+
+_INHERITED_KEY_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+    import typing as t
+
+
+    class BaseOptions(t.TypedDict):
+        """Options a subclass builds on."""
+
+        inherited: str
+
+
+    class Options(BaseOptions):
+        """Options declaring one key and inheriting another.
+
+        Attributes
+        ----------
+        inherited : str
+            Key the base declares.
+        own : int
+            Key this class declares.
+        """
+
+        own: int
+    '''
+)
+
+
+@pytest.fixture(scope="module")
+def inherited_key_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a typed dictionary whose base is documented first."""
+    index = textwrap.dedent(
+        """\
+        Demo
+        ====
+
+        .. autoclass:: inherited_key_demo.BaseOptions
+
+        .. autoclass:: inherited_key_demo.Options
+        """
+    )
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("inherited_key_demo.py", _INHERITED_KEY_SOURCE),
+            _conf_file(),
+            ScenarioFile("index.rst", index),
+        ),
+    )
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("inherited-key"),
+        scenario,
+        purge_modules=("inherited_key_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_a_key_declared_by_a_base_keeps_its_annotation(
+    inherited_key_html_result: SharedSphinxResult,
+) -> None:
+    """Documenting the base does not strip the subclass's inherited key."""
+    signatures = _attribute_signatures(inherited_key_html_result)
+
+    assert signatures["Options.inherited"] == "inherited: str"
+    assert signatures["Options.own"] == "own: int"
+
+
+# ---------------------------------------------------------------------------
+# a consumer's explicit skip decision
+# ---------------------------------------------------------------------------
+
+_CONSUMER_SKIP_SOURCE = textwrap.dedent(
+    '''\
+    from __future__ import annotations
+
+    import typing as t
+
+
+    class Registry:
+        """A registry carrying a class variable nothing describes.
+
+        Attributes
+        ----------
+        described : str
+            Described class variable.
+        """
+
+        described: t.ClassVar[str] = "described-value"
+
+        undescribed: t.ClassVar[str] = "undescribed-value"
+    '''
+)
+
+_CONSUMER_SKIP_CONF_EXTRA = textwrap.dedent(
+    '''\
+
+    def _keep_undescribed(app, what, name, obj, skip, options):
+        """Refuse to withhold one member the extension would drop."""
+        if name == "undescribed":
+            return False
+        return None
+
+
+    def setup(app):
+        app.connect("autodoc-skip-member", _keep_undescribed)
+    '''
+)
+
+
+@pytest.fixture(scope="module")
+def consumer_skip_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a project whose own handler refuses one skip."""
+    conf = _CONF_PY.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN)
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("consumer_skip_demo.py", _CONSUMER_SKIP_SOURCE),
+            ScenarioFile(
+                "conf.py", conf + _CONSUMER_SKIP_CONF_EXTRA, substitute_srcdir=True
+            ),
+            ScenarioFile(
+                "index.rst",
+                "Demo\n====\n\n.. autoclass:: consumer_skip_demo.Registry\n",
+            ),
+        ),
+    )
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("consumer-skip"),
+        scenario,
+        purge_modules=("consumer_skip_demo",),
+    )
+
+
+@pytest.mark.integration
+def test_a_consumer_refusing_to_skip_a_member_is_obeyed(
+    consumer_skip_html_result: SharedSphinxResult,
+) -> None:
+    """Returning ``False`` outranks the extension's own withholding."""
+    attributes = _attribute_names(consumer_skip_html_result)
+
+    assert attributes.count("Registry.undescribed") == 1
+    assert attributes.count("Registry.described") == 1
+
+
+# ---------------------------------------------------------------------------
+# a described member renders the signature autodoc would have rendered
+# ---------------------------------------------------------------------------
+
+_PARITY_BODIES = """\
+class Safety(enum.Enum):
+    \"\"\"A shape under test.{safety}
+    \"\"\"
+
+    READONLY = "readonly"
+
+
+class Tier(enum.StrEnum):
+    \"\"\"A shape under test.{tier}
+    \"\"\"
+
+    BASIC = "basic"
+
+
+class Constants:
+    \"\"\"A shape under test.{constants}
+    \"\"\"
+
+    bare = 30
+    annotated: int = 3
+    alias = dict[str, int]
+
+
+@dataclasses.dataclass
+class Rule:
+    \"\"\"A shape under test.{rule}
+    \"\"\"
+
+    required: str
+    defaulted: int = 0
+
+
+@dataclasses.dataclass(slots=True)
+class Gauge:
+    \"\"\"A shape under test.{gauge}
+    \"\"\"
+
+    reading: int = 1
+
+
+class Span(t.NamedTuple):
+    \"\"\"A shape under test.{span}
+    \"\"\"
+
+    start: int
+    stop: int = 10
+
+
+class Payload(t.TypedDict):
+    \"\"\"A shape under test.{payload}
+    \"\"\"
+
+    label: str
+    nickname: t.NotRequired[str]
+
+
+class Registry:
+    \"\"\"A shape under test.{registry}
+    \"\"\"
+
+    lookup: t.ClassVar[dict[str, str]] = {{}}
+
+
+class Level(enum.IntEnum):
+    \"\"\"A shape under test.{level}
+    \"\"\"
+
+    LOW = 1
+    HIGH = 2
+
+
+class Perm(enum.Flag):
+    \"\"\"A shape under test.{perm}
+    \"\"\"
+
+    READ = enum.auto()
+    WRITE = enum.auto()
+
+
+class Commented:
+    \"\"\"A shape under test.{commented}
+    \"\"\"
+
+    legacy = 0  # type: int
+"""
+
+
+def _parity_section(entries: tuple[tuple[str, str, str], ...]) -> str:
+    """Return a NumPy ``Attributes`` section describing *entries*."""
+    lines = ["", "", "    Attributes", "    ----------"]
+    for name, type_, description in entries:
+        lines.append(f"    {name} : {type_}")
+        lines.append(f"        {description}")
+    return "\n".join(lines)
+
+
+_PARITY_ENTRIES: dict[str, tuple[tuple[str, str, str], ...]] = {
+    "safety": (("READONLY", "Safety", "Read-only tier."),),
+    "tier": (("BASIC", "Tier", "Basic tier."),),
+    "constants": (
+        ("bare", "int", "Unannotated constant."),
+        ("annotated", "int", "Annotated constant."),
+        ("alias", "type", "Generic alias."),
+    ),
+    "rule": (
+        ("required", "str", "Field with no default."),
+        ("defaulted", "int", "Field with a default."),
+    ),
+    "gauge": (("reading", "int", "Slot-held field."),),
+    "span": (
+        ("start", "int", "Tuple field."),
+        ("stop", "int", "Tuple field with a default."),
+    ),
+    "payload": (
+        ("label", "str", "Required key."),
+        ("nickname", "str", "Not-required key."),
+    ),
+    "registry": (("lookup", "dict[str, str]", "Class variable."),),
+    "level": (
+        ("LOW", "Level", "Lowest level."),
+        ("HIGH", "Level", "Highest level."),
+    ),
+    "perm": (
+        ("READ", "Perm", "Read permission."),
+        ("WRITE", "Perm", "Write permission."),
+    ),
+    "commented": (("legacy", "int", "Annotated by a type comment."),),
+}
+
+_PARITY_PREAMBLE = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    import dataclasses
+    import enum
+    import typing as t
+
+
+    """
+)
+
+
+def _parity_source(*, described: bool) -> str:
+    """Return one parity module, with or without its Attributes sections."""
+    sections = {
+        key: (_parity_section(entries) if described else "")
+        for key, entries in _PARITY_ENTRIES.items()
+    }
+    return _PARITY_PREAMBLE + _PARITY_BODIES.format(**sections)
+
+
+_PARITY_CLASSES = (
+    "Level",
+    "Perm",
+    "Commented",
+    "Safety",
+    "Tier",
+    "Constants",
+    "Rule",
+    "Gauge",
+    "Span",
+    "Payload",
+    "Registry",
+)
+
+
+@pytest.fixture(scope="module")
+def signature_parity_html_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build described and undescribed copies of one set of class bodies."""
+    index = "Demo\n====\n\n" + "\n".join(
+        f".. autoclass:: parity_{flavor}_demo.{name}\n"
+        for flavor in ("described", "plain")
+        for name in _PARITY_CLASSES
+    )
+    conf = _CONF_PY.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN)
+    conf += "gp_typehints_show_undocumented_class_vars = True\n"
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("parity_described_demo.py", _parity_source(described=True)),
+            ScenarioFile("parity_plain_demo.py", _parity_source(described=False)),
+            ScenarioFile("conf.py", conf, substitute_srcdir=True),
+            ScenarioFile("index.rst", index),
+        ),
+    )
+    return build_shared_sphinx_result(
+        tmp_path_factory.mktemp("signature-parity"),
+        scenario,
+        purge_modules=("parity_described_demo", "parity_plain_demo"),
+    )
+
+
+@pytest.mark.integration
+def test_describing_a_member_keeps_the_signature_autodoc_renders(
+    signature_parity_html_result: SharedSphinxResult,
+) -> None:
+    """Describing a member costs the reader nothing autodoc would show."""
+    doctree = get_doctree(signature_parity_html_result, "index")
+    rendered: dict[str, dict[str, str]] = {"described": {}, "plain": {}}
+    for signature in doctree.findall(addnodes.desc_signature):
+        if signature.parent.get("objtype") != "attribute":
+            continue
+        module = signature.get("module") or ""
+        flavor = module.removeprefix("parity_").removesuffix("_demo")
+        if flavor in rendered:
+            rendered[flavor][signature.get("fullname", "")] = signature.astext()
+
+    assert rendered["plain"], "the undescribed copy rendered nothing to compare"
+    assert rendered["described"] == rendered["plain"]
+
+
+@pytest.mark.integration
+def test_parity_covers_every_shape_it_names(
+    signature_parity_html_result: SharedSphinxResult,
+) -> None:
+    """A shape missing from the twin cannot let the comparison pass empty.
+
+    The parity assertion compares two dictionaries. A shape that stopped
+    rendering on both sides would drop out of both and still compare
+    equal, so the table's coverage is pinned separately from its content.
+    """
+    doctree = get_doctree(signature_parity_html_result, "index")
+    plain = {
+        signature.get("fullname", "")
+        for signature in doctree.findall(addnodes.desc_signature)
+        if signature.parent.get("objtype") == "attribute"
+        and (signature.get("module") or "") == "parity_plain_demo"
+    }
+    named = {
+        f"{section.capitalize()}.{name}"
+        for section, fields in _PARITY_ENTRIES.items()
+        for name, _type, _description in fields
+    }
+
+    assert named - plain == set()
 
 
 _CUSTOM_DOCUMENTERS_SOURCE = textwrap.dedent(
@@ -2257,10 +3346,14 @@ def test_no_index_applies_to_module_attribute(
     no_index_html_result: SharedSphinxResult,
 ) -> None:
     """A no-index module keeps emitted fields out of the inventory."""
-    attributes = _attribute_names(no_index_html_result)
+    described = [
+        member.fullname
+        for member in _described_members(get_doctree(no_index_html_result, "index"))
+        if member.objtype in {"attribute", "data"}
+    ]
     objects = no_index_html_result.app.env.domains.python_domain.objects
 
-    assert sum(name.endswith("MODULE_VALUE") for name in attributes) == 1
+    assert sum(name.endswith("MODULE_VALUE") for name in described) == 1
     assert "Visible but unregistered module field." in read_output(
         no_index_html_result, "index.html"
     )

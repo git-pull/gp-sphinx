@@ -29,7 +29,7 @@ from sphinx_ux_badges._nodes import BadgeNode
 class BadgeSpec:
     """Typed badge descriptor used by producer extensions.
 
-    Parameters
+    Attributes
     ----------
     text : str
         Visible badge label.

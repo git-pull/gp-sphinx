@@ -35,13 +35,8 @@ registrations in
 
 .. autofunction:: sphinx_autodoc_typehints_gp.classify_annotation_display
 
-.. Each field is already described by the class docstring's ``Attributes``
-   section, which renders its own ``.. attribute::``. Excluding the fields
-   here leaves one description per object for the Python domain.
-
 .. autoclass:: sphinx_autodoc_typehints_gp.AnnotationDisplay
    :members:
-   :exclude-members: text, is_literal_enum, literal_members
 ```
 
 ## Extension entry point

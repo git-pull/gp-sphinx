@@ -23,6 +23,13 @@ class Mode(str, enum.Enum):
 
     `str` mixin so the value compares equal to the literal string the
     user wrote in ``conf.py``.
+
+    Attributes
+    ----------
+    DEV : Mode
+        Vite serves assets and rebuilds them as sources change.
+    PROD : Mode
+        Assets are built once and read from the manifest.
     """
 
     DEV = "dev"
