@@ -1,39 +1,49 @@
 # AGENTS.md — `sphinx-vite-builder`
 
-Guidance for AI agents (Claude Code, Cursor, Copilot, Codex, …) and
-human contributors working on this package. Mirrors the higher-level
-guidance at `gp-sphinx/CLAUDE.md`; `packages/sphinx-vite-builder/CLAUDE.md`
-points here so Claude Code reads the same content as other agent runners.
+Package-specific rules only. The workspace project map, prose policy,
+and workflow are at the repository root — see
+[../../AGENTS.md](../../AGENTS.md),
+[../../.github/WRITING.md](../../.github/WRITING.md), and
+[../../.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md). Those
+govern docstrings, doctests, typing, and commits here too; nothing
+below repeats them.
 
 ## What this package is
 
 Two orthogonal entry points sharing one subprocess core:
 
-1. **PEP 517 build backend** at `sphinx_vite_builder.build`. Runs
-   `pnpm exec vite build` before delegating wheel/sdist construction
-   to `hatchling.build`. Consumer packages declare it via
-   `[build-system].build-backend = "sphinx_vite_builder.build"`.
+1. **PEP 517 build backend** at `sphinx_vite_builder.build` (and a
+   hatchling-build-hook variant at `hatch_plugin.py` for consumers who
+   keep `build-backend = "hatchling.build"`). Runs `pnpm exec vite
+   build` before delegating wheel/sdist construction to
+   `hatchling.build`. Consumer packages declare it via
+   `[build-system].build-backend = "sphinx_vite_builder.build"`, or via
+   `[tool.hatch.build.hooks.vite]` for the hook variant.
 2. **Sphinx extension** at `sphinx_vite_builder:setup`. Hooks
-   `builder-inited` and `build-finished` so `sphinx-build` /
-   `sphinx-autobuild` automatically run vite — one-shot for prod, a
-   long-lived `vite build --watch` child process for autobuild — with
-   graceful teardown on signal / `atexit`.
+   `builder-inited` to run `pnpm exec vite build` synchronously,
+   blocking until it finishes, then `build-finished` to log any
+   exception. Both `sphinx-build` and `sphinx-autobuild` take this same
+   path: each `sphinx-autobuild` rebuild is a fresh subprocess, so a
+   synchronous one-shot vite per rebuild — not a persistent watcher —
+   is what keeps Sphinx's `copy_static_files` phase from racing stale
+   assets. `vite_watch_command()` exists in `_internal/vite.py` but is
+   not currently called by either head.
 
 Both heads consume the smart-subprocess core under
 `sphinx_vite_builder._internal/`: `process.py` (`AsyncProcess` —
 asyncio subprocess wrapper with POSIX session isolation,
 SIGTERM-then-SIGKILL teardown, line-buffered stdout/stderr drainers,
 captured stderr for error surfacing), `bus.py` (`AsyncioBus` — single
-asyncio loop in a daemon thread for sync↔async bridging),
-`vite.py` (orchestration: detect `web/`, check pnpm via `shutil.which`,
-spawn install/build), and `errors.py` (`PnpmMissingError`,
-`NodeModulesInstallError`, `ViteFailedError`).
+asyncio loop in a daemon thread that lets the synchronous Sphinx hook
+block on the async subprocess call), `config.py` (mode detection from
+`argv`/`SPHINX_AUTOBUILD`/parent command line — pure functions, no
+Sphinx fixture needed to test them), `vite.py` (orchestration: detect
+`web/`, check pnpm via `shutil.which`, spawn install/build), and
+`errors.py` (`PnpmMissingError`, `NodeModulesInstallError`,
+`ViteFailedError`).
 
-**Phase 1 status:** The PEP 517 backend is fully implemented and
-tested. The Sphinx extension `setup()` is a placeholder — it
-registers cleanly in `conf.py` but doesn't yet hook the docs build
-lifecycle. The full extension implementation (event handlers, vite
-watch, teardown) lands in a follow-up release.
+Both entry points are fully implemented and tested — this is not a
+staged rollout.
 
 ## The design contract — keep this invariant
 
@@ -114,14 +124,17 @@ new row here AND a corresponding test in
 
 ```
 sphinx_vite_builder/
-├── __init__.py              Sphinx extension entry: setup(app)
-├── build.py                 PEP 517/660 hooks (delegate to hatchling)
+├── __init__.py         Sphinx extension entry: setup(app)
+├── build.py            PEP 517/660 hooks (delegate to hatchling)
+├── hatch_plugin.py      Hatchling build-hook variant (ViteBuildHook)
 ├── py.typed
 └── _internal/
-    ├── errors.py            SphinxViteBuilderError + 3 subclasses
-    ├── process.py           AsyncProcess (asyncio subprocess wrapper)
-    ├── bus.py               AsyncioBus (sync↔async bridge)
-    └── vite.py              run_vite_build() + CI detection + hint formatters
+    ├── errors.py       SphinxViteBuilderError + 3 subclasses
+    ├── process.py      AsyncProcess (asyncio subprocess wrapper)
+    ├── bus.py          AsyncioBus (sync/async bridge)
+    ├── config.py       Mode detection + config dataclass
+    ├── hooks.py        builder-inited / build-finished handlers
+    └── vite.py         run_vite_build() + CI detection + hint formatters
 ```
 
 Neither head calls the other; both consume `_internal/`. The PEP 517
@@ -130,15 +143,6 @@ hooks in `build.py` MUST stay 1:1 mirrors of `flit_core.buildapi` and
 Optional hooks (`get_requires_for_build_*`, `prepare_metadata_for_build_*`)
 alias to hatchling by identity — vite has no influence on dependency
 resolution or distribution metadata, so wrapping them would be wrong.
-
-## When you add a new public function
-
-- Add doctests. Every public function MUST have working doctests
-  per the workspace convention. Use ELLIPSIS for variable output.
-- Add NumPy-style docstrings: short summary, Parameters, Returns,
-  Raises, Examples.
-- Add type annotations everywhere, including return types
-  (`-> None` on test functions). mypy runs strict mode.
 
 ## When you add a new error path
 
@@ -165,7 +169,7 @@ motivated this whole package). The required steps are:
 - uses: pnpm/action-setup@v6
   with:
     version: 10
-- uses: actions/setup-node@v6
+- uses: actions/setup-node@v7
   with:
     node-version: 22
 ```

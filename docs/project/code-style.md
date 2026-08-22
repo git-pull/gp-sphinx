@@ -1,26 +1,10 @@
 # Code Style
 
-## Formatting
+This page split in two when the repository's agent and contributor
+documentation moved to `.github/`:
 
-gp-sphinx uses [ruff](https://github.com/astral-sh/ruff) for both linting and formatting.
-
-```console
-$ uv run ruff format .
-```
-
-```console
-$ uv run ruff check . --fix --show-fixes
-```
-
-## Type Checking
-
-Strict [mypy](https://mypy-lang.org/) is enforced across `src/` and `tests/`.
-
-```console
-$ uv run mypy .
-```
-
-## Docstrings
-
-Follow [NumPy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html)
-for all public functions, methods, and classes.
+- Formatting, linting, type-checking, imports, and Sphinx-domain-access
+  conventions are in
+  [`.github/CONTRIBUTING.md`](https://github.com/git-pull/gp-sphinx/blob/main/.github/CONTRIBUTING.md#code-style).
+- Docstring style and content is in
+  [`.github/WRITING.md`](https://github.com/git-pull/gp-sphinx/blob/main/.github/WRITING.md#docstrings).
