@@ -25,6 +25,34 @@ fastmcp_collector_mode = "register"
 fastmcp_server_module = "my_project.server:mcp"
 ```
 
+## Name your own safety tiers
+
+Tools are badged from their tags. The default vocabulary is `destructive`,
+`mutating`, `readonly`, in that precedence order — declare
+`fastmcp_safety_tiers` when your project tags its tools differently:
+
+```python
+fastmcp_safety_tiers = (
+    {"tag": "teardown", "tooltip": "Deletes tmux objects", "icon": "💣"},
+    {"tag": "execute", "tooltip": "Runs a command in a pane"},
+    "manage",
+    "inspect",
+)
+```
+
+Order is precedence: a tool carrying several of these tags is badged with the
+first one listed. An entry may be a bare tag name or a mapping with a `tooltip`
+and an `icon`.
+
+A tool carrying none of the tags renders **without** a safety badge. The
+alternative — falling back to the last tier — would badge a tool with a name
+nobody gave it, and read-only is the worst possible guess for a tool the
+vocabulary does not cover.
+
+Each tier gets the CSS class `gp-sphinx-fastmcp__safety-<tag>`. The shipped
+stylesheet colours the three default tiers; a project introducing new names
+styles them in its own CSS.
+
 `sphinx_autodoc_fastmcp` automatically registers `sphinx_ux_badges`,
 `sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via
 {py:meth}`~sphinx.application.Sphinx.setup_extension`. You do not need to add
