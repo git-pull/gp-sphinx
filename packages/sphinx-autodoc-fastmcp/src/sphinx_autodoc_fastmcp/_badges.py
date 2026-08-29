@@ -7,6 +7,7 @@ import typing as t
 from docutils import nodes
 
 from sphinx_autodoc_fastmcp._css import _CSS
+from sphinx_autodoc_fastmcp._models import DEFAULT_SAFETY_TIERS, SafetyTier
 from sphinx_ux_badges import (
     SAB,
     BadgeNode,
@@ -16,19 +17,45 @@ from sphinx_ux_badges import (
     build_toolbar as _sab_build_toolbar,
 )
 
-_SAFETY_LABELS = ("readonly", "mutating", "destructive")
+#: Vocabulary in force for the current build. Badges are built from
+#: several call sites that have no ``app`` in scope, so the extension
+#: installs it once at ``builder-inited`` rather than threading it
+#: through every one.
+_ACTIVE_TIERS: tuple[SafetyTier, ...] = DEFAULT_SAFETY_TIERS
 
-_SAFETY_TOOLTIPS: dict[str, str] = {
-    "readonly": "Read-only \u2014 does not modify external state",
-    "mutating": "Mutating \u2014 creates or modifies objects",
-    "destructive": "Destructive \u2014 may remove data; not reversible",
-}
 
-_SAFETY_ICONS: dict[str, str] = {
-    "readonly": "\U0001f50d",
-    "mutating": "\u270f\ufe0f",
-    "destructive": "\U0001f4a3",
-}
+def use_safety_tiers(tiers: t.Sequence[SafetyTier] | None) -> None:
+    """Install the vocabulary badges render from.
+
+    Parameters
+    ----------
+    tiers : sequence of SafetyTier or None
+        Vocabulary for this build. ``None`` restores the default.
+    """
+    global _ACTIVE_TIERS
+    _ACTIVE_TIERS = DEFAULT_SAFETY_TIERS if tiers is None else tuple(tiers)
+
+
+def _tier(safety: str) -> SafetyTier | None:
+    """Return the active tier named ``safety``, or ``None``."""
+    return next((tier for tier in _ACTIVE_TIERS if tier.tag == safety), None)
+
+
+def _safety_spec(safety: str) -> BadgeSpec:
+    """Return the badge spec for a tier, honouring the active vocabulary."""
+    tier = _tier(safety)
+    return BadgeSpec(
+        safety,
+        tooltip=(tier.tooltip if tier and tier.tooltip else f"Safety: {safety}"),
+        icon=(tier.icon if tier else ""),
+        classes=(
+            SAB.DENSE,
+            SAB.NO_UNDERLINE,
+            _CSS.BADGE_SAFETY,
+            _CSS.safety_class(safety),
+        ),
+    )
+
 
 _TYPE_TOOLTIP = "MCP tool"
 
@@ -57,22 +84,15 @@ def build_safety_badge(
     >>> b.astext()
     'readonly'
     """
-    label = safety if safety in _SAFETY_LABELS else safety
-    text = "" if icon_only else label
+    spec = _safety_spec(safety)
     style: t.Literal["full", "icon-only", "inline-icon"] = (
         "icon-only" if icon_only else "full"
     )
-    classes = [
-        SAB.DENSE,
-        SAB.NO_UNDERLINE,
-        _CSS.BADGE_SAFETY,
-        _CSS.safety_class(safety),
-    ]
     return build_badge(
-        text,
-        tooltip=_SAFETY_TOOLTIPS.get(safety, f"Safety: {safety}"),
-        icon=_SAFETY_ICONS.get(safety, ""),
-        classes=classes,
+        "" if icon_only else safety,
+        tooltip=spec.tooltip,
+        icon=spec.icon,
+        classes=list(spec.classes),
         style=style,
     )
 
@@ -111,26 +131,17 @@ def build_tool_badge_group(safety: str) -> nodes.inline:
     >>> "gp-sphinx-badge-group" in g["classes"]
     True
     """
-    return build_badge_group_from_specs(
-        [
-            BadgeSpec(
-                safety if safety in _SAFETY_LABELS else safety,
-                tooltip=_SAFETY_TOOLTIPS.get(safety, f"Safety: {safety}"),
-                icon=_SAFETY_ICONS.get(safety, ""),
-                classes=(
-                    SAB.DENSE,
-                    SAB.NO_UNDERLINE,
-                    _CSS.BADGE_SAFETY,
-                    _CSS.safety_class(safety),
-                ),
-            ),
-            BadgeSpec(
-                "tool",
-                tooltip=_TYPE_TOOLTIP,
-                classes=(SAB.DENSE, SAB.NO_UNDERLINE, SAB.BADGE_TYPE, _CSS.TYPE_TOOL),
-            ),
-        ],
+    specs: list[BadgeSpec] = []
+    if safety:
+        specs.append(_safety_spec(safety))
+    specs.append(
+        BadgeSpec(
+            "tool",
+            tooltip=_TYPE_TOOLTIP,
+            classes=(SAB.DENSE, SAB.NO_UNDERLINE, SAB.BADGE_TYPE, _CSS.TYPE_TOOL),
+        )
     )
+    return build_badge_group_from_specs(specs)
 
 
 def build_toolbar(safety: str) -> nodes.inline:

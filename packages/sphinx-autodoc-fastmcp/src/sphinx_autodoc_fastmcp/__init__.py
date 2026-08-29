@@ -15,6 +15,7 @@ import typing as t
 
 from sphinx.application import Sphinx
 
+from sphinx_autodoc_fastmcp._badges import use_safety_tiers
 from sphinx_autodoc_fastmcp._collector import (
     collect_prompts_and_resources,
     collect_tools,
@@ -28,6 +29,7 @@ from sphinx_autodoc_fastmcp._directives import (
     FastMCPToolInputDirective,
     FastMCPToolSummaryDirective,
 )
+from sphinx_autodoc_fastmcp._models import coerce_safety_tiers
 from sphinx_autodoc_fastmcp._roles import (
     _prompt_role,
     _promptref_role,
@@ -145,6 +147,20 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         ),
     )
     app.add_config_value(
+        "fastmcp_safety_tiers",
+        (),
+        "env",
+        description=(
+            "Safety vocabulary this project tags its tools with, in "
+            "precedence order, highest first. Each entry is a tag name or "
+            'a mapping with ``"tag"`` and optional ``"tooltip"`` / '
+            '``"icon"``. Empty keeps ``destructive`` / ``mutating`` / '
+            "``readonly``. A tool carrying none of these tags renders "
+            "without a safety badge rather than being reported as the "
+            "lowest tier."
+        ),
+    )
+    app.add_config_value(
         "fastmcp_collector_mode",
         "register",
         "env",
@@ -173,6 +189,10 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         if _static_dir not in app.config.html_static_path:
             app.config.html_static_path.append(_static_dir)
 
+    def _install_safety_tiers(app: Sphinx) -> None:
+        use_safety_tiers(coerce_safety_tiers(app.config.fastmcp_safety_tiers))
+
+    app.connect("builder-inited", _install_safety_tiers)
     app.connect("builder-inited", _add_static_path)
     app.add_css_file("css/sphinx_autodoc_fastmcp.css")
 

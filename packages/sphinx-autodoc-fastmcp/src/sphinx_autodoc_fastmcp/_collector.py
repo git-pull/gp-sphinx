@@ -11,20 +11,20 @@ import typing as t
 from sphinx.application import Sphinx
 
 from sphinx_autodoc_fastmcp._models import (
+    DEFAULT_SAFETY_TIERS,
     PromptArgInfo,
     PromptInfo,
     ResourceInfo,
     ResourceTemplateInfo,
+    SafetyTier,
     ToolInfo,
+    coerce_safety_tiers,
+    resolve_safety,
 )
 from sphinx_autodoc_fastmcp._parsing import extract_params, first_paragraph
 from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 logger = logging.getLogger(__name__)
-
-TAG_READONLY = "readonly"
-TAG_MUTATING = "mutating"
-TAG_DESTRUCTIVE = "destructive"
 
 
 class ToolCollector:
@@ -34,10 +34,12 @@ class ToolCollector:
         self,
         *,
         area_map: dict[str, str],
+        safety_tiers: tuple[SafetyTier, ...] = DEFAULT_SAFETY_TIERS,
     ) -> None:
         self.tools: list[ToolInfo] = []
         self._current_module: str = ""
         self._area_map = area_map
+        self.safety_tiers = safety_tiers
 
     def tool(
         self,
@@ -50,12 +52,7 @@ class ToolCollector:
         tags = tags or set()
 
         def decorator(func: t.Callable[..., t.Any]) -> t.Callable[..., t.Any]:
-            if TAG_DESTRUCTIVE in tags:
-                safety = "destructive"
-            elif TAG_MUTATING in tags:
-                safety = "mutating"
-            else:
-                safety = "readonly"
+            safety = resolve_safety(tags, self.safety_tiers)
 
             module_name = self._current_module
             area = self._area_map.get(
@@ -89,6 +86,7 @@ def _tool_from_callable(
     *,
     module_name: str,
     area_map: dict[str, str],
+    safety_tiers: tuple[SafetyTier, ...] = DEFAULT_SAFETY_TIERS,
 ) -> ToolInfo | None:
     """Build ``ToolInfo`` from a decorated function (``__fastmcp__``)."""
     meta = getattr(func, "__fastmcp__", None)
@@ -97,12 +95,7 @@ def _tool_from_callable(
     tags = getattr(meta, "tags", None) or set()
     if not isinstance(tags, set):
         tags = set(tags) if tags else set()
-    if TAG_DESTRUCTIVE in tags:
-        safety = "destructive"
-    elif TAG_MUTATING in tags:
-        safety = "mutating"
-    else:
-        safety = "readonly"
+    safety = resolve_safety(tags, safety_tiers)
     area = area_map.get(module_name, module_name.replace("_tools", ""))
     name = getattr(meta, "name", None) or func.__name__
     title = getattr(meta, "title", None) or name.replace("_", " ").title()
@@ -138,6 +131,7 @@ def collect_tools(app: Sphinx) -> None:
     """Populate ``app.env.fastmcp_tools`` from configured modules."""
     modules: list[str] = list(app.config.fastmcp_tool_modules)
     area_map: dict[str, str] = dict(app.config.fastmcp_area_map)
+    safety_tiers = coerce_safety_tiers(app.config.fastmcp_safety_tiers)
     mode = str(app.config.fastmcp_collector_mode)
     if mode not in ("register", "introspect"):
         logger.warning(
@@ -156,7 +150,7 @@ def collect_tools(app: Sphinx) -> None:
     collector_tools: list[ToolInfo] = []
 
     if mode == "register":
-        collector = ToolCollector(area_map=area_map)
+        collector = ToolCollector(area_map=area_map, safety_tiers=safety_tiers)
         for dotted in modules:
             mod_suffix = dotted.split(".")[-1]
             collector._current_module = mod_suffix
@@ -190,6 +184,7 @@ def collect_tools(app: Sphinx) -> None:
                     obj,
                     module_name=mod_suffix,
                     area_map=area_map,
+                    safety_tiers=safety_tiers,
                 )
                 if info is not None:
                     collector_tools.append(info)

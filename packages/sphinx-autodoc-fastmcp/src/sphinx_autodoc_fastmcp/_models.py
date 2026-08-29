@@ -6,6 +6,124 @@ import typing as t
 from dataclasses import dataclass, field
 
 
+@dataclass(frozen=True)
+class SafetyTier:
+    """One entry in the vocabulary a project tags its tools with.
+
+    Attributes
+    ----------
+    tag : str
+        Tag to look for in a tool's ``tags`` set.
+    tooltip : str
+        Hover text for the badge. Falls back to ``"Safety: <tag>"``.
+    icon : str
+        Emoji rendered before the label. Optional.
+    """
+
+    tag: str
+    tooltip: str = ""
+    icon: str = ""
+
+
+#: The vocabulary assumed when a project declares none, in precedence
+#: order. Matches the tags FastMCP projects have used since this
+#: extension shipped, so an existing docs build renders unchanged.
+DEFAULT_SAFETY_TIERS: tuple[SafetyTier, ...] = (
+    SafetyTier(
+        "destructive",
+        "Destructive \u2014 may remove data; not reversible",
+        "\U0001f4a3",
+    ),
+    SafetyTier(
+        "mutating", "Mutating \u2014 creates or modifies objects", "\u270f\ufe0f"
+    ),
+    SafetyTier(
+        "readonly",
+        "Read-only \u2014 does not modify external state",
+        "\U0001f50d",
+    ),
+)
+
+
+def coerce_safety_tiers(value: t.Any) -> tuple[SafetyTier, ...]:
+    """Return a tier vocabulary from a ``fastmcp_safety_tiers`` value.
+
+    Accepts what a ``conf.py`` can express: a sequence of mappings, of
+    :class:`SafetyTier`, or of bare tag strings. An empty value means the
+    project declared none, so :data:`DEFAULT_SAFETY_TIERS` applies.
+
+    Parameters
+    ----------
+    value : object
+        Raw configuration value.
+
+    Returns
+    -------
+    tuple of SafetyTier
+        Vocabulary in precedence order, highest first.
+
+    Examples
+    --------
+    >>> coerce_safety_tiers(())[0].tag
+    'destructive'
+    >>> [tier.tag for tier in coerce_safety_tiers(("execute", "inspect"))]
+    ['execute', 'inspect']
+    """
+    if not value:
+        return DEFAULT_SAFETY_TIERS
+    tiers: list[SafetyTier] = []
+    for entry in value:
+        if isinstance(entry, SafetyTier):
+            tiers.append(entry)
+        elif isinstance(entry, str):
+            tiers.append(SafetyTier(entry))
+        else:
+            tiers.append(
+                SafetyTier(
+                    entry["tag"],
+                    entry.get("tooltip", ""),
+                    entry.get("icon", ""),
+                )
+            )
+    return tuple(tiers)
+
+
+def resolve_safety(
+    tags: t.Iterable[str],
+    tiers: t.Sequence[SafetyTier] = DEFAULT_SAFETY_TIERS,
+) -> str:
+    """Return the tier a tool's tags place it in, highest precedence first.
+
+    Returns the empty string when no tag matches. Naming a default tier
+    here would report a tool as belonging to a tier nobody assigned it
+    to, which is the one answer a badge must never give.
+
+    Parameters
+    ----------
+    tags : iterable of str
+        The tool's tags.
+    tiers : sequence of SafetyTier
+        Vocabulary in precedence order.
+
+    Returns
+    -------
+    str
+        Matching tag, or ``""`` when the tool carries none of them.
+
+    Examples
+    --------
+    >>> resolve_safety({"mutating"})
+    'mutating'
+    >>> resolve_safety({"execute"})
+    ''
+    """
+    present = set(tags)
+    for tier in tiers:
+        if tier.tag in present:
+            return tier.tag
+    return ""
+
+
 @dataclass
 class ParamInfo:
     """Extracted parameter information for a tool.

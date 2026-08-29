@@ -182,3 +182,72 @@ def test_resolve_server_returns_none_when_factory_yields_non_fastmcp(
     resolved = _resolve_server_instance("fake_fastmcp_factory:mcp")
 
     assert resolved is None
+
+
+def test_default_safety_vocabulary_matches_the_shipped_tiers() -> None:
+    """The default keeps `readonly` / `mutating` / `destructive` behaviour."""
+    from sphinx_autodoc_fastmcp._models import DEFAULT_SAFETY_TIERS, resolve_safety
+
+    assert resolve_safety({"destructive"}, DEFAULT_SAFETY_TIERS) == "destructive"
+    assert resolve_safety({"mutating"}, DEFAULT_SAFETY_TIERS) == "mutating"
+    assert resolve_safety({"readonly"}, DEFAULT_SAFETY_TIERS) == "readonly"
+    # Precedence: the highest tier present wins, whatever the set order.
+    assert (
+        resolve_safety({"readonly", "destructive"}, DEFAULT_SAFETY_TIERS)
+        == "destructive"
+    )
+
+
+def test_an_unrecognized_tag_is_not_reported_as_readonly() -> None:
+    """A tool tagged outside the vocabulary must not claim to be read-only."""
+    from sphinx_autodoc_fastmcp._models import DEFAULT_SAFETY_TIERS, resolve_safety
+
+    assert resolve_safety({"execute"}, DEFAULT_SAFETY_TIERS) == ""
+    assert resolve_safety(set(), DEFAULT_SAFETY_TIERS) == ""
+
+
+def test_a_project_can_supply_its_own_safety_vocabulary() -> None:
+    """A renamed tag set resolves once the project declares it."""
+    from sphinx_autodoc_fastmcp._models import coerce_safety_tiers, resolve_safety
+
+    tiers = coerce_safety_tiers(
+        (
+            {
+                "tag": "teardown",
+                "tooltip": "Removes tmux objects",
+                "icon": "\U0001f4a3",
+            },
+            {"tag": "execute"},
+            {"tag": "manage"},
+            {"tag": "inspect"},
+        )
+    )
+
+    assert resolve_safety({"execute"}, tiers) == "execute"
+    assert resolve_safety({"inspect", "teardown"}, tiers) == "teardown"
+    assert resolve_safety({"readonly"}, tiers) == ""
+    assert tiers[0].tooltip == "Removes tmux objects"
+
+
+def test_a_tool_outside_the_vocabulary_gets_no_safety_badge() -> None:
+    """No badge is honest; a badge naming a tier nobody assigned is not."""
+    group = build_tool_badge_group("")
+
+    assert group.astext() == "tool"
+
+
+def test_configured_tiers_supply_the_badge_tooltip_and_icon() -> None:
+    """A project's own vocabulary reaches the rendered badge."""
+    from sphinx_autodoc_fastmcp._badges import use_safety_tiers
+    from sphinx_autodoc_fastmcp._models import coerce_safety_tiers
+
+    use_safety_tiers(
+        coerce_safety_tiers(({"tag": "execute", "tooltip": "Runs a command"},))
+    )
+    try:
+        badge = build_safety_badge("execute")
+        assert badge["badge_tooltip"] == "Runs a command"
+    finally:
+        use_safety_tiers(None)
+
+    assert build_safety_badge("execute")["badge_tooltip"] == "Safety: execute"
