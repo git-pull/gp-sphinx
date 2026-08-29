@@ -18,11 +18,17 @@ class Toolset:
         Hover text for the badge. Falls back to ``"Safety: <tag>"``.
     icon : str
         Emoji rendered before the label. Optional.
+    tone : str
+        Badge colour: ``green``, ``blue``, ``amber``, ``red`` or
+        ``slate``. Defaults to ``slate``, which is visible and claims
+        nothing — this extension cannot know which of a project's
+        toolsets deserves which colour.
     """
 
     tag: str
     tooltip: str = ""
     icon: str = ""
+    tone: str = "slate"
 
 
 #: No vocabulary is assumed. This extension renders documentation for
@@ -71,6 +77,7 @@ def coerce_toolsets(value: t.Any) -> tuple[Toolset, ...]:
                     entry["tag"],
                     entry.get("tooltip", ""),
                     entry.get("icon", ""),
+                    entry.get("tone", "slate"),
                 )
             )
     return tuple(tiers)

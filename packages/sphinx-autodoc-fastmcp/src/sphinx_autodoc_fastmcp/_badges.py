@@ -58,6 +58,7 @@ def _toolset_spec(toolset: str) -> BadgeSpec:
             SAB.NO_UNDERLINE,
             _CSS.BADGE_TOOLSET,
             _CSS.toolset_class(toolset),
+            _CSS.tone_class(entry.tone if entry else "slate"),
         ),
     )
 

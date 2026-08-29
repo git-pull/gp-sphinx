@@ -255,3 +255,26 @@ def test_configured_toolsets_supply_the_badge_tooltip_and_icon() -> None:
         use_toolsets(None)
 
     assert build_toolset_badge("execute")["badge_tooltip"] == "Toolset: execute"
+
+
+def test_a_toolset_badge_carries_its_declared_tone() -> None:
+    """Colour comes from the project's declaration, not a guessed tag name.
+
+    The stylesheet cannot ship a rule per tag, because it does not know
+    what a project calls its toolsets. It ships tones instead, and the
+    project maps onto them.
+    """
+    from sphinx_autodoc_fastmcp._badges import build_toolset_badge, use_toolsets
+    from sphinx_autodoc_fastmcp._models import coerce_toolsets
+
+    use_toolsets(coerce_toolsets(({"tag": "teardown", "tone": "red"},)))
+    try:
+        classes = build_toolset_badge("teardown")["classes"]
+        assert "gp-sphinx-fastmcp__toolset--tone-red" in classes
+        # An undeclared toolset still gets a visible badge, claiming nothing.
+        assert (
+            "gp-sphinx-fastmcp__toolset--tone-slate"
+            in build_toolset_badge("mystery")["classes"]
+        )
+    finally:
+        use_toolsets(None)

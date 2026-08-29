@@ -47,6 +47,17 @@ class _CSS:
     TOOLSET_TEARDOWN = "gp-sphinx-fastmcp__toolset-destructive"
 
     @staticmethod
+    def tone_class(tone: str) -> str:
+        """Return the badge colour class for a toolset's tone.
+
+        Examples
+        --------
+        >>> _CSS.tone_class("red")
+        'gp-sphinx-fastmcp__toolset--tone-red'
+        """
+        return f"gp-sphinx-fastmcp__toolset--tone-{tone}"
+
+    @staticmethod
     def toolset_class(toolset: str) -> str:
         """Return toolset modifier class for badge styling.
 

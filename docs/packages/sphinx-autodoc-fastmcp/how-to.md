@@ -55,8 +55,13 @@ back to a tag nobody assigned is the one answer a badge must never give, and
 with no declared vocabulary that is every tool — which is the signal that the
 setting is missing.
 
-Each toolset gets the CSS class `gp-sphinx-fastmcp__toolset-<tag>`. Style the
-tags your project uses in your own CSS.
+`tone` picks the badge colour from `green`, `blue`, `amber`, `red` and
+`slate`, defaulting to `slate`. The stylesheet ships tones rather than a rule
+per tag, because it cannot know what a project calls its toolsets — so a rule
+per tag would only ever style the names it happened to guess.
+
+Each toolset also gets the class `gp-sphinx-fastmcp__toolset-<tag>`, for a
+project that wants to style one of its own tags beyond the shipped tones.
 
 `sphinx_autodoc_fastmcp` automatically registers `sphinx_ux_badges`,
 `sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via
