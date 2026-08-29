@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
-class SafetyTier:
+class Toolset:
     """One entry in the vocabulary a project tags its tools with.
 
     Attributes
@@ -25,32 +25,20 @@ class SafetyTier:
     icon: str = ""
 
 
-#: The vocabulary assumed when a project declares none, in precedence
-#: order. Matches the tags FastMCP projects have used since this
-#: extension shipped, so an existing docs build renders unchanged.
-DEFAULT_SAFETY_TIERS: tuple[SafetyTier, ...] = (
-    SafetyTier(
-        "destructive",
-        "Destructive \u2014 may remove data; not reversible",
-        "\U0001f4a3",
-    ),
-    SafetyTier(
-        "mutating", "Mutating \u2014 creates or modifies objects", "\u270f\ufe0f"
-    ),
-    SafetyTier(
-        "readonly",
-        "Read-only \u2014 does not modify external state",
-        "\U0001f50d",
-    ),
-)
+#: No vocabulary is assumed. This extension renders documentation for
+#: projects whose tags it does not choose, so shipping a default would
+#: badge one project's tools with another's words. A project declares
+#: ``fastmcp_toolsets``; until it does, tools render without a toolset
+#: badge.
+DEFAULT_TOOLSETS: tuple[Toolset, ...] = ()
 
 
-def coerce_safety_tiers(value: t.Any) -> tuple[SafetyTier, ...]:
-    """Return a tier vocabulary from a ``fastmcp_safety_tiers`` value.
+def coerce_toolsets(value: t.Any) -> tuple[Toolset, ...]:
+    """Return a entry vocabulary from a ``fastmcp_toolsets`` value.
 
     Accepts what a ``conf.py`` can express: a sequence of mappings, of
-    :class:`SafetyTier`, or of bare tag strings. An empty value means the
-    project declared none, so :data:`DEFAULT_SAFETY_TIERS` applies.
+    :class:`Toolset`, or of bare tag strings. An empty value declares no
+    vocabulary, and tools then carry no toolset badge.
 
     Parameters
     ----------
@@ -59,27 +47,27 @@ def coerce_safety_tiers(value: t.Any) -> tuple[SafetyTier, ...]:
 
     Returns
     -------
-    tuple of SafetyTier
+    tuple of Toolset
         Vocabulary in precedence order, highest first.
 
     Examples
     --------
-    >>> coerce_safety_tiers(())[0].tag
-    'destructive'
-    >>> [tier.tag for tier in coerce_safety_tiers(("execute", "inspect"))]
+    >>> coerce_toolsets(())
+    ()
+    >>> [entry.tag for entry in coerce_toolsets(("execute", "inspect"))]
     ['execute', 'inspect']
     """
     if not value:
-        return DEFAULT_SAFETY_TIERS
-    tiers: list[SafetyTier] = []
+        return DEFAULT_TOOLSETS
+    tiers: list[Toolset] = []
     for entry in value:
-        if isinstance(entry, SafetyTier):
+        if isinstance(entry, Toolset):
             tiers.append(entry)
         elif isinstance(entry, str):
-            tiers.append(SafetyTier(entry))
+            tiers.append(Toolset(entry))
         else:
             tiers.append(
-                SafetyTier(
+                Toolset(
                     entry["tag"],
                     entry.get("tooltip", ""),
                     entry.get("icon", ""),
@@ -88,21 +76,21 @@ def coerce_safety_tiers(value: t.Any) -> tuple[SafetyTier, ...]:
     return tuple(tiers)
 
 
-def resolve_safety(
+def resolve_toolset(
     tags: t.Iterable[str],
-    tiers: t.Sequence[SafetyTier] = DEFAULT_SAFETY_TIERS,
+    tiers: t.Sequence[Toolset] = DEFAULT_TOOLSETS,
 ) -> str:
-    """Return the tier a tool's tags place it in, highest precedence first.
+    """Return the entry a tool's tags place it in, highest precedence first.
 
-    Returns the empty string when no tag matches. Naming a default tier
-    here would report a tool as belonging to a tier nobody assigned it
-    to, which is the one answer a badge must never give.
+    Returns the empty string when no tag matches. Naming a fallback here
+    would report a tool as belonging to a toolset nobody assigned it to,
+    which is the one answer a badge must never give.
 
     Parameters
     ----------
     tags : iterable of str
         The tool's tags.
-    tiers : sequence of SafetyTier
+    tiers : sequence of Toolset
         Vocabulary in precedence order.
 
     Returns
@@ -112,15 +100,17 @@ def resolve_safety(
 
     Examples
     --------
-    >>> resolve_safety({"mutating"})
-    'mutating'
-    >>> resolve_safety({"execute"})
+    >>> from sphinx_autodoc_fastmcp._models import coerce_toolsets
+    >>> tiers = coerce_toolsets(("execute", "inspect"))
+    >>> resolve_toolset({"execute"}, tiers)
+    'execute'
+    >>> resolve_toolset({"unknown"}, tiers)
     ''
     """
     present = set(tags)
-    for tier in tiers:
-        if tier.tag in present:
-            return tier.tag
+    for entry in tiers:
+        if entry.tag in present:
+            return entry.tag
     return ""
 
 
@@ -166,8 +156,8 @@ class ToolInfo:
     area : str
         Grouping key for the tool, taken from ``fastmcp_area_map`` or
         derived from the module name.
-    safety : str
-        Risk tier read from the tool's tags — ``"readonly"``,
+    toolset : str
+        Toolset read from the tool's tags — ``"readonly"``,
         ``"mutating"``, or ``"destructive"``.
     annotations : dict[str, bool]
         MCP hint flags such as ``readOnlyHint`` and ``destructiveHint``,
@@ -187,7 +177,7 @@ class ToolInfo:
     title: str
     module_name: str
     area: str
-    safety: str
+    toolset: str
     annotations: dict[str, bool]
     func: t.Callable[..., t.Any]
     docstring: str

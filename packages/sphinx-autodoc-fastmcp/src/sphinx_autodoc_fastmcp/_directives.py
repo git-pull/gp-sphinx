@@ -13,6 +13,7 @@ if t.TYPE_CHECKING:
     from sphinx.environment import BuildEnvironment
 
 from sphinx_autodoc_fastmcp._badges import (
+    active_toolsets,
     build_prompt_badge_group,
     build_resource_badge_group,
     build_tool_badge_group,
@@ -284,7 +285,7 @@ class FastMCPToolDirective(SphinxDirective):
             profile_class=API.profile("fastmcp-tool"),
             signature_children=(nodes.literal("", tool.name),),
             content_children=tuple(content_nodes),
-            badge_group=build_tool_badge_group(tool.safety),
+            badge_group=build_tool_badge_group(tool.toolset),
             permalink=link,
             entry_classes=(_CSS.TOOL_ENTRY,),
             signature_classes=(_CSS.TOOL_SIGNATURE,),
@@ -378,14 +379,14 @@ class FastMCPToolInputDirective(SphinxDirective):
 
 
 class FastMCPToolSummaryDirective(SphinxDirective):
-    """Summary tables of tools grouped by safety tier."""
+    """Summary tables of tools grouped by toolset."""
 
     required_arguments = 0
     optional_arguments = 0
     has_content = False
 
     def run(self) -> list[nodes.Node]:
-        """Build tier sections with tables."""
+        """Build entry sections with tables."""
         tools: dict[str, ToolInfo] = getattr(self.env, "fastmcp_tools", {})
 
         if not tools:
@@ -402,20 +403,16 @@ class FastMCPToolSummaryDirective(SphinxDirective):
             "destructive": [],
         }
         for tool in tools.values():
-            groups.setdefault(tool.safety, []).append(tool)
+            groups.setdefault(tool.toolset, []).append(tool)
 
         result_nodes: list[nodes.Node] = []
 
-        tier_order = [
-            ("readonly", "Inspect", "Read state without changing anything."),
-            ("mutating", "Act", "Create or modify objects."),
-            ("destructive", "Destroy", "Remove objects; not reversible."),
-        ]
-
-        for safety, label, desc in tier_order:
-            tier_tools = groups.get(safety, [])
-            if not tier_tools:
+        for toolset in active_toolsets():
+            group_tools = groups.get(toolset.tag, [])
+            if not group_tools:
                 continue
+            label = toolset.tag.replace("_", " ").title()
+            desc = toolset.tooltip
 
             section = nodes.section()
             section["ids"].append(label.lower())
@@ -425,7 +422,7 @@ class FastMCPToolSummaryDirective(SphinxDirective):
 
             headers = ["Tool", "Description"]
             rows: list[list[str | nodes.Node]] = []
-            for tool in sorted(tier_tools, key=lambda x: x.name):
+            for tool in sorted(group_tools, key=lambda x: x.name):
                 first_line = first_paragraph(tool.docstring)
                 ref = nodes.reference("", "", internal=True)
                 ref["refuri"] = f"{tool.area}/#{_component_ids('tool', tool.name)[0]}"

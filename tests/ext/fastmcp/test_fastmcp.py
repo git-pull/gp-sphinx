@@ -10,7 +10,7 @@ import typing as t
 import pytest
 from docutils import nodes
 
-from sphinx_autodoc_fastmcp._badges import build_safety_badge, build_tool_badge_group
+from sphinx_autodoc_fastmcp._badges import build_tool_badge_group, build_toolset_badge
 from sphinx_autodoc_fastmcp._collector import _resolve_server_instance
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._parsing import (
@@ -37,24 +37,24 @@ def test_badge_group_contains_tool_type() -> None:
     assert "tool" in badges[-1].astext()
 
 
-def test_safety_badge_is_badge_node() -> None:
+def test_toolset_badge_is_badge_node() -> None:
     """Safety badge is a BadgeNode (shared package)."""
-    b = build_safety_badge("mutating")
+    b = build_toolset_badge("mutating")
     assert isinstance(b, BadgeNode)
     assert isinstance(b, nodes.inline)
     assert b.astext() == "mutating"
 
 
-def test_safety_badge_has_classes() -> None:
+def test_toolset_badge_has_classes() -> None:
     """Safety badge has gp-sphinx-badge + smf safety classes."""
-    b = build_safety_badge("readonly")
+    b = build_toolset_badge("readonly")
     assert "gp-sphinx-badge" in b["classes"]
-    assert "gp-sphinx-fastmcp__safety-readonly" in b["classes"]
+    assert "gp-sphinx-fastmcp__toolset-readonly" in b["classes"]
 
 
-def test_safety_badge_icon_only() -> None:
+def test_toolset_badge_icon_only() -> None:
     """Icon-only safety badge has gp-sphinx-badge--icon-only class and empty text."""
-    b = build_safety_badge("readonly", icon_only=True)
+    b = build_toolset_badge("readonly", icon_only=True)
     assert "gp-sphinx-badge--icon-only" in b["classes"]
     assert b.astext() == ""
 
@@ -184,33 +184,39 @@ def test_resolve_server_returns_none_when_factory_yields_non_fastmcp(
     assert resolved is None
 
 
-def test_default_safety_vocabulary_matches_the_shipped_tiers() -> None:
-    """The default keeps `readonly` / `mutating` / `destructive` behaviour."""
-    from sphinx_autodoc_fastmcp._models import DEFAULT_SAFETY_TIERS, resolve_safety
+def test_no_vocabulary_is_assumed_until_a_project_declares_one() -> None:
+    """Shipping a default would badge one project's tools with another's words."""
+    from sphinx_autodoc_fastmcp._models import DEFAULT_TOOLSETS, resolve_toolset
 
-    assert resolve_safety({"destructive"}, DEFAULT_SAFETY_TIERS) == "destructive"
-    assert resolve_safety({"mutating"}, DEFAULT_SAFETY_TIERS) == "mutating"
-    assert resolve_safety({"readonly"}, DEFAULT_SAFETY_TIERS) == "readonly"
-    # Precedence: the highest tier present wins, whatever the set order.
-    assert (
-        resolve_safety({"readonly", "destructive"}, DEFAULT_SAFETY_TIERS)
-        == "destructive"
-    )
+    assert DEFAULT_TOOLSETS == ()
+    assert resolve_toolset({"anything"}, DEFAULT_TOOLSETS) == ""
 
 
-def test_an_unrecognized_tag_is_not_reported_as_readonly() -> None:
-    """A tool tagged outside the vocabulary must not claim to be read-only."""
-    from sphinx_autodoc_fastmcp._models import DEFAULT_SAFETY_TIERS, resolve_safety
+def test_precedence_follows_declaration_order() -> None:
+    """A tool carrying several tags takes the first one declared."""
+    from sphinx_autodoc_fastmcp._models import coerce_toolsets, resolve_toolset
 
-    assert resolve_safety({"execute"}, DEFAULT_SAFETY_TIERS) == ""
-    assert resolve_safety(set(), DEFAULT_SAFETY_TIERS) == ""
+    tiers = coerce_toolsets(("teardown", "execute", "manage", "inspect"))
+
+    assert resolve_toolset({"inspect", "teardown"}, tiers) == "teardown"
+    assert resolve_toolset({"manage", "inspect"}, tiers) == "manage"
+
+
+def test_an_unrecognized_tag_resolves_to_no_toolset() -> None:
+    """A tool outside the vocabulary must not be reported as inside it."""
+    from sphinx_autodoc_fastmcp._models import coerce_toolsets, resolve_toolset
+
+    tiers = coerce_toolsets(("inspect", "execute"))
+
+    assert resolve_toolset({"mystery"}, tiers) == ""
+    assert resolve_toolset(set(), tiers) == ""
 
 
 def test_a_project_can_supply_its_own_safety_vocabulary() -> None:
     """A renamed tag set resolves once the project declares it."""
-    from sphinx_autodoc_fastmcp._models import coerce_safety_tiers, resolve_safety
+    from sphinx_autodoc_fastmcp._models import coerce_toolsets, resolve_toolset
 
-    tiers = coerce_safety_tiers(
+    tiers = coerce_toolsets(
         (
             {
                 "tag": "teardown",
@@ -223,9 +229,9 @@ def test_a_project_can_supply_its_own_safety_vocabulary() -> None:
         )
     )
 
-    assert resolve_safety({"execute"}, tiers) == "execute"
-    assert resolve_safety({"inspect", "teardown"}, tiers) == "teardown"
-    assert resolve_safety({"readonly"}, tiers) == ""
+    assert resolve_toolset({"execute"}, tiers) == "execute"
+    assert resolve_toolset({"inspect", "teardown"}, tiers) == "teardown"
+    assert resolve_toolset({"readonly"}, tiers) == ""
     assert tiers[0].tooltip == "Removes tmux objects"
 
 
@@ -236,18 +242,16 @@ def test_a_tool_outside_the_vocabulary_gets_no_safety_badge() -> None:
     assert group.astext() == "tool"
 
 
-def test_configured_tiers_supply_the_badge_tooltip_and_icon() -> None:
+def test_configured_toolsets_supply_the_badge_tooltip_and_icon() -> None:
     """A project's own vocabulary reaches the rendered badge."""
-    from sphinx_autodoc_fastmcp._badges import use_safety_tiers
-    from sphinx_autodoc_fastmcp._models import coerce_safety_tiers
+    from sphinx_autodoc_fastmcp._badges import use_toolsets
+    from sphinx_autodoc_fastmcp._models import coerce_toolsets
 
-    use_safety_tiers(
-        coerce_safety_tiers(({"tag": "execute", "tooltip": "Runs a command"},))
-    )
+    use_toolsets(coerce_toolsets(({"tag": "execute", "tooltip": "Runs a command"},)))
     try:
-        badge = build_safety_badge("execute")
+        badge = build_toolset_badge("execute")
         assert badge["badge_tooltip"] == "Runs a command"
     finally:
-        use_safety_tiers(None)
+        use_toolsets(None)
 
-    assert build_safety_badge("execute")["badge_tooltip"] == "Safety: execute"
+    assert build_toolset_badge("execute")["badge_tooltip"] == "Toolset: execute"

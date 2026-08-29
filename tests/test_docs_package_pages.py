@@ -108,6 +108,7 @@ _FASTMCP_CONF = textwrap.dedent(
     master_doc = "api"
     fastmcp_tool_modules = ["fastmcp_demo_tools"]
     fastmcp_area_map = {{"fastmcp_demo_tools": "api"}}
+    fastmcp_toolsets = ("teardown", "execute", "inspect")
     fastmcp_collector_mode = "introspect"
     """
 )
@@ -232,8 +233,8 @@ def test_fastmcp_docs_page_renders_live_demo_output(
     assert "delete_session" in fastmcp_docs_html
     assert "Parameters" in fastmcp_docs_html
     assert "Inspect" in fastmcp_docs_html
-    assert "Act" in fastmcp_docs_html
-    assert "Destroy" in fastmcp_docs_html
+    assert "Execute" in fastmcp_docs_html
+    assert "Teardown" in fastmcp_docs_html
 
 
 # ---------------------------------------------------------------------------

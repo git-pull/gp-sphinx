@@ -20,7 +20,7 @@ def _make_tool_info() -> ToolInfo:
         title="List Sessions",
         module_name="demo_tools",
         area="api",
-        safety="readonly",
+        toolset="readonly",
         annotations={},
         func=lambda server: "[]",
         docstring="List sessions for one server.\n\nReturns the available sessions.",

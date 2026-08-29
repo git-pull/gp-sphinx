@@ -204,7 +204,7 @@ def _make_fastmcp_tool_desc() -> addnodes.desc:
             title="List Sessions",
             module_name="demo_tools",
             area="api",
-            safety="readonly",
+            toolset="readonly",
             annotations={},
             func=lambda server: "[]",
             docstring=(

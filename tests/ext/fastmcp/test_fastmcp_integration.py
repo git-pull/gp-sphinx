@@ -60,6 +60,7 @@ _CONF_PY = textwrap.dedent(
 
     fastmcp_tool_modules = ["demo_tools"]
     fastmcp_area_map = {"demo_tools": "api"}
+    fastmcp_toolsets = ("destructive", "mutating", "readonly")
     fastmcp_collector_mode = "introspect"
     """
 )
@@ -168,6 +169,7 @@ _COLLISION_CONF_PY = textwrap.dedent(
 
     fastmcp_tool_modules = ["buffer_tools"]
     fastmcp_area_map = {"buffer_tools": "api"}
+    fastmcp_toolsets = ("destructive", "mutating", "readonly")
     fastmcp_collector_mode = "introspect"
     """
 )

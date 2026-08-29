@@ -7,7 +7,7 @@ import typing as t
 from docutils import nodes
 
 from sphinx_autodoc_fastmcp._css import _CSS
-from sphinx_autodoc_fastmcp._models import DEFAULT_SAFETY_TIERS, SafetyTier
+from sphinx_autodoc_fastmcp._models import DEFAULT_TOOLSETS, Toolset
 from sphinx_ux_badges import (
     SAB,
     BadgeNode,
@@ -21,38 +21,43 @@ from sphinx_ux_badges import (
 #: several call sites that have no ``app`` in scope, so the extension
 #: installs it once at ``builder-inited`` rather than threading it
 #: through every one.
-_ACTIVE_TIERS: tuple[SafetyTier, ...] = DEFAULT_SAFETY_TIERS
+_ACTIVE_TOOLSETS: tuple[Toolset, ...] = DEFAULT_TOOLSETS
 
 
-def use_safety_tiers(tiers: t.Sequence[SafetyTier] | None) -> None:
+def use_toolsets(tiers: t.Sequence[Toolset] | None) -> None:
     """Install the vocabulary badges render from.
 
     Parameters
     ----------
-    tiers : sequence of SafetyTier or None
+    tiers : sequence of Toolset or None
         Vocabulary for this build. ``None`` restores the default.
     """
-    global _ACTIVE_TIERS
-    _ACTIVE_TIERS = DEFAULT_SAFETY_TIERS if tiers is None else tuple(tiers)
+    global _ACTIVE_TOOLSETS
+    _ACTIVE_TOOLSETS = DEFAULT_TOOLSETS if tiers is None else tuple(tiers)
 
 
-def _tier(safety: str) -> SafetyTier | None:
-    """Return the active tier named ``safety``, or ``None``."""
-    return next((tier for tier in _ACTIVE_TIERS if tier.tag == safety), None)
+def _tier(toolset: str) -> Toolset | None:
+    """Return the active entry named ``toolset``, or ``None``."""
+    return next((entry for entry in _ACTIVE_TOOLSETS if entry.tag == toolset), None)
 
 
-def _safety_spec(safety: str) -> BadgeSpec:
-    """Return the badge spec for a tier, honouring the active vocabulary."""
-    tier = _tier(safety)
+def active_toolsets() -> tuple[Toolset, ...]:
+    """Return the vocabulary in force, in the order it was declared."""
+    return _ACTIVE_TOOLSETS
+
+
+def _toolset_spec(toolset: str) -> BadgeSpec:
+    """Return the badge spec for a entry, honouring the active vocabulary."""
+    entry = _tier(toolset)
     return BadgeSpec(
-        safety,
-        tooltip=(tier.tooltip if tier and tier.tooltip else f"Safety: {safety}"),
-        icon=(tier.icon if tier else ""),
+        toolset,
+        tooltip=(entry.tooltip if entry and entry.tooltip else f"Toolset: {toolset}"),
+        icon=(entry.icon if entry else ""),
         classes=(
             SAB.DENSE,
             SAB.NO_UNDERLINE,
-            _CSS.BADGE_SAFETY,
-            _CSS.safety_class(safety),
+            _CSS.BADGE_TOOLSET,
+            _CSS.toolset_class(toolset),
         ),
     )
 
@@ -60,16 +65,16 @@ def _safety_spec(safety: str) -> BadgeSpec:
 _TYPE_TOOLTIP = "MCP tool"
 
 
-def build_safety_badge(
-    safety: str,
+def build_toolset_badge(
+    toolset: str,
     *,
     icon_only: bool = False,
 ) -> BadgeNode:
-    """Build a safety tier badge.
+    """Build a toolset badge.
 
     Parameters
     ----------
-    safety : str
+    toolset : str
         One of ``readonly``, ``mutating``, ``destructive``.
     icon_only : bool
         When True, create an icon-only badge (empty text, 16x16 colored box).
@@ -80,16 +85,16 @@ def build_safety_badge(
 
     Examples
     --------
-    >>> b = build_safety_badge("readonly")
+    >>> b = build_toolset_badge("readonly")
     >>> b.astext()
     'readonly'
     """
-    spec = _safety_spec(safety)
+    spec = _toolset_spec(toolset)
     style: t.Literal["full", "icon-only", "inline-icon"] = (
         "icon-only" if icon_only else "full"
     )
     return build_badge(
-        "" if icon_only else safety,
+        "" if icon_only else toolset,
         tooltip=spec.tooltip,
         icon=spec.icon,
         classes=list(spec.classes),
@@ -113,13 +118,13 @@ def build_type_tool_badge() -> BadgeNode:
     )
 
 
-def build_tool_badge_group(safety: str) -> nodes.inline:
-    """Badge group: safety tier + type ``tool``.
+def build_tool_badge_group(toolset: str) -> nodes.inline:
+    """Badge group: toolset entry + type ``tool``.
 
     Parameters
     ----------
-    safety : str
-        Safety tier name.
+    toolset : str
+        Safety entry name.
 
     Returns
     -------
@@ -132,8 +137,8 @@ def build_tool_badge_group(safety: str) -> nodes.inline:
     True
     """
     specs: list[BadgeSpec] = []
-    if safety:
-        specs.append(_safety_spec(safety))
+    if toolset:
+        specs.append(_toolset_spec(toolset))
     specs.append(
         BadgeSpec(
             "tool",
@@ -144,7 +149,7 @@ def build_tool_badge_group(safety: str) -> nodes.inline:
     return build_badge_group_from_specs(specs)
 
 
-def build_toolbar(safety: str) -> nodes.inline:
+def build_toolbar(toolset: str) -> nodes.inline:
     """Toolbar on the title row (flex ``margin-left: auto``).
 
     Examples
@@ -153,7 +158,7 @@ def build_toolbar(safety: str) -> nodes.inline:
     >>> "gp-sphinx-toolbar" in t["classes"]
     True
     """
-    return _sab_build_toolbar(build_tool_badge_group(safety))
+    return _sab_build_toolbar(build_tool_badge_group(toolset))
 
 
 _TYPE_TOOLTIP_PROMPT = "MCP prompt recipe"

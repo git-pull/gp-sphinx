@@ -15,7 +15,7 @@ import typing as t
 
 from sphinx.application import Sphinx
 
-from sphinx_autodoc_fastmcp._badges import use_safety_tiers
+from sphinx_autodoc_fastmcp._badges import use_toolsets
 from sphinx_autodoc_fastmcp._collector import (
     collect_prompts_and_resources,
     collect_tools,
@@ -29,7 +29,7 @@ from sphinx_autodoc_fastmcp._directives import (
     FastMCPToolInputDirective,
     FastMCPToolSummaryDirective,
 )
-from sphinx_autodoc_fastmcp._models import coerce_safety_tiers
+from sphinx_autodoc_fastmcp._models import coerce_toolsets
 from sphinx_autodoc_fastmcp._roles import (
     _prompt_role,
     _promptref_role,
@@ -131,7 +131,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         "env",
         description=(
             'Mapping of docstring section heading (e.g. ``"Inspect"``) '
-            "to the safety badge it should render with (e.g. "
+            "to the toolset badge it should render with (e.g. "
             '``"readonly"``, ``"mutating"``, ``"destructive"``). '
             "Drives the inline section pills next to grouped tool lists."
         ),
@@ -147,7 +147,7 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         ),
     )
     app.add_config_value(
-        "fastmcp_safety_tiers",
+        "fastmcp_toolsets",
         (),
         "env",
         description=(
@@ -156,8 +156,8 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
             'a mapping with ``"tag"`` and optional ``"tooltip"`` / '
             '``"icon"``. Empty keeps ``destructive`` / ``mutating`` / '
             "``readonly``. A tool carrying none of these tags renders "
-            "without a safety badge rather than being reported as the "
-            "lowest tier."
+            "without a toolset badge rather than being reported as the "
+            "lowest entry."
         ),
     )
     app.add_config_value(
@@ -189,10 +189,10 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         if _static_dir not in app.config.html_static_path:
             app.config.html_static_path.append(_static_dir)
 
-    def _install_safety_tiers(app: Sphinx) -> None:
-        use_safety_tiers(coerce_safety_tiers(app.config.fastmcp_safety_tiers))
+    def _install_toolsets(app: Sphinx) -> None:
+        use_toolsets(coerce_toolsets(app.config.fastmcp_toolsets))
 
-    app.connect("builder-inited", _install_safety_tiers)
+    app.connect("builder-inited", _install_toolsets)
     app.connect("builder-inited", _add_static_path)
     app.add_css_file("css/sphinx_autodoc_fastmcp.css")
 

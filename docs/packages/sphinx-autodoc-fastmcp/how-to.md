@@ -3,7 +3,7 @@
 # How to
 
 Use this extension when a FastMCP server should document its tools,
-resources, prompts, generated schemas, safety metadata, and cross-reference
+resources, prompts, generated schemas, toolset metadata, and cross-reference
 badges from live registration data.
 
 ## Downstream `conf.py`
@@ -25,16 +25,21 @@ fastmcp_collector_mode = "register"
 fastmcp_server_module = "my_project.server:mcp"
 ```
 
-## Name your own safety tiers
+## Declare your toolsets
 
-Tools are badged from their tags. The default vocabulary is `destructive`,
-`mutating`, `readonly`, in that precedence order — declare
-`fastmcp_safety_tiers` when your project tags its tools differently:
+Tools are badged from their tags, and this extension ships **no** default
+vocabulary — it renders documentation for projects whose tags it does not
+choose, so a default would badge one project's tools with another's words.
+Declare `fastmcp_toolsets`:
 
 ```python
-fastmcp_safety_tiers = (
-    {"tag": "teardown", "tooltip": "Deletes tmux objects", "icon": "💣"},
-    {"tag": "execute", "tooltip": "Runs a command in a pane"},
+fastmcp_toolsets = (
+    {
+        "tag": "teardown",
+        "tooltip": "Deletes objects; not reversible.",
+        "icon": "\N{BOMB}",
+    },
+    {"tag": "execute", "tooltip": "Starts or drives a process."},
     "manage",
     "inspect",
 )
@@ -42,16 +47,16 @@ fastmcp_safety_tiers = (
 
 Order is precedence: a tool carrying several of these tags is badged with the
 first one listed. An entry may be a bare tag name or a mapping with a `tooltip`
-and an `icon`.
+and an `icon`. The `{fastmcp-summary}` directive groups its tables in the same
+order, titling each section from the tag.
 
-A tool carrying none of the tags renders **without** a safety badge. The
-alternative — falling back to the last tier — would badge a tool with a name
-nobody gave it, and read-only is the worst possible guess for a tool the
-vocabulary does not cover.
+A tool carrying none of the tags renders **without** a toolset badge. Falling
+back to a tag nobody assigned is the one answer a badge must never give, and
+with no declared vocabulary that is every tool — which is the signal that the
+setting is missing.
 
-Each tier gets the CSS class `gp-sphinx-fastmcp__safety-<tag>`. The shipped
-stylesheet colours the three default tiers; a project introducing new names
-styles them in its own CSS.
+Each toolset gets the CSS class `gp-sphinx-fastmcp__toolset-<tag>`. Style the
+tags your project uses in your own CSS.
 
 `sphinx_autodoc_fastmcp` automatically registers `sphinx_ux_badges`,
 `sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via

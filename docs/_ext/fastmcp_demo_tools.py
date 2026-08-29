@@ -40,7 +40,7 @@ def list_sessions(server: str, limit: int = 20) -> list[str]:
 
 
 t.cast(t.Any, list_sessions).__fastmcp__ = types.SimpleNamespace(
-    name="list_sessions", title="List Sessions", tags={"readonly"}, annotations=None
+    name="list_sessions", title="List Sessions", tags={"inspect"}, annotations=None
 )
 
 
@@ -78,7 +78,7 @@ def create_session(
 
 
 t.cast(t.Any, create_session).__fastmcp__ = types.SimpleNamespace(
-    name="create_session", title="Create Session", tags={"mutating"}, annotations=None
+    name="create_session", title="Create Session", tags={"execute"}, annotations=None
 )
 
 
@@ -108,6 +108,6 @@ def delete_session(name: str, force: bool = False) -> bool:
 t.cast(t.Any, delete_session).__fastmcp__ = types.SimpleNamespace(
     name="delete_session",
     title="Delete Session",
-    tags={"destructive"},
+    tags={"teardown"},
     annotations=None,
 )

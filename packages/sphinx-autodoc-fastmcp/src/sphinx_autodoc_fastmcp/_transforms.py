@@ -8,7 +8,7 @@ import re
 from docutils import nodes
 from sphinx.application import Sphinx
 
-from sphinx_autodoc_fastmcp._badges import build_safety_badge
+from sphinx_autodoc_fastmcp._badges import build_toolset_badge
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._models import ToolInfo
 from sphinx_autodoc_fastmcp._roles import (
@@ -113,7 +113,7 @@ def add_section_badges(
     doctree: nodes.document,
     fromdocname: str,
 ) -> None:
-    """Add safety badges to tier headings on configured pages."""
+    """Add toolset badges to entry headings on configured pages."""
     pages: set[str] = set(app.config.fastmcp_section_badge_pages)
     badge_map: dict[str, str] = dict(app.config.fastmcp_section_badge_map)
     if fromdocname not in pages:
@@ -123,20 +123,20 @@ def add_section_badges(
             continue
         title_text = section[0].astext().strip()
 
-        safety = badge_map.get(title_text)
-        if safety is not None:
+        toolset = badge_map.get(title_text)
+        if toolset is not None:
             section[0] += nodes.Text(" ")
-            section[0] += build_safety_badge(safety)
+            section[0] += build_toolset_badge(toolset)
             continue
 
         m = re.match(r"^(\w+)\s*\((\w+)\)$", title_text)
         if m:
-            heading, tier = m.group(1), m.group(2)
-            if heading in badge_map and tier == badge_map[heading]:
+            heading, entry = m.group(1), m.group(2)
+            if heading in badge_map and entry == badge_map[heading]:
                 title_node = section[0]
                 title_node.clear()
                 title_node += nodes.Text(heading + " ")
-                title_node += build_safety_badge(tier)
+                title_node += build_toolset_badge(entry)
 
 
 def resolve_tool_refs(
@@ -181,7 +181,7 @@ def resolve_tool_refs(
             badge = None
             if tool_info:
                 style = "inline-icon" if icon_pos.startswith("inline") else "icon-only"
-                badge = build_safety_badge(tool_info.safety, icon_only=True)
+                badge = build_toolset_badge(tool_info.toolset, icon_only=True)
                 if style == "inline-icon":
                     badge["classes"].append(SAB.INLINE_ICON)
 
@@ -211,7 +211,7 @@ def resolve_tool_refs(
                 tool_info = tool_data.get(tool_name)
                 if tool_info:
                     newnode += nodes.Text(" ")
-                    newnode += build_safety_badge(tool_info.safety)
+                    newnode += build_toolset_badge(tool_info.toolset)
 
         node.replace_self(newnode)
 
@@ -229,8 +229,8 @@ def resolve_component_refs(
 ) -> None:
     """Resolve ``:resource:`` / ``:resourceref:`` / ``:prompt:`` / ``:promptref:``.
 
-    Mirrors :func:`resolve_tool_refs` without the safety-badge branches:
-    resources and prompts have no safety tier, so each placeholder becomes a
+    Mirrors :func:`resolve_tool_refs` without the toolset-badge branches:
+    resources and prompts have no toolset entry, so each placeholder becomes a
     plain inline reference (``reference`` wrapping ``literal``). ``{resource}``
     resolves against both the resource and resource-template id families so one
     role spelling covers both. An unresolved target degrades to a bare literal.
@@ -281,5 +281,5 @@ def badge_role(
     options: dict[str, object] | None = None,
     content: list[str] | None = None,
 ) -> tuple[list[nodes.Node], list[nodes.system_message]]:
-    """Role ``:badge:`readonly``` → safety badge."""
-    return [build_safety_badge(text.strip())], []
+    """Role ``:badge:`readonly``` → toolset badge."""
+    return [build_toolset_badge(text.strip())], []
