@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import textwrap
 import typing as t
 
@@ -379,3 +380,22 @@ def test_tool_role_omits_the_badge_for_a_tag_outside_the_vocabulary(
     )
 
     assert "gp-sphinx-fastmcp__toolset" not in read_output(result, "index.html")
+
+
+@pytest.mark.integration
+def test_the_summary_warns_when_it_drops_an_unmatched_tool(
+    tmp_path_factory: pytest.TempPathFactory,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A tool the summary cannot place must not vanish without a trace."""
+    cache_root = tmp_path_factory.mktemp("fastmcp-unmatched-toolset-warn")
+    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp"):
+        build_shared_sphinx_result(
+            cache_root,
+            _unmatched_scenario(),
+            purge_modules=("demo_tools",),
+        )
+
+    messages = "\n".join(record.message for record in caplog.records)
+    assert "omitted from fastmcp-tool-summary" in messages
+    assert "list_sessions" in messages

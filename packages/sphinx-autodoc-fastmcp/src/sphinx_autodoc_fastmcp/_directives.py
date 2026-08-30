@@ -401,6 +401,16 @@ class FastMCPToolSummaryDirective(SphinxDirective):
         for tool in tools.values():
             groups.setdefault(tool.toolset, []).append(tool)
 
+        unassigned = groups.get("", [])
+        if unassigned:
+            logger.warning(
+                "sphinx_autodoc_fastmcp: %d tool(s) carry none of the "
+                "declared fastmcp_toolsets tags and are omitted from "
+                "fastmcp-tool-summary: %s",
+                len(unassigned),
+                ", ".join(sorted(tool.name for tool in unassigned)),
+            )
+
         result_nodes: list[nodes.Node] = []
 
         for toolset in active_toolsets():
