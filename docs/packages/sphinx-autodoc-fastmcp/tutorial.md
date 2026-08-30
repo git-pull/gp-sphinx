@@ -20,7 +20,8 @@ Render one tool's parameter table:
 ```
 ````
 
-Render a summary table grouped by safety tier:
+Render a summary table grouped by toolset (see the how-to guide for
+declaring `fastmcp_toolsets`):
 
 ````myst
 ```{eval-rst}
@@ -35,8 +36,8 @@ Use {tool}`list_sessions` for a linked badge, or {toolref}`delete_session`
 for a plain inline reference.
 ````
 
-Prompts and resources have the same affordance (without a safety badge, which
-only tools carry). `{resource}` resolves a fixed resource or a resource
+Prompts and resources have the same affordance (without a toolset badge,
+which only tools carry). `{resource}` resolves a fixed resource or a resource
 template by name; `{prompt}` resolves a prompt:
 
 ````myst

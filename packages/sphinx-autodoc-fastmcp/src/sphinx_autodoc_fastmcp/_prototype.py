@@ -12,7 +12,8 @@ Examples
 ...     title="List Sessions",
 ...     module_name="demo_tools",
 ...     area="api",
-...     safety="readonly",
+...     axes={"risk": "readonly"},
+...     meta={},
 ...     annotations={},
 ...     func=lambda server: "[]",
 ...     docstring="List sessions for one server.",
@@ -134,7 +135,7 @@ def build_tool_desc_prototype(tool: ToolInfo) -> addnodes.desc:
     inject_signature_slots(
         signature,
         marker_attr="smf_prototype_slots",
-        badge_node=build_tool_badge_group(tool.safety),
+        badge_node=build_tool_badge_group(tool.axes),
         extract_source_link=False,
     )
     desc += signature

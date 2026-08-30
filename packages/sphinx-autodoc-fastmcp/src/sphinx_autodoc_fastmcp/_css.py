@@ -1,7 +1,7 @@
 """CSS class name constants for sphinx_autodoc_fastmcp.
 
 All constants use the ``gp-sphinx-fastmcp`` namespace for FastMCP-specific
-layout and safety semantics.  For shared badge primitives, import ``SAB``
+layout and toolset semantics.  For shared badge primitives, import ``SAB``
 from ``sphinx_ux_badges`` directly.
 
 Examples
@@ -9,8 +9,8 @@ Examples
 >>> _CSS.TOOL_SECTION
 'gp-sphinx-fastmcp__tool-section'
 
->>> _CSS.BADGE_SAFETY
-'gp-sphinx-fastmcp__safety'
+>>> _CSS.BADGE_TOOLSET
+'gp-sphinx-fastmcp__toolset'
 """
 
 from __future__ import annotations
@@ -40,19 +40,38 @@ class _CSS:
     RESOURCE_SIGNATURE = "gp-sphinx-fastmcp__resource-signature"
     BODY_SECTION = "gp-sphinx-fastmcp__body-section"
 
-    # Safety slot + tier values
-    BADGE_SAFETY = "gp-sphinx-fastmcp__safety"
-    SAFETY_READONLY = "gp-sphinx-fastmcp__safety-readonly"
-    SAFETY_MUTATING = "gp-sphinx-fastmcp__safety-mutating"
-    SAFETY_DESTRUCTIVE = "gp-sphinx-fastmcp__safety-destructive"
+    # Toolset slot
+    BADGE_TOOLSET = "gp-sphinx-fastmcp__toolset"
 
     @staticmethod
-    def safety_class(safety: str) -> str:
-        """Return safety modifier class for badge styling.
+    def tone_class(tone: str) -> str:
+        """Return the badge colour class for a term's tone.
 
         Examples
         --------
-        >>> _CSS.safety_class("readonly")
-        'gp-sphinx-fastmcp__safety-readonly'
+        >>> _CSS.tone_class("red")
+        'gp-sphinx-fastmcp__toolset--tone-red'
         """
-        return f"gp-sphinx-fastmcp__safety-{safety}"
+        return f"gp-sphinx-fastmcp__toolset--tone-{tone}"
+
+    @staticmethod
+    def axis_class(axis: str) -> str:
+        """Return the axis modifier class.
+
+        Examples
+        --------
+        >>> _CSS.axis_class("risk")
+        'gp-sphinx-fastmcp__axis-risk'
+        """
+        return f"gp-sphinx-fastmcp__axis-{axis}"
+
+    @staticmethod
+    def term_class(axis: str, term: str) -> str:
+        """Return the per-term modifier class, namespaced by axis.
+
+        Examples
+        --------
+        >>> _CSS.term_class("risk", "readonly")
+        'gp-sphinx-fastmcp__risk-readonly'
+        """
+        return f"gp-sphinx-fastmcp__{axis}-{term}"

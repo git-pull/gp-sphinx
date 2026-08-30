@@ -7,6 +7,7 @@ import typing as t
 from docutils import nodes
 
 from sphinx_autodoc_fastmcp._css import _CSS
+from sphinx_autodoc_fastmcp._models import DEFAULT_AXES, Axis
 from sphinx_ux_badges import (
     SAB,
     BadgeNode,
@@ -16,74 +17,95 @@ from sphinx_ux_badges import (
     build_toolbar as _sab_build_toolbar,
 )
 
-_SAFETY_LABELS = ("readonly", "mutating", "destructive")
+#: Badges are built from call sites with no ``app`` in scope, so the
+#: extension installs the axes once at ``builder-inited``.
+_ACTIVE_AXES: tuple[Axis, ...] = DEFAULT_AXES
 
-_SAFETY_TOOLTIPS: dict[str, str] = {
-    "readonly": "Read-only \u2014 does not modify external state",
-    "mutating": "Mutating \u2014 creates or modifies objects",
-    "destructive": "Destructive \u2014 may remove data; not reversible",
-}
 
-_SAFETY_ICONS: dict[str, str] = {
-    "readonly": "\U0001f50d",
-    "mutating": "\u270f\ufe0f",
-    "destructive": "\U0001f4a3",
-}
+def use_axes(axes: t.Sequence[Axis] | None) -> None:
+    """Install the axes badges render from. ``None`` restores the default."""
+    global _ACTIVE_AXES
+    _ACTIVE_AXES = DEFAULT_AXES if axes is None else tuple(axes)
+
+
+def active_axes() -> tuple[Axis, ...]:
+    """Return the axes in force, in the order they were declared."""
+    return _ACTIVE_AXES
+
+
+def _axis(name: str) -> Axis | None:
+    """Return the active axis called ``name``, or ``None``."""
+    return next((a for a in _ACTIVE_AXES if a.name == name), None)
+
 
 _TYPE_TOOLTIP = "MCP tool"
 
 
-def build_safety_badge(
-    safety: str,
+def term_spec(axis_name: str, value: str) -> BadgeSpec:
+    """Return the badge spec for ``value`` on axis ``axis_name``.
+
+    An undeclared axis or term still renders, untinted and claiming
+    nothing, so a tag the project forgot to declare is visible rather than
+    silently dropped.
+    """
+    axis = _axis(axis_name)
+    term = axis.term(value) if axis else None
+    return BadgeSpec(
+        term.label if term and term.label else value,
+        tooltip=(
+            term.tooltip if term and term.tooltip else f"{axis_name.title()}: {value}"
+        ),
+        icon=(term.icon if term else ""),
+        classes=(
+            SAB.DENSE,
+            SAB.NO_UNDERLINE,
+            _CSS.BADGE_TOOLSET,
+            _CSS.axis_class(axis_name),
+            _CSS.term_class(axis_name, value),
+            _CSS.tone_class(term.tone if term else "slate"),
+            *(term.classes if term else ()),
+        ),
+        style=t.cast(
+            't.Literal["full", "icon-only", "inline-icon"]',
+            term.style if term else "full",
+        ),
+        fill=t.cast('t.Literal["filled", "outline"]', term.fill if term else "filled"),
+    )
+
+
+def build_axis_badge(
+    axis_name: str,
+    value: str,
     *,
     icon_only: bool = False,
 ) -> BadgeNode:
-    """Build a safety tier badge.
-
-    Parameters
-    ----------
-    safety : str
-        One of ``readonly``, ``mutating``, ``destructive``.
-    icon_only : bool
-        When True, create an icon-only badge (empty text, 16x16 colored box).
-
-    Returns
-    -------
-    BadgeNode
+    """Build one axis badge.
 
     Examples
     --------
-    >>> b = build_safety_badge("readonly")
-    >>> b.astext()
+    >>> build_axis_badge("risk", "readonly").astext()
     'readonly'
     """
-    label = safety if safety in _SAFETY_LABELS else safety
-    text = "" if icon_only else label
+    spec = term_spec(axis_name, value)
     style: t.Literal["full", "icon-only", "inline-icon"] = (
-        "icon-only" if icon_only else "full"
+        "icon-only" if icon_only else spec.style
     )
-    classes = [
-        SAB.DENSE,
-        SAB.NO_UNDERLINE,
-        _CSS.BADGE_SAFETY,
-        _CSS.safety_class(safety),
-    ]
     return build_badge(
-        text,
-        tooltip=_SAFETY_TOOLTIPS.get(safety, f"Safety: {safety}"),
-        icon=_SAFETY_ICONS.get(safety, ""),
-        classes=classes,
+        "" if icon_only else spec.text,
+        tooltip=spec.tooltip,
+        icon=spec.icon,
+        classes=list(spec.classes),
         style=style,
+        fill=spec.fill,
     )
 
 
 def build_type_tool_badge() -> BadgeNode:
-    """Rightmost type badge labeling the entry as an MCP tool.
+    """Rightmost type badge labeling the component as an MCP tool.
 
     Examples
     --------
-    >>> b = build_type_tool_badge()
-    >>> b.astext()
+    >>> build_type_tool_badge().astext()
     'tool'
     """
     return build_badge(
@@ -93,56 +115,66 @@ def build_type_tool_badge() -> BadgeNode:
     )
 
 
-def build_tool_badge_group(safety: str) -> nodes.inline:
-    """Badge group: safety tier + type ``tool``.
+def primary_axis(axes: dict[str, str]) -> tuple[str, str] | None:
+    """Return the ``(axis, term)`` a single inline badge should show.
 
-    Parameters
-    ----------
-    safety : str
-        Safety tier name.
-
-    Returns
-    -------
-    nodes.inline
+    Inline references have room for one badge, so they take the first
+    declared axis the tool matched.
 
     Examples
     --------
-    >>> g = build_tool_badge_group("readonly")
+    >>> primary_axis({"risk": "readonly"})
+    ('risk', 'readonly')
+    >>> primary_axis({}) is None
+    True
+    """
+    for axis in _ACTIVE_AXES:
+        if axes.get(axis.name):
+            return axis.name, axes[axis.name]
+    return next(((n, v) for n, v in axes.items() if v), None)
+
+
+def build_tool_badge_group(axes: dict[str, str]) -> nodes.inline:
+    """Badge group: one badge per matched axis, then the type badge.
+
+    Axes render in declaration order, so the group reads the way the
+    project ordered its taxonomy.
+
+    Examples
+    --------
+    >>> g = build_tool_badge_group({"risk": "readonly"})
     >>> "gp-sphinx-badge-group" in g["classes"]
     True
     """
-    return build_badge_group_from_specs(
-        [
-            BadgeSpec(
-                safety if safety in _SAFETY_LABELS else safety,
-                tooltip=_SAFETY_TOOLTIPS.get(safety, f"Safety: {safety}"),
-                icon=_SAFETY_ICONS.get(safety, ""),
-                classes=(
-                    SAB.DENSE,
-                    SAB.NO_UNDERLINE,
-                    _CSS.BADGE_SAFETY,
-                    _CSS.safety_class(safety),
-                ),
-            ),
-            BadgeSpec(
-                "tool",
-                tooltip=_TYPE_TOOLTIP,
-                classes=(SAB.DENSE, SAB.NO_UNDERLINE, SAB.BADGE_TYPE, _CSS.TYPE_TOOL),
-            ),
-        ],
+    specs: list[BadgeSpec] = [
+        term_spec(axis.name, axes[axis.name])
+        for axis in _ACTIVE_AXES
+        if axes.get(axis.name)
+    ]
+    specs.extend(
+        term_spec(name, value)
+        for name, value in axes.items()
+        if value and _axis(name) is None
     )
+    specs.append(
+        BadgeSpec(
+            "tool",
+            tooltip=_TYPE_TOOLTIP,
+            classes=(SAB.DENSE, SAB.NO_UNDERLINE, SAB.BADGE_TYPE, _CSS.TYPE_TOOL),
+        )
+    )
+    return build_badge_group_from_specs(specs)
 
 
-def build_toolbar(safety: str) -> nodes.inline:
+def build_toolbar(axes: dict[str, str]) -> nodes.inline:
     """Toolbar on the title row (flex ``margin-left: auto``).
 
     Examples
     --------
-    >>> t = build_toolbar("readonly")
-    >>> "gp-sphinx-toolbar" in t["classes"]
+    >>> "gp-sphinx-toolbar" in build_toolbar({"risk": "readonly"})["classes"]
     True
     """
-    return _sab_build_toolbar(build_tool_badge_group(safety))
+    return _sab_build_toolbar(build_tool_badge_group(axes))
 
 
 _TYPE_TOOLTIP_PROMPT = "MCP prompt recipe"

@@ -275,7 +275,7 @@
               <api_component classes="gp-sphinx-api-layout-right gp-sphinx-toolbar" name="gp-sphinx-api-layout-right" tag="div">
                   <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
                       <inline classes="gp-sphinx-badge-group">
-                          <BadgeNode badge_icon="🔍" badge_tooltip="Read-only — does not modify external state" classes="gp-sphinx-badge gp-sphinx-badge--dense gp-sphinx-badge--underline-none gp-sphinx-fastmcp__safety gp-sphinx-fastmcp__safety-readonly" tabindex="0">
+                          <BadgeNode badge_tooltip="Risk: readonly" classes="gp-sphinx-badge gp-sphinx-badge--dense gp-sphinx-badge--underline-none gp-sphinx-fastmcp__toolset gp-sphinx-fastmcp__axis-risk gp-sphinx-fastmcp__risk-readonly gp-sphinx-fastmcp__toolset--tone-slate" tabindex="0">
                               readonly
                            
                           <BadgeNode badge_tooltip="MCP tool" classes="gp-sphinx-badge gp-sphinx-badge--dense gp-sphinx-badge--underline-none gp-sphinx-badge--slot-type gp-sphinx-fastmcp__type-tool" tabindex="0">
@@ -284,7 +284,7 @@
               <api_component classes="gp-sphinx-api-layout-top gp-sphinx-toolbar" name="gp-sphinx-api-layout-top" tag="div">
                   <api_inline_component classes="gp-sphinx-api-badge-container" name="gp-sphinx-api-badge-container" tag="span">
                       <inline classes="gp-sphinx-badge-group">
-                          <BadgeNode badge_icon="🔍" badge_tooltip="Read-only — does not modify external state" classes="gp-sphinx-badge gp-sphinx-badge--dense gp-sphinx-badge--underline-none gp-sphinx-fastmcp__safety gp-sphinx-fastmcp__safety-readonly" tabindex="0">
+                          <BadgeNode badge_tooltip="Risk: readonly" classes="gp-sphinx-badge gp-sphinx-badge--dense gp-sphinx-badge--underline-none gp-sphinx-fastmcp__toolset gp-sphinx-fastmcp__axis-risk gp-sphinx-fastmcp__risk-readonly gp-sphinx-fastmcp__toolset--tone-slate" tabindex="0">
                               readonly
                            
                           <BadgeNode badge_tooltip="MCP tool" classes="gp-sphinx-badge gp-sphinx-badge--dense gp-sphinx-badge--underline-none gp-sphinx-badge--slot-type gp-sphinx-fastmcp__type-tool" tabindex="0">

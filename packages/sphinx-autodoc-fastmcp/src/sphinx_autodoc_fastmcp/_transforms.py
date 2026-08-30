@@ -8,7 +8,11 @@ import re
 from docutils import nodes
 from sphinx.application import Sphinx
 
-from sphinx_autodoc_fastmcp._badges import build_safety_badge
+from sphinx_autodoc_fastmcp._badges import (
+    active_axes,
+    build_axis_badge,
+    primary_axis,
+)
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._models import ToolInfo
 from sphinx_autodoc_fastmcp._roles import (
@@ -108,12 +112,30 @@ def register_tool_labels(app: Sphinx, doctree: nodes.document) -> None:
             domain.labels[alias] = (docname, canonical_id, tool_name)
 
 
+def _split_term(value: str) -> tuple[str, str]:
+    """Split a section-badge value into ``(axis, term)``.
+
+    A bare term takes the first declared axis, so the common single-axis
+    project writes ``"inspect"`` rather than ``"risk:inspect"``.
+
+    Examples
+    --------
+    >>> _split_term("risk:readonly")
+    ('risk', 'readonly')
+    """
+    axis, _, term = value.partition(":")
+    if term:
+        return axis, term
+    declared = active_axes()
+    return (declared[0].name if declared else "", value)
+
+
 def add_section_badges(
     app: Sphinx,
     doctree: nodes.document,
     fromdocname: str,
 ) -> None:
-    """Add safety badges to tier headings on configured pages."""
+    """Add axis badges to section headings on configured pages."""
     pages: set[str] = set(app.config.fastmcp_section_badge_pages)
     badge_map: dict[str, str] = dict(app.config.fastmcp_section_badge_map)
     if fromdocname not in pages:
@@ -123,20 +145,20 @@ def add_section_badges(
             continue
         title_text = section[0].astext().strip()
 
-        safety = badge_map.get(title_text)
-        if safety is not None:
+        mapped = badge_map.get(title_text)
+        if mapped is not None:
             section[0] += nodes.Text(" ")
-            section[0] += build_safety_badge(safety)
+            section[0] += build_axis_badge(*_split_term(mapped))
             continue
 
         m = re.match(r"^(\w+)\s*\((\w+)\)$", title_text)
         if m:
-            heading, tier = m.group(1), m.group(2)
-            if heading in badge_map and tier == badge_map[heading]:
+            heading, entry = m.group(1), m.group(2)
+            if heading in badge_map and entry == badge_map[heading]:
                 title_node = section[0]
                 title_node.clear()
                 title_node += nodes.Text(heading + " ")
-                title_node += build_safety_badge(tier)
+                title_node += build_axis_badge(*_split_term(entry))
 
 
 def resolve_tool_refs(
@@ -179,9 +201,10 @@ def resolve_tool_refs(
         if icon_pos:
             tool_info = tool_data.get(tool_name)
             badge = None
-            if tool_info:
+            primary = primary_axis(tool_info.axes) if tool_info else None
+            if primary:
                 style = "inline-icon" if icon_pos.startswith("inline") else "icon-only"
-                badge = build_safety_badge(tool_info.safety, icon_only=True)
+                badge = build_axis_badge(*primary, icon_only=True)
                 if style == "inline-icon":
                     badge["classes"].append(SAB.INLINE_ICON)
 
@@ -209,9 +232,10 @@ def resolve_tool_refs(
             newnode += nodes.literal("", tool_name)
             if show_badge:
                 tool_info = tool_data.get(tool_name)
-                if tool_info:
+                primary = primary_axis(tool_info.axes) if tool_info else None
+                if primary:
                     newnode += nodes.Text(" ")
-                    newnode += build_safety_badge(tool_info.safety)
+                    newnode += build_axis_badge(*primary)
 
         node.replace_self(newnode)
 
@@ -229,8 +253,8 @@ def resolve_component_refs(
 ) -> None:
     """Resolve ``:resource:`` / ``:resourceref:`` / ``:prompt:`` / ``:promptref:``.
 
-    Mirrors :func:`resolve_tool_refs` without the safety-badge branches:
-    resources and prompts have no safety tier, so each placeholder becomes a
+    Mirrors :func:`resolve_tool_refs` without the axis-badge branches:
+    resources and prompts are not classified, so each placeholder becomes a
     plain inline reference (``reference`` wrapping ``literal``). ``{resource}``
     resolves against both the resource and resource-template id families so one
     role spelling covers both. An unresolved target degrades to a bare literal.
@@ -281,5 +305,5 @@ def badge_role(
     options: dict[str, object] | None = None,
     content: list[str] | None = None,
 ) -> tuple[list[nodes.Node], list[nodes.system_message]]:
-    """Role ``:badge:`readonly``` → safety badge."""
-    return [build_safety_badge(text.strip())], []
+    """Role ``:badge:`readonly``` or ``:badge:`risk:readonly``` → axis badge."""
+    return [build_axis_badge(*_split_term(text.strip()))], []

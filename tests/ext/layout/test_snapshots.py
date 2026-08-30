@@ -204,7 +204,8 @@ def _make_fastmcp_tool_desc() -> addnodes.desc:
             title="List Sessions",
             module_name="demo_tools",
             area="api",
-            safety="readonly",
+            axes={"risk": "readonly"},
+            meta={},
             annotations={},
             func=lambda server: "[]",
             docstring=(
@@ -301,8 +302,19 @@ def test_rst_directive_snapshot(snapshot_doctree: t.Callable[..., None]) -> None
 def test_fastmcp_tool_prototype_snapshot(
     snapshot_doctree: t.Callable[..., None],
 ) -> None:
-    """FastMCP prototype entries snapshot the shared desc layout contract."""
-    snapshot_doctree(
-        _rendered_managed_desc(_make_fastmcp_tool_desc(), show_annotations=True),
-        name="fastmcp_tool_prototype",
-    )
+    """FastMCP prototype entries snapshot the shared desc layout contract.
+
+    Pins the axes it renders under: they are process-global, so a Sphinx
+    build earlier in the session would otherwise pick the badge text.
+    """
+    from sphinx_autodoc_fastmcp._badges import use_axes
+    from sphinx_autodoc_fastmcp._models import coerce_axes
+
+    use_axes(coerce_axes(({"name": "risk", "terms": ("readonly",)},)))
+    try:
+        snapshot_doctree(
+            _rendered_managed_desc(_make_fastmcp_tool_desc(), show_annotations=True),
+            name="fastmcp_tool_prototype",
+        )
+    finally:
+        use_axes(None)

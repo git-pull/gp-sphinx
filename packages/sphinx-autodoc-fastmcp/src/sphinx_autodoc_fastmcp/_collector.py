@@ -11,20 +11,20 @@ import typing as t
 from sphinx.application import Sphinx
 
 from sphinx_autodoc_fastmcp._models import (
+    DEFAULT_AXES,
+    Axis,
     PromptArgInfo,
     PromptInfo,
     ResourceInfo,
     ResourceTemplateInfo,
     ToolInfo,
+    coerce_axes,
+    resolve_axes,
 )
 from sphinx_autodoc_fastmcp._parsing import extract_params, first_paragraph
 from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 logger = logging.getLogger(__name__)
-
-TAG_READONLY = "readonly"
-TAG_MUTATING = "mutating"
-TAG_DESTRUCTIVE = "destructive"
 
 
 class ToolCollector:
@@ -34,28 +34,29 @@ class ToolCollector:
         self,
         *,
         area_map: dict[str, str],
+        axes: tuple[Axis, ...] = DEFAULT_AXES,
     ) -> None:
         self.tools: list[ToolInfo] = []
         self._current_module: str = ""
         self._area_map = area_map
+        self.axes = axes
 
     def tool(
         self,
         title: str = "",
         annotations: dict[str, bool] | None = None,
         tags: set[str] | None = None,
+        meta: dict[str, t.Any] | None = None,
     ) -> t.Callable[[t.Callable[..., t.Any]], t.Callable[..., t.Any]]:
         """Match ``FastMCP.tool()`` decorator behavior for capture."""
         annotations = annotations or {}
         tags = tags or set()
+        meta = meta or {}
 
         def decorator(func: t.Callable[..., t.Any]) -> t.Callable[..., t.Any]:
-            if TAG_DESTRUCTIVE in tags:
-                safety = "destructive"
-            elif TAG_MUTATING in tags:
-                safety = "mutating"
-            else:
-                safety = "readonly"
+            axes = resolve_axes(
+                self.axes, tags=tags, annotations=annotations, meta=meta
+            )
 
             module_name = self._current_module
             area = self._area_map.get(
@@ -69,8 +70,9 @@ class ToolCollector:
                     title=title or func.__name__.replace("_", " ").title(),
                     module_name=module_name,
                     area=area,
-                    safety=safety,
+                    axes=axes,
                     annotations=annotations,
+                    meta=meta,
                     func=func,
                     docstring=func.__doc__ or "",
                     params=extract_params(func),
@@ -84,47 +86,63 @@ class ToolCollector:
         return decorator
 
 
+_HINTS = ("readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint")
+
+
+def _annotation_hints(annotations: t.Any) -> dict[str, bool]:
+    """Return the hints a tool actually sets, dropping the unset ones.
+
+    FastMCP accepts ``ToolAnnotations`` or a plain mapping, so read both.
+
+    Examples
+    --------
+    >>> _annotation_hints({"readOnlyHint": True, "openWorldHint": None})
+    {'readOnlyHint': True}
+    >>> _annotation_hints(None)
+    {}
+    """
+    if annotations is None:
+        return {}
+    hints: dict[str, bool] = {}
+    for key in _HINTS:
+        value = (
+            annotations.get(key)
+            if isinstance(annotations, dict)
+            else getattr(annotations, key, None)
+        )
+        if isinstance(value, bool):
+            hints[key] = value
+    return hints
+
+
 def _tool_from_callable(
     func: t.Callable[..., t.Any],
     *,
     module_name: str,
     area_map: dict[str, str],
+    axes: tuple[Axis, ...] = DEFAULT_AXES,
 ) -> ToolInfo | None:
     """Build ``ToolInfo`` from a decorated function (``__fastmcp__``)."""
-    meta = getattr(func, "__fastmcp__", None)
-    if meta is None:
+    spec = getattr(func, "__fastmcp__", None)
+    if spec is None:
         return None
-    tags = getattr(meta, "tags", None) or set()
+    tags = getattr(spec, "tags", None) or set()
     if not isinstance(tags, set):
         tags = set(tags) if tags else set()
-    if TAG_DESTRUCTIVE in tags:
-        safety = "destructive"
-    elif TAG_MUTATING in tags:
-        safety = "mutating"
-    else:
-        safety = "readonly"
+    meta = dict(getattr(spec, "meta", None) or {})
     area = area_map.get(module_name, module_name.replace("_tools", ""))
-    name = getattr(meta, "name", None) or func.__name__
-    title = getattr(meta, "title", None) or name.replace("_", " ").title()
-    annotations = getattr(meta, "annotations", None)
-    ann_dict: dict[str, bool] = {}
-    if annotations is not None:
-        for field in (
-            "readOnlyHint",
-            "destructiveHint",
-            "idempotentHint",
-            "openWorldHint",
-        ):
-            val = getattr(annotations, field, None)
-            if isinstance(val, bool):
-                ann_dict[field] = val
+    name = getattr(spec, "name", None) or func.__name__
+    title = getattr(spec, "title", None) or name.replace("_", " ").title()
+    ann_dict = _annotation_hints(getattr(spec, "annotations", None))
+    resolved = resolve_axes(axes, tags=tags, annotations=ann_dict, meta=meta)
     return ToolInfo(
         name=name,
         title=title,
         module_name=module_name,
         area=area,
-        safety=safety,
+        axes=resolved,
         annotations=ann_dict,
+        meta=meta,
         func=func,
         docstring=func.__doc__ or "",
         params=extract_params(func),
@@ -138,6 +156,7 @@ def collect_tools(app: Sphinx) -> None:
     """Populate ``app.env.fastmcp_tools`` from configured modules."""
     modules: list[str] = list(app.config.fastmcp_tool_modules)
     area_map: dict[str, str] = dict(app.config.fastmcp_area_map)
+    axes = coerce_axes(app.config.fastmcp_axes)
     mode = str(app.config.fastmcp_collector_mode)
     if mode not in ("register", "introspect"):
         logger.warning(
@@ -156,7 +175,7 @@ def collect_tools(app: Sphinx) -> None:
     collector_tools: list[ToolInfo] = []
 
     if mode == "register":
-        collector = ToolCollector(area_map=area_map)
+        collector = ToolCollector(area_map=area_map, axes=axes)
         for dotted in modules:
             mod_suffix = dotted.split(".")[-1]
             collector._current_module = mod_suffix
@@ -190,6 +209,7 @@ def collect_tools(app: Sphinx) -> None:
                     obj,
                     module_name=mod_suffix,
                     area_map=area_map,
+                    axes=axes,
                 )
                 if info is not None:
                     collector_tools.append(info)
