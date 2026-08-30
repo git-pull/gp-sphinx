@@ -62,7 +62,12 @@ _CONF_PY = textwrap.dedent(
 
     fastmcp_tool_modules = ["demo_tools"]
     fastmcp_area_map = {"demo_tools": "api"}
-    fastmcp_toolsets = ("destructive", "mutating", "readonly")
+    fastmcp_axes = (
+        {
+            "name": "risk",
+            "terms": ("destructive", "mutating", "readonly"),
+        },
+    )
     fastmcp_collector_mode = "introspect"
     """
 )
@@ -171,7 +176,12 @@ _COLLISION_CONF_PY = textwrap.dedent(
 
     fastmcp_tool_modules = ["buffer_tools"]
     fastmcp_area_map = {"buffer_tools": "api"}
-    fastmcp_toolsets = ("destructive", "mutating", "readonly")
+    fastmcp_axes = (
+        {
+            "name": "risk",
+            "terms": ("destructive", "mutating", "readonly"),
+        },
+    )
     fastmcp_collector_mode = "introspect"
     """
 )
@@ -332,7 +342,7 @@ _UNMATCHED_CONF_PY = textwrap.dedent(
 
     fastmcp_tool_modules = ["demo_tools"]
     fastmcp_area_map = {"demo_tools": "api"}
-    fastmcp_toolsets = ("destructive", "mutating")
+    fastmcp_axes = ({"name": "risk", "terms": ("destructive", "mutating")},)
     fastmcp_collector_mode = "introspect"
     """
 )
@@ -403,17 +413,17 @@ def test_the_summary_warns_when_it_drops_an_unmatched_tool(
 
 
 @pytest.mark.integration
-def test_summary_sections_anchor_on_the_toolset_tag(
+def test_summary_sections_anchor_on_the_axis_term(
     fastmcp_heading_collision_result: SharedSphinxResult,
 ) -> None:
     """A tag keeps one anchor whatever its rendered heading reads."""
     html = read_output(fastmcp_heading_collision_result, "index.html")
 
-    assert 'id="fastmcp-toolset-destructive"' in html
+    assert 'id="fastmcp-risk-destructive"' in html
 
 
 @pytest.mark.integration
-def test_the_vocabulary_survives_a_second_build_of_one_app(
+def test_the_axes_survive_a_second_build_of_one_app(
     tmp_path: pathlib.Path,
 ) -> None:
     """Nothing may clear the vocabulary per build.
@@ -424,14 +434,14 @@ def test_the_vocabulary_survives_a_second_build_of_one_app(
     """
     from sphinx.application import Sphinx
 
-    from sphinx_autodoc_fastmcp._badges import build_toolset_badge, use_toolsets
+    from sphinx_autodoc_fastmcp._badges import build_axis_badge, use_axes
 
     src = tmp_path / "src"
     src.mkdir()
     (src / "conf.py").write_text(
         'extensions = ["sphinx_autodoc_fastmcp"]\n'
-        'fastmcp_toolsets = ({"tag": "execute", "tooltip": "Runs it",'
-        ' "tone": "red"},)\n',
+        'fastmcp_axes = ({"name": "risk", "terms": ({"term": "execute",'
+        ' "tooltip": "Runs it", "tone": "red"},)},)\n',
     )
     (src / "index.rst").write_text("Tools\n=====\n")
 
@@ -448,8 +458,8 @@ def test_the_vocabulary_survives_a_second_build_of_one_app(
     app.build()
 
     try:
-        badge = build_toolset_badge("execute")
+        badge = build_axis_badge("risk", "execute")
         assert badge["badge_tooltip"] == "Runs it"
         assert "gp-sphinx-fastmcp__toolset--tone-red" in badge["classes"]
     finally:
-        use_toolsets(None)
+        use_axes(None)

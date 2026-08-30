@@ -45,7 +45,7 @@ class _CSS:
 
     @staticmethod
     def tone_class(tone: str) -> str:
-        """Return the badge colour class for a toolset's tone.
+        """Return the badge colour class for a term's tone.
 
         Examples
         --------
@@ -55,12 +55,23 @@ class _CSS:
         return f"gp-sphinx-fastmcp__toolset--tone-{tone}"
 
     @staticmethod
-    def toolset_class(toolset: str) -> str:
-        """Return toolset modifier class for badge styling.
+    def axis_class(axis: str) -> str:
+        """Return the axis modifier class.
 
         Examples
         --------
-        >>> _CSS.toolset_class("readonly")
-        'gp-sphinx-fastmcp__toolset-readonly'
+        >>> _CSS.axis_class("risk")
+        'gp-sphinx-fastmcp__axis-risk'
         """
-        return f"gp-sphinx-fastmcp__toolset-{toolset}"
+        return f"gp-sphinx-fastmcp__axis-{axis}"
+
+    @staticmethod
+    def term_class(axis: str, term: str) -> str:
+        """Return the per-term modifier class, namespaced by axis.
+
+        Examples
+        --------
+        >>> _CSS.term_class("risk", "readonly")
+        'gp-sphinx-fastmcp__risk-readonly'
+        """
+        return f"gp-sphinx-fastmcp__{axis}-{term}"

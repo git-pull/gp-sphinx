@@ -13,7 +13,7 @@ if t.TYPE_CHECKING:
     from sphinx.environment import BuildEnvironment
 
 from sphinx_autodoc_fastmcp._badges import (
-    active_toolsets,
+    active_axes,
     build_prompt_badge_group,
     build_resource_badge_group,
     build_tool_badge_group,
@@ -285,7 +285,7 @@ class FastMCPToolDirective(SphinxDirective):
             profile_class=API.profile("fastmcp-tool"),
             signature_children=(nodes.literal("", tool.name),),
             content_children=tuple(content_nodes),
-            badge_group=build_tool_badge_group(tool.toolset),
+            badge_group=build_tool_badge_group(tool.axes),
             permalink=link,
             entry_classes=(_CSS.TOOL_ENTRY,),
             signature_classes=(_CSS.TOOL_SIGNATURE,),
@@ -379,14 +379,18 @@ class FastMCPToolInputDirective(SphinxDirective):
 
 
 class FastMCPToolSummaryDirective(SphinxDirective):
-    """Summary tables of tools grouped by toolset."""
+    """Summary tables of tools grouped by one axis.
+
+    Takes an optional argument naming the axis; defaults to the first
+    declared one.
+    """
 
     required_arguments = 0
-    optional_arguments = 0
+    optional_arguments = 1
     has_content = False
 
     def run(self) -> list[nodes.Node]:
-        """Build one section of tables per declared toolset."""
+        """Build one section of tables per term on the chosen axis."""
         tools: dict[str, ToolInfo] = getattr(self.env, "fastmcp_tools", {})
 
         if not tools:
@@ -397,31 +401,48 @@ class FastMCPToolSummaryDirective(SphinxDirective):
                 ),
             ]
 
+        declared = active_axes()
+        wanted = self.arguments[0] if self.arguments else ""
+        axis = next(
+            (a for a in declared if a.name == wanted),
+            declared[0] if declared and not wanted else None,
+        )
+        if axis is None:
+            return [
+                self.state.document.reporter.warning(
+                    f"fastmcp-tool-summary: no axis {wanted!r} declared "
+                    "in fastmcp_axes."
+                    if wanted
+                    else "fastmcp-tool-summary: fastmcp_axes declares no axes.",
+                    line=self.lineno,
+                ),
+            ]
+
         groups: dict[str, list[ToolInfo]] = {}
         for tool in tools.values():
-            groups.setdefault(tool.toolset, []).append(tool)
+            groups.setdefault(tool.axes.get(axis.name, ""), []).append(tool)
 
         unassigned = groups.get("", [])
         if unassigned:
             logger.warning(
-                "sphinx_autodoc_fastmcp: %d tool(s) carry none of the "
-                "declared fastmcp_toolsets tags and are omitted from "
-                "fastmcp-tool-summary: %s",
+                "sphinx_autodoc_fastmcp: %d tool(s) take no term on axis %r "
+                "and are omitted from fastmcp-tool-summary: %s",
                 len(unassigned),
+                axis.name,
                 ", ".join(sorted(tool.name for tool in unassigned)),
             )
 
         result_nodes: list[nodes.Node] = []
 
-        for toolset in active_toolsets():
-            group_tools = groups.get(toolset.tag, [])
+        for term in axis.terms:
+            group_tools = groups.get(term.term, [])
             if not group_tools:
                 continue
-            label = toolset.tag.replace("_", " ").title()
-            desc = toolset.tooltip
+            label = term.label or term.term.replace("_", " ").title()
+            desc = term.tooltip
 
             section = nodes.section()
-            section["ids"].append(nodes.make_id(f"fastmcp-toolset-{toolset.tag}"))
+            section["ids"].append(nodes.make_id(f"fastmcp-{axis.name}-{term.term}"))
             self.state.document.note_explicit_target(section)
             section += nodes.title("", label)
             section += nodes.paragraph("", desc)

@@ -8,54 +8,133 @@ from dataclasses import dataclass, field
 
 logger = logging.getLogger(__name__)
 
-#: Tones the stylesheet defines a rule for. A tone outside this set would
-#: render an uncoloured badge, so an unknown one falls back to ``slate``.
-TONES: frozenset[str] = frozenset({"green", "blue", "amber", "red", "slate"})
+#: Sources an axis can read a tool's term from. ``tags`` matches declared
+#: terms against ``tool.tags``; ``annotations`` derives one from the MCP
+#: hints; ``meta:<key>`` reads ``tool.meta[<key>]``.
+AxisSource = str
 
 
 @dataclass(frozen=True)
-class Toolset:
-    """One entry in the vocabulary a project tags its tools with.
+class Term:
+    """One value an axis can take, and how it renders.
 
     Attributes
     ----------
-    tag : str
-        Tag to look for in a tool's ``tags`` set.
+    term : str
+        Value to match, and the badge label unless ``label`` overrides it.
+    label : str
+        Badge text. Defaults to ``term``.
     tooltip : str
-        Hover text for the badge. Falls back to ``"Toolset: <tag>"``.
+        Hover text. Falls back to ``"<axis>: <term>"``.
     icon : str
         Emoji rendered before the label. Optional.
     tone : str
-        Badge colour: ``green``, ``blue``, ``amber``, ``red`` or
-        ``slate``. Defaults to ``slate``, which is visible and claims
-        nothing — this extension cannot know which of a project's
-        toolsets deserves which colour.
+        Colour name. Any name works: the badge gets ``--tone-<tone>`` and
+        the stylesheet decides what that means.
+    style : str
+        ``full``, ``icon-only`` or ``inline-icon``.
+    fill : str
+        ``filled`` or ``outline``.
+    classes : tuple of str
+        Extra CSS classes, for styling this term alone.
     """
 
-    tag: str
+    term: str
+    label: str = ""
     tooltip: str = ""
     icon: str = ""
     tone: str = "slate"
+    style: str = "full"
+    fill: str = "filled"
+    classes: tuple[str, ...] = ()
 
 
-#: No vocabulary is assumed. This extension renders documentation for
-#: projects whose tags it does not choose, so shipping a default would
-#: badge one project's tools with another's words. A project declares
-#: ``fastmcp_toolsets``; until it does, tools render without a toolset
-#: badge.
-DEFAULT_TOOLSETS: tuple[Toolset, ...] = ()
+@dataclass(frozen=True)
+class Axis:
+    """One independent way of classifying a tool.
+
+    A tool takes at most one term per axis, so two axes render two badges.
+
+    Attributes
+    ----------
+    name : str
+        Axis identifier, used in the CSS class and the default tooltip.
+    source : str
+        Where the term comes from. See :data:`AxisSource`.
+    terms : tuple of Term
+        Vocabulary in precedence order, highest first.
+    """
+
+    name: str
+    source: AxisSource = "tags"
+    terms: tuple[Term, ...] = ()
+
+    def term(self, value: str) -> Term | None:
+        """Return the declared term named ``value``, or ``None``."""
+        return next((t_ for t_ in self.terms if t_.term == value), None)
 
 
-def coerce_toolsets(value: t.Any) -> tuple[Toolset, ...]:
-    """Return a toolset vocabulary from a ``fastmcp_toolsets`` value.
+#: Per the MCP spec ``destructiveHint`` describes a tool only once
+#: ``readOnlyHint`` is false, so the terms are ordered to read it second.
+ANNOTATION_AXIS = Axis(
+    name="risk",
+    source="annotations",
+    terms=(
+        Term(
+            "destructive",
+            tooltip="Destructive \N{EM DASH} may remove data",
+            icon="\N{BOMB}",
+            tone="red",
+        ),
+        Term(
+            "mutating",
+            tooltip="Mutating \N{EM DASH} changes state additively",
+            icon="\N{PENCIL}\N{VARIATION SELECTOR-16}",
+            tone="amber",
+        ),
+        Term(
+            "readonly",
+            tooltip="Read-only \N{EM DASH} does not modify its environment",
+            icon="\N{LEFT-POINTING MAGNIFYING GLASS}",
+            tone="green",
+        ),
+    ),
+)
 
-    Accepts what a ``conf.py`` can express: a sequence of mappings, of
-    :class:`Toolset`, or of bare tag strings. An empty value declares no
-    vocabulary, and tools then carry no toolset badge.
+DEFAULT_AXES: tuple[Axis, ...] = (ANNOTATION_AXIS,)
 
-    A mapping with no ``"tag"`` is skipped and a tone outside :data:`TONES`
-    falls back to ``slate``, each with a warning, so one typo in ``conf.py``
-    costs a badge rather than the build.
+
+def _coerce_term(value: t.Any) -> Term | None:
+    """Return a :class:`Term` from a string or mapping, or ``None``."""
+    if isinstance(value, Term):
+        return value
+    if isinstance(value, str):
+        return Term(value)
+    term = value.get("term", value.get("tag"))
+    if not term:
+        logger.warning(
+            "sphinx_autodoc_fastmcp: toolset term %r has no 'term'; skipping it",
+            value,
+        )
+        return None
+    return Term(
+        term,
+        label=value.get("label", ""),
+        tooltip=value.get("tooltip", ""),
+        icon=value.get("icon", ""),
+        tone=value.get("tone", "slate"),
+        style=value.get("style", "full"),
+        fill=value.get("fill", "filled"),
+        classes=tuple(value.get("classes", ())),
+    )
+
+
+def coerce_axes(value: t.Any) -> tuple[Axis, ...]:
+    """Return the axis list a ``fastmcp_axes`` value describes.
+
+    Accepts what a ``conf.py`` can express: a sequence of :class:`Axis` or
+    of mappings with ``name``, optional ``source``, and ``terms``. An empty
+    value declares no axes, and tools then carry no badges.
 
     Parameters
     ----------
@@ -64,88 +143,114 @@ def coerce_toolsets(value: t.Any) -> tuple[Toolset, ...]:
 
     Returns
     -------
-    tuple of Toolset
-        Vocabulary in precedence order, highest first.
+    tuple of Axis
+        Axes in declaration order; badges render in that order.
 
     Examples
     --------
-    >>> coerce_toolsets(())
-    ()
-    >>> [entry.tag for entry in coerce_toolsets(("execute", "inspect"))]
-    ['execute', 'inspect']
+    >>> axes = coerce_axes(({"name": "topic", "terms": ("search", "admin")},))
+    >>> axes[0].name, [t.term for t in axes[0].terms]
+    ('topic', ['search', 'admin'])
     """
     if not value:
-        return DEFAULT_TOOLSETS
-    toolsets: list[Toolset] = []
+        return ()
+    axes: list[Axis] = []
     for entry in value:
-        if isinstance(entry, Toolset):
-            toolsets.append(entry)
-        elif isinstance(entry, str):
-            toolsets.append(Toolset(entry))
-        elif "tag" not in entry:
+        if isinstance(entry, Axis):
+            axes.append(entry)
+            continue
+        name = entry.get("name")
+        if not name:
             logger.warning(
-                "sphinx_autodoc_fastmcp: fastmcp_toolsets entry %r has no "
-                "'tag'; skipping it",
+                "sphinx_autodoc_fastmcp: fastmcp_axes entry %r has no 'name'; "
+                "skipping it",
                 entry,
             )
-        else:
-            tone = entry.get("tone", "slate")
-            if tone not in TONES:
-                logger.warning(
-                    "sphinx_autodoc_fastmcp: unknown tone %r for toolset %r; "
-                    "using 'slate'. Known tones: %s",
-                    tone,
-                    entry["tag"],
-                    ", ".join(sorted(TONES)),
-                )
-                tone = "slate"
-            toolsets.append(
-                Toolset(
-                    entry["tag"],
-                    entry.get("tooltip", ""),
-                    entry.get("icon", ""),
-                    tone,
-                )
-            )
-    return tuple(toolsets)
+            continue
+        terms = tuple(
+            t_ for t_ in (_coerce_term(v) for v in entry.get("terms", ())) if t_
+        )
+        axes.append(Axis(name, entry.get("source", "tags"), terms))
+    return tuple(axes)
 
 
-def resolve_toolset(
-    tags: t.Iterable[str],
-    toolsets: t.Sequence[Toolset] = DEFAULT_TOOLSETS,
-) -> str:
-    """Return the toolset a tool's tags place it in, highest precedence first.
+def term_from_annotations(hints: dict[str, bool]) -> str:
+    """Return the risk term MCP's hints imply, or ``""``.
 
-    Returns the empty string when no tag matches. Naming a fallback here
-    would report a tool as belonging to a toolset nobody assigned it to,
-    which is the one answer a badge must never give.
+    Follows the spec: ``destructiveHint`` and ``idempotentHint`` describe a
+    tool only once ``readOnlyHint`` is false, and an unset hint says
+    nothing rather than defaulting.
+
+    Examples
+    --------
+    >>> term_from_annotations({"readOnlyHint": True})
+    'readonly'
+    >>> term_from_annotations({"readOnlyHint": False, "destructiveHint": True})
+    'destructive'
+    >>> term_from_annotations({"readOnlyHint": False})
+    'mutating'
+    >>> term_from_annotations({})
+    ''
+    """
+    read_only = hints.get("readOnlyHint")
+    if read_only is True:
+        return "readonly"
+    if read_only is False:
+        return "destructive" if hints.get("destructiveHint") else "mutating"
+    return ""
+
+
+def resolve_axes(
+    axes: t.Sequence[Axis],
+    *,
+    tags: t.Iterable[str] = (),
+    annotations: dict[str, bool] | None = None,
+    meta: dict[str, t.Any] | None = None,
+) -> dict[str, str]:
+    """Return the term each axis places a tool in.
+
+    An axis with no match is left out rather than given a fallback: naming
+    one would report a tool as something nobody classified it as.
 
     Parameters
     ----------
+    axes : sequence of Axis
+        Declared axes.
     tags : iterable of str
         The tool's tags.
-    toolsets : sequence of Toolset
-        Vocabulary in precedence order.
+    annotations : dict of str to bool, optional
+        MCP hints the tool sets.
+    meta : dict, optional
+        The tool's ``meta`` mapping.
 
     Returns
     -------
-    str
-        Matching tag, or ``""`` when the tool carries none of them.
+    dict
+        Axis name to term, for axes that matched.
 
     Examples
     --------
-    >>> from sphinx_autodoc_fastmcp._models import coerce_toolsets
-    >>> toolsets = coerce_toolsets(("execute", "inspect"))
-    >>> resolve_toolset({"execute"}, toolsets)
-    'execute'
-    >>> resolve_toolset({"unknown"}, toolsets)
-    ''
+    >>> axes = coerce_axes(({"name": "topic", "terms": ("admin", "search")},))
+    >>> resolve_axes(axes, tags={"search"})
+    {'topic': 'search'}
+    >>> resolve_axes(axes, tags={"other"})
+    {}
     """
     present = set(tags)
-    for entry in toolsets:
-        if entry.tag in present:
-            return entry.tag
-    return ""
+    hints = annotations or {}
+    data = meta or {}
+    resolved: dict[str, str] = {}
+    for axis in axes:
+        if axis.source == "annotations":
+            value = term_from_annotations(hints)
+        elif axis.source.startswith("meta:"):
+            raw = data.get(axis.source[len("meta:") :])
+            value = str(raw) if raw is not None else ""
+        else:
+            value = next((t_.term for t_ in axis.terms if t_.term in present), "")
+        if value:
+            resolved[axis.name] = value
+    return resolved
 
 
 @dataclass
@@ -190,12 +295,13 @@ class ToolInfo:
     area : str
         Grouping key for the tool, taken from ``fastmcp_area_map`` or
         derived from the module name.
-    toolset : str
-        Toolset read from the tool's tags — ``"readonly"``,
-        ``"mutating"``, or ``"destructive"``.
+    axes : dict[str, str]
+        Term this tool takes on each declared axis, for axes that matched.
     annotations : dict[str, bool]
         MCP hint flags such as ``readOnlyHint`` and ``destructiveHint``,
         holding only the hints the tool actually sets.
+    meta : dict[str, t.Any]
+        The tool's ``meta`` mapping, which axes can read terms from.
     func : t.Callable[..., t.Any]
         The undecorated tool function, kept so the renderer can re-inspect
         its signature.
@@ -211,8 +317,9 @@ class ToolInfo:
     title: str
     module_name: str
     area: str
-    toolset: str
+    axes: dict[str, str]
     annotations: dict[str, bool]
+    meta: dict[str, t.Any]
     func: t.Callable[..., t.Any]
     docstring: str
     params: list[ParamInfo]

@@ -92,7 +92,7 @@ def _make_component_ref_role(
     """Create a resource/prompt cross-reference role callable.
 
     The role renders an inline code literal linked to the component card; it
-    carries no toolset badge (only tools have a toolset entry).
+    carries no axis badge (only tools are classified).
 
     Parameters
     ----------

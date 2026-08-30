@@ -15,7 +15,7 @@ import typing as t
 
 from sphinx.application import Sphinx
 
-from sphinx_autodoc_fastmcp._badges import use_toolsets
+from sphinx_autodoc_fastmcp._badges import use_axes
 from sphinx_autodoc_fastmcp._collector import (
     collect_prompts_and_resources,
     collect_tools,
@@ -29,7 +29,7 @@ from sphinx_autodoc_fastmcp._directives import (
     FastMCPToolInputDirective,
     FastMCPToolSummaryDirective,
 )
-from sphinx_autodoc_fastmcp._models import coerce_toolsets
+from sphinx_autodoc_fastmcp._models import coerce_axes
 from sphinx_autodoc_fastmcp._roles import (
     _prompt_role,
     _promptref_role,
@@ -131,9 +131,9 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         "env",
         description=(
             'Mapping of docstring section heading (e.g. ``"Inspect"``) '
-            "to the toolset badge it should render with, one of the tags "
-            "declared in ``fastmcp_toolsets``. Drives the inline section "
-            "pills next to grouped tool lists."
+            'to the badge it renders with, either ``"term"`` or '
+            '``"axis:term"`` naming a term declared in ``fastmcp_axes``. '
+            "Drives the inline section pills next to grouped tool lists."
         ),
     )
     app.add_config_value(
@@ -147,16 +147,18 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         ),
     )
     app.add_config_value(
-        "fastmcp_toolsets",
+        "fastmcp_axes",
         (),
         "env",
         description=(
-            "Vocabulary this project tags its tools with, in precedence "
-            "order, highest first. Each entry is a tag name or a mapping "
-            'with ``"tag"`` and optional ``"tooltip"`` / ``"icon"`` / '
-            '``"tone"``. Empty declares no vocabulary. A tool carrying '
-            "none of these tags renders without a toolset badge rather "
-            "than being reported as the lowest of them."
+            "Independent ways of classifying a tool, each rendering its own "
+            'badge. Every entry is a mapping with ``"name"``, an optional '
+            '``"source"`` (``"tags"``, ``"annotations"`` or ``"meta:<key>"``) '
+            'and ``"terms"``. A term is a tag name or a mapping with '
+            '``"term"`` and optional ``"label"`` / ``"tooltip"`` / ``"icon"`` '
+            '/ ``"tone"`` / ``"style"`` / ``"fill"`` / ``"classes"``. Empty '
+            "declares no axes. A tool matching no term on an axis renders no "
+            "badge for it rather than being reported as the lowest term."
         ),
     )
     app.add_config_value(
@@ -188,10 +190,10 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         if _static_dir not in app.config.html_static_path:
             app.config.html_static_path.append(_static_dir)
 
-    def _install_toolsets(app: Sphinx) -> None:
-        use_toolsets(coerce_toolsets(app.config.fastmcp_toolsets))
+    def _install_axes(app: Sphinx) -> None:
+        use_axes(coerce_axes(app.config.fastmcp_axes))
 
-    app.connect("builder-inited", _install_toolsets)
+    app.connect("builder-inited", _install_axes)
     app.connect("builder-inited", _add_static_path)
     app.add_css_file("css/sphinx_autodoc_fastmcp.css")
 

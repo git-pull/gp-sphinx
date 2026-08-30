@@ -108,7 +108,9 @@ _FASTMCP_CONF = textwrap.dedent(
     master_doc = "api"
     fastmcp_tool_modules = ["fastmcp_demo_tools"]
     fastmcp_area_map = {{"fastmcp_demo_tools": "api"}}
-    fastmcp_toolsets = ("teardown", "execute", "inspect")
+    fastmcp_axes = (
+        {{"name": "capability", "terms": ("teardown", "execute", "inspect")}},
+    )
     fastmcp_collector_mode = "introspect"
     """
 )

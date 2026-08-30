@@ -10,7 +10,7 @@ import typing as t
 import pytest
 from docutils import nodes
 
-from sphinx_autodoc_fastmcp._badges import build_tool_badge_group, build_toolset_badge
+from sphinx_autodoc_fastmcp._badges import build_axis_badge, build_tool_badge_group
 from sphinx_autodoc_fastmcp._collector import _resolve_server_instance
 from sphinx_autodoc_fastmcp._css import _CSS
 from sphinx_autodoc_fastmcp._parsing import (
@@ -29,32 +29,33 @@ def test_css_prefix() -> None:
 
 
 def test_badge_group_contains_tool_type() -> None:
-    """Tool badge group includes safety + type badge."""
-    group = build_tool_badge_group("readonly")
+    """Tool badge group renders the matched axes, then the type badge."""
+    group = build_tool_badge_group({"risk": "readonly"})
     assert "gp-sphinx-badge-group" in group["classes"]
     badges = list(group.findall(BadgeNode))
     assert len(badges) == 2
     assert "tool" in badges[-1].astext()
 
 
-def test_toolset_badge_is_badge_node() -> None:
+def test_axis_badge_is_badge_node() -> None:
     """Safety badge is a BadgeNode (shared package)."""
-    b = build_toolset_badge("mutating")
+    b = build_axis_badge("risk", "mutating")
     assert isinstance(b, BadgeNode)
     assert isinstance(b, nodes.inline)
     assert b.astext() == "mutating"
 
 
-def test_toolset_badge_has_classes() -> None:
-    """Safety badge has gp-sphinx-badge + smf safety classes."""
-    b = build_toolset_badge("readonly")
+def test_axis_badge_has_axis_and_term_classes() -> None:
+    """The badge names both its axis and its term, so CSS can target either."""
+    b = build_axis_badge("risk", "readonly")
     assert "gp-sphinx-badge" in b["classes"]
-    assert "gp-sphinx-fastmcp__toolset-readonly" in b["classes"]
+    assert "gp-sphinx-fastmcp__axis-risk" in b["classes"]
+    assert "gp-sphinx-fastmcp__risk-readonly" in b["classes"]
 
 
-def test_toolset_badge_icon_only() -> None:
-    """Icon-only safety badge has gp-sphinx-badge--icon-only class and empty text."""
-    b = build_toolset_badge("readonly", icon_only=True)
+def test_axis_badge_icon_only() -> None:
+    """Icon-only badge has the icon-only class and empty text."""
+    b = build_axis_badge("risk", "readonly", icon_only=True)
     assert "gp-sphinx-badge--icon-only" in b["classes"]
     assert b.astext() == ""
 
@@ -184,123 +185,137 @@ def test_resolve_server_returns_none_when_factory_yields_non_fastmcp(
     assert resolved is None
 
 
-def test_no_vocabulary_is_assumed_until_a_project_declares_one() -> None:
-    """Shipping a default would badge one project's tools with another's words."""
-    from sphinx_autodoc_fastmcp._models import DEFAULT_TOOLSETS, resolve_toolset
+def test_no_axes_are_assumed_until_a_project_declares_them() -> None:
+    """A default vocabulary would badge one project's tools with another's words."""
+    from sphinx_autodoc_fastmcp._models import coerce_axes, resolve_axes
 
-    assert DEFAULT_TOOLSETS == ()
-    assert resolve_toolset({"anything"}, DEFAULT_TOOLSETS) == ""
+    assert coerce_axes(()) == ()
+    assert resolve_axes((), tags={"anything"}) == {}
 
 
 def test_precedence_follows_declaration_order() -> None:
-    """A tool carrying several tags takes the first one declared."""
-    from sphinx_autodoc_fastmcp._models import coerce_toolsets, resolve_toolset
+    """A tool carrying several of an axis's terms takes the first declared."""
+    from sphinx_autodoc_fastmcp._models import coerce_axes, resolve_axes
 
-    tiers = coerce_toolsets(("teardown", "execute", "manage", "inspect"))
+    axes = coerce_axes(
+        ({"name": "cap", "terms": ("teardown", "execute", "manage", "inspect")},)
+    )
 
-    assert resolve_toolset({"inspect", "teardown"}, tiers) == "teardown"
-    assert resolve_toolset({"manage", "inspect"}, tiers) == "manage"
+    assert resolve_axes(axes, tags={"inspect", "teardown"}) == {"cap": "teardown"}
+    assert resolve_axes(axes, tags={"manage", "inspect"}) == {"cap": "manage"}
 
 
-def test_an_unrecognized_tag_resolves_to_no_toolset() -> None:
+def test_an_unrecognized_tag_takes_no_term() -> None:
     """A tool outside the vocabulary must not be reported as inside it."""
-    from sphinx_autodoc_fastmcp._models import coerce_toolsets, resolve_toolset
+    from sphinx_autodoc_fastmcp._models import coerce_axes, resolve_axes
 
-    tiers = coerce_toolsets(("inspect", "execute"))
+    axes = coerce_axes(({"name": "cap", "terms": ("inspect", "execute")},))
 
-    assert resolve_toolset({"mystery"}, tiers) == ""
-    assert resolve_toolset(set(), tiers) == ""
+    assert resolve_axes(axes, tags={"mystery"}) == {}
+    assert resolve_axes(axes, tags=set()) == {}
 
 
-def test_a_project_can_supply_its_own_safety_vocabulary() -> None:
-    """A renamed tag set resolves once the project declares it."""
-    from sphinx_autodoc_fastmcp._models import coerce_toolsets, resolve_toolset
+def test_two_axes_classify_one_tool_independently() -> None:
+    """The point of axes: risk and topic can disagree without one winning.
 
-    tiers = coerce_toolsets(
+    A single vocabulary forces a read-only lifecycle tool to be badged
+    either by its risk or by its topic, never both.
+    """
+    from sphinx_autodoc_fastmcp._models import coerce_axes, resolve_axes
+
+    axes = coerce_axes(
         (
-            {
-                "tag": "teardown",
-                "tooltip": "Removes tmux objects",
-                "icon": "\U0001f4a3",
-            },
-            {"tag": "execute"},
-            {"tag": "manage"},
-            {"tag": "inspect"},
+            {"name": "risk", "terms": ("mutating", "readonly")},
+            {"name": "topic", "terms": ("lifecycle", "metrics")},
         )
     )
 
-    assert resolve_toolset({"execute"}, tiers) == "execute"
-    assert resolve_toolset({"inspect", "teardown"}, tiers) == "teardown"
-    assert resolve_toolset({"readonly"}, tiers) == ""
-    assert tiers[0].tooltip == "Removes tmux objects"
+    assert resolve_axes(axes, tags={"readonly", "lifecycle"}) == {
+        "risk": "readonly",
+        "topic": "lifecycle",
+    }
+    assert resolve_axes(axes, tags={"mutating", "lifecycle"}) == {
+        "risk": "mutating",
+        "topic": "lifecycle",
+    }
 
 
-def test_a_tool_outside_the_vocabulary_gets_no_safety_badge() -> None:
-    """No badge is honest; a badge naming a tier nobody assigned is not."""
-    group = build_tool_badge_group("")
+def test_an_axis_can_read_its_term_from_mcp_hints() -> None:
+    """MCP's own annotations classify a tool without any project config."""
+    from sphinx_autodoc_fastmcp._models import DEFAULT_AXES, resolve_axes
 
-    assert group.astext() == "tool"
-
-
-def test_configured_toolsets_supply_the_badge_tooltip_and_icon() -> None:
-    """A project's own vocabulary reaches the rendered badge."""
-    from sphinx_autodoc_fastmcp._badges import use_toolsets
-    from sphinx_autodoc_fastmcp._models import coerce_toolsets
-
-    use_toolsets(coerce_toolsets(({"tag": "execute", "tooltip": "Runs a command"},)))
-    try:
-        badge = build_toolset_badge("execute")
-        assert badge["badge_tooltip"] == "Runs a command"
-    finally:
-        use_toolsets(None)
-
-    assert build_toolset_badge("execute")["badge_tooltip"] == "Toolset: execute"
+    assert resolve_axes(DEFAULT_AXES, annotations={"readOnlyHint": True}) == {
+        "risk": "readonly"
+    }
+    assert resolve_axes(
+        DEFAULT_AXES, annotations={"readOnlyHint": False, "destructiveHint": True}
+    ) == {"risk": "destructive"}
+    assert resolve_axes(DEFAULT_AXES, annotations={}) == {}
 
 
-def test_a_toolset_badge_carries_its_declared_tone() -> None:
-    """Colour comes from the project's declaration, not a guessed tag name.
+def test_an_axis_can_read_its_term_from_tool_meta() -> None:
+    """``meta`` is MCP's own extension point, so an axis can key off it."""
+    from sphinx_autodoc_fastmcp._models import coerce_axes, resolve_axes
 
-    The stylesheet cannot ship a rule per tag, because it does not know
-    what a project calls its toolsets. It ships tones instead, and the
-    project maps onto them.
-    """
-    from sphinx_autodoc_fastmcp._badges import build_toolset_badge, use_toolsets
-    from sphinx_autodoc_fastmcp._models import coerce_toolsets
+    axes = coerce_axes(({"name": "tier", "source": "meta:tier"},))
 
-    use_toolsets(coerce_toolsets(({"tag": "teardown", "tone": "red"},)))
-    try:
-        classes = build_toolset_badge("teardown")["classes"]
-        assert "gp-sphinx-fastmcp__toolset--tone-red" in classes
-        # An undeclared toolset still gets a visible badge, claiming nothing.
-        assert (
-            "gp-sphinx-fastmcp__toolset--tone-slate"
-            in build_toolset_badge("mystery")["classes"]
+    assert resolve_axes(axes, meta={"tier": "gold"}) == {"tier": "gold"}
+    assert resolve_axes(axes, meta={}) == {}
+
+
+def test_a_declared_term_supplies_the_badge_tooltip_icon_and_tone() -> None:
+    """Presentation is per term, so a project restyles without touching CSS."""
+    from sphinx_autodoc_fastmcp._badges import build_axis_badge, use_axes
+    from sphinx_autodoc_fastmcp._models import coerce_axes
+
+    use_axes(
+        coerce_axes(
+            (
+                {
+                    "name": "risk",
+                    "terms": (
+                        {
+                            "term": "teardown",
+                            "tooltip": "Runs a command",
+                            "icon": "X",
+                            "tone": "red",
+                        },
+                    ),
+                },
+            )
         )
+    )
+    try:
+        badge = build_axis_badge("risk", "teardown")
+        assert badge["badge_tooltip"] == "Runs a command"
+        assert "gp-sphinx-fastmcp__toolset--tone-red" in badge["classes"]
+        # An undeclared term stays visible and claims nothing.
+        mystery = build_axis_badge("risk", "mystery")
+        assert mystery["badge_tooltip"] == "Risk: mystery"
+        assert "gp-sphinx-fastmcp__toolset--tone-slate" in mystery["classes"]
     finally:
-        use_toolsets(None)
+        use_axes(None)
 
 
-def test_a_toolset_entry_without_a_tag_is_skipped(
-    caplog: pytest.LogCaptureFixture,
-) -> None:
+def test_a_term_without_a_name_is_skipped(caplog: pytest.LogCaptureFixture) -> None:
     """One typo in conf.py costs a badge, not the build."""
-    from sphinx_autodoc_fastmcp._models import coerce_toolsets
+    from sphinx_autodoc_fastmcp._models import coerce_axes
 
     with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp._models"):
-        toolsets = coerce_toolsets(({"name": "execute"}, {"tag": "inspect"}))
+        axes = coerce_axes(
+            ({"name": "risk", "terms": ({"label": "oops"}, {"term": "inspect"})},)
+        )
 
-    assert [entry.tag for entry in toolsets] == ["inspect"]
-    assert "has no 'tag'" in caplog.text
+    assert [t.term for t in axes[0].terms] == ["inspect"]
+    assert "has no 'term'" in caplog.text
 
 
-def test_an_unknown_tone_falls_back_to_slate(
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    """The stylesheet has no rule for it, so the badge would render uncoloured."""
-    from sphinx_autodoc_fastmcp._models import coerce_toolsets
+def test_an_axis_without_a_name_is_skipped(caplog: pytest.LogCaptureFixture) -> None:
+    """An axis with no name has no CSS class and no way to be referenced."""
+    from sphinx_autodoc_fastmcp._models import coerce_axes
 
     with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp._models"):
-        (entry,) = coerce_toolsets(({"tag": "teardown", "tone": "grey"},))
+        axes = coerce_axes(({"terms": ("a",)}, {"name": "risk"}))
 
-    assert entry.tone == "slate"
-    assert "unknown tone" in caplog.text
+    assert [a.name for a in axes] == ["risk"]
+    assert "has no 'name'" in caplog.text
