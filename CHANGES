@@ -113,6 +113,9 @@ class and naming it from `conf.py`. (#77)
   nothing to point at the typo; it now warns and falls back. (#77)
 - The `fastmcp_toolsets` config description claimed an empty value kept
   the old three tags, contradicting itself two sentences later. (#77)
+- An icon-only tool link rendered its code chip 3.8px taller than the
+  plain code beside it, hanging below the line. The link no longer
+  builds a flex context, so the chip keeps its inline metrics. (#77)
 
 ### Documentation
 
