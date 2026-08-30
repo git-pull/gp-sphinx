@@ -2,19 +2,18 @@
  *
  * Base metrics and sizing come from sphinx_ux_badges.css (gp-sphinx-badge--dense class).
  *
- * Tone palette: green / amber / red reuse the hex values sphinx-gp-theme's
- * custom.css gives its legacy readonly / mutating / destructive block, so a
- * project moving onto fastmcp_toolsets keeps the colours it had. blue and
- * slate are new here and have no counterpart there.
+ * Tones are three layers, so a project can enter at whichever it needs:
+ * :root names the palette, a --tone-<name> class maps a palette entry onto the
+ * badge slot, and one rule consumes the slot. Restyle a shipped tone by
+ * redefining its :root vars; add a tone by writing one --tone-<name> class.
  *
  * Type badge palette (tool / prompt / resource): one variable set per type;
  * dark mode overrides the same variables in a scoped block — no -dark suffix antipattern.
  */
 
 :root {
-  /* ── Toolset tones. A project maps its own tag names onto these,
-   *    because this extension cannot know what a project calls its
-   *    toolsets. ── */
+  /* ── Tone palette. green / amber / red reuse sphinx-gp-theme's legacy
+   *    readonly / mutating / destructive hexes. ── */
   --gp-sphinx-fastmcp-tone-green-bg: #1f7a3f;
   --gp-sphinx-fastmcp-tone-green-border: #2a8d4d;
   --gp-sphinx-fastmcp-tone-green-text: #f3fff7;
@@ -62,50 +61,48 @@
   display: inline-flex !important;
 }
 
-/*
- * Matte toolset tones: literal hex + !important so sphinx-design (loaded
- * after this file) cannot skew var() resolution or shorthands. Keeps parity
- * with the :root --gp-sphinx-fastmcp-tone-* block above; override there and
- * copy here if you change the palette.
- *
- * Keyed on tone rather than on a tag name: a project names its own toolsets,
- * so a rule per tag would only ever style the names this file happened to
- * guess.
- */
+/* !important: sphinx-design loads after this file and wins the shorthand. */
 
-.gp-sphinx-badge.gp-sphinx-fastmcp__toolset--tone-green:not(.gp-sphinx-badge--inline-icon) {
-  background-color: #1f7a3f !important;
-  color: #f3fff7 !important;
-  border: 1px solid #2a8d4d !important;
+.gp-sphinx-fastmcp__toolset--tone-green {
+  --gp-sphinx-fastmcp-badge-bg: var(--gp-sphinx-fastmcp-tone-green-bg);
+  --gp-sphinx-fastmcp-badge-border: var(--gp-sphinx-fastmcp-tone-green-border);
+  --gp-sphinx-fastmcp-badge-text: var(--gp-sphinx-fastmcp-tone-green-text);
+}
+
+.gp-sphinx-fastmcp__toolset--tone-blue {
+  --gp-sphinx-fastmcp-badge-bg: var(--gp-sphinx-fastmcp-tone-blue-bg);
+  --gp-sphinx-fastmcp-badge-border: var(--gp-sphinx-fastmcp-tone-blue-border);
+  --gp-sphinx-fastmcp-badge-text: var(--gp-sphinx-fastmcp-tone-blue-text);
+}
+
+.gp-sphinx-fastmcp__toolset--tone-amber {
+  --gp-sphinx-fastmcp-badge-bg: var(--gp-sphinx-fastmcp-tone-amber-bg);
+  --gp-sphinx-fastmcp-badge-border: var(--gp-sphinx-fastmcp-tone-amber-border);
+  --gp-sphinx-fastmcp-badge-text: var(--gp-sphinx-fastmcp-tone-amber-text);
+}
+
+.gp-sphinx-fastmcp__toolset--tone-red {
+  --gp-sphinx-fastmcp-badge-bg: var(--gp-sphinx-fastmcp-tone-red-bg);
+  --gp-sphinx-fastmcp-badge-border: var(--gp-sphinx-fastmcp-tone-red-border);
+  --gp-sphinx-fastmcp-badge-text: var(--gp-sphinx-fastmcp-tone-red-text);
+}
+
+.gp-sphinx-fastmcp__toolset--tone-slate {
+  --gp-sphinx-fastmcp-badge-bg: var(--gp-sphinx-fastmcp-tone-slate-bg);
+  --gp-sphinx-fastmcp-badge-border: var(--gp-sphinx-fastmcp-tone-slate-border);
+  --gp-sphinx-fastmcp-badge-text: var(--gp-sphinx-fastmcp-tone-slate-text);
+}
+
+.gp-sphinx-badge.gp-sphinx-fastmcp__toolset:not(.gp-sphinx-badge--inline-icon) {
+  background-color: var(--gp-sphinx-fastmcp-badge-bg, #475569) !important;
+  color: var(--gp-sphinx-fastmcp-badge-text, #f8fafc) !important;
+  border: 1px solid var(--gp-sphinx-fastmcp-badge-border, #64748b) !important;
   box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
 }
 
-.gp-sphinx-badge.gp-sphinx-fastmcp__toolset--tone-blue:not(.gp-sphinx-badge--inline-icon) {
-  background-color: #1d4ed8 !important;
-  color: #eff6ff !important;
-  border: 1px solid #2563eb !important;
-  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
-}
-
-.gp-sphinx-badge.gp-sphinx-fastmcp__toolset--tone-amber:not(.gp-sphinx-badge--inline-icon) {
-  background-color: #b96a1a !important;
-  color: #fff8ef !important;
-  border: 1px solid #cf7a23 !important;
-  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
-}
-
-.gp-sphinx-badge.gp-sphinx-fastmcp__toolset--tone-red:not(.gp-sphinx-badge--inline-icon) {
-  background-color: #b4232c !important;
-  color: #fff5f5 !important;
-  border: 1px solid #cb3640 !important;
-  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
-}
-
-.gp-sphinx-badge.gp-sphinx-fastmcp__toolset--tone-slate:not(.gp-sphinx-badge--inline-icon) {
-  background-color: #475569 !important;
-  color: #f8fafc !important;
-  border: 1px solid #64748b !important;
-  box-shadow: var(--gp-sphinx-badge-buff-shadow) !important;
+.gp-sphinx-badge.gp-sphinx-fastmcp__toolset.gp-sphinx-badge--outline:not(.gp-sphinx-badge--inline-icon) {
+  background-color: transparent !important;
+  color: var(--gp-sphinx-fastmcp-badge-border, #64748b) !important;
 }
 
 /* ── Type badges: use variables; dark mode re-declares the same vars in a scoped block ── */
