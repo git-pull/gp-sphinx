@@ -113,16 +113,19 @@ conf = merge_sphinx_config(
     fastmcp_toolsets=(
         {
             "tag": "teardown",
+            "tone": "red",
             "tooltip": "Removes objects; not reversible.",
             "icon": "\N{BOMB}",
         },
         {
             "tag": "execute",
+            "tone": "amber",
             "tooltip": "Starts or drives a process.",
             "icon": "\N{PENCIL}\N{VARIATION SELECTOR-16}",
         },
         {
             "tag": "inspect",
+            "tone": "green",
             "tooltip": "Reads state without changing it.",
             "icon": "\N{LEFT-POINTING MAGNIFYING GLASS}",
         },
