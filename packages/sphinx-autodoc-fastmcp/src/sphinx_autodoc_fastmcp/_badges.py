@@ -24,20 +24,20 @@ from sphinx_ux_badges import (
 _ACTIVE_TOOLSETS: tuple[Toolset, ...] = DEFAULT_TOOLSETS
 
 
-def use_toolsets(tiers: t.Sequence[Toolset] | None) -> None:
+def use_toolsets(toolsets: t.Sequence[Toolset] | None) -> None:
     """Install the vocabulary badges render from.
 
     Parameters
     ----------
-    tiers : sequence of Toolset or None
+    toolsets : sequence of Toolset or None
         Vocabulary for this build. ``None`` restores the default.
     """
     global _ACTIVE_TOOLSETS
-    _ACTIVE_TOOLSETS = DEFAULT_TOOLSETS if tiers is None else tuple(tiers)
+    _ACTIVE_TOOLSETS = DEFAULT_TOOLSETS if toolsets is None else tuple(toolsets)
 
 
-def _tier(toolset: str) -> Toolset | None:
-    """Return the active entry named ``toolset``, or ``None``."""
+def _declared(toolset: str) -> Toolset | None:
+    """Return the active toolset named ``toolset``, or ``None``."""
     return next((entry for entry in _ACTIVE_TOOLSETS if entry.tag == toolset), None)
 
 
@@ -47,8 +47,8 @@ def active_toolsets() -> tuple[Toolset, ...]:
 
 
 def _toolset_spec(toolset: str) -> BadgeSpec:
-    """Return the badge spec for a entry, honouring the active vocabulary."""
-    entry = _tier(toolset)
+    """Return the badge spec for a toolset, honouring the active vocabulary."""
+    entry = _declared(toolset)
     return BadgeSpec(
         toolset,
         tooltip=(entry.tooltip if entry and entry.tooltip else f"Toolset: {toolset}"),
@@ -76,7 +76,8 @@ def build_toolset_badge(
     Parameters
     ----------
     toolset : str
-        One of ``readonly``, ``mutating``, ``destructive``.
+        A tag from the project's ``fastmcp_toolsets``. A tag outside it
+        still renders, untinted and claiming nothing.
     icon_only : bool
         When True, create an icon-only badge (empty text, 16x16 colored box).
 
@@ -104,7 +105,7 @@ def build_toolset_badge(
 
 
 def build_type_tool_badge() -> BadgeNode:
-    """Rightmost type badge labeling the entry as an MCP tool.
+    """Rightmost type badge labeling the component as an MCP tool.
 
     Examples
     --------
@@ -125,7 +126,7 @@ def build_tool_badge_group(toolset: str) -> nodes.inline:
     Parameters
     ----------
     toolset : str
-        Safety entry name.
+        Toolset tag name.
 
     Returns
     -------

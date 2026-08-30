@@ -22,7 +22,7 @@ class Toolset:
     tag : str
         Tag to look for in a tool's ``tags`` set.
     tooltip : str
-        Hover text for the badge. Falls back to ``"Safety: <tag>"``.
+        Hover text for the badge. Falls back to ``"Toolset: <tag>"``.
     icon : str
         Emoji rendered before the label. Optional.
     tone : str
@@ -47,7 +47,7 @@ DEFAULT_TOOLSETS: tuple[Toolset, ...] = ()
 
 
 def coerce_toolsets(value: t.Any) -> tuple[Toolset, ...]:
-    """Return a entry vocabulary from a ``fastmcp_toolsets`` value.
+    """Return a toolset vocabulary from a ``fastmcp_toolsets`` value.
 
     Accepts what a ``conf.py`` can express: a sequence of mappings, of
     :class:`Toolset`, or of bare tag strings. An empty value declares no
@@ -76,12 +76,12 @@ def coerce_toolsets(value: t.Any) -> tuple[Toolset, ...]:
     """
     if not value:
         return DEFAULT_TOOLSETS
-    tiers: list[Toolset] = []
+    toolsets: list[Toolset] = []
     for entry in value:
         if isinstance(entry, Toolset):
-            tiers.append(entry)
+            toolsets.append(entry)
         elif isinstance(entry, str):
-            tiers.append(Toolset(entry))
+            toolsets.append(Toolset(entry))
         elif "tag" not in entry:
             logger.warning(
                 "sphinx_autodoc_fastmcp: fastmcp_toolsets entry %r has no "
@@ -99,7 +99,7 @@ def coerce_toolsets(value: t.Any) -> tuple[Toolset, ...]:
                     ", ".join(sorted(TONES)),
                 )
                 tone = "slate"
-            tiers.append(
+            toolsets.append(
                 Toolset(
                     entry["tag"],
                     entry.get("tooltip", ""),
@@ -107,14 +107,14 @@ def coerce_toolsets(value: t.Any) -> tuple[Toolset, ...]:
                     tone,
                 )
             )
-    return tuple(tiers)
+    return tuple(toolsets)
 
 
 def resolve_toolset(
     tags: t.Iterable[str],
-    tiers: t.Sequence[Toolset] = DEFAULT_TOOLSETS,
+    toolsets: t.Sequence[Toolset] = DEFAULT_TOOLSETS,
 ) -> str:
-    """Return the entry a tool's tags place it in, highest precedence first.
+    """Return the toolset a tool's tags place it in, highest precedence first.
 
     Returns the empty string when no tag matches. Naming a fallback here
     would report a tool as belonging to a toolset nobody assigned it to,
@@ -124,7 +124,7 @@ def resolve_toolset(
     ----------
     tags : iterable of str
         The tool's tags.
-    tiers : sequence of Toolset
+    toolsets : sequence of Toolset
         Vocabulary in precedence order.
 
     Returns
@@ -135,14 +135,14 @@ def resolve_toolset(
     Examples
     --------
     >>> from sphinx_autodoc_fastmcp._models import coerce_toolsets
-    >>> tiers = coerce_toolsets(("execute", "inspect"))
-    >>> resolve_toolset({"execute"}, tiers)
+    >>> toolsets = coerce_toolsets(("execute", "inspect"))
+    >>> resolve_toolset({"execute"}, toolsets)
     'execute'
-    >>> resolve_toolset({"unknown"}, tiers)
+    >>> resolve_toolset({"unknown"}, toolsets)
     ''
     """
     present = set(tags)
-    for entry in tiers:
+    for entry in toolsets:
         if entry.tag in present:
             return entry.tag
     return ""

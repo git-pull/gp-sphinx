@@ -1,11 +1,11 @@
 /* sphinx_autodoc_fastmcp — color layer for FastMCP tool badges.
  *
  * Base metrics and sizing come from sphinx_ux_badges.css (gp-sphinx-badge--dense class).
- * This file matches sphinx-gp-theme custom.css rules for .sd-badge[aria-label^="Safety entry:"]
- * (colors and theme --gp-sphinx-fastmcp-toolset-* variables).
  *
- * Safety palette: same tokens as sphinx_gp_theme/theme/static/css/custom.css
- * so every toolset tone matches production regardless of load order.
+ * Tone palette: green / amber / red reuse the hex values sphinx-gp-theme's
+ * custom.css gives its legacy readonly / mutating / destructive block, so a
+ * project moving onto fastmcp_toolsets keeps the colours it had. blue and
+ * slate are new here and have no counterpart there.
  *
  * Type badge palette (tool / prompt / resource): one variable set per type;
  * dark mode overrides the same variables in a scoped block — no -dark suffix antipattern.
@@ -14,7 +14,7 @@
 :root {
   /* ── Toolset tones. A project maps its own tag names onto these,
    *    because this extension cannot know what a project calls its
-   *    toolsets. Kept in sync with sphinx_gp_theme/custom.css. ── */
+   *    toolsets. ── */
   --gp-sphinx-fastmcp-tone-green-bg: #1f7a3f;
   --gp-sphinx-fastmcp-tone-green-border: #2a8d4d;
   --gp-sphinx-fastmcp-tone-green-text: #f3fff7;
@@ -57,7 +57,7 @@
   --gp-sphinx-fastmcp-mime-border: #d1d5db;
 }
 
-/* ── Safety badges: gp-sphinx-badge--dense provides compact metrics; restore inline-flex for icon gap ── */
+/* ── Toolset badges: gp-sphinx-badge--dense provides compact metrics; restore inline-flex for icon gap ── */
 .gp-sphinx-badge.gp-sphinx-badge--dense.gp-sphinx-fastmcp__toolset {
   display: inline-flex !important;
 }

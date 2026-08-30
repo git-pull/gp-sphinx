@@ -386,7 +386,7 @@ class FastMCPToolSummaryDirective(SphinxDirective):
     has_content = False
 
     def run(self) -> list[nodes.Node]:
-        """Build entry sections with tables."""
+        """Build one section of tables per declared toolset."""
         tools: dict[str, ToolInfo] = getattr(self.env, "fastmcp_tools", {})
 
         if not tools:
