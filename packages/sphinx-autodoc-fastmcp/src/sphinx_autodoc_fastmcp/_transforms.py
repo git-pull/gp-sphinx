@@ -179,7 +179,7 @@ def resolve_tool_refs(
         if icon_pos:
             tool_info = tool_data.get(tool_name)
             badge = None
-            if tool_info:
+            if tool_info and tool_info.toolset:
                 style = "inline-icon" if icon_pos.startswith("inline") else "icon-only"
                 badge = build_toolset_badge(tool_info.toolset, icon_only=True)
                 if style == "inline-icon":
@@ -209,7 +209,7 @@ def resolve_tool_refs(
             newnode += nodes.literal("", tool_name)
             if show_badge:
                 tool_info = tool_data.get(tool_name)
-                if tool_info:
+                if tool_info and tool_info.toolset:
                     newnode += nodes.Text(" ")
                     newnode += build_toolset_badge(tool_info.toolset)
 

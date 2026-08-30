@@ -314,3 +314,68 @@ def test_heading_collision_anchor_counts(
     """The heading owns the bare anchor; tool links target the canonical id (#48)."""
     html = read_output(fastmcp_heading_collision_result, "index.html")
     assert html.count(needle) == expected_count
+
+
+_UNMATCHED_CONF_PY = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    import sys
+
+    sys.path.insert(0, r"__SCENARIO_SRCDIR__")
+
+    extensions = [
+        "sphinx_autodoc_fastmcp",
+    ]
+
+    fastmcp_tool_modules = ["demo_tools"]
+    fastmcp_area_map = {"demo_tools": "api"}
+    fastmcp_toolsets = ("destructive", "mutating")
+    fastmcp_collector_mode = "introspect"
+    """
+)
+
+_UNMATCHED_INDEX_RST = textwrap.dedent(
+    """\
+    Tools
+    =====
+
+    Use :tool:`list_sessions` for a linked badge.
+
+    .. fastmcp-tool:: demo_tools.list_sessions
+
+    .. fastmcp-tool-summary::
+    """
+)
+
+
+def _unmatched_scenario() -> SphinxScenario:
+    """Scenario whose one tool is tagged outside the declared vocabulary."""
+    return SphinxScenario(
+        files=(
+            ScenarioFile("demo_tools.py", _MODULE_SOURCE),
+            ScenarioFile(
+                "conf.py",
+                _UNMATCHED_CONF_PY.replace(
+                    "__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN
+                ),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("index.rst", _UNMATCHED_INDEX_RST),
+        ),
+    )
+
+
+@pytest.mark.integration
+def test_tool_role_omits_the_badge_for_a_tag_outside_the_vocabulary(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> None:
+    """An empty-label badge is worse than none: a blank pill claiming nothing."""
+    cache_root = tmp_path_factory.mktemp("fastmcp-unmatched-toolset")
+    result = build_shared_sphinx_result(
+        cache_root,
+        _unmatched_scenario(),
+        purge_modules=("demo_tools",),
+    )
+
+    assert "gp-sphinx-fastmcp__toolset" not in read_output(result, "index.html")
