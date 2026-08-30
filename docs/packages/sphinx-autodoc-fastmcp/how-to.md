@@ -25,43 +25,124 @@ fastmcp_collector_mode = "register"
 fastmcp_server_module = "my_project.server:mcp"
 ```
 
-## Declare your toolsets
+## Classify your tools
 
-Tools are badged from their tags, and this extension ships **no** default
-vocabulary — it renders documentation for projects whose tags it does not
-choose, so a default would badge one project's tools with another's words.
-Declare `fastmcp_toolsets`:
+A tool is classified on one or more **axes**. Each axis is independent, so a
+tool takes at most one term per axis and renders one badge per axis. That is
+the difference from a single vocabulary: risk and topic can disagree without
+one having to win.
+
+This extension ships no project vocabulary. It documents projects whose tags it
+does not choose, so a default would badge one project's tools with another's
+words.
+
+### One axis from your tags
 
 ```python
-fastmcp_toolsets = (
+fastmcp_axes = (
     {
-        "tag": "teardown",
-        "tooltip": "Deletes objects; not reversible.",
-        "icon": "\N{BOMB}",
+        "name": "capability",
+        "terms": (
+            {
+                "term": "teardown",
+                "tooltip": "Deletes objects; not reversible.",
+                "icon": "\N{BOMB}",
+                "tone": "red",
+            },
+            {"term": "execute", "tooltip": "Starts or drives a process."},
+            "manage",
+            "inspect",
+        ),
     },
-    {"tag": "execute", "tooltip": "Starts or drives a process."},
-    "manage",
-    "inspect",
 )
 ```
 
-Order is precedence: a tool carrying several of these tags is badged with the
-first one listed. An entry may be a bare tag name or a mapping with a `tooltip`
-and an `icon`. The `{fastmcp-summary}` directive groups its tables in the same
-order, titling each section from the tag.
+`terms` order is precedence: a tool carrying several of them takes the first
+listed. A term is a bare tag name or a mapping with `label`, `tooltip`, `icon`,
+`tone`, `style`, `fill` and `classes`.
 
-A tool carrying none of the tags renders **without** a toolset badge. Falling
-back to a tag nobody assigned is the one answer a badge must never give, and
-with no declared vocabulary that is every tool — which is the signal that the
-setting is missing.
+A tool matching no term renders **no** badge for that axis. Falling back to a
+term nobody assigned is the one answer a badge must never give.
 
-`tone` picks the badge colour from `green`, `blue`, `amber`, `red` and
-`slate`, defaulting to `slate`. The stylesheet ships tones rather than a rule
-per tag, because it cannot know what a project calls its toolsets — so a rule
-per tag would only ever style the names it happened to guess.
+### Two axes at once
 
-Each toolset also gets the class `gp-sphinx-fastmcp__toolset-<tag>`, for a
-project that wants to style one of its own tags beyond the shipped tones.
+Tags often carry two ideas. Declare an axis for each and both badges render:
+
+```python
+fastmcp_axes = (
+    {"name": "risk", "terms": ("mutating", "readonly")},
+    {"name": "topic", "terms": ("lifecycle", "metrics", "thresholds")},
+)
+```
+
+A read-only `lifecycle` tool now shows `readonly` *and* `lifecycle`, where a
+single vocabulary would have to drop one.
+
+### Axes from MCP's own metadata
+
+`source` says where a term comes from. It defaults to `tags`:
+
+| `source` | Reads |
+| --- | --- |
+| `tags` | the tool's `tags`, matched against the declared terms |
+| `annotations` | `ToolAnnotations`, yielding `readonly`, `mutating` or `destructive` |
+| `meta:<key>` | `meta[<key>]`, whatever the tool put there |
+
+```python
+fastmcp_axes = (
+    {"name": "risk", "source": "annotations"},
+    {"name": "since", "source": "meta:since"},
+)
+```
+
+The `annotations` source follows the MCP spec: `destructiveHint` describes a
+tool only once `readOnlyHint` is false, and an unset hint says nothing rather
+than defaulting. A tool that sets no hints takes no term, so declaring this
+axis costs nothing until your tools carry annotations.
+
+### Colours, and adding your own
+
+`tone` names a colour: `green`, `blue`, `amber`, `red` or `slate`, defaulting
+to `slate`. Tones are three CSS layers, so you can enter at whichever you need.
+
+Restyle a shipped tone by redefining its palette variables:
+
+```css
+:root {
+  --gp-sphinx-fastmcp-tone-red-bg: #7f1d1d;
+  --gp-sphinx-fastmcp-tone-red-border: #991b1b;
+  --gp-sphinx-fastmcp-tone-red-text: #fef2f2;
+}
+```
+
+Add a tone the extension does not ship by defining its class, then naming it:
+
+```css
+.gp-sphinx-fastmcp__toolset--tone-teal {
+  --gp-sphinx-fastmcp-badge-bg: #0f766e;
+  --gp-sphinx-fastmcp-badge-border: #14b8a6;
+  --gp-sphinx-fastmcp-badge-text: #f0fdfa;
+}
+```
+
+```python
+{"term": "audit", "tone": "teal"}
+```
+
+Every badge also carries `gp-sphinx-fastmcp__axis-<axis>` and
+`gp-sphinx-fastmcp__<axis>-<term>`, so you can style one axis or one term
+directly without going through tones at all.
+
+### Summary tables
+
+`{fastmcp-tool-summary}` groups by one axis, defaulting to the first declared.
+Name another to group by it instead:
+
+````myst
+```{eval-rst}
+.. fastmcp-tool-summary:: topic
+```
+````
 
 `sphinx_autodoc_fastmcp` automatically registers `sphinx_ux_badges`,
 `sphinx_ux_autodoc_layout`, and `sphinx_autodoc_typehints_gp` via
