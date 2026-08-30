@@ -421,7 +421,7 @@ class FastMCPToolSummaryDirective(SphinxDirective):
             desc = toolset.tooltip
 
             section = nodes.section()
-            section["ids"].append(label.lower())
+            section["ids"].append(nodes.make_id(f"fastmcp-toolset-{toolset.tag}"))
             self.state.document.note_explicit_target(section)
             section += nodes.title("", label)
             section += nodes.paragraph("", desc)

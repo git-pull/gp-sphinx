@@ -399,3 +399,13 @@ def test_the_summary_warns_when_it_drops_an_unmatched_tool(
     messages = "\n".join(record.message for record in caplog.records)
     assert "omitted from fastmcp-tool-summary" in messages
     assert "list_sessions" in messages
+
+
+@pytest.mark.integration
+def test_summary_sections_anchor_on_the_toolset_tag(
+    fastmcp_heading_collision_result: SharedSphinxResult,
+) -> None:
+    """A tag keeps one anchor whatever its rendered heading reads."""
+    html = read_output(fastmcp_heading_collision_result, "index.html")
+
+    assert 'id="fastmcp-toolset-destructive"' in html
