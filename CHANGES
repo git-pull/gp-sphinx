@@ -14,9 +14,20 @@ $ pip install --user --upgrade --pre gp-sphinx
 $ uv add gp-sphinx --prerelease allow
 ```
 
-## gp-sphinx 0.1.0a38 (unreleased)
+## gp-sphinx 0.1.0a39 (unreleased)
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
+
+## gp-sphinx 0.1.0a38 (2026-08-30)
+
+gp-sphinx 0.1.0a38 lets a project say what its MCP tools are, in its own
+words. `sphinx-autodoc-fastmcp` classified every tool against one fixed
+vocabulary and rendered one badge; it now reads axes the project
+declares, so risk and topic can be shown side by side, and it takes
+terms from a tool's tags, from MCP's own `ToolAnnotations`, or from its
+`meta`. Projects on `fastmcp_toolsets` must move to `fastmcp_axes`; see
+{ref}`sphinx-autodoc-fastmcp-how-to` for the shapes and the CSS entry
+points for colour.
 
 ### Breaking changes
 
