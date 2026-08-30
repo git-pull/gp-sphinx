@@ -397,11 +397,7 @@ class FastMCPToolSummaryDirective(SphinxDirective):
                 ),
             ]
 
-        groups: dict[str, list[ToolInfo]] = {
-            "readonly": [],
-            "mutating": [],
-            "destructive": [],
-        }
+        groups: dict[str, list[ToolInfo]] = {}
         for tool in tools.values():
             groups.setdefault(tool.toolset, []).append(tool)
 
