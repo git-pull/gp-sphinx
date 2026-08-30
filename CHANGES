@@ -18,6 +18,111 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Breaking changes
+
+#### Tools are classified on axes, not on one vocabulary
+
+`fastmcp_toolsets` is replaced by `fastmcp_axes`. An axis is one
+independent way of classifying a tool; a tool takes at most one term per
+axis and renders one badge per axis, in declaration order.
+
+```python
+# Before
+fastmcp_toolsets = ("destructive", "mutating", "readonly")
+
+# After
+fastmcp_axes = (
+    {"name": "risk", "terms": ("destructive", "mutating", "readonly")},
+)
+```
+
+`ToolInfo.safety` is now `ToolInfo.axes`, a mapping of axis name to term,
+and `ToolInfo.meta` carries the tool's `meta`. `fastmcp_section_badge_map`
+values accept `term` or `axis:term`. `fastmcp-tool-summary` anchors its
+sections on `#fastmcp-<axis>-<term>` rather than on the rendered heading,
+so links into the old anchors need updating. (#77)
+
+#### No vocabulary is assumed
+
+Tags previously resolved against a fixed `destructive` / `mutating` /
+`readonly` set, ending in a fallback to `readonly`. A project using
+different tags had every tool badged read-only, including the ones that
+run commands.
+
+Nothing is assumed now: a project declares its own axes, and a tool
+matching no term on an axis renders no badge for it. Until
+`fastmcp_axes` is set, tools carry no badges — which is the signal that
+the setting is missing. (#77)
+
+### What's new
+
+#### One tool, several axes
+
+Tags usually carry more than one idea. A read-only lifecycle tool used to
+be reported as its risk or as its topic, never both, because a tool held
+a single term.
+
+Declare an axis for each and both badges render:
+
+```python
+fastmcp_axes = (
+    {"name": "risk", "terms": ("mutating", "readonly")},
+    {"name": "topic", "terms": ("lifecycle", "metrics")},
+)
+```
+
+See {ref}`sphinx-autodoc-fastmcp-how-to` for the full shape. (#77)
+
+#### Axes read MCP's own metadata
+
+An axis names where its term comes from. `tags` matches declared terms
+against the tool's tags. `annotations` reads `ToolAnnotations`, following
+the MCP spec so `destructiveHint` describes a tool only once
+`readOnlyHint` is false, and an unset hint says nothing rather than
+defaulting. `meta:<key>` reads the mapping MCP passes through to clients.
+
+A tool that sets no hints takes no term, so declaring an `annotations`
+axis costs nothing until the tools carry them. (#77)
+
+#### Badge presentation is per term
+
+A term carries its own `label`, `tooltip`, `icon`, `tone`, `style`,
+`fill` and `classes`. Badges render `gp-sphinx-fastmcp__axis-<axis>` and
+`gp-sphinx-fastmcp__<axis>-<term>`, so a project can style one axis or
+one term directly. (#77)
+
+#### Tones extend without touching the extension
+
+Tones resolve through three CSS layers: `:root` names the palette, a
+`--tone-<name>` class maps one entry onto the badge slot, and one rule
+consumes the slot. Restyling a shipped tone means redefining three
+variables; adding a tone the extension does not ship means writing one
+class and naming it from `conf.py`. (#77)
+
+### Fixes
+
+- A tool matching no declared term rendered an empty badge with a bare
+  `Toolset: ` tooltip from `{tool}` and `{toolref}`; it now renders as
+  plain text. (#77)
+- `fastmcp-tool-summary` dropped tools it could not place, and rendered
+  nothing at all when no vocabulary was declared, both without a
+  diagnostic. It now warns and names the tools it left out. (#77)
+- A `fastmcp_axes` entry with no name, or a term with no name, aborted
+  the build with a bare `KeyError`. Both now warn and are skipped. (#77)
+- A tone the stylesheet has no rule for rendered an uncoloured badge with
+  nothing to point at the typo; it now warns and falls back. (#77)
+- The `fastmcp_toolsets` config description claimed an empty value kept
+  the old three tags, contradicting itself two sentences later. (#77)
+
+### Documentation
+
+#### Classifying tools has a how-to
+
+The rules a project follows — one axis from tags, two axes when the tags
+carry two ideas, an axis from annotations or `meta`, and the two CSS
+entry points for tones — are written down. See
+{ref}`sphinx-autodoc-fastmcp-how-to`. (#77)
+
 ## gp-sphinx 0.1.0a37 (2026-07-26)
 
 gp-sphinx 0.1.0a37 gives every class-level name — a field, a
