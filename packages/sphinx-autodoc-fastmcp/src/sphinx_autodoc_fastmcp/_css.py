@@ -40,11 +40,8 @@ class _CSS:
     RESOURCE_SIGNATURE = "gp-sphinx-fastmcp__resource-signature"
     BODY_SECTION = "gp-sphinx-fastmcp__body-section"
 
-    # Toolset slot + values
+    # Toolset slot
     BADGE_TOOLSET = "gp-sphinx-fastmcp__toolset"
-    TOOLSET_INSPECT = "gp-sphinx-fastmcp__toolset-readonly"
-    TOOLSET_MANAGE = "gp-sphinx-fastmcp__toolset-mutating"
-    TOOLSET_TEARDOWN = "gp-sphinx-fastmcp__toolset-destructive"
 
     @staticmethod
     def tone_class(tone: str) -> str:
