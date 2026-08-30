@@ -131,9 +131,9 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         "env",
         description=(
             'Mapping of docstring section heading (e.g. ``"Inspect"``) '
-            "to the toolset badge it should render with (e.g. "
-            '``"readonly"``, ``"mutating"``, ``"destructive"``). '
-            "Drives the inline section pills next to grouped tool lists."
+            "to the toolset badge it should render with, one of the tags "
+            "declared in ``fastmcp_toolsets``. Drives the inline section "
+            "pills next to grouped tool lists."
         ),
     )
     app.add_config_value(
@@ -151,13 +151,12 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         (),
         "env",
         description=(
-            "Safety vocabulary this project tags its tools with, in "
-            "precedence order, highest first. Each entry is a tag name or "
-            'a mapping with ``"tag"`` and optional ``"tooltip"`` / '
-            '``"icon"``. Empty keeps ``destructive`` / ``mutating`` / '
-            "``readonly``. A tool carrying none of these tags renders "
-            "without a toolset badge rather than being reported as the "
-            "lowest entry."
+            "Vocabulary this project tags its tools with, in precedence "
+            "order, highest first. Each entry is a tag name or a mapping "
+            'with ``"tag"`` and optional ``"tooltip"`` / ``"icon"`` / '
+            '``"tone"``. Empty declares no vocabulary. A tool carrying '
+            "none of these tags renders without a toolset badge rather "
+            "than being reported as the lowest of them."
         ),
     )
     app.add_config_value(
