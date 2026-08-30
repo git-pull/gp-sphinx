@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import pathlib
 import textwrap
 import typing as t
 
@@ -409,3 +410,46 @@ def test_summary_sections_anchor_on_the_toolset_tag(
     html = read_output(fastmcp_heading_collision_result, "index.html")
 
     assert 'id="fastmcp-toolset-destructive"' in html
+
+
+@pytest.mark.integration
+def test_the_vocabulary_survives_a_second_build_of_one_app(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Nothing may clear the vocabulary per build.
+
+    Sphinx emits builder-inited once per app but build-finished after
+    every build(), so installing on the former and clearing on the latter
+    leaves every rebuild badging tools with no tooltip, icon or tone.
+    """
+    from sphinx.application import Sphinx
+
+    from sphinx_autodoc_fastmcp._badges import build_toolset_badge, use_toolsets
+
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "conf.py").write_text(
+        'extensions = ["sphinx_autodoc_fastmcp"]\n'
+        'fastmcp_toolsets = ({"tag": "execute", "tooltip": "Runs it",'
+        ' "tone": "red"},)\n',
+    )
+    (src / "index.rst").write_text("Tools\n=====\n")
+
+    app = Sphinx(
+        str(src),
+        str(src),
+        str(tmp_path / "out"),
+        str(tmp_path / "out" / ".doctrees"),
+        "html",
+        status=None,
+        warning=None,
+    )
+    app.build()
+    app.build()
+
+    try:
+        badge = build_toolset_badge("execute")
+        assert badge["badge_tooltip"] == "Runs it"
+        assert "gp-sphinx-fastmcp__toolset--tone-red" in badge["classes"]
+    finally:
+        use_toolsets(None)
