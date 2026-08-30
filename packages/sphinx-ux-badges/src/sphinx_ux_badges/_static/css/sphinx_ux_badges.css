@@ -211,11 +211,23 @@ body[data-theme="dark"] .gp-sphinx-badge:not(.gp-sphinx-badge--outline):not(.gp-
   opacity: 0.9;
 }
 
-/* Icon-only links: flexbox parent for consistent spacing */
+/* Icon-only links stay inline: a flex parent blockifies the code chip,
+ * which drops its inline metrics and leaves it taller than the plain
+ * code around it. Margin on the badge spaces them instead of `gap`,
+ * and nowrap keeps the icon with its name, which the flex box used to
+ * guarantee by being unsplittable. */
 a.reference:has(> .gp-sphinx-badge.gp-sphinx-badge--icon-only) {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
+  white-space: nowrap;
+}
+
+a.reference:has(> .gp-sphinx-badge.gp-sphinx-badge--icon-only)
+  > .gp-sphinx-badge--icon-only:first-child {
+  margin-inline-end: 3px;
+}
+
+a.reference:has(> .gp-sphinx-badge.gp-sphinx-badge--icon-only)
+  > .gp-sphinx-badge--icon-only:last-child {
+  margin-inline-start: 3px;
 }
 
 a.reference:has(> .gp-sphinx-badge.gp-sphinx-badge--icon-only) > code {
