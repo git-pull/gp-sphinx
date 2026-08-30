@@ -110,24 +110,29 @@ conf = merge_sphinx_config(
     fastmcp_area_map={
         "fastmcp_demo_tools": "packages/sphinx-autodoc-fastmcp/examples",
     },
-    fastmcp_toolsets=(
+    fastmcp_axes=(
         {
-            "tag": "teardown",
-            "tone": "red",
-            "tooltip": "Removes objects; not reversible.",
-            "icon": "\N{BOMB}",
-        },
-        {
-            "tag": "execute",
-            "tone": "amber",
-            "tooltip": "Starts or drives a process.",
-            "icon": "\N{PENCIL}\N{VARIATION SELECTOR-16}",
-        },
-        {
-            "tag": "inspect",
-            "tone": "green",
-            "tooltip": "Reads state without changing it.",
-            "icon": "\N{LEFT-POINTING MAGNIFYING GLASS}",
+            "name": "capability",
+            "terms": (
+                {
+                    "term": "teardown",
+                    "tone": "red",
+                    "tooltip": "Removes objects; not reversible.",
+                    "icon": "\N{BOMB}",
+                },
+                {
+                    "term": "execute",
+                    "tone": "amber",
+                    "tooltip": "Starts or drives a process.",
+                    "icon": "\N{PENCIL}\N{VARIATION SELECTOR-16}",
+                },
+                {
+                    "term": "inspect",
+                    "tone": "green",
+                    "tooltip": "Reads state without changing it.",
+                    "icon": "\N{LEFT-POINTING MAGNIFYING GLASS}",
+                },
+            ),
         },
     ),
     fastmcp_collector_mode="introspect",
