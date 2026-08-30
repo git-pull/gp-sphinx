@@ -278,3 +278,29 @@ def test_a_toolset_badge_carries_its_declared_tone() -> None:
         )
     finally:
         use_toolsets(None)
+
+
+def test_a_toolset_entry_without_a_tag_is_skipped(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """One typo in conf.py costs a badge, not the build."""
+    from sphinx_autodoc_fastmcp._models import coerce_toolsets
+
+    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp._models"):
+        toolsets = coerce_toolsets(({"name": "execute"}, {"tag": "inspect"}))
+
+    assert [entry.tag for entry in toolsets] == ["inspect"]
+    assert "has no 'tag'" in caplog.text
+
+
+def test_an_unknown_tone_falls_back_to_slate(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The stylesheet has no rule for it, so the badge would render uncoloured."""
+    from sphinx_autodoc_fastmcp._models import coerce_toolsets
+
+    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp._models"):
+        (entry,) = coerce_toolsets(({"tag": "teardown", "tone": "grey"},))
+
+    assert entry.tone == "slate"
+    assert "unknown tone" in caplog.text

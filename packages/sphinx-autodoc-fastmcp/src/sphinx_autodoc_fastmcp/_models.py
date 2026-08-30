@@ -2,8 +2,15 @@
 
 from __future__ import annotations
 
+import logging
 import typing as t
 from dataclasses import dataclass, field
+
+logger = logging.getLogger(__name__)
+
+#: Tones the stylesheet defines a rule for. A tone outside this set would
+#: render an uncoloured badge, so an unknown one falls back to ``slate``.
+TONES: frozenset[str] = frozenset({"green", "blue", "amber", "red", "slate"})
 
 
 @dataclass(frozen=True)
@@ -46,6 +53,10 @@ def coerce_toolsets(value: t.Any) -> tuple[Toolset, ...]:
     :class:`Toolset`, or of bare tag strings. An empty value declares no
     vocabulary, and tools then carry no toolset badge.
 
+    A mapping with no ``"tag"`` is skipped and a tone outside :data:`TONES`
+    falls back to ``slate``, each with a warning, so one typo in ``conf.py``
+    costs a badge rather than the build.
+
     Parameters
     ----------
     value : object
@@ -71,13 +82,29 @@ def coerce_toolsets(value: t.Any) -> tuple[Toolset, ...]:
             tiers.append(entry)
         elif isinstance(entry, str):
             tiers.append(Toolset(entry))
+        elif "tag" not in entry:
+            logger.warning(
+                "sphinx_autodoc_fastmcp: fastmcp_toolsets entry %r has no "
+                "'tag'; skipping it",
+                entry,
+            )
         else:
+            tone = entry.get("tone", "slate")
+            if tone not in TONES:
+                logger.warning(
+                    "sphinx_autodoc_fastmcp: unknown tone %r for toolset %r; "
+                    "using 'slate'. Known tones: %s",
+                    tone,
+                    entry["tag"],
+                    ", ".join(sorted(TONES)),
+                )
+                tone = "slate"
             tiers.append(
                 Toolset(
                     entry["tag"],
                     entry.get("tooltip", ""),
                     entry.get("icon", ""),
-                    entry.get("tone", "slate"),
+                    tone,
                 )
             )
     return tuple(tiers)
