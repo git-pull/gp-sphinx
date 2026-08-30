@@ -463,3 +463,81 @@ def test_the_axes_survive_a_second_build_of_one_app(
         assert "gp-sphinx-fastmcp__toolset--tone-red" in badge["classes"]
     finally:
         use_axes(None)
+
+
+_TWO_AXIS_MODULE = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    import types
+
+
+    def start_run(script: str) -> str:
+        \"\"\"Start a load test.\"\"\"
+
+        return ""
+
+
+    start_run.__fastmcp__ = types.SimpleNamespace(
+        name="start_run",
+        title="Start Run",
+        tags={"mutating", "lifecycle"},
+        annotations={"readOnlyHint": False, "destructiveHint": False},
+        meta={"since": "1.2"},
+    )
+    """
+)
+
+_TWO_AXIS_CONF = textwrap.dedent(
+    """\
+    from __future__ import annotations
+
+    import sys
+
+    sys.path.insert(0, r"__SCENARIO_SRCDIR__")
+
+    extensions = ["sphinx_autodoc_fastmcp"]
+    fastmcp_tool_modules = ["demo_tools"]
+    fastmcp_area_map = {"demo_tools": "api"}
+    fastmcp_collector_mode = "introspect"
+    fastmcp_axes = (
+        {"name": "risk", "source": "annotations"},
+        {"name": "topic", "terms": ("lifecycle", "metrics")},
+        {"name": "since", "source": "meta:since"},
+    )
+    """
+)
+
+
+@pytest.mark.integration
+def test_a_tool_renders_one_badge_per_declared_axis(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> None:
+    """Three sources classify one tool at once, and each gets its own badge.
+
+    A single vocabulary has to pick one of these and drop the rest.
+    """
+    cache_root = tmp_path_factory.mktemp("fastmcp-two-axis")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("demo_tools.py", _TWO_AXIS_MODULE),
+            ScenarioFile(
+                "conf.py",
+                _TWO_AXIS_CONF.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile(
+                "index.rst",
+                "Tools\n=====\n\n.. fastmcp-tool:: demo_tools.start_run\n",
+            ),
+        ),
+    )
+    html = read_output(
+        build_shared_sphinx_result(cache_root, scenario, purge_modules=("demo_tools",)),
+        "index.html",
+    )
+
+    # readOnlyHint False + destructiveHint False is "mutating" per the MCP spec.
+    assert "gp-sphinx-fastmcp__risk-mutating" in html
+    assert "gp-sphinx-fastmcp__topic-lifecycle" in html
+    assert "gp-sphinx-fastmcp__since-1.2" in html
