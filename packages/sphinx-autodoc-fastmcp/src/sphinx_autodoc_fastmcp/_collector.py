@@ -6,6 +6,7 @@ import contextlib
 import importlib
 import inspect
 import logging
+import re
 import typing as t
 
 from sphinx.application import Sphinx
@@ -86,13 +87,24 @@ class ToolCollector:
         return decorator
 
 
-_HINTS = ("readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint")
+#: Each hint's documented name paired with the attribute holding it. MCP SDK v2
+#: renamed the model fields to snake_case, keeping the camelCase spellings as
+#: serialization aliases only — an attribute read has to use the field name.
+#: The documented name stays camelCase because that is what the MCP schema
+#: publishes and what the rendered pages and ``term_from_annotations`` speak.
+_HINTS = (
+    ("readOnlyHint", "read_only_hint"),
+    ("destructiveHint", "destructive_hint"),
+    ("idempotentHint", "idempotent_hint"),
+    ("openWorldHint", "open_world_hint"),
+)
 
 
 def _annotation_hints(annotations: t.Any) -> dict[str, bool]:
     """Return the hints a tool actually sets, dropping the unset ones.
 
     FastMCP accepts ``ToolAnnotations`` or a plain mapping, so read both.
+    A mapping is keyed by the documented name; a model by its field.
 
     Examples
     --------
@@ -104,15 +116,24 @@ def _annotation_hints(annotations: t.Any) -> dict[str, bool]:
     if annotations is None:
         return {}
     hints: dict[str, bool] = {}
-    for key in _HINTS:
+    for name, field in _HINTS:
         value = (
-            annotations.get(key)
+            annotations.get(name)
             if isinstance(annotations, dict)
-            else getattr(annotations, key, None)
+            else getattr(annotations, field, None)
         )
         if isinstance(value, bool):
-            hints[key] = value
+            hints[name] = value
     return hints
+
+
+#: Resource and template annotations, documented name paired with the field
+#: holding it. Only ``lastModified`` was renamed; the other two already match.
+_RESOURCE_ANNOTATION_FIELDS = (
+    ("audience", "audience"),
+    ("priority", "priority"),
+    ("lastModified", "last_modified"),
+)
 
 
 def _tool_from_callable(
@@ -365,29 +386,46 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
     return tuple(components.values())
 
 
-_SCHEMA_NOTE_MARKER = "Provide as a JSON string matching the following schema:"
+#: FastMCP appends its schema hint as a trailing blank-line-separated
+#: paragraph. The wording is not stable — FastMCP 3 wrote "Provide as a JSON
+#: string matching the following schema:" and FastMCP 4 writes "Provide a value
+#: matching the following JSON schema:" — so match the shape both share rather
+#: than either sentence, and only ever consider the final paragraph. A
+#: description that genuinely ends in a paragraph like this does not exist;
+#: one that merely has several paragraphs keeps all of them.
+_SCHEMA_NOTE_RE = re.compile(
+    r"^Provide\b.*\bJSON\b.*\bschema\b", re.IGNORECASE | re.DOTALL
+)
 
 
 def _strip_schema_note(text: str) -> str:
     r"""Remove FastMCP's auto-appended JSON-schema hint from a description.
 
-    FastMCP's prompt argument builder tacks on
-    ``"\n\nProvide as a JSON string matching the following schema: {...}"``
-    to help LLMs; it's noise in human-facing docs.
+    FastMCP's prompt argument builder appends a schema hint to help LLMs
+    pass non-string arguments; it is noise in human-facing docs.
 
     Examples
     --------
     >>> _strip_schema_note("Summary.")
     'Summary.'
+    >>> _strip_schema_note(
+    ...     "Summary.\n\nProvide a value matching the following JSON schema:"
+    ...     ' {"type":"number"}. Encode non-string values as JSON.'
+    ... )
+    'Summary.'
     >>> _strip_schema_note("Summary.\n\nProvide as a JSON string matching the following schema: {}")
     'Summary.'
-    >>> _strip_schema_note("  Summary.  \n\nProvide as a JSON string matching the following schema: {}")
-    'Summary.'
+    >>> _strip_schema_note("First.\n\nSecond.")
+    'First.\n\nSecond.'
+    >>> _strip_schema_note('Provide a value matching the following JSON schema: {}.')
+    ''
     """
-    idx = text.find(_SCHEMA_NOTE_MARKER)
-    if idx == -1:
-        return text.strip()
-    return text[:idx].strip()
+    head, sep, tail = text.rpartition("\n\n")
+    # Without a separator the note is the whole description, and `head` is
+    # already the empty string this should return.
+    if _SCHEMA_NOTE_RE.match((tail if sep else text).strip()):
+        return head.strip()
+    return text.strip()
 
 
 def _prompt_from_component(prompt: t.Any) -> PromptInfo:
@@ -441,14 +479,10 @@ def _resource_from_component(res: t.Any) -> ResourceInfo:
     annotations = getattr(res, "annotations", None)
     ann_dict: dict[str, t.Any] = {}
     if annotations is not None:
-        for field_name in (
-            "audience",
-            "priority",
-            "lastModified",
-        ):
-            val = getattr(annotations, field_name, None)
+        for name, field in _RESOURCE_ANNOTATION_FIELDS:
+            val = getattr(annotations, field, None)
             if val is not None:
-                ann_dict[field_name] = val
+                ann_dict[name] = val
     module_name = getattr(func, "__module__", "") if func is not None else ""
     return ResourceInfo(
         name=str(res.name),
@@ -517,10 +551,10 @@ def _resource_template_from_component(tpl: t.Any) -> ResourceTemplateInfo:
     annotations = getattr(tpl, "annotations", None)
     ann_dict: dict[str, t.Any] = {}
     if annotations is not None:
-        for field_name in ("audience", "priority", "lastModified"):
-            val = getattr(annotations, field_name, None)
+        for name, field in _RESOURCE_ANNOTATION_FIELDS:
+            val = getattr(annotations, field, None)
             if val is not None:
-                ann_dict[field_name] = val
+                ann_dict[name] = val
     parameters = _template_params_from_schema(getattr(tpl, "parameters", None))
     module_name = getattr(func, "__module__", "") if func is not None else ""
     return ResourceTemplateInfo(
