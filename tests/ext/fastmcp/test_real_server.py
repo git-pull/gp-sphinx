@@ -19,6 +19,7 @@ from sphinx_autodoc_fastmcp._collector import (
     _annotation_hints,
     _prompt_from_component,
     _resource_from_component,
+    _tools_from_server,
 )
 
 pytest.importorskip("fastmcp")
@@ -108,3 +109,34 @@ async def test_prompt_arguments_drop_the_generated_schema_note(
     info = _prompt_from_component(prompt)
 
     assert "JSON" not in info.arguments[0].description
+
+
+def test_a_configured_server_yields_tools_the_mock_would_drop() -> None:
+    """A kwarg the mock rejects must not erase its module's other tools.
+
+    ``collect_tools``' register mode drives a hand-written collector whose
+    signature lags FastMCP's, and its module loop swallows the resulting
+    ``TypeError`` with a warning — so one unknown kwarg silently drops the
+    rest of the module. Reading the live server instead sees what is served.
+    """
+    server = FastMCP("drop-probe")
+
+    @server.tool(title="Alpha")
+    def alpha() -> str:
+        """First."""
+        return "a"
+
+    @server.tool(title="Beta", version="2")
+    async def beta() -> str:
+        """Second."""
+        return "b"
+
+    @server.tool(title="Gamma")
+    def gamma() -> str:
+        """Third."""
+        return "c"
+
+    collected = _tools_from_server(server, area_map={}, axes=())
+
+    assert collected is not None
+    assert sorted(info.name for info in collected) == ["alpha", "beta", "gamma"]

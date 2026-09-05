@@ -173,6 +173,76 @@ def _tool_from_callable(
     )
 
 
+def _tool_from_component(
+    tool: t.Any,
+    *,
+    area_map: dict[str, str],
+    axes: tuple[Axis, ...] = DEFAULT_AXES,
+) -> ToolInfo:
+    """Build ``ToolInfo`` from a live FastMCP ``Tool`` component.
+
+    Sibling of :func:`_tool_from_callable`, which reads the ``__fastmcp__``
+    spec a decorator leaves on a function. This reads the registered
+    component instead, so it sees what the server actually serves —
+    including metadata a hand-written collector cannot carry.
+
+    Module attribution comes from the underlying function rather than the
+    position of the module in ``fastmcp_tool_modules``, which is why this
+    path does not need that list at all.
+    """
+    func: t.Callable[..., t.Any] = tool.fn
+    if hasattr(func, "__wrapped__"):
+        func = func.__wrapped__
+    module_name = str(getattr(func, "__module__", "") or "").rpartition(".")[2]
+
+    tags = set(getattr(tool, "tags", None) or ())
+    meta = dict(getattr(tool, "meta", None) or {})
+    ann_dict = _annotation_hints(getattr(tool, "annotations", None))
+    name = str(tool.name)
+    area = area_map.get(module_name, module_name.replace("_tools", ""))
+
+    return ToolInfo(
+        name=name,
+        title=str(getattr(tool, "title", None) or name.replace("_", " ").title()),
+        module_name=module_name,
+        area=area,
+        axes=resolve_axes(axes, tags=tags, annotations=ann_dict, meta=meta),
+        annotations=ann_dict,
+        meta=meta,
+        func=func,
+        docstring=func.__doc__ or "",
+        params=extract_params(func),
+        return_annotation=normalize_annotation_text(
+            inspect.signature(func).return_annotation
+        ),
+    )
+
+
+def _tools_from_server(
+    server: t.Any,
+    *,
+    area_map: dict[str, str],
+    axes: tuple[Axis, ...],
+) -> list[ToolInfo] | None:
+    """Collect every registered tool off a live server, or ``None``.
+
+    Returns ``None`` when fastmcp is not importable, so the caller can fall
+    back to the module-scanning modes rather than reporting zero tools.
+    """
+    try:
+        from fastmcp.tools import Tool as _Tool
+    except ImportError:  # pragma: no cover - defensive
+        logger.warning(
+            "sphinx_autodoc_fastmcp: could not import fastmcp Tool", exc_info=True
+        )
+        return None
+    return [
+        _tool_from_component(component, area_map=area_map, axes=axes)
+        for component in _iter_components(server)
+        if isinstance(component, _Tool) and getattr(component, "fn", None) is not None
+    ]
+
+
 def collect_tools(app: Sphinx) -> None:
     """Populate ``app.env.fastmcp_tools`` from configured modules."""
     modules: list[str] = list(app.config.fastmcp_tool_modules)
@@ -185,6 +255,23 @@ def collect_tools(app: Sphinx) -> None:
             mode,
         )
         mode = "register"
+
+    # Prefer the live server when one is configured. The module-scanning modes
+    # below cannot see a tool the mock collector rejected, and a rejected kwarg
+    # aborts the rest of its module -- so a tool this path reports is a tool the
+    # server actually serves. Reads the same provider dict prompts and resources
+    # already use, which deliberately bypasses middleware: a toolset gate that
+    # hides tools at runtime must not erase them from the documentation.
+    server_dotted = str(getattr(app.config, "fastmcp_server_module", "") or "")
+    if server_dotted:
+        server = _resolve_server_instance(server_dotted)
+        if server is not None:
+            from_server = _tools_from_server(server, area_map=area_map, axes=axes)
+            if from_server:
+                app.env.fastmcp_tools = {  # type: ignore[attr-defined]
+                    info.name: info for info in from_server
+                }
+                return
 
     if not modules:
         logger.warning(
