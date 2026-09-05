@@ -5,6 +5,7 @@ from __future__ import annotations
 import contextlib
 import importlib
 import inspect
+import json
 import logging
 import re
 import typing as t
@@ -14,6 +15,7 @@ from sphinx.application import Sphinx
 from sphinx_autodoc_fastmcp._models import (
     DEFAULT_AXES,
     Axis,
+    ParamInfo,
     PromptArgInfo,
     PromptInfo,
     ResourceInfo,
@@ -27,7 +29,10 @@ from sphinx_autodoc_fastmcp._parsing import (
     extract_params,
     first_paragraph,
 )
-from sphinx_autodoc_typehints_gp import normalize_annotation_text
+from sphinx_autodoc_typehints_gp import (
+    classify_annotation_display,
+    normalize_annotation_text,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -198,6 +203,57 @@ def _index_by_unique_name(
     index[name] = info
 
 
+def _render_default(value: t.Any) -> str:
+    """Render a JSON-schema default deterministically."""
+    if value is None:
+        return "None"
+    if isinstance(value, bool):
+        return str(value)
+    if isinstance(value, str):
+        return repr(value)
+    return json.dumps(value)
+
+
+def _params_from_schema(
+    schema: dict[str, t.Any], func: t.Callable[..., t.Any]
+) -> list[ParamInfo]:
+    """Build parameter rows from the tool's published schema.
+
+    The schema decides which parameters exist and their required/default/
+    description; the signature supplies the type display, which the schema
+    cannot express in Python terms.
+    """
+    props: dict[str, t.Any] = schema.get("properties", {}) or {}
+    required = set(schema.get("required", []) or [])
+    try:
+        sig_params = inspect.signature(func).parameters
+    except (TypeError, ValueError):  # pragma: no cover - defensive
+        sig_params = {}  # type: ignore[assignment]
+
+    rows: list[ParamInfo] = []
+    for name, prop in props.items():
+        sig_param = sig_params.get(name)
+        annotation = (
+            _strip_annotated(sig_param.annotation)
+            if sig_param is not None
+            and sig_param.annotation is not inspect.Parameter.empty
+            else ""
+        )
+        is_required = name in required
+        rows.append(
+            ParamInfo(
+                name=name,
+                type_str=classify_annotation_display(
+                    annotation, strip_none=not is_required
+                ).text,
+                required=is_required,
+                default=("" if is_required else _render_default(prop.get("default"))),
+                description=str(prop.get("description", "") or ""),
+            ),
+        )
+    return rows
+
+
 def _tool_from_component(
     tool: t.Any,
     *,
@@ -236,7 +292,7 @@ def _tool_from_component(
         meta=meta,
         func=func,
         docstring=func.__doc__ or "",
-        params=extract_params(func),
+        params=_params_from_schema(getattr(tool, "parameters", {}) or {}, func),
         return_annotation=normalize_annotation_text(
             inspect.signature(func).return_annotation
         ),

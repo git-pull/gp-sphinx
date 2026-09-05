@@ -11,6 +11,7 @@ FastMCP is a dev-only dependency; the extension itself works without it.
 from __future__ import annotations
 
 import logging
+import re
 import typing as t
 import warnings
 
@@ -26,7 +27,7 @@ from sphinx_autodoc_fastmcp._collector import (
 
 pytest.importorskip("fastmcp")
 
-from fastmcp import FastMCP  # noqa: E402
+from fastmcp import Context, FastMCP  # noqa: E402
 from mcp.types import Annotations, ToolAnnotations  # noqa: E402
 
 _LAST_MODIFIED = "2026-01-01T00:00:00Z"
@@ -203,3 +204,42 @@ def test_collected_tools_survive_environment_pickling() -> None:
 
     assert [info.name for info in restored] == ["made_in_a_closure"]
     assert restored[0].docstring == "Registered inside a factory."
+
+
+def test_injected_context_is_not_documented() -> None:
+    """A tool's injected ``Context`` stays out of the parameter table.
+
+    FastMCP drops it from the published schema because no caller can pass
+    it, so a table built from the signature would document an argument the
+    server does not accept.
+    """
+    app: FastMCP = FastMCP("context-fixture")
+
+    @app.tool
+    def search(terms: str, ctx: Context) -> str:
+        """Search."""
+        return "ok"
+
+    collected = _tools_from_server(app, area_map={}, axes=())
+    assert collected is not None
+    names = [param.name for param in collected[0].params]
+    assert names == ["terms"]
+
+
+def test_parameter_defaults_are_reproducible() -> None:
+    """No parameter default carries an object address.
+
+    A default rendered through ``str()`` puts the repr of a sentinel into
+    the HTML, so two builds of one source produce different bytes.
+    """
+    app: FastMCP = FastMCP("default-fixture")
+
+    @app.tool
+    def search(terms: str, ctx: Context) -> str:
+        """Search."""
+        return "ok"
+
+    collected = _tools_from_server(app, area_map={}, axes=())
+    assert collected is not None
+    rendered = repr([param.default for param in collected[0].params])
+    assert not re.search(r"0x[0-9a-f]{6,}", rendered), rendered
