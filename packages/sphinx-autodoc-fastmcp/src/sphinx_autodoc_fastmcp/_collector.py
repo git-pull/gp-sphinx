@@ -502,11 +502,12 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
 #: paragraph. The wording is not stable — FastMCP 3 wrote "Provide as a JSON
 #: string matching the following schema:" and FastMCP 4 writes "Provide a value
 #: matching the following JSON schema:" — so match the shape both share rather
-#: than either sentence, and only ever consider the final paragraph. A
-#: description that genuinely ends in a paragraph like this does not exist;
-#: one that merely has several paragraphs keeps all of them.
+#: than either sentence, and only ever consider the final paragraph. Both
+#: spellings put the schema object immediately after a colon, and requiring it
+#: is what separates the generated note from a written sentence that happens to
+#: ask the reader for a JSON schema.
 _SCHEMA_NOTE_RE = re.compile(
-    r"^Provide\b.*\bJSON\b.*\bschema\b", re.IGNORECASE | re.DOTALL
+    r"^Provide\b.*\bJSON\b.*\bschema\b[^{]*:\s*\{", re.IGNORECASE | re.DOTALL
 )
 
 
@@ -531,6 +532,12 @@ def _strip_schema_note(text: str) -> str:
     'First.\n\nSecond.'
     >>> _strip_schema_note('Provide a value matching the following JSON schema: {}.')
     ''
+
+    A written paragraph that asks for a schema is not the generated note, and
+    survives — the note always carries the schema object after its colon.
+
+    >>> _strip_schema_note("The filter.\n\nProvide a JSON schema for the rows.")
+    'The filter.\n\nProvide a JSON schema for the rows.'
     """
     head, sep, tail = text.rpartition("\n\n")
     # Without a separator the note is the whole description, and `head` is

@@ -178,9 +178,11 @@ def setup(app: Sphinx) -> dict[str, t.Any]:
         "env",
         description=(
             '``"pkg.module:attribute"`` path to a live ``FastMCP`` '
-            "instance. When set, the prompt / resource collector reads "
+            "instance. When set, the collector reads "
             "``local_provider._components`` directly so docs enumerate "
-            "the same surface as the running server."
+            "the same surface as the running server: tools, prompts, "
+            "resources and resource templates. Tools read this way take "
+            "precedence over ``fastmcp_tool_modules``."
         ),
     )
 

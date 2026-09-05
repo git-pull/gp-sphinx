@@ -722,6 +722,9 @@ def _build_resource_card(
 class FastMCPResourceDirective(SphinxDirective):
     """Autodocument one MCP resource (fixed URI).
 
+    The card lists the resource's MIME type and whichever of its ``audience``,
+    ``priority`` and ``lastModified`` annotations are set, as facts.
+
     Supports the standard Sphinx ``:no-index:`` flag (mirrors
     :class:`FastMCPToolDirective`): when set, the card renders but its canonical
     section ID is not registered as a cross-reference target, so a resource
@@ -781,6 +784,9 @@ class FastMCPResourceDirective(SphinxDirective):
 
 class FastMCPResourceTemplateDirective(SphinxDirective):
     """Autodocument one MCP resource template (parameterised URI).
+
+    The card lists the template's MIME type and whichever of its ``audience``,
+    ``priority`` and ``lastModified`` annotations are set, as facts.
 
     Supports the standard Sphinx ``:no-index:`` flag (mirrors
     :class:`FastMCPToolDirective`): when set, the card renders but its canonical

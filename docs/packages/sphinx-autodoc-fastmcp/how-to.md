@@ -19,8 +19,8 @@ fastmcp_area_map = {
 }
 fastmcp_collector_mode = "register"
 
-# Optional: point at a live FastMCP server instance to autodoc its prompts,
-# resources, and resource templates. Format is "module.path:attr_name".
+# Optional: point at a live FastMCP server instance to autodoc its tools,
+# prompts, resources, and resource templates. Format is "module.path:attr_name".
 # Both an instance and a zero-arg factory callable are accepted.
 fastmcp_server_module = "my_project.server:mcp"
 ```
@@ -152,15 +152,25 @@ them separately to your `extensions` list.
 ## Live server collection
 
 Pointing {confval}`fastmcp_server_module` at a live FastMCP instance enables autodoc of
-**prompts**, **resources**, and **resource templates** — see the four new
+**tools**, **prompts**, **resources**, and **resource templates** — see the four new
 directives below. The collector accepts either:
 
 * A live instance: `"my_project.server:mcp"` (where `mcp = FastMCP(...)`).
 * A zero-argument factory: `"my_project.server:make_server"` returning a
   `FastMCP` instance.
 
+Tools come from the server in preference to {confval}`fastmcp_tool_modules`, so a
+tool the server serves is documented whether or not a module hook exposes it, and
+each tool takes its area from its own function rather than from its position in
+that list. Leave {confval}`fastmcp_server_module` unset to keep the
+module-scanning modes.
+
 If the resolved object is not a `FastMCP` (no `local_provider` attribute),
 collection is skipped and a warning is logged. The collector also invokes
 the server's `register_all` / `_register_all` hook (if exported) to
 ensure components registered lazily appear in the docs; FastMCP's default
 `on_duplicate="error"` policy is suppressed for this call.
+
+FastMCP keys tools and prompts by name while permitting two registrations to
+share one, so both are served. The docs index holds one entry per name: it keeps
+the first and warns, naming the collision.
