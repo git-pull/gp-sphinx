@@ -32,6 +32,7 @@ import json
 import logging
 import os.path
 import pathlib
+import posixpath
 import sys
 import typing as t
 
@@ -628,6 +629,10 @@ def merge_sphinx_config(
     return conf
 
 
+#: Asset ``sphinx-inline-tabs`` ships that conflicts with SPA navigation.
+_TABS_JS_NAME = "tabs.js"
+
+
 def remove_tabs_js(app: Sphinx, exc: Exception | None) -> None:
     """Remove ``tabs.js`` from ``_static`` after build.
 
@@ -642,9 +647,74 @@ def remove_tabs_js(app: Sphinx, exc: Exception | None) -> None:
         Build exception, if any.
     """
     if app.builder.format == "html" and not exc:
-        tabs_js = pathlib.Path(app.builder.outdir) / "_static" / "tabs.js"
+        tabs_js = pathlib.Path(app.builder.outdir) / "_static" / _TABS_JS_NAME
         with contextlib.suppress(FileNotFoundError):
             tabs_js.unlink()
+
+
+def _is_tabs_js(asset: object) -> bool:
+    """Return whether *asset* is the ``tabs.js`` :func:`remove_tabs_js` deletes.
+
+    Sphinx models a script as ``_JavaScript``, whose ``__str__`` renders the
+    whole ``<script>`` tag rather than the path, so the filename must be read
+    from the attribute. Compare the base name: ``design-tabs.js``, which
+    ``sphinx-design`` ships and which is copied normally, ends with the same
+    text.
+
+    Parameters
+    ----------
+    asset : object
+        Entry from the page context's ``script_files``.
+
+    Returns
+    -------
+    bool
+        ``True`` when the entry refers to ``tabs.js``.
+
+    Examples
+    --------
+    >>> _is_tabs_js("_static/tabs.js")
+    True
+    >>> _is_tabs_js("_static/design-tabs.js")
+    False
+    """
+    filename = getattr(asset, "filename", asset)
+    return posixpath.basename(str(filename)) == _TABS_JS_NAME
+
+
+def _drop_tabs_js_reference(
+    app: Sphinx,
+    pagename: str,
+    templatename: str,
+    context: dict[str, t.Any],
+    doctree: object,
+) -> None:
+    """Stop pages referencing the ``tabs.js`` that :func:`remove_tabs_js` deletes.
+
+    ``sphinx-inline-tabs`` registers ``tabs.js`` in its ``setup()``, so every
+    page renders a ``<script>`` tag for it. Deleting the built file without
+    dropping the tag leaves every page requesting an asset that is not there.
+    Sphinx supports rewriting ``script_files`` from this event.
+
+    Parameters
+    ----------
+    app : Sphinx
+        The Sphinx application object.
+    pagename : str
+        Name of the page being rendered.
+    templatename : str
+        Template about to be rendered.
+    context : dict
+        Jinja2 context for the page.
+    doctree : object
+        Resolved doctree, or a falsy value for a generated page.
+    """
+    del app, pagename, templatename, doctree
+
+    script_files = context.get("script_files")
+    if not script_files:
+        return
+    context["script_files"] = [js for js in script_files if not _is_tabs_js(js)]
 
 
 def _inject_copybutton_bridge(
@@ -875,6 +945,7 @@ def setup(app: Sphinx) -> None:
     app.add_js_file("js/spa-nav.js", loading_method="defer")
     app.connect("html-page-context", _inject_copybutton_bridge)
     app.connect("html-page-context", _inject_fowt_prevention)
+    app.connect("html-page-context", _drop_tabs_js_reference)
     app.connect("build-finished", remove_tabs_js)
     app.connect(
         "autodoc-skip-member",

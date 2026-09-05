@@ -92,6 +92,7 @@ browser helpers, autodoc filter, and lexer aliases into the Sphinx app:
 | `app.add_js_file("js/spa-nav.js", loading_method="defer")` | Registers the bundled SPA navigation script from `sphinx-gp-theme` |
 | `app.connect("html-page-context", _inject_copybutton_bridge)` | Adds copybutton prompt settings to the page context so copied examples stay prompt-aware after SPA navigation |
 | `app.connect("html-page-context", _inject_fowt_prevention)` | Injects the early theme script that prevents a flash of the wrong theme before Furo initializes |
+| `app.connect("html-page-context", _drop_tabs_js_reference)` | Drops the `_static/tabs.js` `<script>` tag, so pages do not request the file `remove_tabs_js` deletes |
 | `app.connect("build-finished", remove_tabs_js)` | Removes `_static/tabs.js` after HTML builds as a `sphinx-inline-tabs` workaround |
 | `app.connect("autodoc-skip-member", skip_machinery_members, priority=900)` | Hides the {py:data}`gp_sphinx.config.MACHINERY_MEMBERS` names that {py:class}`abc.ABCMeta`, {py:class}`typing.Protocol`, and {py:class}`typing.NamedTuple` write into a class |
 | `app.add_lexer("myst", MystLexer)` | Registers the MyST lexer alias used by Markdown examples |
