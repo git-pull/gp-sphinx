@@ -10,6 +10,7 @@ FastMCP is a dev-only dependency; the extension itself works without it.
 
 from __future__ import annotations
 
+import logging
 import typing as t
 import warnings
 
@@ -17,6 +18,7 @@ import pytest
 
 from sphinx_autodoc_fastmcp._collector import (
     _annotation_hints,
+    _index_by_unique_name,
     _prompt_from_component,
     _resource_from_component,
     _tools_from_server,
@@ -140,3 +142,37 @@ def test_a_configured_server_yields_tools_the_mock_would_drop() -> None:
 
     assert collected is not None
     assert sorted(info.name for info in collected) == ["alpha", "beta", "gamma"]
+
+
+def test_duplicate_tool_names_warn_instead_of_vanishing(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Two tools sharing a name must not silently become one.
+
+    FastMCP keys tools by name but permits duplicates that differ another
+    way (a version, say), so both are really served. Keying the docs index
+    by name alone dropped one with no signal.
+    """
+    server = FastMCP("dup-probe")
+
+    @server.tool(name="same", version="1")
+    def first() -> str:
+        """First."""
+        return "1"
+
+    @server.tool(name="same", version="2")
+    def second() -> str:
+        """Second."""
+        return "2"
+
+    collected = _tools_from_server(server, area_map={}, axes=())
+    assert collected is not None
+    assert len(collected) == 2, "both registrations should reach the collector"
+
+    index: dict[str, object] = {}
+    with caplog.at_level(logging.WARNING):
+        for info in collected:
+            _index_by_unique_name(index, info.name, info, "tool")
+
+    assert list(index) == ["same"]
+    assert any("duplicate tool name" in r.getMessage() for r in caplog.records)

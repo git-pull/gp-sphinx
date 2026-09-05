@@ -173,6 +173,27 @@ def _tool_from_callable(
     )
 
 
+def _index_by_unique_name(
+    index: dict[str, t.Any], name: str, info: t.Any, kind: str
+) -> None:
+    """Store ``name -> info``, warning when a name is already taken.
+
+    FastMCP keys tools and prompts by name, so a duplicate is a real
+    registration the server serves and the docs would otherwise drop in
+    silence. First-wins, matching :func:`_index_by_name`'s behaviour for
+    URI-keyed components, with a warning naming the collision.
+    """
+    if name in index:
+        logger.warning(
+            "sphinx_autodoc_fastmcp: duplicate %s name %r; keeping the first "
+            "and skipping the rest",
+            kind,
+            name,
+        )
+        return
+    index[name] = info
+
+
 def _tool_from_component(
     tool: t.Any,
     *,
@@ -268,9 +289,10 @@ def collect_tools(app: Sphinx) -> None:
         if server is not None:
             from_server = _tools_from_server(server, area_map=area_map, axes=axes)
             if from_server:
-                app.env.fastmcp_tools = {  # type: ignore[attr-defined]
-                    info.name: info for info in from_server
-                }
+                tools_by_name: dict[str, ToolInfo] = {}
+                for served in from_server:
+                    _index_by_unique_name(tools_by_name, served.name, served, "tool")
+                app.env.fastmcp_tools = tools_by_name  # type: ignore[attr-defined]
                 return
 
     if not modules:
@@ -322,7 +344,10 @@ def collect_tools(app: Sphinx) -> None:
                 if info is not None:
                     collector_tools.append(info)
 
-    app.env.fastmcp_tools = {tool.name: tool for tool in collector_tools}  # type: ignore[attr-defined]
+    collected: dict[str, ToolInfo] = {}
+    for collected_tool in collector_tools:
+        _index_by_unique_name(collected, collected_tool.name, collected_tool, "tool")
+    app.env.fastmcp_tools = collected  # type: ignore[attr-defined]
 
 
 def _resolve_server_instance(dotted: str) -> t.Any | None:
@@ -737,7 +762,7 @@ def collect_prompts_and_resources(app: Sphinx) -> None:
                         )
                     elif isinstance(component, _Prompt):
                         info_p = _prompt_from_component(component)
-                        prompts[info_p.name] = info_p
+                        _index_by_unique_name(prompts, info_p.name, info_p, "prompt")
 
     app.env.fastmcp_prompts = prompts  # type: ignore[attr-defined]
     app.env.fastmcp_resources = resources  # type: ignore[attr-defined]
