@@ -603,13 +603,68 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
     comprehensions, so reading ``_components.values()`` is equivalent and
     avoids needing an event loop at Sphinx build time.
     """
-    provider = getattr(server, "local_provider", None)
-    if provider is None:
-        return ()
-    components = getattr(provider, "_components", None)
-    if components is None:
-        return ()
-    return tuple(components.values())
+    seen: set[int] = set()
+    found: list[t.Any] = []
+
+    def _renamed(component: t.Any, prefix: str) -> t.Any:
+        if not prefix or not hasattr(component, "model_copy"):
+            return component
+        return component.model_copy(update={"name": prefix + str(component.name)})
+
+    def walk(node: t.Any, depth: int, prefix: str = "") -> None:
+        if node is None or depth > 8 or id(node) in seen:
+            return
+        seen.add(id(node))
+        for provider in getattr(node, "providers", None) or ():
+            components = getattr(provider, "_components", None)
+            if components is not None:
+                found.extend(
+                    _renamed(component, prefix) for component in components.values()
+                )
+                continue
+            inner = getattr(provider, "server", None)
+            if inner is not None:
+                walk(inner, depth + 1, prefix)
+                continue
+            wrapped = getattr(provider, "_inner", None)
+            if wrapped is None:
+                continue
+            # A namespaced mount renames every component it carries. Reproduce
+            # the prefix rather than reading past it, so the documented name is
+            # the served one; refuse the branch when a transform is not one we
+            # can reproduce, because a wrong name is worse than a missing page.
+            added = ""
+            reproducible = True
+            for transform in getattr(provider, "transforms", None) or ():
+                name_prefix = getattr(transform, "_name_prefix", None)
+                if isinstance(name_prefix, str):
+                    added += name_prefix
+                else:
+                    reproducible = False
+            if not reproducible:
+                logger.warning(
+                    "sphinx_autodoc_fastmcp: a mounted provider renames its "
+                    "components in a way this collector cannot reproduce; its "
+                    "components are not documented",
+                )
+                continue
+            inner_server = getattr(wrapped, "server", None)
+            if inner_server is not None:
+                walk(inner_server, depth + 1, prefix + added)
+                continue
+            inner_components = getattr(wrapped, "_components", None)
+            if inner_components is not None:
+                found.extend(
+                    _renamed(component, prefix + added)
+                    for component in inner_components.values()
+                )
+
+    walk(server, 0, "")
+    if not found:
+        provider = getattr(server, "local_provider", None)
+        components = getattr(provider, "_components", None) if provider else None
+        return tuple(components.values()) if components else ()
+    return tuple(found)
 
 
 #: FastMCP appends its schema hint as a trailing blank-line-separated

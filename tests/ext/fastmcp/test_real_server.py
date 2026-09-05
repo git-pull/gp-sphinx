@@ -10,6 +10,7 @@ FastMCP is a dev-only dependency; the extension itself works without it.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import re
 import types
@@ -288,3 +289,40 @@ def test_a_tool_without_a_python_callable_is_still_documented() -> None:
     info = _tool_from_component(fnless, area_map={})
     assert info.name == "proxied"
     assert [param.name for param in info.params] == ["a"]
+
+
+@pytest.mark.parametrize("namespace", [None, "kid"])
+def test_mounted_tools_match_what_the_server_serves(namespace: str | None) -> None:
+    """A mounted child server's tools are documented under their served names.
+
+    The parent's own registry does not hold them, so reading it alone
+    documented one tool where the server served two. A namespaced mount also
+    renames what it carries, and a name the server does not serve is worse
+    than a missing page.
+    """
+    child: FastMCP = FastMCP("child")
+
+    @child.tool
+    def child_tool(a: int) -> str:
+        """Child."""
+        return "ok"
+
+    parent: FastMCP = FastMCP("parent")
+
+    @parent.tool
+    def parent_tool(b: int) -> str:
+        """Parent."""
+        return "ok"
+
+    if namespace is None:
+        parent.mount(child)
+    else:
+        parent.mount(child, namespace=namespace)
+
+    collected = _tools_from_server(parent, area_map={}, axes=())
+    assert collected is not None
+    served = asyncio.run(parent.list_tools(run_middleware=False))
+
+    assert sorted(tool.name for tool in collected) == sorted(
+        tool.name for tool in served
+    )
