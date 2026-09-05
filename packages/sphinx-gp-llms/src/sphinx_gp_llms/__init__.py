@@ -209,7 +209,10 @@ def _inject_llms_context(
         return
 
     if app.config.llms_generate_md_twins:
-        context["llms_md_url"] = pagename + ".md"
+        from sphinx_gp_llms._md_twins import has_md_twin
+
+        if has_md_twin(app, pagename):
+            context["llms_md_url"] = pagename + ".md"
     if app.config.llms_generate_txt:
         context["llms_txt_url"] = app.config.llms_txt_filename
     if app.config.llms_generate_full:
