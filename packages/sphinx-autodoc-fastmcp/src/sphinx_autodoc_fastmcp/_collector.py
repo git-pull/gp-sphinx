@@ -126,11 +126,19 @@ def _annotation_hints(annotations: t.Any) -> dict[str, bool]:
         return {}
     hints: dict[str, bool] = {}
     for name, field in _HINTS:
-        value = (
-            annotations.get(name)
-            if isinstance(annotations, dict)
-            else getattr(annotations, field, None)
-        )
+        if isinstance(annotations, dict):
+            value = annotations.get(name)
+        else:
+            # SDK v2 renamed the fields; SDK v1 still publishes the documented
+            # camelCase name as the attribute. Read the new field first so a v1
+            # consumer keeps its hints instead of silently losing them.
+            # Only reach for the documented camelCase name when the v2
+            # field is absent entirely. On a v2 model that name is a
+            # deprecated alias, and reading it warns.
+            if hasattr(annotations, field):
+                value = getattr(annotations, field, None)
+            else:
+                value = getattr(annotations, name, None)
         if isinstance(value, bool):
             hints[name] = value
     return hints
@@ -214,8 +222,26 @@ def _render_default(value: t.Any) -> str:
     return json.dumps(value)
 
 
+def _schema_type_text(prop: dict[str, t.Any]) -> str:
+    """Describe a schema property when no signature parameter names it.
+
+    A ``Field(alias=...)`` publishes the alias, so the signature has no
+    parameter of that name and cannot supply a type. The schema's own type is
+    a weaker display than the Python annotation, but it beats an em dash.
+    """
+    declared = prop.get("type")
+    if isinstance(declared, str):
+        return declared
+    options = [
+        opt.get("type")
+        for opt in prop.get("anyOf", []) or []
+        if isinstance(opt, dict) and opt.get("type") not in (None, "null")
+    ]
+    return str(options[0]) if options else ""
+
+
 def _params_from_schema(
-    schema: dict[str, t.Any], func: t.Callable[..., t.Any]
+    schema: dict[str, t.Any], func: t.Callable[..., t.Any] | None
 ) -> list[ParamInfo]:
     """Build parameter rows from the tool's published schema.
 
@@ -226,9 +252,9 @@ def _params_from_schema(
     props: dict[str, t.Any] = schema.get("properties", {}) or {}
     required = set(schema.get("required", []) or [])
     try:
-        sig_params = inspect.signature(func).parameters
+        sig_params = inspect.signature(func).parameters if func is not None else {}
     except (TypeError, ValueError):  # pragma: no cover - defensive
-        sig_params = {}  # type: ignore[assignment]
+        sig_params = {}
 
     rows: list[ParamInfo] = []
     for name, prop in props.items():
@@ -239,6 +265,8 @@ def _params_from_schema(
             and sig_param.annotation is not inspect.Parameter.empty
             else ""
         )
+        if not annotation:
+            annotation = _schema_type_text(prop)
         is_required = name in required
         rows.append(
             ParamInfo(
@@ -271,8 +299,11 @@ def _tool_from_component(
     position of the module in ``fastmcp_tool_modules``, which is why this
     path does not need that list at all.
     """
-    func: t.Callable[..., t.Any] = tool.fn
-    if hasattr(func, "__wrapped__"):
+    # A proxied or provider-backed tool carries no Python callable. Everything
+    # rendered comes from the component itself, so it still documents; only the
+    # signature-derived extras are unavailable.
+    func: t.Callable[..., t.Any] | None = getattr(tool, "fn", None)
+    if func is not None and hasattr(func, "__wrapped__"):
         func = func.__wrapped__
     module_name = str(getattr(func, "__module__", "") or "").rpartition(".")[2]
 
@@ -291,10 +322,12 @@ def _tool_from_component(
         annotations=ann_dict,
         meta=meta,
         func=func,
-        docstring=func.__doc__ or "",
+        docstring=(func.__doc__ or "") if func is not None else "",
         params=_params_from_schema(getattr(tool, "parameters", {}) or {}, func),
-        return_annotation=normalize_annotation_text(
-            inspect.signature(func).return_annotation
+        return_annotation=(
+            normalize_annotation_text(inspect.signature(func).return_annotation)
+            if func is not None
+            else ""
         ),
     )
 
@@ -320,8 +353,26 @@ def _tools_from_server(
     return [
         _tool_from_component(component, area_map=area_map, axes=axes)
         for component in _iter_components(server)
-        if isinstance(component, _Tool) and getattr(component, "fn", None) is not None
+        if isinstance(component, _Tool)
     ]
+
+
+def _server_for(app: Sphinx) -> t.Any | None:
+    """Resolve ``fastmcp_server_module`` once per build.
+
+    ``collect_tools`` and ``collect_prompts_and_resources`` both run on
+    ``builder-inited``. Resolving separately would call a factory twice and
+    collect tools and components from two different servers.
+    """
+    dotted = str(getattr(app.config, "fastmcp_server_module", "") or "")
+    if not dotted:
+        return None
+    cached = getattr(app, "_fastmcp_server_cache", None)
+    if cached is not None and cached[0] == dotted:
+        return cached[1]
+    server = _resolve_server_instance(dotted)
+    app._fastmcp_server_cache = (dotted, server)  # type: ignore[attr-defined]
+    return server
 
 
 def collect_tools(app: Sphinx) -> None:
@@ -343,19 +394,17 @@ def collect_tools(app: Sphinx) -> None:
     # server actually serves. Reads the same provider dict prompts and resources
     # already use, which deliberately bypasses middleware: a toolset gate that
     # hides tools at runtime must not erase them from the documentation.
-    server_dotted = str(getattr(app.config, "fastmcp_server_module", "") or "")
-    if server_dotted:
-        server = _resolve_server_instance(server_dotted)
-        if server is not None:
-            from_server = _tools_from_server(server, area_map=area_map, axes=axes)
-            if from_server:
-                tools_by_name: dict[str, ToolInfo] = {}
-                for served in from_server:
-                    _index_by_unique_name(tools_by_name, served.name, served, "tool")
-                app.env.fastmcp_tools = tools_by_name  # type: ignore[attr-defined]
-                return
+    served_by_name: dict[str, ToolInfo] = {}
+    server = _server_for(app)
+    if server is not None:
+        for served in _tools_from_server(server, area_map=area_map, axes=axes) or ():
+            _index_by_unique_name(served_by_name, served.name, served, "tool")
 
-    if not modules:
+    if served_by_name and not modules:
+        app.env.fastmcp_tools = served_by_name  # type: ignore[attr-defined]
+        return
+
+    if not served_by_name and not modules:
         logger.warning(
             "sphinx_autodoc_fastmcp: fastmcp_tool_modules is empty; no tools collected",
         )
@@ -407,6 +456,11 @@ def collect_tools(app: Sphinx) -> None:
     collected: dict[str, ToolInfo] = {}
     for collected_tool in collector_tools:
         _index_by_unique_name(collected, collected_tool.name, collected_tool, "tool")
+    # The server's own registry does not reach a mounted child server, so a
+    # module entry naming one is the only record of it. Server-collected tools
+    # win on a shared name; module entries fill the gaps rather than being
+    # discarded.
+    collected.update(served_by_name)
     app.env.fastmcp_tools = collected  # type: ignore[attr-defined]
 
 
@@ -661,7 +715,10 @@ def _resource_from_component(res: t.Any) -> ResourceInfo:
     ann_dict: dict[str, t.Any] = {}
     if annotations is not None:
         for name, field in _RESOURCE_ANNOTATION_FIELDS:
-            val = getattr(annotations, field, None)
+            if hasattr(annotations, field):
+                val = getattr(annotations, field, None)
+            else:
+                val = getattr(annotations, name, None)
             if val is not None:
                 ann_dict[name] = val
     module_name = getattr(func, "__module__", "") if func is not None else ""
@@ -733,7 +790,10 @@ def _resource_template_from_component(tpl: t.Any) -> ResourceTemplateInfo:
     ann_dict: dict[str, t.Any] = {}
     if annotations is not None:
         for name, field in _RESOURCE_ANNOTATION_FIELDS:
-            val = getattr(annotations, field, None)
+            if hasattr(annotations, field):
+                val = getattr(annotations, field, None)
+            else:
+                val = getattr(annotations, name, None)
             if val is not None:
                 ann_dict[name] = val
     parameters = _template_params_from_schema(getattr(tpl, "parameters", None))
@@ -792,7 +852,7 @@ def collect_prompts_and_resources(app: Sphinx) -> None:
     template_names: dict[str, str] = {}
 
     if server_dotted:
-        server = _resolve_server_instance(server_dotted)
+        server = _server_for(app)
         if server is None:
             logger.warning(
                 "sphinx_autodoc_fastmcp: fastmcp_server_module %r did not resolve "

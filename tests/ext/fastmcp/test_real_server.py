@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 import re
+import types
 import typing as t
 import warnings
 
@@ -22,6 +23,7 @@ from sphinx_autodoc_fastmcp._collector import (
     _index_by_unique_name,
     _prompt_from_component,
     _resource_from_component,
+    _tool_from_component,
     _tools_from_server,
 )
 
@@ -243,3 +245,46 @@ def test_parameter_defaults_are_reproducible() -> None:
     assert collected is not None
     rendered = repr([param.default for param in collected[0].params])
     assert not re.search(r"0x[0-9a-f]{6,}", rendered), rendered
+
+
+def test_v1_annotation_attributes_are_still_read() -> None:
+    """A tool built against MCP SDK v1 keeps its hints.
+
+    v1 published the documented camelCase names as the attributes. Reading
+    only the v2 field names would empty the badge vocabulary for those
+    consumers, and the extension declares no version floor.
+    """
+    v1_style = types.SimpleNamespace(readOnlyHint=True, destructiveHint=False)
+
+    assert _annotation_hints(v1_style) == {
+        "readOnlyHint": True,
+        "destructiveHint": False,
+    }
+
+
+def test_a_tool_without_a_python_callable_is_still_documented() -> None:
+    """A proxied or provider-backed tool reaches the page.
+
+    ``ProxyTool`` and ``FastMCPProviderTool`` carry no ``fn``; filtering on
+    one drops every tool a mounted or proxied server contributes, which is
+    the silent-loss bug the live-server path exists to remove.
+    """
+    app: FastMCP = FastMCP("fnless-fixture")
+
+    @app.tool
+    def real(a: int) -> str:
+        """Real."""
+        return "ok"
+
+    fnless = types.SimpleNamespace(
+        name="proxied",
+        title=None,
+        tags=None,
+        meta=None,
+        annotations=None,
+        parameters={"properties": {"a": {"type": "integer"}}, "required": ["a"]},
+        fn=None,
+    )
+    info = _tool_from_component(fnless, area_map={})
+    assert info.name == "proxied"
+    assert [param.name for param in info.params] == ["a"]
