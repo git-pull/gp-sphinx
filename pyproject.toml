@@ -64,6 +64,11 @@ dev = [
   # Docs
   "sphinx-autobuild",
   # Testing
+  # sphinx-autodoc-fastmcp introspects a live FastMCP server's object model,
+  # which no shim reproduces faithfully — an SDK field rename is invisible
+  # to a hand-written stub. Dev-only: the extension keeps working without
+  # FastMCP installed, and its real-object tests skip when it is absent.
+  "fastmcp>=4.0.2",
   "pytest",
   "pytest-asyncio",
   "pytest-rerunfailures",
