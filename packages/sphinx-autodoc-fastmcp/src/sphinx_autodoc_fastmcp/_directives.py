@@ -619,6 +619,30 @@ class FastMCPPromptInputDirective(SphinxDirective):
         )
 
 
+#: MCP resource annotations, in the order a reader wants them, paired with the
+#: label each is rendered under. Keys are the wire spellings the collector
+#: stores, which is also what the MCP schema publishes.
+_ANNOTATION_LABELS: tuple[tuple[str, str], ...] = (
+    ("audience", "Audience"),
+    ("priority", "Priority"),
+    ("lastModified", "Last modified"),
+)
+
+
+def _annotation_fact_rows(annotations: dict[str, t.Any]) -> list[ApiFactRow]:
+    """Render the resource annotations that are set, skipping the rest."""
+    rows: list[ApiFactRow] = []
+    for key, label in _ANNOTATION_LABELS:
+        value = annotations.get(key)
+        if value is None:
+            continue
+        text = (
+            ", ".join(str(v) for v in value) if isinstance(value, list) else str(value)
+        )
+        rows.append(ApiFactRow(label, nodes.literal("", text)))
+    return rows
+
+
 def _build_resource_card(
     *,
     env: BuildEnvironment,
@@ -629,6 +653,7 @@ def _build_resource_card(
     docstring: str,
     badge_group: nodes.inline,
     mime_type: str,
+    annotations: dict[str, t.Any] | None = None,
     shell_class: str,
     entry_class: str,
     signature_class: str,
@@ -651,12 +676,16 @@ def _build_resource_card(
             ),
         )
 
+    fact_rows: list[ApiFactRow] = []
     if mime_type:
+        fact_rows.append(ApiFactRow("MIME type", nodes.literal("", mime_type)))
+    # MCP annotations a resource sets: who it is for, how strongly it is
+    # recommended, and when it last changed. Collected all along; rendering
+    # them is what makes them reachable by a reader.
+    fact_rows.extend(_annotation_fact_rows(annotations or {}))
+    if fact_rows:
         content_nodes.append(
-            build_api_facts_section(
-                [ApiFactRow("MIME type", nodes.literal("", mime_type))],
-                classes=(_CSS.BODY_SECTION,),
-            ),
+            build_api_facts_section(fact_rows, classes=(_CSS.BODY_SECTION,)),
         )
 
     section = nodes.section()
@@ -737,6 +766,7 @@ class FastMCPResourceDirective(SphinxDirective):
                     kind="resource",
                 ),
                 mime_type=res.mime_type,
+                annotations=res.annotations,
                 shell_class=_CSS.RESOURCE_SECTION,
                 entry_class=_CSS.RESOURCE_ENTRY,
                 signature_class=_CSS.RESOURCE_SIGNATURE,
@@ -798,6 +828,7 @@ class FastMCPResourceTemplateDirective(SphinxDirective):
                 kind="resource-template",
             ),
             mime_type=tpl.mime_type,
+            annotations=tpl.annotations,
             shell_class=_CSS.RESOURCE_SECTION,
             entry_class=_CSS.RESOURCE_ENTRY,
             signature_class=_CSS.RESOURCE_SIGNATURE,
