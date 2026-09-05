@@ -22,7 +22,11 @@ from sphinx_autodoc_fastmcp._models import (
     coerce_axes,
     resolve_axes,
 )
-from sphinx_autodoc_fastmcp._parsing import extract_params, first_paragraph
+from sphinx_autodoc_fastmcp._parsing import (
+    _strip_annotated,
+    extract_params,
+    first_paragraph,
+)
 from sphinx_autodoc_typehints_gp import normalize_annotation_text
 
 logger = logging.getLogger(__name__)
@@ -574,7 +578,9 @@ def _prompt_from_component(prompt: t.Any) -> PromptInfo:
             for arg in arguments:
                 param = sig.parameters.get(arg.name)
                 if param is not None:
-                    arg.type_str = normalize_annotation_text(param.annotation)
+                    arg.type_str = normalize_annotation_text(
+                        _strip_annotated(param.annotation)
+                    )
     tags = tuple(sorted(str(tag) for tag in getattr(prompt, "tags", None) or ()))
     module_name = getattr(func, "__module__", "") if func is not None else ""
     return PromptInfo(
