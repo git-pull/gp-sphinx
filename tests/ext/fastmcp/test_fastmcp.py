@@ -319,3 +319,65 @@ def test_an_axis_without_a_name_is_skipped(caplog: pytest.LogCaptureFixture) -> 
 
     assert [a.name for a in axes] == ["risk"]
     assert "has no 'name'" in caplog.text
+
+
+@pytest.mark.parametrize(
+    "reserved",
+    ["tool", "prompt", "resource", "resource-template"],
+)
+def test_an_axis_named_after_a_component_kind_is_skipped(
+    reserved: str,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A reserved axis name would collide with component canonical ids."""
+    from sphinx_autodoc_fastmcp._models import coerce_axes
+
+    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp._models"):
+        axes = coerce_axes(
+            ({"name": reserved, "terms": ("a",)}, {"name": "risk", "terms": ("b",)})
+        )
+
+    assert [a.name for a in axes] == ["risk"]
+    assert reserved in caplog.text
+
+
+def test_an_ordinary_axis_name_is_left_alone(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The guard is inert for a name that collides with nothing."""
+    from sphinx_autodoc_fastmcp._models import coerce_axes
+
+    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp._models"):
+        axes = coerce_axes(({"name": "capability", "terms": ("search",)},))
+
+    assert [a.name for a in axes] == ["capability"]
+    assert caplog.records == []
+
+
+def test_an_axis_named_resource_would_collide_via_a_template_term(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """'resource' is reserved because terms can reach the template family."""
+    from sphinx_autodoc_fastmcp._directives import _component_ids
+    from sphinx_autodoc_fastmcp._models import coerce_axes
+
+    # An axis named 'resource' with this term builds the same anchor as the
+    # canonical id of a resource-template named 'events', so reserving only
+    # the literal 'resource-template' would miss it.
+    canonical, _aliases = _component_ids("resource-template", "events")
+    assert canonical == "fastmcp-resource-template-events"
+
+    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp._models"):
+        axes = coerce_axes(({"name": "resource", "terms": ("template-events",)},))
+
+    assert axes == ()
+
+
+def test_every_component_kind_is_reserved_as_an_axis_name() -> None:
+    """The reserved set covers each namespace ``_component_ids`` can build."""
+    from sphinx_autodoc_fastmcp._directives import _component_ids
+    from sphinx_autodoc_fastmcp._models import COMPONENT_KINDS
+
+    for kind in COMPONENT_KINDS:
+        canonical, _aliases = _component_ids(kind, "x")
+        assert canonical == f"fastmcp-{kind}-x"

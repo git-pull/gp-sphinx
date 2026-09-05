@@ -104,6 +104,13 @@ ANNOTATION_AXIS = Axis(
 DEFAULT_AXES: tuple[Axis, ...] = (ANNOTATION_AXIS,)
 
 
+#: Component families whose canonical ids are ``fastmcp-<kind>-<slug>``
+#: (see ``_directives._component_ids``). An axis sharing one of these names
+#: would emit ``fastmcp-<kind>-<term>`` summary anchors into the same id
+#: namespace, and cross-reference roles resolve canonical ids first.
+COMPONENT_KINDS: tuple[str, ...] = ("tool", "prompt", "resource", "resource-template")
+
+
 def _coerce_term(value: t.Any) -> Term | None:
     """Return a :class:`Term` from a string or mapping, or ``None``."""
     if isinstance(value, Term):
@@ -127,6 +134,48 @@ def _coerce_term(value: t.Any) -> Term | None:
         fill=value.get("fill", "filled"),
         classes=tuple(value.get("classes", ())),
     )
+
+
+def _is_reserved_axis_name(name: str) -> bool:
+    """Return whether *name* collides with a component id namespace.
+
+    An axis named after a component kind emits ``fastmcp-<kind>-<term>``
+    anchors, which share the namespace that ``{tool}``, ``{resource}`` and
+    ``{prompt}`` resolve against. Warns once per offending axis and reports
+    it as reserved so the caller can drop it.
+
+    Parameters
+    ----------
+    name : str
+        Declared axis name.
+
+    Returns
+    -------
+    bool
+        ``True`` when the axis must be dropped.
+
+    Examples
+    --------
+    >>> _is_reserved_axis_name("capability")
+    False
+    >>> _is_reserved_axis_name("tool")
+    True
+    """
+    if name not in COMPONENT_KINDS:
+        return False
+    logger.warning(
+        "sphinx_autodoc_fastmcp: fastmcp_axes declares an axis named %r, which "
+        "generates 'fastmcp-%s-<term>' summary anchors that collide with the "
+        "canonical 'fastmcp-%s-<slug>' ids of %s components; cross-reference "
+        "roles resolve the canonical id first, so the axis is skipped — rename "
+        "it (for example %r) to keep its badges",
+        name,
+        name,
+        name,
+        name,
+        f"{name}-kind",
+    )
+    return True
 
 
 def coerce_axes(value: t.Any) -> tuple[Axis, ...]:
@@ -157,6 +206,8 @@ def coerce_axes(value: t.Any) -> tuple[Axis, ...]:
     axes: list[Axis] = []
     for entry in value:
         if isinstance(entry, Axis):
+            if _is_reserved_axis_name(entry.name):
+                continue
             axes.append(entry)
             continue
         name = entry.get("name")
@@ -166,6 +217,8 @@ def coerce_axes(value: t.Any) -> tuple[Axis, ...]:
                 "skipping it",
                 entry,
             )
+            continue
+        if _is_reserved_axis_name(name):
             continue
         terms = tuple(
             t_ for t_ in (_coerce_term(v) for v in entry.get("terms", ())) if t_
