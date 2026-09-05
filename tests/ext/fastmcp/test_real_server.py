@@ -28,6 +28,7 @@ from sphinx_autodoc_fastmcp._collector import (
     _schema_type_text,
     _tool_from_component,
     _tools_from_server,
+    collect_tools,
 )
 
 pytest.importorskip("fastmcp")
@@ -481,3 +482,194 @@ def test_a_schema_union_keeps_every_alternative() -> None:
     assert _schema_type_text({"anyOf": [{"type": "integer"}, {"type": "string"}]}) == (
         "integer | string"
     )
+
+
+@pytest.mark.parametrize(
+    "mount_kwargs",
+    [
+        {"tool_names": {"hello": "greet"}},
+        {"namespace": "ns", "tool_names": {"hello": "greet"}},
+    ],
+    ids=["rename", "namespace+rename"],
+)
+def test_a_renamed_mount_is_documented_under_its_served_name(
+    mount_kwargs: dict[str, t.Any],
+) -> None:
+    """``mount(..., tool_names=...)`` renames through a second wrapper.
+
+    A namespace around a rename wraps the provider twice; peeling one
+    layer found nothing and said nothing.
+    """
+    child: FastMCP = FastMCP("child")
+
+    @child.tool
+    def hello(a: int) -> str:
+        """Hello."""
+        return "ok"
+
+    parent: FastMCP = FastMCP("parent")
+    parent.mount(child, **mount_kwargs)
+
+    assert sorted(
+        tool.name for tool in _iter_components(parent) if isinstance(tool, _Tool)
+    ) == sorted(
+        tool.name for tool in asyncio.run(parent.list_tools(run_middleware=False))
+    )
+
+
+def test_a_transform_on_a_provider_renames_what_it_holds() -> None:
+    """``provider.add_transform`` is honoured without a mount around it."""
+    from fastmcp.server.transforms import Namespace
+
+    child: FastMCP = FastMCP("child")
+
+    @child.tool
+    def hello(a: int) -> str:
+        """Hello."""
+        return "ok"
+
+    child.local_provider.add_transform(Namespace("api"))
+    parent: FastMCP = FastMCP("parent")
+    parent.mount(child)
+
+    assert sorted(
+        tool.name for tool in _iter_components(parent) if isinstance(tool, _Tool)
+    ) == sorted(
+        tool.name for tool in asyncio.run(parent.list_tools(run_middleware=False))
+    )
+
+
+def test_a_module_tool_colliding_with_a_served_tool_is_reported(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The server wins a shared name, and the module entry is warned about.
+
+    Merging with a bare dict update discarded the module entry in silence,
+    bypassing the collision report every other same-kind duplicate gets.
+    """
+    import sys
+
+    def list_sessions(server: str) -> list[str]:
+        """Module copy."""
+        return []
+
+    t.cast(t.Any, list_sessions).__fastmcp__ = types.SimpleNamespace(
+        name="list_sessions", title="List", tags=set(), annotations=None
+    )
+    module = types.ModuleType("collision_mod")
+    module.list_sessions = list_sessions  # type: ignore[attr-defined]
+    sys.modules["collision_mod"] = module
+
+    app: FastMCP = FastMCP("served")
+
+    @app.tool
+    def list_sessions_served(server: str) -> list[str]:
+        """Served copy."""
+        return []
+
+    app.local_provider.remove_tool("list_sessions_served")
+
+    @app.tool(name="list_sessions")
+    def served(server: str) -> list[str]:
+        """Served copy."""
+        return []
+
+    class _Env:
+        pass
+
+    class _Config:
+        fastmcp_server_module = "x"
+        fastmcp_tool_modules = ["collision_mod"]
+        fastmcp_area_map: dict[str, str] = {}
+        fastmcp_axes: tuple[t.Any, ...] = ()
+        fastmcp_collector_mode = "introspect"
+
+    class _App:
+        config = _Config()
+        env = _Env()
+
+    fake = _App()
+    fake._fastmcp_server_cache = ("x", app)  # type: ignore[attr-defined]
+    try:
+        with caplog.at_level(logging.WARNING):
+            collect_tools(t.cast(t.Any, fake))
+    finally:
+        del sys.modules["collision_mod"]
+
+    documented = t.cast(t.Any, fake.env).fastmcp_tools
+    assert documented["list_sessions"].docstring == "Served copy."
+    assert any("duplicate tool name" in rec.message for rec in caplog.records)
+
+
+def test_a_child_transform_applies_before_its_mount_namespace() -> None:
+    """A child's own namespace nests inside the one it is mounted under."""
+    from fastmcp.server.transforms import Namespace
+
+    child: FastMCP = FastMCP("child")
+
+    @child.tool
+    def hello(a: int) -> str:
+        """Hello."""
+        return "ok"
+
+    @child.resource("data://thing")
+    def thing() -> str:
+        """Thing."""
+        return "{}"
+
+    child.add_transform(Namespace("inner"))
+    parent: FastMCP = FastMCP("parent")
+    parent.mount(child, namespace="outer")
+
+    walked = _iter_components(parent)
+    assert sorted(tool.name for tool in walked if isinstance(tool, _Tool)) == sorted(
+        tool.name for tool in asyncio.run(parent.list_tools(run_middleware=False))
+    )
+    assert sorted(
+        str(res.uri) for res in walked if isinstance(res, _Resource)
+    ) == sorted(
+        str(res.uri) for res in asyncio.run(parent.list_resources(run_middleware=False))
+    )
+
+
+def test_a_transformed_provider_added_under_a_namespace_keeps_both() -> None:
+    """``add_provider`` around a provider with its own transform nests both."""
+    from fastmcp.server.transforms import Namespace
+
+    provider = type(FastMCP("x").local_provider)()
+
+    @provider.tool
+    def ping() -> str:
+        """Ping."""
+        return "ok"
+
+    provider.add_transform(Namespace("inner"))
+    parent: FastMCP = FastMCP("parent")
+    parent.add_provider(provider, namespace="outer")
+
+    assert sorted(
+        tool.name for tool in _iter_components(parent) if isinstance(tool, _Tool)
+    ) == sorted(
+        tool.name for tool in asyncio.run(parent.list_tools(run_middleware=False))
+    )
+
+
+def test_an_absent_schema_default_is_not_documented_as_none() -> None:
+    """A ``default_factory`` parameter publishes no default, and ``None`` is
+    a value it does not accept."""
+    from pydantic import Field
+
+    app: FastMCP = FastMCP("defaults")
+
+    @app.tool
+    def search(
+        filters: list[str] = Field(default_factory=list),
+        explicit: str | None = None,
+    ) -> str:
+        """Search."""
+        return "ok"
+
+    collected = _tools_from_server(app, area_map={}, axes=())
+    assert collected is not None
+    defaults = {param.name: param.default for param in collected[0].params}
+    assert defaults == {"filters": "", "explicit": "None"}

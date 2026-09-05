@@ -92,6 +92,28 @@ def first_paragraph(docstring: str) -> str:
     return paragraphs[0].strip().replace("\n", " ")
 
 
+class _AnnotatedStripper(ast.NodeTransformer):
+    """Replace every ``Annotated[X, ...]`` in an expression tree with ``X``.
+
+    Nesting matters: ``dict[str, Annotated[int, ...]]`` carries its metadata
+    one level down, where a top-level check never looks.
+    """
+
+    def visit_Subscript(self, node: ast.Subscript) -> ast.AST:  # noqa: N802
+        self.generic_visit(node)
+        target = node.value
+        name = (
+            target.attr
+            if isinstance(target, ast.Attribute)
+            else getattr(target, "id", "")
+        )
+        if name == "Annotated":
+            sl = node.slice
+            if isinstance(sl, ast.Tuple) and sl.elts:
+                return sl.elts[0]
+        return node
+
+
 def _strip_annotated(annotation: t.Any) -> t.Any:
     """Reduce ``Annotated[X, ...]`` to ``X``, in object or source-string form.
 
@@ -125,26 +147,20 @@ def _strip_annotated(annotation: t.Any) -> t.Any:
 
     >>> _strip_annotated("Annotated[str,")
     'Annotated[str,'
+
+    Metadata nested inside a container is stripped too:
+
+    >>> _strip_annotated("dict[str, Annotated[int, Field(description=f'{x()}')]]")
+    'dict[str, int]'
     """
     if isinstance(annotation, str):
         if "Annotated[" not in annotation:
             return annotation
         try:
-            node = ast.parse(annotation, mode="eval").body
-        except SyntaxError:
+            tree = ast.parse(annotation, mode="eval")
+        except (SyntaxError, ValueError, RecursionError):
             return annotation
-        if isinstance(node, ast.Subscript):
-            target = node.value
-            name = (
-                target.attr
-                if isinstance(target, ast.Attribute)
-                else getattr(target, "id", "")
-            )
-            if name == "Annotated":
-                sl = node.slice
-                if isinstance(sl, ast.Tuple) and sl.elts:
-                    return ast.unparse(sl.elts[0])
-        return annotation
+        return ast.unparse(_AnnotatedStripper().visit(tree).body)
     if t.get_origin(annotation) is t.Annotated:
         return t.get_args(annotation)[0]
     return annotation

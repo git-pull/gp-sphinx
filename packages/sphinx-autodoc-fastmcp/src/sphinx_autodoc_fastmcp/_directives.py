@@ -634,7 +634,7 @@ def _annotation_fact_rows(annotations: dict[str, t.Any]) -> list[ApiFactRow]:
     rows: list[ApiFactRow] = []
     for key, label in _ANNOTATION_LABELS:
         value = annotations.get(key)
-        if value is None:
+        if value is None or (isinstance(value, list) and not value):
             continue
         text = (
             ", ".join(str(v) for v in value) if isinstance(value, list) else str(value)

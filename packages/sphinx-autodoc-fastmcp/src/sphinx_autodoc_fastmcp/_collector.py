@@ -276,7 +276,14 @@ def _params_from_schema(
                     annotation, strip_none=not is_required
                 ).text,
                 required=is_required,
-                default=("" if is_required else _render_default(prop.get("default"))),
+                # Absence is not null: a default_factory parameter publishes
+                # no default at all, and documenting None would name a value
+                # the parameter does not accept.
+                default=(
+                    _render_default(prop["default"])
+                    if not is_required and "default" in prop
+                    else ""
+                ),
                 description=str(prop.get("description", "") or ""),
             ),
         )
@@ -458,14 +465,12 @@ def collect_tools(app: Sphinx) -> None:
                 if info is not None:
                     collector_tools.append(info)
 
-    collected: dict[str, ToolInfo] = {}
+    # Server-collected tools win on a shared name; a module entry naming the
+    # same tool is reported like any other collision rather than overwritten
+    # in silence. Module entries fill the gaps.
+    collected: dict[str, ToolInfo] = dict(served_by_name)
     for collected_tool in collector_tools:
         _index_by_unique_name(collected, collected_tool.name, collected_tool, "tool")
-    # The server's own registry does not reach a mounted child server, so a
-    # module entry naming one is the only record of it. Server-collected tools
-    # win on a shared name; module entries fill the gaps rather than being
-    # discarded.
-    collected.update(served_by_name)
     app.env.fastmcp_tools = collected  # type: ignore[attr-defined]
 
 
@@ -617,6 +622,12 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
     """
     found: list[t.Any] = []
 
+    def _reproducible(transform: t.Any) -> bool:
+        return (
+            hasattr(transform, "_transform_name")
+            and hasattr(transform, "_transform_uri")
+        ) or isinstance(getattr(transform, "_transforms", None), dict)
+
     def _served(component: t.Any, transforms: tuple[t.Any, ...]) -> t.Any:
         if not transforms or not hasattr(component, "model_copy"):
             return component
@@ -627,12 +638,22 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
                 continue
             text = str(value)
             for transform in transforms:
-                text = transform._transform_uri(text)  # noqa: SLF001
+                if hasattr(transform, "_transform_uri"):
+                    text = transform._transform_uri(text)  # noqa: SLF001
             update[field] = text
         if not update:
             name = str(getattr(component, "name", ""))
+            is_tool = hasattr(component, "parameters")
             for transform in transforms:
-                name = transform._transform_name(name)  # noqa: SLF001
+                if hasattr(transform, "_transform_name"):
+                    name = transform._transform_name(name)  # noqa: SLF001
+                elif is_tool:
+                    # ToolTransform: a per-tool rename map keyed by the
+                    # original name, applied only to tools.
+                    config = getattr(transform, "_transforms", {}).get(name)
+                    renamed = getattr(config, "name", None)
+                    if renamed:
+                        name = str(renamed)
             update["name"] = name
         return component.model_copy(update=update)
 
@@ -644,47 +665,73 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
     ) -> None:
         # Guard the active path only. The same child mounted under two
         # namespaces is served twice under two names, and is not a cycle.
-        if node is None or depth > 8 or id(node) in path:
+        if node is None or id(node) in path:
+            return
+        if depth > 8:
+            logger.warning(
+                "sphinx_autodoc_fastmcp: mount tree deeper than 8 levels; "
+                "components below %r are not documented",
+                getattr(node, "name", node),
+            )
             return
         path = path | {id(node)}
-        # A transform attached to the server itself renames everything it
-        # serves, and applies outside any mount's own namespace.
         own = tuple(
             transform
             for transform in getattr(node, "transforms", None) or ()
-            if hasattr(transform, "_transform_name")
-            and hasattr(transform, "_transform_uri")
+            if _reproducible(transform)
         )
-        transforms = transforms + own
+        # A server's own transforms apply before the namespace it was mounted
+        # under: the server serves outer_inner_hello, not inner_outer_hello.
+        transforms = own + transforms
         for provider in getattr(node, "providers", None) or ():
+            # A transform added to a provider directly renames what it holds.
+            local = tuple(
+                transform
+                for transform in getattr(provider, "transforms", None) or ()
+                if _reproducible(transform)
+            )
             components = getattr(provider, "_components", None)
             if components is not None:
                 found.extend(
-                    _served(component, transforms) for component in components.values()
+                    _served(component, local + transforms)
+                    for component in components.values()
                 )
                 continue
             inner = getattr(provider, "server", None)
             if inner is not None:
-                walk(inner, depth + 1, transforms, path)
+                walk(inner, depth + 1, local + transforms, path)
                 continue
             wrapped = getattr(provider, "_inner", None)
             if wrapped is None:
                 continue
+            # A mount may wrap its provider more than once -- a rename map
+            # inside a namespace, say. Peel every layer, collecting each
+            # layer's transforms so the innermost applies first.
+            layers: list[t.Any] = [provider]
+            while getattr(wrapped, "_inner", None) is not None:
+                layers.append(wrapped)
+                wrapped = wrapped._inner  # noqa: SLF001
+            # The innermost provider's own transforms apply before any
+            # wrapper's, so they lead the chain.
             added: list[t.Any] = []
-            for transform in getattr(provider, "transforms", None) or ():
-                if hasattr(transform, "_transform_name") and hasattr(
-                    transform, "_transform_uri"
-                ):
+            reproducible = True
+            for transform in getattr(wrapped, "transforms", None) or ():
+                if _reproducible(transform):
                     added.append(transform)
                 else:
-                    logger.warning(
-                        "sphinx_autodoc_fastmcp: a mounted provider renames its "
-                        "components in a way this collector cannot reproduce; "
-                        "its components are not documented",
-                    )
-                    added = []
-                    break
-            if not added and getattr(provider, "transforms", None):
+                    reproducible = False
+            for layer in reversed(layers):
+                for transform in getattr(layer, "transforms", None) or ():
+                    if _reproducible(transform):
+                        added.append(transform)
+                    else:
+                        reproducible = False
+            if not reproducible:
+                logger.warning(
+                    "sphinx_autodoc_fastmcp: a mounted provider renames its "
+                    "components in a way this collector cannot reproduce; "
+                    "its components are not documented",
+                )
                 continue
             # Inner namespaces apply first: the server serves
             # outer_inner_hello, not inner_outer_hello.
