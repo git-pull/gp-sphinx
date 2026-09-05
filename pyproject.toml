@@ -38,6 +38,8 @@ gp-sphinx = { workspace = true }
 sphinx-vite-builder = { workspace = true }
 
 [tool.uv.exclude-newer-package]
+fastmcp = false
+fastmcp-slim = false
 # Adopt gp-libs releases immediately, bypassing the global cooldown.
 gp-libs = false
 
