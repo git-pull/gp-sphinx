@@ -20,6 +20,23 @@ $ uv add gp-sphinx --prerelease allow
 
 ### Fixes
 
+#### `sphinx-autodoc-fastmcp`: An axis cannot claim a component's id namespace
+
+`fastmcp-tool-summary` anchors its sections on `fastmcp-<axis>-<term>`,
+while tool, prompt, resource and resource-template cards take canonical
+ids of the form `fastmcp-<kind>-<slug>`. Nothing reserved those names, so
+a project declaring an axis called `tool`, `prompt`, `resource` or
+`resource-template` emitted anchors into the same namespace — and because
+cross-reference roles resolve the canonical id first, a `{tool}`,
+`{resource}` or `{prompt}` reference resolved into the summary section
+instead of the component's card.
+
+`fastmcp_axes` now skips an axis declared with one of those four names and
+warns once, naming both colliding id patterns so the axis can be renamed.
+`resource` is reserved along with `resource-template`, because a term
+beginning `template-` reaches the template family on its own. An axis name
+that collides with nothing is unaffected. (#80)
+
 #### `sphinx-autodoc-fastmcp`: Tool cross-references survive reserved-label slugs
 
 A tool whose slug matches a Sphinx-reserved standard label — `search`,
