@@ -27,6 +27,41 @@ if t.TYPE_CHECKING:
 logger = getLogger(__name__)
 
 
+def has_md_twin(app: Sphinx, docname: str) -> bool:
+    """Return whether :func:`write_md_twins` writes a twin for *docname*.
+
+    The footer link and the twin writer must agree: a page linked to a
+    ``.md`` sibling that was never written is a 404 the build cannot see,
+    because the link is rendered from the template rather than resolved as
+    a reference.
+
+    Parameters
+    ----------
+    app : Sphinx
+        Sphinx application instance.
+    docname : str
+        Document name, as passed to ``html-page-context``.
+
+    Returns
+    -------
+    bool
+        ``True`` when a twin exists for *docname*.
+
+    Examples
+    --------
+    >>> from sphinx_gp_llms._md_twins import has_md_twin
+    >>> callable(has_md_twin)
+    True
+    """
+    if docname not in app.env.found_docs:
+        return False
+    if _is_excluded(
+        app.builder.get_target_uri(docname), list(app.config.llms_excludes)
+    ):
+        return False
+    return pathlib.Path(app.env.doc2path(docname)).exists()
+
+
 def write_md_twins(app: Sphinx) -> None:
     """Copy source files as ``.md`` siblings in the build output directory.
 
@@ -41,19 +76,14 @@ def write_md_twins(app: Sphinx) -> None:
     >>> callable(write_md_twins)
     True
     """
-    excludes: list[str] = list(app.config.llms_excludes)
     outdir = pathlib.Path(app.outdir)
     count = 0
 
     for docname in sorted(app.env.found_docs):
-        uri = app.builder.get_target_uri(docname)
-        if _is_excluded(uri, excludes):
+        if not has_md_twin(app, docname):
             continue
 
         source_path = pathlib.Path(app.env.doc2path(docname))
-        if not source_path.exists():
-            continue
-
         target = outdir / (docname + ".md")
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source_path, target)
