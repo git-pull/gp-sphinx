@@ -596,70 +596,94 @@ def _ignore_duplicate_policy(provider: t.Any) -> t.Iterator[None]:
 
 
 def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
-    """Yield every FastMCPComponent registered on ``server.local_provider``.
+    """Yield every component the server serves, under its served identity.
 
-    Bypasses the async ``_list_*`` helpers and iterates the underlying
-    ``_components`` dict directly — the helpers are trivial type-filter
-    comprehensions, so reading ``_components.values()`` is equivalent and
-    avoids needing an event loop at Sphinx build time.
+    Walks ``server.providers`` rather than ``local_provider`` alone, so a
+    mounted child server's components are included. Reads the provider
+    registries directly instead of the async ``_list_*`` helpers, which need an
+    event loop and additionally filter by enabled state and auth — a tool
+    switched off at runtime must not vanish from its own documentation.
+
+    A namespaced mount renames what it carries, so each transform is applied
+    through its own methods: a URI-keyed component takes the namespace in its
+    URI, a name-keyed one in its name. A transform this cannot reproduce is
+    refused with a warning, because a name the server does not serve is worse
+    than a missing page.
     """
-    seen: set[int] = set()
     found: list[t.Any] = []
 
-    def _renamed(component: t.Any, prefix: str) -> t.Any:
-        if not prefix or not hasattr(component, "model_copy"):
+    def _served(component: t.Any, transforms: tuple[t.Any, ...]) -> t.Any:
+        if not transforms or not hasattr(component, "model_copy"):
             return component
-        return component.model_copy(update={"name": prefix + str(component.name)})
+        update: dict[str, t.Any] = {}
+        for field in ("uri", "uri_template"):
+            value = getattr(component, field, None)
+            if value is None:
+                continue
+            text = str(value)
+            for transform in transforms:
+                text = transform._transform_uri(text)  # noqa: SLF001
+            update[field] = text
+        if not update:
+            name = str(getattr(component, "name", ""))
+            for transform in transforms:
+                name = transform._transform_name(name)  # noqa: SLF001
+            update["name"] = name
+        return component.model_copy(update=update)
 
-    def walk(node: t.Any, depth: int, prefix: str = "") -> None:
-        if node is None or depth > 8 or id(node) in seen:
+    def walk(
+        node: t.Any,
+        depth: int,
+        transforms: tuple[t.Any, ...],
+        path: frozenset[int],
+    ) -> None:
+        # Guard the active path only. The same child mounted under two
+        # namespaces is served twice under two names, and is not a cycle.
+        if node is None or depth > 8 or id(node) in path:
             return
-        seen.add(id(node))
+        path = path | {id(node)}
         for provider in getattr(node, "providers", None) or ():
             components = getattr(provider, "_components", None)
             if components is not None:
                 found.extend(
-                    _renamed(component, prefix) for component in components.values()
+                    _served(component, transforms) for component in components.values()
                 )
                 continue
             inner = getattr(provider, "server", None)
             if inner is not None:
-                walk(inner, depth + 1, prefix)
+                walk(inner, depth + 1, transforms, path)
                 continue
             wrapped = getattr(provider, "_inner", None)
             if wrapped is None:
                 continue
-            # A namespaced mount renames every component it carries. Reproduce
-            # the prefix rather than reading past it, so the documented name is
-            # the served one; refuse the branch when a transform is not one we
-            # can reproduce, because a wrong name is worse than a missing page.
-            added = ""
-            reproducible = True
+            added: list[t.Any] = []
             for transform in getattr(provider, "transforms", None) or ():
-                name_prefix = getattr(transform, "_name_prefix", None)
-                if isinstance(name_prefix, str):
-                    added += name_prefix
+                if hasattr(transform, "_transform_name") and hasattr(
+                    transform, "_transform_uri"
+                ):
+                    added.append(transform)
                 else:
-                    reproducible = False
-            if not reproducible:
-                logger.warning(
-                    "sphinx_autodoc_fastmcp: a mounted provider renames its "
-                    "components in a way this collector cannot reproduce; its "
-                    "components are not documented",
-                )
+                    logger.warning(
+                        "sphinx_autodoc_fastmcp: a mounted provider renames its "
+                        "components in a way this collector cannot reproduce; "
+                        "its components are not documented",
+                    )
+                    added = []
+                    break
+            if not added and getattr(provider, "transforms", None):
                 continue
+            chain = transforms + tuple(added)
             inner_server = getattr(wrapped, "server", None)
             if inner_server is not None:
-                walk(inner_server, depth + 1, prefix + added)
+                walk(inner_server, depth + 1, chain, path)
                 continue
             inner_components = getattr(wrapped, "_components", None)
             if inner_components is not None:
                 found.extend(
-                    _renamed(component, prefix + added)
-                    for component in inner_components.values()
+                    _served(component, chain) for component in inner_components.values()
                 )
 
-    walk(server, 0, "")
+    walk(server, 0, (), frozenset())
     if not found:
         provider = getattr(server, "local_provider", None)
         components = getattr(provider, "_components", None) if provider else None

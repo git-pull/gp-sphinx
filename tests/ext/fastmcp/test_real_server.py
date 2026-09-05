@@ -22,6 +22,7 @@ import pytest
 from sphinx_autodoc_fastmcp._collector import (
     _annotation_hints,
     _index_by_unique_name,
+    _iter_components,
     _prompt_from_component,
     _resource_from_component,
     _tool_from_component,
@@ -31,6 +32,9 @@ from sphinx_autodoc_fastmcp._collector import (
 pytest.importorskip("fastmcp")
 
 from fastmcp import Context, FastMCP  # noqa: E402
+from fastmcp.prompts import Prompt as _Prompt  # noqa: E402
+from fastmcp.resources import Resource as _Resource  # noqa: E402
+from fastmcp.tools import Tool as _Tool  # noqa: E402
 from mcp.types import Annotations, ToolAnnotations  # noqa: E402
 
 _LAST_MODIFIED = "2026-01-01T00:00:00Z"
@@ -325,4 +329,76 @@ def test_mounted_tools_match_what_the_server_serves(namespace: str | None) -> No
 
     assert sorted(tool.name for tool in collected) == sorted(
         tool.name for tool in served
+    )
+
+
+@pytest.mark.parametrize("namespace", [None, "one"])
+def test_mounted_components_match_what_the_server_serves(
+    namespace: str | None,
+) -> None:
+    """Every component kind is documented under its served identity.
+
+    A namespace moves into a resource's URI and into a tool's name, so
+    checking tools alone proves nothing about resources.
+    """
+    child: FastMCP = FastMCP("child")
+
+    @child.tool
+    def child_tool(a: int) -> str:
+        """Child tool."""
+        return "ok"
+
+    @child.resource("data://thing")
+    def child_resource() -> str:
+        """Child resource."""
+        return "{}"
+
+    @child.prompt
+    def child_prompt(a: int) -> str:
+        """Child prompt."""
+        return "drafted"
+
+    parent: FastMCP = FastMCP("parent")
+    if namespace is None:
+        parent.mount(child)
+    else:
+        parent.mount(child, namespace=namespace)
+
+    walked = _iter_components(parent)
+    assert sorted(tool.name for tool in walked if isinstance(tool, _Tool)) == sorted(
+        tool.name for tool in asyncio.run(parent.list_tools(run_middleware=False))
+    )
+    assert sorted(
+        str(res.uri) for res in walked if isinstance(res, _Resource)
+    ) == sorted(
+        str(res.uri) for res in asyncio.run(parent.list_resources(run_middleware=False))
+    )
+    assert sorted(
+        prompt.name for prompt in walked if isinstance(prompt, _Prompt)
+    ) == sorted(
+        prompt.name for prompt in asyncio.run(parent.list_prompts(run_middleware=False))
+    )
+
+
+def test_one_child_mounted_twice_is_served_twice() -> None:
+    """A child mounted under two namespaces is two served components.
+
+    Suppressing an already-visited server treats the second mount as a
+    cycle and drops it, though the server publishes both names.
+    """
+    child: FastMCP = FastMCP("child")
+
+    @child.tool
+    def hello(a: int) -> str:
+        """Hello."""
+        return "ok"
+
+    parent: FastMCP = FastMCP("parent")
+    parent.mount(child, namespace="one")
+    parent.mount(child, namespace="two")
+
+    assert sorted(
+        tool.name for tool in _iter_components(parent) if isinstance(tool, _Tool)
+    ) == sorted(
+        tool.name for tool in asyncio.run(parent.list_tools(run_middleware=False))
     )
