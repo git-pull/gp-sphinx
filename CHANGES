@@ -20,6 +20,24 @@ $ uv add gp-sphinx --prerelease allow
 
 ### Fixes
 
+#### `sphinx-gp-llms`: A Markdown twin link only where a twin exists
+
+The page footer advertised a `.md` sibling on every page, while twins were
+written only for real source documents, so `genindex`, `py-modindex` and
+`search` each linked a file that was never created. The link is rendered from
+the template rather than resolved as a reference, so nothing reported it, not
+even under `-W`. The footer now offers the link only for a page that has a
+twin -- covering an excluded page and a page whose source is absent, as well
+as a generated one. (#81)
+
+#### `gp-sphinx`: Pages no longer request the `tabs.js` the build removes
+
+`sphinx-inline-tabs` ships a `tabs.js` that conflicts with SPA navigation, and
+gp-sphinx deletes it after each HTML build. Nothing dropped the `<script>` tag
+the extension registers, so every page requested an asset that was not there.
+The tag is now dropped alongside the file. Tab switching is unaffected, being
+driven by CSS. (#81)
+
 #### `sphinx-autodoc-fastmcp`: An axis cannot claim a component's id namespace
 
 `fastmcp-tool-summary` anchors its sections on `fastmcp-<axis>-<term>`,
