@@ -232,12 +232,13 @@ def _schema_type_text(prop: dict[str, t.Any]) -> str:
     declared = prop.get("type")
     if isinstance(declared, str):
         return declared
-    options = [
-        opt.get("type")
-        for opt in prop.get("anyOf", []) or []
-        if isinstance(opt, dict) and opt.get("type") not in (None, "null")
+    union = prop.get("anyOf") or prop.get("oneOf") or ()
+    parts = [
+        str(member.get("type", ""))
+        for member in union
+        if isinstance(member, dict) and member.get("type")
     ]
-    return str(options[0]) if options else ""
+    return " | ".join(parts)
 
 
 def _params_from_schema(
@@ -322,7 +323,11 @@ def _tool_from_component(
         annotations=ann_dict,
         meta=meta,
         func=func,
-        docstring=(func.__doc__ or "") if func is not None else "",
+        docstring=(
+            (func.__doc__ or "")
+            if func is not None
+            else str(getattr(tool, "description", "") or "")
+        ),
         params=_params_from_schema(getattr(tool, "parameters", {}) or {}, func),
         return_annotation=(
             normalize_annotation_text(inspect.signature(func).return_annotation)
@@ -642,6 +647,15 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
         if node is None or depth > 8 or id(node) in path:
             return
         path = path | {id(node)}
+        # A transform attached to the server itself renames everything it
+        # serves, and applies outside any mount's own namespace.
+        own = tuple(
+            transform
+            for transform in getattr(node, "transforms", None) or ()
+            if hasattr(transform, "_transform_name")
+            and hasattr(transform, "_transform_uri")
+        )
+        transforms = transforms + own
         for provider in getattr(node, "providers", None) or ():
             components = getattr(provider, "_components", None)
             if components is not None:
@@ -672,7 +686,9 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
                     break
             if not added and getattr(provider, "transforms", None):
                 continue
-            chain = transforms + tuple(added)
+            # Inner namespaces apply first: the server serves
+            # outer_inner_hello, not inner_outer_hello.
+            chain = tuple(added) + transforms
             inner_server = getattr(wrapped, "server", None)
             if inner_server is not None:
                 walk(inner_server, depth + 1, chain, path)
@@ -836,17 +852,7 @@ def _template_params_from_schema(
     for name, subschema in props.items():
         if not isinstance(subschema, dict):
             continue
-        type_str = str(subschema.get("type", "")) if subschema.get("type") else ""
-        # Anyof/oneof unions: join short type names.
-        if not type_str:
-            union = subschema.get("anyOf") or subschema.get("oneOf") or ()
-            parts = [
-                str(member.get("type", ""))
-                for member in union
-                if isinstance(member, dict) and member.get("type")
-            ]
-            if parts:
-                type_str = " | ".join(parts)
+        type_str = _schema_type_text(subschema)
         rows.append(
             PromptArgInfo(
                 name=str(name),

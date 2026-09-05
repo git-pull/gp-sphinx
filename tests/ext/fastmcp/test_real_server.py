@@ -25,6 +25,7 @@ from sphinx_autodoc_fastmcp._collector import (
     _iter_components,
     _prompt_from_component,
     _resource_from_component,
+    _schema_type_text,
     _tool_from_component,
     _tools_from_server,
 )
@@ -401,4 +402,82 @@ def test_one_child_mounted_twice_is_served_twice() -> None:
         tool.name for tool in _iter_components(parent) if isinstance(tool, _Tool)
     ) == sorted(
         tool.name for tool in asyncio.run(parent.list_tools(run_middleware=False))
+    )
+
+
+def test_nested_mounts_nest_their_namespaces_in_order() -> None:
+    """An inner namespace applies before the one it is mounted under."""
+    inner: FastMCP = FastMCP("inner")
+
+    @inner.tool
+    def hello(a: int) -> str:
+        """Hello."""
+        return "ok"
+
+    @inner.resource("data://thing")
+    def thing() -> str:
+        """Thing."""
+        return "{}"
+
+    mid: FastMCP = FastMCP("mid")
+    mid.mount(inner, namespace="inner")
+    outer: FastMCP = FastMCP("outer")
+    outer.mount(mid, namespace="outer")
+
+    walked = _iter_components(outer)
+    assert sorted(tool.name for tool in walked if isinstance(tool, _Tool)) == sorted(
+        tool.name for tool in asyncio.run(outer.list_tools(run_middleware=False))
+    )
+    assert sorted(
+        str(res.uri) for res in walked if isinstance(res, _Resource)
+    ) == sorted(
+        str(res.uri) for res in asyncio.run(outer.list_resources(run_middleware=False))
+    )
+
+
+def test_a_transform_on_the_server_renames_what_it_serves() -> None:
+    """A namespace added to the server itself reaches its components."""
+    from fastmcp.server.transforms import Namespace
+
+    server: FastMCP = FastMCP("server")
+
+    @server.tool
+    def hi(a: int) -> str:
+        """Hi."""
+        return "ok"
+
+    server.add_transform(Namespace("public"))
+
+    assert sorted(
+        tool.name for tool in _iter_components(server) if isinstance(tool, _Tool)
+    ) == sorted(
+        tool.name for tool in asyncio.run(server.list_tools(run_middleware=False))
+    )
+
+
+def test_a_tool_without_a_callable_keeps_its_description() -> None:
+    """A component with no ``fn`` still explains itself.
+
+    Both the card and the summary read ``ToolInfo.docstring``.
+    """
+    fnless = types.SimpleNamespace(
+        name="proxied",
+        title=None,
+        tags=None,
+        meta=None,
+        annotations=None,
+        description="What the proxied tool does.",
+        parameters={},
+        fn=None,
+    )
+
+    assert _tool_from_component(fnless, area_map={}).docstring == (
+        "What the proxied tool does."
+    )
+
+
+def test_a_schema_union_keeps_every_alternative() -> None:
+    """A union parameter documents all its accepted types."""
+    assert _schema_type_text({"anyOf": [{"type": "integer"}, {"type": "string"}]}) == (
+        "integer | string"
     )
