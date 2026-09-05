@@ -176,3 +176,30 @@ def test_duplicate_tool_names_warn_instead_of_vanishing(
 
     assert list(index) == ["same"]
     assert any("duplicate tool name" in r.getMessage() for r in caplog.records)
+
+
+def test_collected_tools_survive_environment_pickling() -> None:
+    """Sphinx pickles its environment; a collected tool must survive it.
+
+    Tools registered inside a ``register(mcp)`` factory are closures, and
+    pickling one raises — which broke incremental builds for every project
+    that registers tools that way.
+    """
+    import pickle
+
+    server = FastMCP("pickle-probe")
+
+    def register(app: FastMCP) -> None:
+        @app.tool(title="Local")
+        def made_in_a_closure() -> str:
+            """Registered inside a factory."""
+            return "x"
+
+    register(server)
+    collected = _tools_from_server(server, area_map={}, axes=())
+    assert collected is not None
+
+    restored = pickle.loads(pickle.dumps(collected))
+
+    assert [info.name for info in restored] == ["made_in_a_closure"]
+    assert restored[0].docstring == "Registered inside a factory."

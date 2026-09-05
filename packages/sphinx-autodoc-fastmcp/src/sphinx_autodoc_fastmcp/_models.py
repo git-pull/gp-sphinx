@@ -355,9 +355,13 @@ class ToolInfo:
         holding only the hints the tool actually sets.
     meta : dict[str, t.Any]
         The tool's ``meta`` mapping, which axes can read terms from.
-    func : t.Callable[..., t.Any]
-        The undecorated tool function, kept so the renderer can re-inspect
-        its signature.
+    func : t.Callable[..., t.Any] | None
+        The undecorated tool function. Dropped when Sphinx pickles its
+        environment between builds — a tool registered inside a factory is
+        a closure, and a closure cannot be pickled — so it is ``None`` on
+        any incremental rebuild. Everything rendered is captured at
+        collection time in ``params``, ``return_annotation`` and
+        ``docstring``; nothing reads this field.
     docstring : str
         Raw ``__doc__`` of the tool function. Empty when it has none.
     params : list[ParamInfo]
@@ -373,10 +377,19 @@ class ToolInfo:
     axes: dict[str, str]
     annotations: dict[str, bool]
     meta: dict[str, t.Any]
-    func: t.Callable[..., t.Any]
+    func: t.Callable[..., t.Any] | None
     docstring: str
     params: list[ParamInfo]
     return_annotation: str
+
+    def __getstate__(self) -> dict[str, t.Any]:
+        """Drop ``func`` so Sphinx can pickle its environment.
+
+        A tool registered inside a ``register(mcp)`` factory is a local
+        function, and pickling one raises. Nothing reads the field, so
+        dropping it costs nothing and keeps incremental builds working.
+        """
+        return {**self.__dict__, "func": None}
 
 
 @dataclass
