@@ -780,17 +780,22 @@ async def _provider_components(
     switched off or gated inside a mounted server would vanish from its
     documentation.
     """
+    from fastmcp.server.providers.aggregate import AggregateProvider
+
+    method_name = f"_list_{kind}"
     child = getattr(provider, "server", None)
     if child is not None:
         base = await _server_components(kind, child, depth + 1, path)
     elif getattr(provider, "_inner", None) is not None:
         base = await _provider_components(kind, provider._inner, depth, path)  # noqa: SLF001
-    elif getattr(provider, "providers", None) is not None:
+    elif isinstance(provider, AggregateProvider) and getattr(
+        type(provider), method_name
+    ) is getattr(AggregateProvider, method_name):
         # An aggregate holds providers of its own; asking it to list would
         # re-enter the filtered path for every one of them.
         base = await _gather(kind, provider, provider.providers, depth, path)
     else:
-        method = getattr(provider, f"_list_{kind}", None)
+        method = getattr(provider, method_name, None)
         # Bound the leaf that actually does the work. Bounding a subtree
         # discards the healthy components already gathered beneath it.
         base = (

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import pathlib
 import re
 import types
 import typing as t
@@ -1508,3 +1509,29 @@ def test_schema_references_are_local_and_cycle_safe(
         }
     }
     assert _schema_type_text(prop, schema) == expected
+
+
+def test_skill_discovery_refreshes_during_collection(tmp_path: pathlib.Path) -> None:
+    """Skills added after provider construction appear without a live listing."""
+    from fastmcp.server.providers.skills import SkillsDirectoryProvider
+
+    provider = SkillsDirectoryProvider(tmp_path, reload=True)
+    server: FastMCP = FastMCP("skills")
+    server.add_provider(provider, namespace="api")
+    skill = tmp_path / "fresh"
+    skill.mkdir()
+    (skill / "SKILL.md").write_text(
+        "---\nname: fresh\ndescription: Fresh skill\n---\n\nRead this skill.\n"
+    )
+
+    collected = list(_iter_components(server))
+    served = asyncio.run(server.list_resources())
+    templates = asyncio.run(server.list_resource_templates())
+    assert served
+    assert templates
+    assert sorted(str(c.uri) for c in collected if isinstance(c, _Resource)) == sorted(
+        str(c.uri) for c in served
+    )
+    assert sorted(
+        c.uri_template for c in collected if isinstance(c, _ResourceTemplate)
+    ) == sorted(c.uri_template for c in templates)
