@@ -317,22 +317,17 @@ def _origin_tool(tool: t.Any, depth: int = 0) -> t.Any:
         from fastmcp.server.providers.base import Provider
     except ImportError:  # pragma: no cover - defensive
         return tool
-    # The proxy carries the name as served one level up, which may already
-    # include a namespace the child does not know about. Namespace prefixes
-    # as ``namespace_name``, so the child's tool is the longest inner name
-    # that ends the served one at an underscore boundary.
-    wanted = str(getattr(tool, "name", ""))
-    best: t.Any = None
+    # The proxy records the name it wrapped. Guessing it back out of the
+    # served name picks the wrong tool when a sibling is literally called
+    # ``namespace_name``.
+    wanted = str(getattr(tool, "_original_name", "") or getattr(tool, "name", ""))
+    version = getattr(tool, "version", None)
     for candidate in _Loop.call(Provider.list_tools(inner)):
-        name = str(getattr(candidate, "name", ""))
-        if name == wanted:
-            best = candidate
-            break
-        if wanted.endswith("_" + name) and (
-            best is None or len(name) > len(str(best.name))
+        if str(getattr(candidate, "name", "")) == wanted and (
+            version is None or getattr(candidate, "version", None) == version
         ):
-            best = candidate
-    return _origin_tool(best, depth + 1) if best is not None else tool
+            return _origin_tool(candidate, depth + 1)
+    return tool
 
 
 def _tool_from_component(
@@ -363,10 +358,9 @@ def _tool_from_component(
     # follows the tool it was made from.
     origin = _origin_tool(tool)
     source = getattr(origin, "fn", None) or func
-    if source is not None:
-        # A mounted or transformed tool lists with a proxy or forwarding
-        # callable; everything read from a signature -- types, docstring --
-        # comes from the tool it was made from.
+    if func is None and getattr(tool, "parent_tool", None) is None:
+        # A proxy carries no callable of its own; an untransformed one
+        # documents exactly what it wraps.
         func = source
     if source is not None and hasattr(source, "__wrapped__"):
         source = source.__wrapped__
@@ -661,6 +655,50 @@ def _ignore_duplicate_policy(provider: t.Any) -> t.Iterator[None]:
             provider._on_duplicate = original
 
 
+async def _apply(kind: str, holder: t.Any, components: list[t.Any]) -> list[t.Any]:
+    """Run ``holder``'s transforms over a listing, in registration order."""
+    for transform in getattr(holder, "transforms", None) or ():
+        method = getattr(transform, f"list_{kind}", None)
+        if method is not None:
+            components = list(await method(components))
+    return components
+
+
+async def _provider_components(
+    kind: str, provider: t.Any, depth: int, path: frozenset[int]
+) -> list[t.Any]:
+    """List one provider's components, unfiltered, with its transforms applied.
+
+    A mounted server is descended into rather than asked for its own listing:
+    ``FastMCPProvider._list_tools`` calls the child's ``list_tools()``, which
+    drops disabled components and runs the child's middleware, so a tool
+    switched off or gated inside a mounted server would vanish from its
+    documentation.
+    """
+    child = getattr(provider, "server", None)
+    if child is not None:
+        base = await _server_components(kind, child, depth + 1, path)
+    elif getattr(provider, "_inner", None) is not None:
+        base = await _provider_components(kind, provider._inner, depth, path)  # noqa: SLF001
+    else:
+        method = getattr(provider, f"_list_{kind}", None)
+        base = list(await method()) if method is not None else []
+    return await _apply(kind, provider, base)
+
+
+async def _server_components(
+    kind: str, server: t.Any, depth: int, path: frozenset[int]
+) -> list[t.Any]:
+    """List every component a server serves, its own transforms applied last."""
+    if depth > 8 or id(server) in path:
+        return []
+    path = path | {id(server)}
+    out: list[t.Any] = []
+    for provider in getattr(server, "providers", None) or ():
+        out.extend(await _provider_components(kind, provider, depth, path))
+    return await _apply(kind, server, out)
+
+
 class _Loop:
     """An event loop owned by a background thread, started on first use.
 
@@ -703,20 +741,11 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
     ``FastMCP.list_*``, which is deliberately not used so a tool switched off
     at runtime stays in its own documentation. Bypasses middleware.
     """
-    try:
-        from fastmcp.server.providers.base import Provider
-    except ImportError:  # pragma: no cover - defensive
-        return ()
 
     async def listing() -> list[t.Any]:
         out: list[t.Any] = []
-        for method in (
-            Provider.list_tools,
-            Provider.list_resources,
-            Provider.list_resource_templates,
-            Provider.list_prompts,
-        ):
-            out.extend(await method(server))
+        for kind in ("tools", "resources", "resource_templates", "prompts"):
+            out.extend(await _server_components(kind, server, 0, frozenset()))
         return out
 
     return tuple(_Loop.call(listing()))

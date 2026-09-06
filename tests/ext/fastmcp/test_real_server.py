@@ -879,3 +879,89 @@ def test_a_disabled_tool_stays_in_its_documentation() -> None:
     assert sorted(
         tool.name for tool in _iter_components(server) if isinstance(tool, _Tool)
     ) == ["hidden", "visible"]
+
+
+def test_a_disabled_tool_inside_a_mount_stays_documented() -> None:
+    """Disabling reaches into a mounted child, and documentation does not.
+
+    ``FastMCPProvider`` lists its child through the child's own
+    ``list_tools()``, which drops disabled components and runs the child's
+    middleware, so a tool switched off or gated inside a mounted server
+    vanished from the docs.
+    """
+    child: FastMCP = FastMCP("child")
+
+    @child.tool
+    def visible(a: int) -> str:
+        """Visible."""
+        return "ok"
+
+    @child.tool
+    def hidden(a: int) -> str:
+        """Hidden."""
+        return "ok"
+
+    child.disable(keys={"tool:hidden@"})
+    parent: FastMCP = FastMCP("parent")
+    parent.mount(child, namespace="ns")
+
+    assert "ns_hidden" not in {
+        tool.name for tool in asyncio.run(parent.list_tools(run_middleware=False))
+    }
+    assert sorted(
+        tool.name for tool in _iter_components(parent) if isinstance(tool, _Tool)
+    ) == ["ns_hidden", "ns_visible"]
+
+
+def test_a_namespaced_tool_resolves_past_a_decoy_sibling() -> None:
+    """A sibling literally named ``namespace_name`` is not the origin.
+
+    Recovering the original by stripping the namespace off the served name
+    matches the decoy, and documents its description and types.
+    """
+    child: FastMCP = FastMCP("child")
+
+    @child.tool
+    def hello(x: int) -> str:
+        """Real hello."""
+        return "ok"
+
+    @child.tool
+    def ns_hello(x: str) -> str:
+        """Decoy."""
+        return "ok"
+
+    parent: FastMCP = FastMCP("parent")
+    parent.mount(child, namespace="ns")
+
+    collected = _tools_from_server(parent, area_map={}, axes=())
+    assert collected is not None
+    documented = {info.name: info for info in collected}
+    assert documented["ns_hello"].docstring == "Real hello."
+    assert [p.type_str for p in documented["ns_hello"].params] == ["int"]
+    assert documented["ns_ns_hello"].docstring == "Decoy."
+
+
+def test_a_transformed_argument_documents_its_served_type() -> None:
+    """A transform that retypes an argument owns the displayed type.
+
+    The tool it was made from still says ``int``; the server publishes
+    ``string``, and the docs describe what a caller may send.
+    """
+    from fastmcp.tools.tool_transform import ArgTransform
+
+    def square(x: int) -> int:
+        """Square."""
+        return x * x
+
+    transformed = _Tool.from_tool(
+        _Tool.from_function(square),
+        name="square_str",
+        transform_args={"x": ArgTransform(type=str)},
+    )
+    server: FastMCP = FastMCP("server")
+    server.add_tool(transformed)
+
+    collected = _tools_from_server(server, area_map={}, axes=())
+    assert collected is not None
+    assert [(p.name, p.type_str) for p in collected[0].params] == [("x", "string")]
