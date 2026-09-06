@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-import logging
 import typing as t
 from dataclasses import dataclass, field
 
-logger = logging.getLogger(__name__)
+from sphinx.util import logging as sphinx_logging
+
+logger = sphinx_logging.getLogger(__name__)
 
 #: Sources an axis can read a tool's term from. ``tags`` matches declared
 #: terms against ``tool.tags``; ``annotations`` derives one from the MCP
@@ -122,6 +123,8 @@ def _coerce_term(value: t.Any) -> Term | None:
         logger.warning(
             "sphinx_autodoc_fastmcp: toolset term %r has no 'term'; skipping it",
             value,
+            type="fastmcp",
+            subtype="config",
         )
         return None
     return Term(
@@ -179,6 +182,8 @@ def _is_reserved_axis_name(name: str) -> bool:
         name,
         name,
         f"{name}-kind",
+        type="fastmcp",
+        subtype="axis",
     )
     return True
 
@@ -221,6 +226,8 @@ def coerce_axes(value: t.Any) -> tuple[Axis, ...]:
                 "sphinx_autodoc_fastmcp: fastmcp_axes entry %r has no 'name'; "
                 "skipping it",
                 entry,
+                type="fastmcp",
+                subtype="config",
             )
             continue
         if _is_reserved_axis_name(name):

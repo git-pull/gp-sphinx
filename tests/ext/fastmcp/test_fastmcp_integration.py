@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 import pathlib
 import subprocess
 import sys
@@ -472,20 +471,22 @@ def test_tool_role_omits_the_badge_for_a_tag_outside_the_vocabulary(
 @pytest.mark.integration
 def test_the_summary_warns_when_it_drops_an_unmatched_tool(
     tmp_path_factory: pytest.TempPathFactory,
-    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """A tool the summary cannot place must not vanish without a trace."""
     cache_root = tmp_path_factory.mktemp("fastmcp-unmatched-toolset-warn")
-    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp"):
-        build_shared_sphinx_result(
-            cache_root,
-            _unmatched_scenario(),
-            purge_modules=("demo_tools",),
-        )
+    result = build_shared_sphinx_result(
+        cache_root,
+        _unmatched_scenario(),
+        purge_modules=("demo_tools",),
+    )
 
-    messages = "\n".join(record.message for record in caplog.records)
-    assert "omitted from fastmcp-tool-summary" in messages
-    assert "list_sessions" in messages
+    # Assert on Sphinx's own warning stream rather than a stdlib handler:
+    # reaching it is what makes the diagnostic visible to -W, to the
+    # warnings file and to suppress_warnings. Sphinx swaps logging handlers
+    # for the duration of a build, so caplog cannot see this at all.
+    assert "omitted from fastmcp-tool-summary" in result.warnings
+    assert "[fastmcp.axis]" in result.warnings
+    assert "list_sessions" in result.warnings
 
 
 @pytest.mark.integration

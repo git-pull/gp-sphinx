@@ -176,7 +176,20 @@ share one, so both are served. The docs index holds one entry per name: it keeps
 the first and warns, naming the collision.
 
 Server/module overlap follows the documented precedence without warning.
-Collector warnings use Sphinx's warning stream, so `-W` fails the build and
-`-w` records them. Name collisions use the `fastmcp.duplicate` category;
-other collection warnings use `fastmcp`. Set
-`suppress_warnings = ["fastmcp.duplicate"]` to suppress only name collisions.
+
+Every warning this extension raises goes through Sphinx's warning stream, so
+`-W` fails the build on them and `-w` records them. Each carries a category
+you can suppress individually through `suppress_warnings`:
+
+| Category | Raised when |
+| --- | --- |
+| `fastmcp.duplicate` | Two components claim one name |
+| `fastmcp.alias` | A tool's bare-slug alias is already claimed by another document's label |
+| `fastmcp.axis` | An axis is unusable, or a tool matches no term on one |
+| `fastmcp.config` | A `fastmcp_axes` entry is malformed |
+| `fastmcp.xref` | A cross-reference cannot resolve, or resolves away from its canonical section |
+
+Suppressing the parent `fastmcp` category silences all of them. A tool named
+after one of Sphinx's built-in labels (`genindex`, `modindex`, `search`)
+raises nothing: it can never claim the bare alias, cross-references resolve
+the canonical id first, and there is no action an author could take.

@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import logging
 import re
 
 from docutils import nodes
 from sphinx.application import Sphinx
+from sphinx.util import logging as sphinx_logging
 
 from sphinx_autodoc_fastmcp._badges import (
     active_axes,
@@ -22,7 +22,7 @@ from sphinx_autodoc_fastmcp._roles import (
 from sphinx_ux_autodoc_layout import API, api_component
 from sphinx_ux_badges import SAB
 
-logger = logging.getLogger(__name__)
+logger = sphinx_logging.getLogger(__name__)
 
 
 def _tool_content_container(section: nodes.section) -> nodes.Element:
@@ -206,6 +206,8 @@ def resolve_tool_refs(
                 labelid,
                 canonical,
                 tool_name,
+                type="fastmcp",
+                subtype="xref",
             )
 
         newnode = nodes.reference("", "", internal=True)
@@ -218,6 +220,8 @@ def resolve_tool_refs(
                 "sphinx_autodoc_fastmcp: failed to resolve URI for %s -> %s",
                 fromdocname,
                 todocname,
+                type="fastmcp",
+                subtype="xref",
             )
             newnode["refuri"] = "#" + labelid
         newnode["classes"].append("reference")
@@ -313,6 +317,8 @@ def resolve_component_refs(
                 "sphinx_autodoc_fastmcp: failed to resolve URI for %s -> %s",
                 fromdocname,
                 todocname,
+                type="fastmcp",
+                subtype="xref",
             )
             newnode["refuri"] = "#" + labelid
         newnode["classes"].append("reference")

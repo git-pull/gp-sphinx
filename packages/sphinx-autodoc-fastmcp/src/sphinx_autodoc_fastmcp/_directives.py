@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import logging
 import typing as t
 
 from docutils import nodes
 from docutils.parsers.rst import directives
+from sphinx.util import logging as sphinx_logging
 from sphinx.util.docutils import SphinxDirective
 
 if t.TYPE_CHECKING:
@@ -50,7 +50,7 @@ from sphinx_ux_autodoc_layout import (
     build_api_table_section,
 )
 
-logger = logging.getLogger(__name__)
+logger = sphinx_logging.getLogger(__name__)
 
 
 def _register_section_label(
@@ -185,6 +185,8 @@ def _register_alias_if_free(
                 display_name,
                 existing_doc,
                 existing_id,
+                type="fastmcp",
+                subtype="alias",
             )
             return False
 
@@ -448,6 +450,8 @@ class FastMCPToolSummaryDirective(SphinxDirective):
                 len(unassigned),
                 axis.name,
                 ", ".join(sorted(tool.name for tool in unassigned)),
+                type="fastmcp",
+                subtype="axis",
             )
 
         result_nodes: list[nodes.Node] = []

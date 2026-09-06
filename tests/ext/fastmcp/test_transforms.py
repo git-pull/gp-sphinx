@@ -77,7 +77,7 @@ def test_resolve_tool_refs_warns_when_known_tool_has_no_canonical_home(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """A known tool resolving to a foreign label (reserved ``search``) warns."""
-    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp._transforms"):
+    with caplog.at_level(logging.WARNING, logger="sphinx.sphinx_autodoc_fastmcp._transforms"):
         container = _resolve_single_tool_ref(
             reftarget="search",
             labels={"search": ("search", "", "Search Page")},
@@ -85,7 +85,7 @@ def test_resolve_tool_refs_warns_when_known_tool_has_no_canonical_home(
         )
 
     records = [
-        r for r in caplog.records if r.name == "sphinx_autodoc_fastmcp._transforms"
+        r for r in caplog.records if r.name == "sphinx.sphinx_autodoc_fastmcp._transforms"
     ]
     assert len(records) == 1
     message = records[0].getMessage()
@@ -99,7 +99,7 @@ def test_resolve_tool_refs_silent_when_canonical_label_present(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """No warning when the canonical ``fastmcp-tool-<slug>`` label exists."""
-    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp._transforms"):
+    with caplog.at_level(logging.WARNING, logger="sphinx.sphinx_autodoc_fastmcp._transforms"):
         container = _resolve_single_tool_ref(
             reftarget="search",
             labels={
@@ -114,7 +114,7 @@ def test_resolve_tool_refs_silent_when_canonical_label_present(
         )
 
     warnings = [
-        r for r in caplog.records if r.name == "sphinx_autodoc_fastmcp._transforms"
+        r for r in caplog.records if r.name == "sphinx.sphinx_autodoc_fastmcp._transforms"
     ]
     assert warnings == []
     reference = container[0]
