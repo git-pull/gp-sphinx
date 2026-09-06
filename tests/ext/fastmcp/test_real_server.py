@@ -42,7 +42,7 @@ from fastmcp.resources import (
     ResourceTemplate as _ResourceTemplate,  # noqa: E402
 )
 from fastmcp.tools import Tool as _Tool  # noqa: E402
-from pydantic import Field  # noqa: E402
+from pydantic import BaseModel, Field  # noqa: E402
 from typing_extensions import TypedDict  # noqa: E402
 
 
@@ -54,6 +54,13 @@ class _Boxed(TypedDict):
     """
 
     result: int
+
+
+class _Point(BaseModel):
+    """A coordinate accepted by a tool."""
+
+    #: Horizontal coordinate.
+    x: int
 
 
 from mcp.types import Annotations, ToolAnnotations  # noqa: E402
@@ -1458,3 +1465,46 @@ def test_a_stalled_transform_does_not_block_the_build(
 
     assert collected == []
     assert any("failed to list" in rec.message for rec in caplog.records)
+
+
+def test_renamed_model_parameters_resolve_schema_references() -> None:
+    """Forwarding functions retain named model types and nullable unions."""
+    from fastmcp.server.transforms import ToolTransform
+    from fastmcp.tools.tool_transform import ToolTransformConfig
+
+    server: FastMCP = FastMCP("models")
+
+    @server.tool
+    def locate(point: _Point, maybe: _Point | None) -> _Point:
+        """Locate a point."""
+        return point
+
+    server.add_transform(ToolTransform({"locate": ToolTransformConfig(name="lookup")}))
+    collected = _tools_from_server(server, area_map={}, axes=())
+    assert collected is not None
+    assert [(p.name, p.type_str) for p in collected[0].params] == [
+        ("point", "object"),
+        ("maybe", "object | null"),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("prop", "expected"),
+    [
+        ({"$ref": "#/$defs/a~1b~0c"}, "integer"),
+        ({"oneOf": [{"$ref": "#/$defs/a~1b~0c"}, {"type": "null"}]}, "integer | null"),
+        ({"$ref": "#/$defs/cycle"}, ""),
+        ({"$ref": "#/$defs/missing"}, ""),
+    ],
+)
+def test_schema_references_are_local_and_cycle_safe(
+    prop: dict[str, t.Any], expected: str
+) -> None:
+    """Resolve JSON pointers without following missing or recursive targets."""
+    schema = {
+        "$defs": {
+            "a/b~c": {"type": "integer"},
+            "cycle": {"$ref": "#/$defs/cycle"},
+        }
+    }
+    assert _schema_type_text(prop, schema) == expected

@@ -224,23 +224,34 @@ def _render_default(value: t.Any) -> str:
     return json.dumps(value)
 
 
-def _schema_type_text(prop: dict[str, t.Any]) -> str:
-    """Describe a schema property when no signature parameter names it.
-
-    A ``Field(alias=...)`` publishes the alias, so the signature has no
-    parameter of that name and cannot supply a type. The schema's own type is
-    a weaker display than the Python annotation, but it beats an em dash.
-    """
+def _schema_type_text(
+    prop: dict[str, t.Any],
+    schema: dict[str, t.Any] | None = None,
+    refs: frozenset[str] = frozenset(),
+) -> str:
+    """Describe a schema type, resolving local references and union members."""
+    schema = prop if schema is None else schema
+    ref = prop.get("$ref")
+    if isinstance(ref, str) and ref.startswith("#/") and ref not in refs:
+        target: t.Any = schema
+        for part in ref[2:].split("/"):
+            target = (
+                target.get(part.replace("~1", "/").replace("~0", "~"))
+                if isinstance(target, dict)
+                else None
+            )
+        if isinstance(target, dict):
+            return _schema_type_text(target, schema, refs | {ref})
     declared = prop.get("type")
     if isinstance(declared, str):
         return declared
     union = prop.get("anyOf") or prop.get("oneOf") or ()
     parts = [
-        str(member.get("type", ""))
+        _schema_type_text(member, schema, refs)
         for member in union
-        if isinstance(member, dict) and member.get("type")
+        if isinstance(member, dict)
     ]
-    return " | ".join(parts)
+    return " | ".join(part for part in parts if part)
 
 
 def _params_from_schema(
@@ -300,7 +311,7 @@ def _params_from_schema(
             else ""
         )
         if not annotation:
-            annotation = _schema_type_text(prop)
+            annotation = _schema_type_text(prop, schema)
         is_required = name in required
         rows.append(
             ParamInfo(
@@ -373,7 +384,7 @@ def _return_from_schema(schema: t.Any) -> str:
     # a generated wrapper. FastMCP marks the ones it made.
     if schema.get("x-fastmcp-wrap-result") and isinstance(props, dict):
         inner = props["result"]
-        return _schema_type_text(inner) if isinstance(inner, dict) else ""
+        return _schema_type_text(inner, schema) if isinstance(inner, dict) else ""
     return _schema_type_text(schema)
 
 
@@ -1003,7 +1014,7 @@ def _template_params_from_schema(
     for name, subschema in props.items():
         if not isinstance(subschema, dict):
             subschema = {}
-        type_str = _schema_type_text(subschema)
+        type_str = _schema_type_text(subschema, schema)
         rows.append(
             PromptArgInfo(
                 name=str(name),
