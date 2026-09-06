@@ -1535,3 +1535,30 @@ def test_skill_discovery_refreshes_during_collection(tmp_path: pathlib.Path) -> 
     assert sorted(
         c.uri_template for c in collected if isinstance(c, _ResourceTemplate)
     ) == sorted(c.uri_template for c in templates)
+
+
+def test_validation_alias_owns_the_published_input() -> None:
+    """Input aliases take precedence over serialization aliases."""
+    server: FastMCP = FastMCP("aliases")
+
+    @server.tool
+    def annotated(
+        foo: t.Annotated[int, Field(alias="other", validation_alias="bar")],
+        bar: t.Annotated[str, Field(alias="baz")],
+    ) -> None:
+        """Accept aliased inputs."""
+
+    @server.tool
+    def defaults(
+        foo: int = Field(1, alias="other", validation_alias="bar"),
+        bar: str = Field("x", alias="baz"),
+    ) -> None:
+        """Accept aliased defaults."""
+
+    collected = _tools_from_server(server, area_map={}, axes=())
+    assert collected is not None
+    for tool in collected:
+        assert [(p.name, p.type_str) for p in tool.params] == [
+            ("bar", "int"),
+            ("baz", "str"),
+        ]

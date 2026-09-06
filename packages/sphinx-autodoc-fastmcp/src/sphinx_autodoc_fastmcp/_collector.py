@@ -291,8 +291,8 @@ def _params_from_schema(
         # parameter's default, and either spelling publishes the alias.
         carriers = (*t.get_args(annotation)[1:], param.default)
         for meta in carriers:
-            alias = getattr(meta, "alias", None) or getattr(
-                meta, "validation_alias", None
+            alias = getattr(meta, "validation_alias", None) or getattr(
+                meta, "alias", None
             )
             if isinstance(alias, str) and alias:
                 aliases[alias] = param_name
