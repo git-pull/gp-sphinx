@@ -43,6 +43,36 @@ logger = logging.getLogger(__name__)
 _MODULE_IMPORTS: dict[str, dict[str, str]] = {}
 
 
+def _autodoc_annotations(env: BuildEnvironment) -> dict[str, dict[str, str]]:
+    """Return autodoc's per-document annotation store.
+
+    Sphinx 8.2 moved the store from ``env.temp_data["annotations"]`` to
+    ``env.current_document.autodoc_annotations``; Sphinx 8.1, the newest
+    release installable on Python 3.10, has ``temp_data`` only.
+
+    Parameters
+    ----------
+    env : BuildEnvironment
+        The Sphinx build environment.
+
+    Returns
+    -------
+    dict[str, dict[str, str]]
+        Mapping of object name to that object's annotations.
+    """
+    current_document = getattr(env, "current_document", None)
+    if current_document is not None:
+        return t.cast(
+            "dict[str, dict[str, str]]",
+            current_document.autodoc_annotations,
+        )
+    temp_data: t.Any = env.temp_data
+    return t.cast(
+        "dict[str, dict[str, str]]",
+        temp_data.setdefault("annotations", {}),
+    )
+
+
 def get_module_imports(module_name: str) -> dict[str, str]:
     """Extract all import aliases from a module's source code.
 
@@ -406,9 +436,7 @@ def record_typehints(
 
         aliases = get_module_imports(module_name)
 
-        doc_annotations = app.env.current_document.autodoc_annotations.setdefault(
-            name, {}
-        )
+        doc_annotations = _autodoc_annotations(app.env).setdefault(name, {})
 
         from sphinx.util.typing import stringify_annotation
 
@@ -553,7 +581,7 @@ def merge_typehints(
     except KeyError:
         return
 
-    annotations = app.env.current_document.autodoc_annotations
+    annotations = _autodoc_annotations(app.env)
     if not annotations.get(fullname):
         return
 
