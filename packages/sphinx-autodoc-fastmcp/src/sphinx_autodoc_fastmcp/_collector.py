@@ -316,7 +316,16 @@ def _tool_from_component(
     func: t.Callable[..., t.Any] | None = getattr(tool, "fn", None)
     if func is not None and hasattr(func, "__wrapped__"):
         func = func.__wrapped__
-    module_name = str(getattr(func, "__module__", "") or "").rpartition(".")[2]
+    # A transformed tool's callable is FastMCP's forwarding function, which
+    # lives in FastMCP's own module. Attribution -- and so the area map --
+    # follows the tool it was made from.
+    origin: t.Any = tool
+    while getattr(origin, "parent_tool", None) is not None:
+        origin = origin.parent_tool
+    source = getattr(origin, "fn", None) or func
+    if source is not None and hasattr(source, "__wrapped__"):
+        source = source.__wrapped__
+    module_name = str(getattr(source, "__module__", "") or "").rpartition(".")[2]
 
     tags = set(getattr(tool, "tags", None) or ())
     meta = dict(getattr(tool, "meta", None) or {})
@@ -624,6 +633,18 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
     """
     found: list[t.Any] = []
 
+    try:
+        from fastmcp.tools import Tool as _ToolType
+    except ImportError:  # pragma: no cover - defensive
+        _ToolType = None  # type: ignore[assignment,misc]
+
+    def _is_tool(component: t.Any) -> bool:
+        if _ToolType is not None:
+            return isinstance(component, _ToolType)
+        return hasattr(component, "parameters") and not hasattr(
+            component, "uri_template"
+        )
+
     def _reproducible(transform: t.Any) -> bool:
         return (
             hasattr(transform, "_transform_name")
@@ -633,7 +654,7 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
     def _served(component: t.Any, transforms: tuple[t.Any, ...]) -> t.Any:
         if not transforms or not hasattr(component, "model_copy"):
             return component
-        is_tool = hasattr(component, "parameters")
+        is_tool = _is_tool(component)
         for transform in transforms:
             if hasattr(transform, "_transform_uri"):
                 update: dict[str, t.Any] = {}
@@ -675,21 +696,30 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
             )
             return
         path = path | {id(node)}
-        own = tuple(
-            transform
-            for transform in getattr(node, "transforms", None) or ()
-            if _reproducible(transform)
-        )
+        own_all = tuple(getattr(node, "transforms", None) or ())
+        if not all(_reproducible(transform) for transform in own_all):
+            logger.warning(
+                "sphinx_autodoc_fastmcp: server %r renames its components in a "
+                "way this collector cannot reproduce; its components are not "
+                "documented",
+                getattr(node, "name", node),
+            )
+            return
+        own = own_all
         # A server's own transforms apply before the namespace it was mounted
         # under: the server serves outer_inner_hello, not inner_outer_hello.
         transforms = own + transforms
         for provider in getattr(node, "providers", None) or ():
             # A transform added to a provider directly renames what it holds.
-            local = tuple(
-                transform
-                for transform in getattr(provider, "transforms", None) or ()
-                if _reproducible(transform)
-            )
+            local = tuple(getattr(provider, "transforms", None) or ())
+            if not all(_reproducible(transform) for transform in local):
+                logger.warning(
+                    "sphinx_autodoc_fastmcp: provider %s renames its components "
+                    "in a way this collector cannot reproduce; its components "
+                    "are not documented",
+                    type(provider).__name__,
+                )
+                continue
             components = getattr(provider, "_components", None)
             if components is not None:
                 found.extend(
@@ -753,12 +783,17 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
                 found.extend(
                     _served(component, chain) for component in inner_components.values()
                 )
+                continue
+            logger.warning(
+                "sphinx_autodoc_fastmcp: provider %s exposes no component "
+                "registry; its components are not documented",
+                type(wrapped).__name__,
+            )
 
     walk(server, 0, (), frozenset())
-    if not found:
-        provider = getattr(server, "local_provider", None)
-        components = getattr(provider, "_components", None) if provider else None
-        return tuple(components.values()) if components else ()
+    # No fallback to the local registry: a walk that found nothing either saw
+    # an empty server or refused a rename it could not reproduce, and reading
+    # past that refusal would publish the identities it just declined.
     return tuple(found)
 
 

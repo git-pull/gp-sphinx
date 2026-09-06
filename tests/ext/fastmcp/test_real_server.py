@@ -762,3 +762,114 @@ def test_a_description_kwarg_survives_an_undocumented_function() -> None:
     collected = _tools_from_server(app, area_map={}, axes=())
     assert collected is not None
     assert collected[0].docstring == "Fetch the selected user record."
+
+
+def test_a_tool_transform_leaves_a_same_named_template_alone() -> None:
+    """A rename map targets tools only.
+
+    A resource template also carries ``parameters``; applying a tool
+    transform to it raised and aborted the build.
+    """
+    from fastmcp.server.transforms import ToolTransform
+    from fastmcp.tools.tool_transform import ToolTransformConfig
+
+    server: FastMCP = FastMCP("server")
+
+    @server.tool
+    def hello(a: int) -> str:
+        """Hello."""
+        return "ok"
+
+    @server.resource("data://hello/{x}", name="hello")
+    def hello_template(x: str) -> str:
+        """Template."""
+        return "{}"
+
+    server.local_provider.add_transform(
+        ToolTransform({"hello": ToolTransformConfig(name="hi")})
+    )
+
+    assert sorted(
+        f"{type(component).__name__}:{component.name}"
+        for component in _iter_components(server)
+    ) == ["FunctionResourceTemplate:hello", "TransformedTool:hi"]
+
+
+def test_a_renamed_tool_keeps_its_source_module() -> None:
+    """Area attribution follows the tool a transform was made from.
+
+    The forwarding callable lives in FastMCP's own module; attributing to
+    it broke every summary link for a renamed tool.
+    """
+    child: FastMCP = FastMCP("child")
+
+    @child.tool
+    def hello(a: int) -> str:
+        """Hello."""
+        return "ok"
+
+    parent: FastMCP = FastMCP("parent")
+    parent.mount(child, tool_names={"hello": "greet"})
+
+    collected = _tools_from_server(
+        parent, area_map={__name__.rpartition(".")[2]: "my/area"}, axes=()
+    )
+    assert collected is not None
+    assert collected[0].module_name == __name__.rpartition(".")[2]
+    assert collected[0].area == "my/area"
+
+
+@pytest.mark.parametrize("level", ["server", "provider"])
+def test_an_unreadable_transform_fails_closed_with_a_warning(
+    level: str, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A transform whose rule is not data is refused, not read past.
+
+    Publishing the pre-transform name documents an identity the server no
+    longer serves; the mount path already refused, these levels did not.
+    """
+    from fastmcp.server.transforms import Transform
+
+    class Prefix(Transform):
+        async def list_tools(self, tools: t.Any) -> t.Any:
+            return [
+                tool.model_copy(update={"name": "public_" + tool.name})
+                for tool in tools
+            ]
+
+    server: FastMCP = FastMCP("server")
+
+    @server.tool
+    def hello(a: int) -> str:
+        """Hello."""
+        return "ok"
+
+    if level == "server":
+        server.add_transform(Prefix())
+    else:
+        server.local_provider.add_transform(Prefix())
+
+    with caplog.at_level(logging.WARNING):
+        walked = _iter_components(server)
+
+    assert walked == ()
+    assert any("cannot reproduce" in rec.message for rec in caplog.records)
+
+
+def test_a_registry_less_provider_under_a_namespace_is_named(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Namespacing a dynamic provider does not silence the diagnostic."""
+    from fastmcp.server.providers.base import Provider
+
+    class Dynamic(Provider):
+        async def _list_tools(self) -> list[t.Any]:
+            return []
+
+    server: FastMCP = FastMCP("server")
+    server.add_provider(Dynamic(), namespace="api")
+
+    with caplog.at_level(logging.WARNING):
+        assert _iter_components(server) == ()
+
+    assert any("Dynamic" in rec.message for rec in caplog.records)
