@@ -64,8 +64,8 @@ def setup(app: Sphinx) -> dict[str, bool | str]:
     --------
     >>> class FakeApp:
     ...     def __init__(self) -> None:
-    ...         self.calls: list[tuple[str, pathlib.Path]] = []
-    ...     def add_html_theme(self, name: str, theme_path: pathlib.Path) -> None:
+    ...         self.calls: list[tuple[str, str]] = []
+    ...     def add_html_theme(self, name: str, theme_path: str) -> None:
     ...         self.calls.append((name, theme_path))
     >>> fake = FakeApp()
     >>> metadata = setup(fake)  # type: ignore[arg-type]
@@ -74,7 +74,7 @@ def setup(app: Sphinx) -> dict[str, bool | str]:
     >>> metadata["parallel_read_safe"]
     True
     """
-    app.add_html_theme("sphinx-gp-theme", get_theme_path())
+    app.add_html_theme("sphinx-gp-theme", str(get_theme_path()))
     return {
         "parallel_read_safe": True,
         "parallel_write_safe": True,

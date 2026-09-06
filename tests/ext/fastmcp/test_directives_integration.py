@@ -80,6 +80,11 @@ _FAKE_EXT_SOURCE = textwrap.dedent(
                 mime_type="text/markdown",
                 docstring="Static hello blob.",
                 tags=("readonly",),
+                annotations={
+                    "audience": ["user"],
+                    "priority": 0.7,
+                    "lastModified": "2026-01-01T00:00:00Z",
+                },
             )
         }
         templates = {
@@ -243,3 +248,22 @@ def test_ref_xrefs_resolve_with_no_undefined_labels(
     assert 'href="#fastmcp-resource-hello"' in html
     assert 'href="#fastmcp-resource-template-user-record"' in html
     assert "undefined label" not in fastmcp_directives_html.warnings
+
+
+@pytest.mark.integration
+def test_resource_annotations_render(
+    fastmcp_directives_html: SharedSphinxResult,
+) -> None:
+    """A resource's MCP annotations reach the page.
+
+    They were collected onto ``ResourceInfo`` all along and never emitted,
+    so a reader could not see who a resource is for or when it changed.
+    """
+    html = read_output(fastmcp_directives_html, "index.html")
+
+    assert "Audience" in html
+    assert "user" in html
+    assert "Priority" in html
+    assert "0.7" in html
+    assert "Last modified" in html
+    assert "2026-01-01T00:00:00Z" in html

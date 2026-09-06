@@ -185,6 +185,10 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout--mo
 }
 
 /* ── Signature row ──────────────────────────────────── */
+.gp-sphinx-api-header .gp-sphinx-api-signature code.literal {
+  background: transparent;
+}
+
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header .gp-sphinx-api-signature {
   flex: 1 1 auto;
   font-family: var(--font-stack--monospace);

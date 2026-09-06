@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import logging
 import typing as t
 
 from docutils import nodes
 from docutils.parsers.rst import directives
+from sphinx.util import logging as sphinx_logging
 from sphinx.util.docutils import SphinxDirective
 
 if t.TYPE_CHECKING:
@@ -33,6 +33,7 @@ from sphinx_autodoc_fastmcp._parsing import (
     make_table,
     parse_rst_inline,
 )
+from sphinx_autodoc_fastmcp._roles import _tool_ref_placeholder
 from sphinx_autodoc_typehints_gp import (
     build_annotation_display_paragraph,
     build_annotation_paragraph,
@@ -49,7 +50,7 @@ from sphinx_ux_autodoc_layout import (
     build_api_table_section,
 )
 
-logger = logging.getLogger(__name__)
+logger = sphinx_logging.getLogger(__name__)
 
 
 def _register_section_label(
@@ -108,6 +109,17 @@ def _component_ids(kind: str, name: str) -> tuple[str, list[str]]:
     return canonical, aliases
 
 
+#: Labels Sphinx's ``StandardDomain`` seeds before any document is read, from
+#: its ``initial_data`` (``sphinx/domains/std/__init__.py``). A tool whose bare
+#: slug is one of these can never claim the alias, on any project, on every
+#: build -- so reporting it as a collision is noise with no available fix.
+_SPHINX_SEEDED_LABELS: dict[str, tuple[str, str]] = {
+    "genindex": ("genindex", ""),
+    "modindex": ("py-modindex", ""),
+    "search": ("search", ""),
+}
+
+
 def _register_alias_if_free(
     env: BuildEnvironment,
     *,
@@ -160,6 +172,12 @@ def _register_alias_if_free(
         existing_doc = existing[0]
         existing_id = existing[1]
         if (existing_doc, existing_id) != (env.docname, target_id):
+            if _SPHINX_SEEDED_LABELS.get(alias) == (existing_doc, existing_id):
+                # Expected, and already handled: roles resolve the canonical
+                # ``fastmcp-<kind>-<slug>`` id first, so the card still
+                # resolves. Nothing is degraded and nobody can act on it --
+                # the alias is unclaimable by construction.
+                return False
             logger.warning(
                 "sphinx_autodoc_fastmcp: bare alias %r for %s already claimed "
                 "by %s#%s; using canonical id only",
@@ -167,6 +185,8 @@ def _register_alias_if_free(
                 display_name,
                 existing_doc,
                 existing_id,
+                type="fastmcp",
+                subtype="alias",
             )
             return False
 
@@ -430,6 +450,8 @@ class FastMCPToolSummaryDirective(SphinxDirective):
                 len(unassigned),
                 axis.name,
                 ", ".join(sorted(tool.name for tool in unassigned)),
+                type="fastmcp",
+                subtype="axis",
             )
 
         result_nodes: list[nodes.Node] = []
@@ -451,9 +473,17 @@ class FastMCPToolSummaryDirective(SphinxDirective):
             rows: list[list[str | nodes.Node]] = []
             for tool in sorted(group_tools, key=lambda x: x.name):
                 first_line = first_paragraph(tool.docstring)
-                ref = nodes.reference("", "", internal=True)
-                ref["refuri"] = f"{tool.area}/#{_component_ids('tool', tool.name)[0]}"
-                ref += nodes.literal("", tool.name)
+                # Defer to ``resolve_tool_refs``: it resolves through the
+                # registered label, so the link points at the card's real
+                # document and is made relative to the page being written.
+                # Building ``refuri`` here would have neither -- ``tool.area``
+                # is a configured guess, and at parse time there is no
+                # ``fromdocname`` to be relative to.
+                ref = _tool_ref_placeholder(
+                    "",
+                    reftarget=tool.name.replace("_", "-"),
+                    show_badge=False,
+                )
                 rows.append(
                     [
                         make_para(ref),
@@ -619,6 +649,30 @@ class FastMCPPromptInputDirective(SphinxDirective):
         )
 
 
+#: MCP resource annotations, in the order a reader wants them, paired with the
+#: label each is rendered under. Keys are the wire spellings the collector
+#: stores, which is also what the MCP schema publishes.
+_ANNOTATION_LABELS: tuple[tuple[str, str], ...] = (
+    ("audience", "Audience"),
+    ("priority", "Priority"),
+    ("lastModified", "Last modified"),
+)
+
+
+def _annotation_fact_rows(annotations: dict[str, t.Any]) -> list[ApiFactRow]:
+    """Render the resource annotations that are set, skipping the rest."""
+    rows: list[ApiFactRow] = []
+    for key, label in _ANNOTATION_LABELS:
+        value = annotations.get(key)
+        if value is None or (isinstance(value, list) and not value):
+            continue
+        text = (
+            ", ".join(str(v) for v in value) if isinstance(value, list) else str(value)
+        )
+        rows.append(ApiFactRow(label, nodes.literal("", text)))
+    return rows
+
+
 def _build_resource_card(
     *,
     env: BuildEnvironment,
@@ -629,6 +683,7 @@ def _build_resource_card(
     docstring: str,
     badge_group: nodes.inline,
     mime_type: str,
+    annotations: dict[str, t.Any] | None = None,
     shell_class: str,
     entry_class: str,
     signature_class: str,
@@ -651,12 +706,16 @@ def _build_resource_card(
             ),
         )
 
+    fact_rows: list[ApiFactRow] = []
     if mime_type:
+        fact_rows.append(ApiFactRow("MIME type", nodes.literal("", mime_type)))
+    # MCP annotations a resource sets: who it is for, how strongly it is
+    # recommended, and when it last changed. Collected all along; rendering
+    # them is what makes them reachable by a reader.
+    fact_rows.extend(_annotation_fact_rows(annotations or {}))
+    if fact_rows:
         content_nodes.append(
-            build_api_facts_section(
-                [ApiFactRow("MIME type", nodes.literal("", mime_type))],
-                classes=(_CSS.BODY_SECTION,),
-            ),
+            build_api_facts_section(fact_rows, classes=(_CSS.BODY_SECTION,)),
         )
 
     section = nodes.section()
@@ -692,6 +751,9 @@ def _build_resource_card(
 
 class FastMCPResourceDirective(SphinxDirective):
     """Autodocument one MCP resource (fixed URI).
+
+    The card lists the resource's MIME type and whichever of its ``audience``,
+    ``priority`` and ``lastModified`` annotations are set, as facts.
 
     Supports the standard Sphinx ``:no-index:`` flag (mirrors
     :class:`FastMCPToolDirective`): when set, the card renders but its canonical
@@ -737,6 +799,7 @@ class FastMCPResourceDirective(SphinxDirective):
                     kind="resource",
                 ),
                 mime_type=res.mime_type,
+                annotations=res.annotations,
                 shell_class=_CSS.RESOURCE_SECTION,
                 entry_class=_CSS.RESOURCE_ENTRY,
                 signature_class=_CSS.RESOURCE_SIGNATURE,
@@ -751,6 +814,9 @@ class FastMCPResourceDirective(SphinxDirective):
 
 class FastMCPResourceTemplateDirective(SphinxDirective):
     """Autodocument one MCP resource template (parameterised URI).
+
+    The card lists the template's MIME type and whichever of its ``audience``,
+    ``priority`` and ``lastModified`` annotations are set, as facts.
 
     Supports the standard Sphinx ``:no-index:`` flag (mirrors
     :class:`FastMCPToolDirective`): when set, the card renders but its canonical
@@ -798,6 +864,7 @@ class FastMCPResourceTemplateDirective(SphinxDirective):
                 kind="resource-template",
             ),
             mime_type=tpl.mime_type,
+            annotations=tpl.annotations,
             shell_class=_CSS.RESOURCE_SECTION,
             entry_class=_CSS.RESOURCE_ENTRY,
             signature_class=_CSS.RESOURCE_SIGNATURE,

@@ -27,9 +27,44 @@ from sphinx_autodoc_typehints_gp._numpy_docstring import (
     process_numpy_docstring,
 )
 from sphinx_autodoc_typehints_gp.extension import (
+    _autodoc_annotations,
     get_module_imports,
     resolve_annotation_string,
 )
+
+# ---------------------------------------------------------------------------
+# _autodoc_annotations  (Sphinx 8.1 / 8.2 annotation-store compatibility)
+# ---------------------------------------------------------------------------
+
+
+def test_autodoc_annotations_reads_the_sphinx_82_attribute() -> None:
+    """Sphinx 8.2 keeps the store on ``env.current_document``."""
+
+    class CurrentDocument:
+        autodoc_annotations = {"f": {"x": "int"}}
+
+    class Env:
+        current_document = CurrentDocument()
+
+    assert _autodoc_annotations(Env()) == {"f": {"x": "int"}}  # type: ignore[arg-type]
+
+
+def test_autodoc_annotations_falls_back_to_sphinx_81_temp_data() -> None:
+    """Sphinx 8.1 has no ``current_document``; the store lives in temp_data.
+
+    Writes through the returned mapping must land in ``temp_data`` -- a copy
+    would silently drop every annotation the extension records on 8.1.
+    """
+
+    class Env:
+        def __init__(self) -> None:
+            self.temp_data: dict[str, object] = {}
+
+    env = Env()
+    store = _autodoc_annotations(env)  # type: ignore[arg-type]
+    store["f"] = {"x": "int"}
+    assert env.temp_data == {"annotations": {"f": {"x": "int"}}}
+
 
 # ---------------------------------------------------------------------------
 # get_module_imports / resolve_annotation_string  (individual — not fixture-based)

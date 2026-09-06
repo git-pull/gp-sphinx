@@ -18,6 +18,20 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### What's new
+
+#### `sphinx-autodoc-fastmcp`: Document live server tools
+
+Set `fastmcp_server_module` to document mounted and renamed tools with
+the names, parameters and metadata clients receive. Disabled tools stay
+documented. Server entries take precedence over module scanning without
+duplicate warnings. (#78)
+
+#### `sphinx-autodoc-fastmcp`: Show resource metadata
+
+Resource and resource-template cards now show their intended audience,
+priority and last-modified information when supplied. (#78)
+
 ### Fixes
 
 #### `sphinx-gp-llms`: A Markdown twin link only where a twin exists
@@ -65,6 +79,39 @@ build stayed clean. Tool roles now resolve the canonical
 `fastmcp-tool-<slug>` anchor first, so a reserved slug no longer hijacks
 the link. A tool that appears only under `:no-index:` — and so has no
 canonical cross-reference home — now warns instead of mis-linking. (#60)
+
+#### `sphinx-autodoc-fastmcp`: Preserve metadata with FastMCP 4
+
+Tool hints and prompt argument descriptions render correctly with
+FastMCP 4. Parameter types stay readable without annotation metadata,
+and generated schema instructions stay out of descriptions. (#78)
+
+#### `sphinx-autodoc-fastmcp`: Honor Sphinx warning settings
+
+Extension warnings now follow Sphinx's warning and suppression settings,
+so strict builds fail on unsuppressed warnings. Duplicate component
+names are reported while the first entry is retained. (#78)
+
+#### `sphinx-autodoc-fastmcp`: Keep tool links on the right page
+
+Tool summary links resolve from nested pages. Tools named after built-in
+Sphinx pages avoid unnecessary alias warnings, and reserved axis names
+are rejected regardless of capitalization. (#78)
+
+#### `sphinx-autodoc-typehints-gp`: Preserve Sphinx 8.1 descriptions
+
+Parameter and return descriptions remain visible with Sphinx 8.1,
+including builds on Python 3.10. (#78)
+
+#### Documentation preview: Stop repeated idle rebuilds
+
+The documentation preview rebuilds when sources change and stays idle
+otherwise. Cleaning the docs also clears cached doctrees. (#78)
+
+#### `sphinx-ux-autodoc-layout`: Blend code into API headers
+
+Inline code in API signatures uses the header background, including
+when the header is hovered. (#78)
 
 ## gp-sphinx 0.1.0a38 (2026-08-30)
 

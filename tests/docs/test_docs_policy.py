@@ -163,6 +163,31 @@ def test_contributing_docs_use_copyable_documentation_commands() -> None:
     assert offenders == []
 
 
+@pytest.mark.parametrize("recipe", ["start", "design"])
+def test_preview_ignores_build_events_but_watches_sources(recipe: str) -> None:
+    """Build events stay ignored while editable theme files remain watched."""
+    text = (DOCS_ROOT / "justfile").read_text(encoding="utf-8")
+    body = text.split(f"\n{recipe}:\n", maxsplit=1)[1].split("\n\n", maxsplit=1)[0]
+    patterns = [re.compile(p) for p in re.findall(r"--re-ignore '([^']+)'", body)]
+    web = (REPO_ROOT / "packages" / "gp-furo-theme" / "web").as_posix()
+
+    for path in (web, f"{web}/_tmp_123_abcdef"):
+        assert any(p.search(path) for p in patterns), (
+            f"build event triggers {recipe}: {path}"
+        )
+
+    for source in (
+        "src/styles/index.css",
+        "src/scripts/furo.ts",
+        "vite.config.ts",
+        "package.json",
+    ):
+        path = f"{web}/{source}"
+        assert not any(p.search(path) for p in patterns), (
+            f"source ignored by {recipe}: {path}"
+        )
+
+
 def test_console_blocks_contain_one_prompted_command() -> None:
     """Each console block has one copyable command prompt."""
     offenders: list[str] = []

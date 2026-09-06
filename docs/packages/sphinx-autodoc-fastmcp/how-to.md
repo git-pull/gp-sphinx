@@ -19,8 +19,8 @@ fastmcp_area_map = {
 }
 fastmcp_collector_mode = "register"
 
-# Optional: point at a live FastMCP server instance to autodoc its prompts,
-# resources, and resource templates. Format is "module.path:attr_name".
+# Optional: point at a live FastMCP server instance to autodoc its tools,
+# prompts, resources, and resource templates. Format is "module.path:attr_name".
 # Both an instance and a zero-arg factory callable are accepted.
 fastmcp_server_module = "my_project.server:mcp"
 ```
@@ -152,15 +152,44 @@ them separately to your `extensions` list.
 ## Live server collection
 
 Pointing {confval}`fastmcp_server_module` at a live FastMCP instance enables autodoc of
-**prompts**, **resources**, and **resource templates** — see the four new
+**tools**, **prompts**, **resources**, and **resource templates** — see the four new
 directives below. The collector accepts either:
 
 * A live instance: `"my_project.server:mcp"` (where `mcp = FastMCP(...)`).
 * A zero-argument factory: `"my_project.server:make_server"` returning a
   `FastMCP` instance.
 
+Tools come from the server in preference to {confval}`fastmcp_tool_modules`, so a
+tool the server serves is documented whether or not a module hook exposes it, and
+each tool takes its area from its own function rather than from its position in
+that list. Leave {confval}`fastmcp_server_module` unset to keep the
+module-scanning modes.
+
 If the resolved object is not a `FastMCP` (no `local_provider` attribute),
 collection is skipped and a warning is logged. The collector also invokes
 the server's `register_all` / `_register_all` hook (if exported) to
 ensure components registered lazily appear in the docs; FastMCP's default
 `on_duplicate="error"` policy is suppressed for this call.
+
+FastMCP keys tools and prompts by name while permitting two registrations to
+share one, so both are served. The docs index holds one entry per name: it keeps
+the first and warns, naming the collision.
+
+Server/module overlap follows the documented precedence without warning.
+
+Every warning this extension raises goes through Sphinx's warning stream, so
+`-W` fails the build on them and `-w` records them. Each carries a category
+you can suppress individually through `suppress_warnings`:
+
+| Category | Raised when |
+| --- | --- |
+| `fastmcp.duplicate` | Two components claim one name |
+| `fastmcp.alias` | A tool's bare-slug alias is already claimed by another document's label |
+| `fastmcp.axis` | An axis is unusable, or a tool matches no term on one |
+| `fastmcp.config` | A `fastmcp_axes` entry is malformed |
+| `fastmcp.xref` | A cross-reference cannot resolve, or resolves away from its canonical section |
+
+Suppressing the parent `fastmcp` category silences all of them. A tool named
+after one of Sphinx's built-in labels (`genindex`, `modindex`, `search`)
+raises nothing: it can never claim the bare alias, cross-references resolve
+the canonical id first, and there is no action an author could take.

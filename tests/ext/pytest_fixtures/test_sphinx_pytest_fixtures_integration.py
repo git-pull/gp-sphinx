@@ -169,13 +169,11 @@ def test_default_html_outputs_smoke(default_html_result) -> None:
     """The default HTML build emits badge markup, inventory, and genindex entries."""
     index_html = read_output(default_html_result, "index.html")
     genindex_html = read_output(default_html_result, "genindex.html")
-    inv = InventoryFile.loads(
-        (default_html_result.outdir / "objects.inv").read_bytes(),
-        uri="",
-    )
+    with (default_html_result.outdir / "objects.inv").open("rb") as handle:
+        inv = InventoryFile.load(handle, "", lambda base, target: target)
 
-    assert "py:fixture" in inv.data
-    assert any("my_server" in name for name in inv.data["py:fixture"])
+    assert "py:fixture" in inv
+    assert any("my_server" in name for name in inv["py:fixture"])
 
     for css_class in (
         SAB.BADGE_GROUP,

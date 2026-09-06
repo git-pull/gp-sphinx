@@ -18,6 +18,7 @@ jobs:
     # Sphinx silently skips the missing static entries (no -W in qa).
     env:
       SPHINX_VITE_BUILDER_SKIP: "1"
+      UV_PYTHON: ${{ matrix.python-version }}
     strategy:
       fail-fast: false
       matrix:

@@ -107,6 +107,9 @@ convention the linters do not enforce.
   `NullHandler` in library `__init__.py` files. Never configure
   handlers, levels, or formatters in library code — that is the
   application's job.
+- Sphinx build diagnostics use `sphinx.util.logging.getLogger(__name__)`
+  so warnings reach `-W`, `-w` and `suppress_warnings`. Give warnings a
+  `type` and, where useful, a `subtype` for selective suppression.
 - Use lazy formatting — `logger.debug("msg %s", val)`, not an f-string —
   so interpolation is skipped when the level is filtered and log
   aggregators group messages by template instead of by literal string.

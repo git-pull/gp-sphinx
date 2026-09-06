@@ -29,6 +29,26 @@ for a plain inline reference.
 .. fastmcp-tool-summary::
 ```
 
+### Resource cards
+
+Read from the live server at {confval}`fastmcp_server_module`. `docs://changelog`
+sets every MCP annotation, `docs://readme` sets none — annotation facts appear
+only when the resource carries them.
+
+```{eval-rst}
+.. fastmcp-resource:: docs://changelog
+
+.. fastmcp-resource:: docs://readme
+
+.. fastmcp-resource-template:: docs://changelog/{version}
+```
+
+### Prompt card
+
+```{eval-rst}
+.. fastmcp-prompt:: summarize_release
+```
+
 ## Demo module reference
 
 The demo objects above, as plain Python API — the targets the

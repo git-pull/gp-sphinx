@@ -17,7 +17,7 @@ from dataclasses import dataclass
 if sys.version_info >= (3, 11):
     import tomllib
 else:
-    import tomli as tomllib  # type: ignore[import-not-found]
+    import tomli as tomllib  # type: ignore[import-not-found, unused-ignore]
 
 
 @dataclass(frozen=True)
@@ -61,7 +61,8 @@ def _load_toml(path: pathlib.Path) -> dict[str, t.Any]:
         Parsed TOML data.
     """
     with path.open("rb") as handle:
-        return t.cast("dict[str, t.Any]", tomllib.load(handle))
+        data: dict[str, t.Any] = tomllib.load(handle)
+    return data
 
 
 def _root_project(root: pathlib.Path) -> dict[str, t.Any]:

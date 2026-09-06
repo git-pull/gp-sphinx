@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import logging
 import pathlib
+import subprocess
+import sys
 import textwrap
 import typing as t
 
@@ -15,6 +16,7 @@ from tests._sphinx_scenarios import (
     SharedSphinxResult,
     SphinxScenario,
     build_shared_sphinx_result,
+    copy_scenario_tree,
     read_output,
 )
 
@@ -84,6 +86,72 @@ _INDEX_RST = textwrap.dedent(
     .. fastmcp-tool-input:: demo_tools.list_sessions
     """
 )
+
+
+@pytest.fixture(scope="module")
+def duplicate_warning_builds(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> dict[bool, tuple[int, str]]:
+    """Build a duplicate registration with strict and suppressed diagnostics."""
+    root = tmp_path_factory.mktemp("fastmcp-duplicate-warnings")
+    results: dict[bool, tuple[int, str]] = {}
+    for suppressed in (False, True):
+        build_root = root / str(suppressed)
+        conf = _CONF_PY + '\nfastmcp_tool_modules = ["demo_tools", "demo_tools"]\n'
+        if suppressed:
+            conf += 'suppress_warnings = ["fastmcp.duplicate"]\n'
+        source = copy_scenario_tree(
+            root / "cache",
+            SphinxScenario(
+                files=(
+                    ScenarioFile("demo_tools.py", _MODULE_SOURCE),
+                    ScenarioFile(
+                        "conf.py",
+                        conf.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN),
+                        substitute_srcdir=True,
+                    ),
+                    ScenarioFile("index.rst", _INDEX_RST),
+                ),
+            ),
+            build_root,
+        )
+        warning_file = build_root / "warnings.txt"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "sphinx",
+                "-W",
+                "--keep-going",
+                "-b",
+                "dummy",
+                "-w",
+                str(warning_file),
+                str(source),
+                str(build_root / "output"),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert warning_file.exists(), result.stderr
+        results[suppressed] = (result.returncode, warning_file.read_text())
+    return results
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("suppressed", [False, True])
+def test_collector_warnings_obey_sphinx_warning_policy(
+    duplicate_warning_builds: dict[bool, tuple[int, str]], suppressed: bool
+) -> None:
+    """A duplicate fails -W and reaches -w unless its category is suppressed."""
+    returncode, warnings = duplicate_warning_builds[suppressed]
+    assert returncode == (0 if suppressed else 1)
+    if suppressed:
+        assert warnings == ""
+    else:
+        assert "duplicate tool name 'list_sessions'" in warnings
+        assert "[fastmcp.duplicate]" in warnings
 
 
 @pytest.fixture(scope="module")
@@ -292,21 +360,28 @@ _COLLISION_ANCHOR_FIXTURES: list[CollisionAnchorFixture] = [
     ),
     # The toolref link wraps the tool name in <code>; the bare {ref}
     # link wraps the label title in <span class="std std-ref"> — the
-    # trailing tag disambiguates the two resolution paths.
+    # trailing tag disambiguates the two resolution paths. Two matches:
+    # the inline toolref, and the summary row, which resolves through the
+    # same path and lands on the same in-page anchor because the card is
+    # on this page.
     CollisionAnchorFixture(
         test_id="toolref-targets-canonical-anchor",
         needle='class="reference internal" href="#fastmcp-tool-delete-buffer"><code',
-        expected_count=1,
+        expected_count=2,
     ),
     CollisionAnchorFixture(
         test_id="bare-ref-targets-canonical-anchor",
         needle='class="reference internal" href="#fastmcp-tool-delete-buffer"><span',
         expected_count=1,
     ),
+    # ``fastmcp_area_map`` names "api", but no such document exists in this
+    # scenario and the card is on this page. The summary must never emit the
+    # configured area verbatim: that is the link that 404s from any page not
+    # at the site root.
     CollisionAnchorFixture(
-        test_id="summary-targets-canonical-anchor",
+        test_id="summary-does-not-emit-the-raw-area-path",
         needle='href="api/#fastmcp-tool-delete-buffer"',
-        expected_count=1,
+        expected_count=0,
     ),
 ]
 
@@ -396,20 +471,22 @@ def test_tool_role_omits_the_badge_for_a_tag_outside_the_vocabulary(
 @pytest.mark.integration
 def test_the_summary_warns_when_it_drops_an_unmatched_tool(
     tmp_path_factory: pytest.TempPathFactory,
-    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """A tool the summary cannot place must not vanish without a trace."""
     cache_root = tmp_path_factory.mktemp("fastmcp-unmatched-toolset-warn")
-    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp"):
-        build_shared_sphinx_result(
-            cache_root,
-            _unmatched_scenario(),
-            purge_modules=("demo_tools",),
-        )
+    result = build_shared_sphinx_result(
+        cache_root,
+        _unmatched_scenario(),
+        purge_modules=("demo_tools",),
+    )
 
-    messages = "\n".join(record.message for record in caplog.records)
-    assert "omitted from fastmcp-tool-summary" in messages
-    assert "list_sessions" in messages
+    # Assert on Sphinx's own warning stream rather than a stdlib handler:
+    # reaching it is what makes the diagnostic visible to -W, to the
+    # warnings file and to suppress_warnings. Sphinx swaps logging handlers
+    # for the duration of a build, so caplog cannot see this at all.
+    assert "omitted from fastmcp-tool-summary" in result.warnings
+    assert "[fastmcp.axis]" in result.warnings
+    assert "list_sessions" in result.warnings
 
 
 @pytest.mark.integration
@@ -679,3 +756,73 @@ def test_reserved_slug_tool_ref_targets_canonical(
     """A tool whose slug collides with a reserved label links to its card."""
     html = read_output(fastmcp_reserved_slug_result, "index.html")
     assert html.count(needle) == expected_count
+
+
+# Rendering the summary one directory below the tool card is what separates a
+# document-relative link from a raw ``fastmcp_area_map`` value. The raw value
+# ("api") resolves against the current directory, landing on ``sub/api``.
+_NESTED_INDEX_RST = textwrap.dedent(
+    """\
+    Index
+    =====
+
+    .. toctree::
+
+       api
+       sub/summary
+    """
+)
+
+_NESTED_API_RST = textwrap.dedent(
+    """\
+    API
+    ===
+
+    .. fastmcp-tool:: buffer_tools.delete_buffer
+    """
+)
+
+_NESTED_SUMMARY_RST = textwrap.dedent(
+    """\
+    Summary
+    =======
+
+    .. fastmcp-tool-summary::
+    """
+)
+
+
+@pytest.fixture(scope="module")
+def fastmcp_nested_summary_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a summary directive one directory below the tool card."""
+    cache_root = tmp_path_factory.mktemp("fastmcp-nested-summary")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("buffer_tools.py", _COLLISION_MODULE_SOURCE),
+            ScenarioFile(
+                "conf.py",
+                _COLLISION_CONF_PY.replace(
+                    "__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN
+                ),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("index.rst", _NESTED_INDEX_RST),
+            ScenarioFile("api.rst", _NESTED_API_RST),
+            ScenarioFile("sub/summary.rst", _NESTED_SUMMARY_RST),
+        ),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("buffer_tools",),
+    )
+
+
+def test_tool_summary_link_is_relative_to_the_rendering_page(
+    fastmcp_nested_summary_result: SharedSphinxResult,
+) -> None:
+    """The summary link resolves from the page it is rendered on."""
+    html = read_output(fastmcp_nested_summary_result, "sub/summary.html")
+    assert 'href="../api.html#fastmcp-tool-delete-buffer"' in html

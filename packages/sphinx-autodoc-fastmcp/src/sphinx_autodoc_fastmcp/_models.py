@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-import logging
 import typing as t
 from dataclasses import dataclass, field
 
-logger = logging.getLogger(__name__)
+from sphinx.util import logging as sphinx_logging
+
+logger = sphinx_logging.getLogger(__name__)
 
 #: Sources an axis can read a tool's term from. ``tags`` matches declared
 #: terms against ``tool.tags``; ``annotations`` derives one from the MCP
@@ -122,6 +123,8 @@ def _coerce_term(value: t.Any) -> Term | None:
         logger.warning(
             "sphinx_autodoc_fastmcp: toolset term %r has no 'term'; skipping it",
             value,
+            type="fastmcp",
+            subtype="config",
         )
         return None
     return Term(
@@ -156,12 +159,17 @@ def _is_reserved_axis_name(name: str) -> bool:
 
     Examples
     --------
+    The anchors are built with ``make_id``, which lower-cases, so a
+    capitalised axis collides exactly as the lower-case one does:
+
     >>> _is_reserved_axis_name("capability")
     False
     >>> _is_reserved_axis_name("tool")
     True
+    >>> _is_reserved_axis_name("Tool")
+    True
     """
-    if name not in COMPONENT_KINDS:
+    if name.casefold() not in COMPONENT_KINDS:
         return False
     logger.warning(
         "sphinx_autodoc_fastmcp: fastmcp_axes declares an axis named %r, which "
@@ -174,6 +182,8 @@ def _is_reserved_axis_name(name: str) -> bool:
         name,
         name,
         f"{name}-kind",
+        type="fastmcp",
+        subtype="axis",
     )
     return True
 
@@ -216,6 +226,8 @@ def coerce_axes(value: t.Any) -> tuple[Axis, ...]:
                 "sphinx_autodoc_fastmcp: fastmcp_axes entry %r has no 'name'; "
                 "skipping it",
                 entry,
+                type="fastmcp",
+                subtype="config",
             )
             continue
         if _is_reserved_axis_name(name):
@@ -355,9 +367,13 @@ class ToolInfo:
         holding only the hints the tool actually sets.
     meta : dict[str, t.Any]
         The tool's ``meta`` mapping, which axes can read terms from.
-    func : t.Callable[..., t.Any]
-        The undecorated tool function, kept so the renderer can re-inspect
-        its signature.
+    func : t.Callable[..., t.Any] | None
+        The undecorated tool function. Dropped when Sphinx pickles its
+        environment between builds — a tool registered inside a factory is
+        a closure, and a closure cannot be pickled — so it is ``None`` on
+        any incremental rebuild. Everything rendered is captured at
+        collection time in ``params``, ``return_annotation`` and
+        ``docstring``; nothing reads this field.
     docstring : str
         Raw ``__doc__`` of the tool function. Empty when it has none.
     params : list[ParamInfo]
@@ -373,10 +389,19 @@ class ToolInfo:
     axes: dict[str, str]
     annotations: dict[str, bool]
     meta: dict[str, t.Any]
-    func: t.Callable[..., t.Any]
+    func: t.Callable[..., t.Any] | None
     docstring: str
     params: list[ParamInfo]
     return_annotation: str
+
+    def __getstate__(self) -> dict[str, t.Any]:
+        """Drop ``func`` so Sphinx can pickle its environment.
+
+        A tool registered inside a ``register(mcp)`` factory is a local
+        function, and pickling one raises. Nothing reads the field, so
+        dropping it costs nothing and keeps incremental builds working.
+        """
+        return {**self.__dict__, "func": None}
 
 
 @dataclass

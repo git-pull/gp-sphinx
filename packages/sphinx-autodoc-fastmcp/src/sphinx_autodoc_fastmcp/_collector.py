@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+import asyncio
 import contextlib
 import importlib
 import inspect
-import logging
+import json
+import re
+import threading
 import typing as t
 
 from sphinx.application import Sphinx
+from sphinx.util import logging as sphinx_logging
 
 from sphinx_autodoc_fastmcp._models import (
     DEFAULT_AXES,
     Axis,
+    ParamInfo,
     PromptArgInfo,
     PromptInfo,
     ResourceInfo,
@@ -21,10 +26,17 @@ from sphinx_autodoc_fastmcp._models import (
     coerce_axes,
     resolve_axes,
 )
-from sphinx_autodoc_fastmcp._parsing import extract_params, first_paragraph
-from sphinx_autodoc_typehints_gp import normalize_annotation_text
+from sphinx_autodoc_fastmcp._parsing import (
+    _strip_annotated,
+    extract_params,
+    first_paragraph,
+)
+from sphinx_autodoc_typehints_gp import (
+    classify_annotation_display,
+    normalize_annotation_text,
+)
 
-logger = logging.getLogger(__name__)
+logger = sphinx_logging.getLogger(__name__)
 
 
 class ToolCollector:
@@ -86,13 +98,24 @@ class ToolCollector:
         return decorator
 
 
-_HINTS = ("readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint")
+#: Each hint's documented name paired with the attribute holding it. MCP SDK v2
+#: renamed the model fields to snake_case, keeping the camelCase spellings as
+#: serialization aliases only — an attribute read has to use the field name.
+#: The documented name stays camelCase because that is what the MCP schema
+#: publishes and what the rendered pages and ``term_from_annotations`` speak.
+_HINTS = (
+    ("readOnlyHint", "read_only_hint"),
+    ("destructiveHint", "destructive_hint"),
+    ("idempotentHint", "idempotent_hint"),
+    ("openWorldHint", "open_world_hint"),
+)
 
 
 def _annotation_hints(annotations: t.Any) -> dict[str, bool]:
     """Return the hints a tool actually sets, dropping the unset ones.
 
     FastMCP accepts ``ToolAnnotations`` or a plain mapping, so read both.
+    A mapping is keyed by the documented name; a model by its field.
 
     Examples
     --------
@@ -104,15 +127,32 @@ def _annotation_hints(annotations: t.Any) -> dict[str, bool]:
     if annotations is None:
         return {}
     hints: dict[str, bool] = {}
-    for key in _HINTS:
-        value = (
-            annotations.get(key)
-            if isinstance(annotations, dict)
-            else getattr(annotations, key, None)
-        )
+    for name, field in _HINTS:
+        if isinstance(annotations, dict):
+            value = annotations.get(name)
+        else:
+            # SDK v2 renamed the fields; SDK v1 still publishes the documented
+            # camelCase name as the attribute. Read the new field first so a v1
+            # consumer keeps its hints instead of silently losing them.
+            # Only reach for the documented camelCase name when the v2
+            # field is absent entirely. On a v2 model that name is a
+            # deprecated alias, and reading it warns.
+            if hasattr(annotations, field):
+                value = getattr(annotations, field, None)
+            else:
+                value = getattr(annotations, name, None)
         if isinstance(value, bool):
-            hints[key] = value
+            hints[name] = value
     return hints
+
+
+#: Resource and template annotations, documented name paired with the field
+#: holding it. Only ``lastModified`` was renamed; the other two already match.
+_RESOURCE_ANNOTATION_FIELDS = (
+    ("audience", "audience"),
+    ("priority", "priority"),
+    ("lastModified", "last_modified"),
+)
 
 
 def _tool_from_callable(
@@ -152,6 +192,321 @@ def _tool_from_callable(
     )
 
 
+def _index_by_unique_name(
+    index: dict[str, t.Any], name: str, info: t.Any, kind: str
+) -> None:
+    """Store ``name -> info``, warning when a name is already taken.
+
+    FastMCP keys tools and prompts by name, so a duplicate is a real
+    registration the server serves and the docs would otherwise drop in
+    silence. First-wins, matching :func:`_index_by_name`'s behaviour for
+    URI-keyed components, with a warning naming the collision.
+    """
+    if name in index:
+        logger.warning(
+            "sphinx_autodoc_fastmcp: duplicate %s name %r; keeping the first "
+            "and skipping the rest",
+            kind,
+            name,
+            type="fastmcp",
+            subtype="duplicate",
+        )
+        return
+    index[name] = info
+
+
+def _render_default(value: t.Any) -> str:
+    """Render a JSON-schema default deterministically."""
+    if value is None:
+        return "None"
+    if isinstance(value, bool):
+        return str(value)
+    if isinstance(value, str):
+        return repr(value)
+    return json.dumps(value)
+
+
+def _schema_type_text(
+    prop: dict[str, t.Any],
+    schema: dict[str, t.Any] | None = None,
+    refs: frozenset[str] = frozenset(),
+) -> str:
+    """Describe a schema type, resolving local references and union members."""
+    schema = prop if schema is None else schema
+    ref = prop.get("$ref")
+    if isinstance(ref, str) and ref.startswith("#/") and ref not in refs:
+        target: t.Any = schema
+        for part in ref[2:].split("/"):
+            target = (
+                target.get(part.replace("~1", "/").replace("~0", "~"))
+                if isinstance(target, dict)
+                else None
+            )
+        if isinstance(target, dict):
+            return _schema_type_text(target, schema, refs | {ref})
+    declared = prop.get("type")
+    if isinstance(declared, str):
+        return declared
+    union = prop.get("anyOf") or prop.get("oneOf") or ()
+    parts = [
+        _schema_type_text(member, schema, refs)
+        for member in union
+        if isinstance(member, dict)
+    ]
+    return " | ".join(part for part in parts if part)
+
+
+def _params_from_schema(
+    schema: dict[str, t.Any], func: t.Callable[..., t.Any] | None
+) -> list[ParamInfo]:
+    """Build parameter rows from the tool's published schema.
+
+    The schema decides which parameters exist and their required/default/
+    description; the signature supplies the type display, which the schema
+    cannot express in Python terms.
+    """
+    props: dict[str, t.Any] = schema.get("properties", {}) or {}
+    required = set(schema.get("required", []) or [])
+    try:
+        sig_params = inspect.signature(func).parameters if func is not None else {}
+    except (TypeError, ValueError):  # pragma: no cover - defensive
+        sig_params = {}
+
+    # A Field(alias=...) publishes under the alias, which may be another
+    # parameter's own name. Map published name -> declaring parameter so the
+    # signature is consulted for the parameter that actually owns it.
+    # Under PEP 563 an annotation is source text, so the metadata carrying
+    # the alias only exists once resolved. Resolution can fail on a
+    # TYPE_CHECKING-only name; an unmapped alias then behaves as before.
+    resolved: dict[str, t.Any] = {}
+    if func is not None:
+        try:
+            resolved = t.get_type_hints(func, include_extras=True)
+        except (NameError, AttributeError, TypeError, RecursionError):
+            # The set sphinx.util.typing catches, plus the recursion case
+            # sphinx-autodoc-typehints adds.
+            resolved = {}
+    aliases: dict[str, str] = {}
+    for param_name, param in sig_params.items():
+        annotation = resolved.get(param_name, param.annotation)
+        # A Field can be attached either as Annotated metadata or as the
+        # parameter's default, and either spelling publishes the alias.
+        carriers = (*t.get_args(annotation)[1:], param.default)
+        for meta in carriers:
+            alias = getattr(meta, "validation_alias", None) or getattr(
+                meta, "alias", None
+            )
+            if isinstance(alias, str) and alias:
+                aliases[alias] = param_name
+                break
+
+    rows: list[ParamInfo] = []
+    for name, prop in props.items():
+        if not isinstance(prop, dict):
+            # ``true`` / ``false`` are valid subschemas with no fields.
+            prop = {}
+        sig_param = sig_params.get(aliases.get(name, name))
+        annotation = (
+            _strip_annotated(sig_param.annotation)
+            if sig_param is not None
+            and sig_param.kind
+            not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+            and sig_param.annotation is not inspect.Parameter.empty
+            else ""
+        )
+        if not annotation:
+            annotation = _schema_type_text(prop, schema)
+        is_required = name in required
+        rows.append(
+            ParamInfo(
+                name=name,
+                type_str=classify_annotation_display(
+                    annotation, strip_none=not is_required
+                ).text,
+                required=is_required,
+                # Absence is not null: a default_factory parameter publishes
+                # no default at all, and documenting None would name a value
+                # the parameter does not accept.
+                default=(
+                    _render_default(prop["default"])
+                    if not is_required and "default" in prop
+                    else ""
+                ),
+                description=str(prop.get("description", "") or ""),
+            ),
+        )
+    return rows
+
+
+def _origin_tool(tool: t.Any, depth: int = 0) -> t.Any:
+    """Follow a served tool back to the one that owns a Python callable.
+
+    A transform records the tool it was made from as ``parent_tool``. A
+    mount lists its child's tools as ``FastMCPProviderTool`` proxies, which
+    carry no callable but hold the child server; the original is that
+    server's tool of the same name, itself possibly another proxy.
+    """
+    if depth > 8:
+        return tool
+    parent = getattr(tool, "parent_tool", None)
+    if parent is not None:
+        return _origin_tool(parent, depth + 1)
+    if getattr(tool, "fn", None) is not None:
+        return tool
+    inner = getattr(tool, "_server", None)
+    if inner is None:
+        return tool
+    try:
+        from fastmcp.server.providers.base import Provider
+    except ImportError:  # pragma: no cover - defensive
+        return tool
+    # The proxy records the name it wrapped. Guessing it back out of the
+    # served name picks the wrong tool when a sibling is literally called
+    # ``namespace_name``.
+    wanted = str(getattr(tool, "_original_name", "") or getattr(tool, "name", ""))
+    version = getattr(tool, "version", None)
+    for candidate in _Loop.call(Provider.list_tools(inner)):
+        if str(getattr(candidate, "name", "")) == wanted and (
+            version is None or getattr(candidate, "version", None) == version
+        ):
+            return _origin_tool(candidate, depth + 1)
+    return tool
+
+
+def _return_from_schema(schema: t.Any) -> str:
+    """Describe a tool's result from the output schema it publishes.
+
+    A transform's forwarding callable is ``(**kwargs)`` with no return
+    annotation, but the tool still publishes what it returns. FastMCP wraps a
+    non-object result in a single ``result`` property and marks the schema
+    with ``x-fastmcp-wrap-result``.
+    """
+    if not isinstance(schema, dict):
+        return ""
+    props = schema.get("properties")
+    # A TypedDict whose only field is ``result`` publishes the same shape as
+    # a generated wrapper. FastMCP marks the ones it made.
+    if schema.get("x-fastmcp-wrap-result") and isinstance(props, dict):
+        inner = props["result"]
+        return _schema_type_text(inner, schema) if isinstance(inner, dict) else ""
+    return _schema_type_text(schema)
+
+
+def _tool_from_component(
+    tool: t.Any,
+    *,
+    area_map: dict[str, str],
+    axes: tuple[Axis, ...] = DEFAULT_AXES,
+) -> ToolInfo:
+    """Build ``ToolInfo`` from a live FastMCP ``Tool`` component.
+
+    Sibling of :func:`_tool_from_callable`, which reads the ``__fastmcp__``
+    spec a decorator leaves on a function. This reads the registered
+    component instead, so it sees what the server actually serves —
+    including metadata a hand-written collector cannot carry.
+
+    Module attribution comes from the underlying function rather than the
+    position of the module in ``fastmcp_tool_modules``, which is why this
+    path does not need that list at all.
+    """
+    # A proxied or provider-backed tool carries no Python callable. Everything
+    # rendered comes from the component itself, so it still documents; only the
+    # signature-derived extras are unavailable.
+    func: t.Callable[..., t.Any] | None = getattr(tool, "fn", None)
+    if func is not None and hasattr(func, "__wrapped__"):
+        func = func.__wrapped__
+    # A transformed tool's callable is FastMCP's forwarding function, which
+    # lives in FastMCP's own module. Attribution -- and so the area map --
+    # follows the tool it was made from.
+    origin = _origin_tool(tool)
+    source = getattr(origin, "fn", None) or func
+    if func is None and getattr(tool, "parent_tool", None) is None:
+        # A proxy carries no callable of its own; an untransformed one
+        # documents exactly what it wraps.
+        func = source
+    if source is not None and hasattr(source, "__wrapped__"):
+        source = source.__wrapped__
+    module_name = str(getattr(source, "__module__", "") or "").rpartition(".")[2]
+
+    tags = set(getattr(tool, "tags", None) or ())
+    meta = dict(getattr(tool, "meta", None) or {})
+    ann_dict = _annotation_hints(getattr(tool, "annotations", None))
+    name = str(tool.name)
+    area = area_map.get(module_name, module_name.replace("_tools", ""))
+
+    return ToolInfo(
+        name=name,
+        title=str(getattr(tool, "title", None) or name.replace("_", " ").title()),
+        module_name=module_name,
+        area=area,
+        axes=resolve_axes(axes, tags=tags, annotations=ann_dict, meta=meta),
+        annotations=ann_dict,
+        meta=meta,
+        func=func,
+        # What the server publishes is what a caller reads, so an explicit
+        # description -- or one a transform rewrote -- wins over the
+        # function's own docstring.
+        docstring=(
+            str(getattr(tool, "description", "") or "")
+            or ((func.__doc__ or "") if func is not None else "")
+        ),
+        params=_params_from_schema(getattr(tool, "parameters", {}) or {}, func),
+        return_annotation=(
+            (
+                normalize_annotation_text(inspect.signature(func).return_annotation)
+                if func is not None
+                else ""
+            )
+            or _return_from_schema(getattr(tool, "output_schema", None))
+        ),
+    )
+
+
+def _tools_from_server(
+    server: t.Any,
+    *,
+    area_map: dict[str, str],
+    axes: tuple[Axis, ...],
+) -> list[ToolInfo] | None:
+    """Collect every registered tool off a live server, or ``None``.
+
+    Returns ``None`` when fastmcp is not importable, so the caller can fall
+    back to the module-scanning modes rather than reporting zero tools.
+    """
+    try:
+        from fastmcp.tools import Tool as _Tool
+    except ImportError:  # pragma: no cover - defensive
+        logger.warning(
+            "sphinx_autodoc_fastmcp: could not import fastmcp Tool",
+            exc_info=True,
+            type="fastmcp",
+        )
+        return None
+    return [
+        _tool_from_component(component, area_map=area_map, axes=axes)
+        for component in _iter_components(server)
+        if isinstance(component, _Tool)
+    ]
+
+
+def _server_for(app: Sphinx) -> t.Any | None:
+    """Resolve ``fastmcp_server_module`` once per build.
+
+    ``collect_tools`` and ``collect_prompts_and_resources`` both run on
+    ``builder-inited``. Resolving separately would call a factory twice and
+    collect tools and components from two different servers.
+    """
+    dotted = str(getattr(app.config, "fastmcp_server_module", "") or "")
+    if not dotted:
+        return None
+    cached = getattr(app, "_fastmcp_server_cache", None)
+    if cached is not None and cached[0] == dotted:
+        return cached[1]
+    server = _resolve_server_instance(dotted)
+    app._fastmcp_server_cache = (dotted, server)  # type: ignore[attr-defined]
+    return server
+
+
 def collect_tools(app: Sphinx) -> None:
     """Populate ``app.env.fastmcp_tools`` from configured modules."""
     modules: list[str] = list(app.config.fastmcp_tool_modules)
@@ -162,12 +517,30 @@ def collect_tools(app: Sphinx) -> None:
         logger.warning(
             "sphinx_autodoc_fastmcp: unknown fastmcp_collector_mode %r; using 'register'",
             mode,
+            type="fastmcp",
         )
         mode = "register"
 
-    if not modules:
+    # Prefer the live server when one is configured. The module-scanning modes
+    # below cannot see a tool the mock collector rejected, and a rejected kwarg
+    # aborts the rest of its module -- so a tool this path reports is a tool the
+    # server actually serves. Reads the same provider dict prompts and resources
+    # already use, which deliberately bypasses middleware: a toolset gate that
+    # hides tools at runtime must not erase them from the documentation.
+    served_by_name: dict[str, ToolInfo] = {}
+    server = _server_for(app)
+    if server is not None:
+        for served in _tools_from_server(server, area_map=area_map, axes=axes) or ():
+            _index_by_unique_name(served_by_name, served.name, served, "tool")
+
+    if served_by_name and not modules:
+        app.env.fastmcp_tools = served_by_name  # type: ignore[attr-defined]
+        return
+
+    if not served_by_name and not modules:
         logger.warning(
             "sphinx_autodoc_fastmcp: fastmcp_tool_modules is empty; no tools collected",
+            type="fastmcp",
         )
         app.env.fastmcp_tools = {}  # type: ignore[attr-defined]
         return
@@ -188,6 +561,7 @@ def collect_tools(app: Sphinx) -> None:
                     "sphinx_autodoc_fastmcp: failed to load tool module %s",
                     dotted,
                     exc_info=True,
+                    type="fastmcp",
                 )
         collector_tools = collector.tools
     else:
@@ -200,6 +574,7 @@ def collect_tools(app: Sphinx) -> None:
                     "sphinx_autodoc_fastmcp: failed to import %s",
                     dotted,
                     exc_info=True,
+                    type="fastmcp",
                 )
                 continue
             for _name, obj in inspect.getmembers(mod):
@@ -214,7 +589,13 @@ def collect_tools(app: Sphinx) -> None:
                 if info is not None:
                     collector_tools.append(info)
 
-    app.env.fastmcp_tools = {tool.name: tool for tool in collector_tools}  # type: ignore[attr-defined]
+    # Server tools take precedence; only collisions among module-only tools warn.
+    collected: dict[str, ToolInfo] = dict(served_by_name)
+    for collected_tool in collector_tools:
+        if collected_tool.name in served_by_name:
+            continue
+        _index_by_unique_name(collected, collected_tool.name, collected_tool, "tool")
+    app.env.fastmcp_tools = collected  # type: ignore[attr-defined]
 
 
 def _resolve_server_instance(dotted: str) -> t.Any | None:
@@ -242,6 +623,7 @@ def _resolve_server_instance(dotted: str) -> t.Any | None:
             logger.warning(
                 "sphinx_autodoc_fastmcp: fastmcp_server_module %r has no attribute",
                 dotted,
+                type="fastmcp",
             )
             return None
     try:
@@ -251,6 +633,7 @@ def _resolve_server_instance(dotted: str) -> t.Any | None:
             "sphinx_autodoc_fastmcp: could not import server module %s",
             module_path,
             exc_info=True,
+            type="fastmcp",
         )
         return None
     obj = getattr(mod, attr, None)
@@ -264,6 +647,7 @@ def _resolve_server_instance(dotted: str) -> t.Any | None:
                 "sphinx_autodoc_fastmcp: calling %s() failed",
                 dotted,
                 exc_info=True,
+                type="fastmcp",
             )
             return None
     if getattr(obj, "local_provider", None) is None:
@@ -275,6 +659,7 @@ def _resolve_server_instance(dotted: str) -> t.Any | None:
             "sphinx_autodoc_fastmcp: %s did not resolve to a FastMCP instance "
             "(no local_provider attribute); prompts/resources will be empty",
             dotted,
+            type="fastmcp",
         )
         return None
     # Always invoke the server's register-all hook when one is exported.
@@ -315,6 +700,7 @@ def _resolve_server_instance(dotted: str) -> t.Any | None:
                     "skipping server",
                     dotted,
                     exc_info=True,
+                    type="fastmcp",
                 )
                 return None
     return obj
@@ -348,46 +734,209 @@ def _ignore_duplicate_policy(provider: t.Any) -> t.Iterator[None]:
             provider._on_duplicate = original
 
 
-def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
-    """Yield every FastMCPComponent registered on ``server.local_provider``.
+async def _apply(kind: str, holder: t.Any, components: list[t.Any]) -> list[t.Any]:
+    """Run ``holder``'s transforms over a listing, in registration order."""
+    for transform in getattr(holder, "transforms", None) or ():
+        method = getattr(transform, f"list_{kind}", None)
+        if method is not None:
+            # A transform is as able to stall as the listing it wraps.
+            components = list(
+                await asyncio.wait_for(method(components), timeout=_PROVIDER_TIMEOUT)
+            )
+    return components
 
-    Bypasses the async ``_list_*`` helpers and iterates the underlying
-    ``_components`` dict directly — the helpers are trivial type-filter
-    comprehensions, so reading ``_components.values()`` is equivalent and
-    avoids needing an event loop at Sphinx build time.
+
+#: Seconds one provider may take to list its components. A slow remote is
+#: treated like a failing one -- logged and skipped -- so it cannot hold up
+#: the build. The bound sits on the leaf that lists, not on a subtree, so a
+#: slow descendant cannot erase its healthy siblings.
+_PROVIDER_TIMEOUT = 30.0
+
+
+async def _gather(
+    kind: str,
+    holder: t.Any,
+    providers: t.Iterable[t.Any],
+    depth: int,
+    path: frozenset[int],
+) -> list[t.Any]:
+    """List several providers, honouring the holder's failure strategy.
+
+    FastMCP's aggregate defaults to ``provider_error_strategy="warn"``: an
+    unreachable remote is logged and skipped, and its siblings still serve.
+    Letting one failure escape here would abort the whole build instead.
     """
-    provider = getattr(server, "local_provider", None)
-    if provider is None:
-        return ()
-    components = getattr(provider, "_components", None)
-    if components is None:
-        return ()
-    return tuple(components.values())
+    raise_on_error = getattr(holder, "provider_error_strategy", "warn") == "raise"
+    out: list[t.Any] = []
+    for provider in providers:
+        try:
+            out.extend(await _provider_components(kind, provider, depth, path))
+        except Exception:
+            if raise_on_error:
+                raise
+            logger.warning(
+                "sphinx_autodoc_fastmcp: provider %s failed to list its %s; "
+                "its components are not documented",
+                type(provider).__name__,
+                kind.replace("_", " "),
+                exc_info=True,
+                type="fastmcp",
+            )
+    return out
 
 
-_SCHEMA_NOTE_MARKER = "Provide as a JSON string matching the following schema:"
+async def _provider_components(
+    kind: str, provider: t.Any, depth: int, path: frozenset[int]
+) -> list[t.Any]:
+    """List one provider's components, unfiltered, with its transforms applied.
+
+    A mounted server is descended into rather than asked for its own listing:
+    ``FastMCPProvider._list_tools`` calls the child's ``list_tools()``, which
+    drops disabled components and runs the child's middleware, so a tool
+    switched off or gated inside a mounted server would vanish from its
+    documentation.
+    """
+    from fastmcp.server.providers.aggregate import AggregateProvider
+
+    method_name = f"_list_{kind}"
+    child = getattr(provider, "server", None)
+    if child is not None:
+        base = await _server_components(kind, child, depth + 1, path)
+    elif getattr(provider, "_inner", None) is not None:
+        base = await _provider_components(kind, provider._inner, depth, path)  # noqa: SLF001
+    elif isinstance(provider, AggregateProvider) and getattr(
+        type(provider), method_name
+    ) is getattr(AggregateProvider, method_name):
+        # An aggregate holds providers of its own; asking it to list would
+        # re-enter the filtered path for every one of them.
+        base = await _gather(kind, provider, provider.providers, depth, path)
+    else:
+        method = getattr(provider, method_name, None)
+        # Bound the leaf that actually does the work. Bounding a subtree
+        # discards the healthy components already gathered beneath it.
+        base = (
+            list(await asyncio.wait_for(method(), timeout=_PROVIDER_TIMEOUT))
+            if method is not None
+            else []
+        )
+    return await _apply(kind, provider, base)
+
+
+async def _server_components(
+    kind: str, server: t.Any, depth: int, path: frozenset[int]
+) -> list[t.Any]:
+    """List every component a server serves, its own transforms applied last."""
+    if depth > 8 or id(server) in path:
+        return []
+    path = path | {id(server)}
+    providers = getattr(server, "providers", None) or ()
+    out = await _gather(kind, server, providers, depth, path)
+    return await _apply(kind, server, out)
+
+
+class _Loop:
+    """An event loop owned by a background thread, started on first use.
+
+    Sphinx runs handlers synchronously and may already be inside a loop under
+    sphinx-autobuild, where ``asyncio.run`` raises. Mirrors
+    ``sphinx_vite_builder._internal.bus``.
+    """
+
+    _loop: asyncio.AbstractEventLoop | None = None
+    _lock = threading.Lock()
+
+    @classmethod
+    def call(
+        cls, coro: t.Coroutine[t.Any, t.Any, t.Any], timeout: float | None = 30
+    ) -> t.Any:
+        with cls._lock:
+            if cls._loop is None:
+                ready = threading.Event()
+
+                def run() -> None:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    cls._loop = loop
+                    ready.set()
+                    loop.run_forever()
+
+                threading.Thread(
+                    target=run, name="sphinx-autodoc-fastmcp", daemon=True
+                ).start()
+                ready.wait()
+        assert cls._loop is not None
+        return asyncio.run_coroutine_threadsafe(coro, cls._loop).result(timeout=timeout)
+
+
+def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
+    """Yield every component the server serves, under its served identity.
+
+    Lists through FastMCP's own ``Provider.list_*`` rather than reading
+    registries: those methods apply every mount, namespace, rename and custom
+    transform exactly as the server does, and keep disabled components --
+    filtering by enabled state and auth happens one level up, in
+    ``FastMCP.list_*``, which is deliberately not used so a tool switched off
+    at runtime stays in its own documentation. Bypasses middleware.
+    """
+
+    async def listing() -> list[t.Any]:
+        out: list[t.Any] = []
+        for kind in ("tools", "resources", "resource_templates", "prompts"):
+            out.extend(await _server_components(kind, server, 0, frozenset()))
+        return out
+
+    # Each provider is bounded individually; this only backstops the join.
+    return tuple(_Loop.call(listing(), timeout=None))
+
+
+#: FastMCP appends its schema hint as a trailing blank-line-separated
+#: paragraph. The wording is not stable — FastMCP 3 wrote "Provide as a JSON
+#: string matching the following schema:" and FastMCP 4 writes "Provide a value
+#: matching the following JSON schema:" — so match the shape both share rather
+#: than either sentence, and only ever consider the final paragraph. Both
+#: spellings put the schema object immediately after a colon, and requiring it
+#: is what separates the generated note from a written sentence that happens to
+#: ask the reader for a JSON schema.
+_SCHEMA_NOTE_RE = re.compile(
+    r"^Provide\b.*\bmatching the following\b.*\bschema\b[^{]*:\s*\{",
+    re.IGNORECASE | re.DOTALL,
+)
 
 
 def _strip_schema_note(text: str) -> str:
     r"""Remove FastMCP's auto-appended JSON-schema hint from a description.
 
-    FastMCP's prompt argument builder tacks on
-    ``"\n\nProvide as a JSON string matching the following schema: {...}"``
-    to help LLMs; it's noise in human-facing docs.
+    FastMCP's prompt argument builder appends a schema hint to help LLMs
+    pass non-string arguments; it is noise in human-facing docs.
 
     Examples
     --------
     >>> _strip_schema_note("Summary.")
     'Summary.'
+    >>> _strip_schema_note(
+    ...     "Summary.\n\nProvide a value matching the following JSON schema:"
+    ...     ' {"type":"number"}. Encode non-string values as JSON.'
+    ... )
+    'Summary.'
     >>> _strip_schema_note("Summary.\n\nProvide as a JSON string matching the following schema: {}")
     'Summary.'
-    >>> _strip_schema_note("  Summary.  \n\nProvide as a JSON string matching the following schema: {}")
-    'Summary.'
+    >>> _strip_schema_note("First.\n\nSecond.")
+    'First.\n\nSecond.'
+    >>> _strip_schema_note('Provide a value matching the following JSON schema: {}.')
+    ''
+
+    A written paragraph that asks for a schema is not the generated note, and
+    survives — the note always carries the schema object after its colon.
+
+    >>> _strip_schema_note("The filter.\n\nProvide a JSON schema for the rows.")
+    'The filter.\n\nProvide a JSON schema for the rows.'
     """
-    idx = text.find(_SCHEMA_NOTE_MARKER)
-    if idx == -1:
-        return text.strip()
-    return text[:idx].strip()
+    head, sep, tail = text.rpartition("\n\n")
+    # Without a separator the note is the whole description, and `head` is
+    # already the empty string this should return.
+    if _SCHEMA_NOTE_RE.match((tail if sep else text).strip()):
+        return head.strip()
+    return text.strip()
 
 
 def _prompt_from_component(prompt: t.Any) -> PromptInfo:
@@ -417,7 +966,9 @@ def _prompt_from_component(prompt: t.Any) -> PromptInfo:
             for arg in arguments:
                 param = sig.parameters.get(arg.name)
                 if param is not None:
-                    arg.type_str = normalize_annotation_text(param.annotation)
+                    arg.type_str = normalize_annotation_text(
+                        _strip_annotated(param.annotation)
+                    )
     tags = tuple(sorted(str(tag) for tag in getattr(prompt, "tags", None) or ()))
     module_name = getattr(func, "__module__", "") if func is not None else ""
     return PromptInfo(
@@ -441,14 +992,13 @@ def _resource_from_component(res: t.Any) -> ResourceInfo:
     annotations = getattr(res, "annotations", None)
     ann_dict: dict[str, t.Any] = {}
     if annotations is not None:
-        for field_name in (
-            "audience",
-            "priority",
-            "lastModified",
-        ):
-            val = getattr(annotations, field_name, None)
+        for name, field in _RESOURCE_ANNOTATION_FIELDS:
+            if hasattr(annotations, field):
+                val = getattr(annotations, field, None)
+            else:
+                val = getattr(annotations, name, None)
             if val is not None:
-                ann_dict[field_name] = val
+                ann_dict[name] = val
     module_name = getattr(func, "__module__", "") if func is not None else ""
     return ResourceInfo(
         name=str(res.name),
@@ -484,18 +1034,8 @@ def _template_params_from_schema(
     rows: list[PromptArgInfo] = []
     for name, subschema in props.items():
         if not isinstance(subschema, dict):
-            continue
-        type_str = str(subschema.get("type", "")) if subschema.get("type") else ""
-        # Anyof/oneof unions: join short type names.
-        if not type_str:
-            union = subschema.get("anyOf") or subschema.get("oneOf") or ()
-            parts = [
-                str(member.get("type", ""))
-                for member in union
-                if isinstance(member, dict) and member.get("type")
-            ]
-            if parts:
-                type_str = " | ".join(parts)
+            subschema = {}
+        type_str = _schema_type_text(subschema, schema)
         rows.append(
             PromptArgInfo(
                 name=str(name),
@@ -517,10 +1057,13 @@ def _resource_template_from_component(tpl: t.Any) -> ResourceTemplateInfo:
     annotations = getattr(tpl, "annotations", None)
     ann_dict: dict[str, t.Any] = {}
     if annotations is not None:
-        for field_name in ("audience", "priority", "lastModified"):
-            val = getattr(annotations, field_name, None)
+        for name, field in _RESOURCE_ANNOTATION_FIELDS:
+            if hasattr(annotations, field):
+                val = getattr(annotations, field, None)
+            else:
+                val = getattr(annotations, name, None)
             if val is not None:
-                ann_dict[field_name] = val
+                ann_dict[name] = val
     parameters = _template_params_from_schema(getattr(tpl, "parameters", None))
     module_name = getattr(func, "__module__", "") if func is not None else ""
     return ResourceTemplateInfo(
@@ -577,12 +1120,13 @@ def collect_prompts_and_resources(app: Sphinx) -> None:
     template_names: dict[str, str] = {}
 
     if server_dotted:
-        server = _resolve_server_instance(server_dotted)
+        server = _server_for(app)
         if server is None:
             logger.warning(
                 "sphinx_autodoc_fastmcp: fastmcp_server_module %r did not resolve "
                 "to a FastMCP instance; prompts/resources will be empty",
                 server_dotted,
+                type="fastmcp",
             )
         else:
             try:
@@ -597,6 +1141,7 @@ def collect_prompts_and_resources(app: Sphinx) -> None:
                 logger.warning(
                     "sphinx_autodoc_fastmcp: could not import fastmcp types",
                     exc_info=True,
+                    type="fastmcp",
                 )
             else:
                 for component in _iter_components(server):
@@ -616,7 +1161,7 @@ def collect_prompts_and_resources(app: Sphinx) -> None:
                         )
                     elif isinstance(component, _Prompt):
                         info_p = _prompt_from_component(component)
-                        prompts[info_p.name] = info_p
+                        _index_by_unique_name(prompts, info_p.name, info_p, "prompt")
 
     app.env.fastmcp_prompts = prompts  # type: ignore[attr-defined]
     app.env.fastmcp_resources = resources  # type: ignore[attr-defined]
@@ -643,6 +1188,8 @@ def _index_by_name(name_index: dict[str, str], name: str, key: str, kind: str) -
             existing,
             key,
             existing,
+            type="fastmcp",
+            subtype="duplicate",
         )
         return
     name_index[name] = key

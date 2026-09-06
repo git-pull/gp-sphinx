@@ -310,8 +310,9 @@ def test_no_index_resource_keeps_single_canonical_home(
     """``:no-index:`` binds the canonical label to the page that omits it."""
     inventory = _load_inventory(no_index_html)
     item = inventory["std:label"]["fastmcp-resource-hello"]
-    assert item.uri.startswith("canonical"), (
-        f"canonical label should point at canonical page, got {item.uri!r}"
+    uri = item[2] if isinstance(item, tuple) else item.uri
+    assert uri.startswith("canonical"), (
+        f"canonical label should point at canonical page, got {uri!r}"
     )
 
 

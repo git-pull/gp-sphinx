@@ -107,6 +107,7 @@ conf = merge_sphinx_config(
         "mermaid_examples",
     ],
     fastmcp_tool_modules=["fastmcp_demo_tools"],
+    fastmcp_server_module="fastmcp_demo_server:mcp",
     fastmcp_area_map={
         "fastmcp_demo_tools": "packages/sphinx-autodoc-fastmcp/examples",
     },

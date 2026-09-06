@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import inspect
 import re
 import typing as t
@@ -91,6 +92,80 @@ def first_paragraph(docstring: str) -> str:
     return paragraphs[0].strip().replace("\n", " ")
 
 
+class _AnnotatedStripper(ast.NodeTransformer):
+    """Replace every ``Annotated[X, ...]`` in an expression tree with ``X``.
+
+    Nesting matters: ``dict[str, Annotated[int, ...]]`` carries its metadata
+    one level down, where a top-level check never looks.
+    """
+
+    def visit_Subscript(self, node: ast.Subscript) -> ast.AST:  # noqa: N802
+        self.generic_visit(node)
+        target = node.value
+        name = (
+            target.attr
+            if isinstance(target, ast.Attribute)
+            else getattr(target, "id", "")
+        )
+        if name == "Annotated":
+            sl = node.slice
+            if isinstance(sl, ast.Tuple) and sl.elts:
+                return sl.elts[0]
+        return node
+
+
+def _strip_annotated(annotation: t.Any) -> t.Any:
+    """Reduce ``Annotated[X, ...]`` to ``X``, in object or source-string form.
+
+    Under PEP 563 an annotation arrives as the author's source text, which is
+    the best display available -- except when it carries ``Annotated``
+    metadata, because that metadata is code.
+
+    Examples
+    --------
+    An annotation without metadata is its own best display:
+
+    >>> _strip_annotated("list[str] | None")
+    'list[str] | None'
+
+    Metadata is dropped, whether the annotation arrives as source text or as a
+    resolved object:
+
+    >>> _strip_annotated("t.Annotated[list[str], Field(description='x')]")
+    'list[str]'
+    >>> import typing
+    >>> _strip_annotated(typing.Annotated[int, "meta"])
+    <class 'int'>
+
+    A description built at import time would otherwise reach the page as the
+    call that produced it:
+
+    >>> _strip_annotated("Annotated[str, Field(description=f'{summary()}')]")
+    'str'
+
+    Text that does not parse is returned untouched rather than raising:
+
+    >>> _strip_annotated("Annotated[str,")
+    'Annotated[str,'
+
+    Metadata nested inside a container is stripped too:
+
+    >>> _strip_annotated("dict[str, Annotated[int, Field(description=f'{x()}')]]")
+    'dict[str, int]'
+    """
+    if isinstance(annotation, str):
+        if "Annotated[" not in annotation:
+            return annotation
+        try:
+            tree = ast.parse(annotation, mode="eval")
+        except (SyntaxError, ValueError, RecursionError):
+            return annotation
+        return ast.unparse(_AnnotatedStripper().visit(tree).body)
+    if t.get_origin(annotation) is t.Annotated:
+        return t.get_args(annotation)[0]
+    return annotation
+
+
 def extract_params(func: t.Callable[..., t.Any]) -> list[ParamInfo]:
     """Extract parameter info from function signature and docstring."""
     sig = inspect.signature(func)
@@ -100,7 +175,7 @@ def extract_params(func: t.Callable[..., t.Any]) -> list[ParamInfo]:
     for name, param in sig.parameters.items():
         is_optional = param.default != inspect.Parameter.empty
         display = classify_annotation_display(
-            param.annotation,
+            _strip_annotated(param.annotation),
             strip_none=is_optional,
         )
 
