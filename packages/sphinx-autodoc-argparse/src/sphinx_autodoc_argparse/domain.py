@@ -340,7 +340,7 @@ class ArgparseDomain(Domain):
             target,
         )
 
-    def resolve_any_xref(
+    def resolve_any_xref(  # type: ignore[override, unused-ignore]
         self,
         env: BuildEnvironment,
         fromdocname: str,

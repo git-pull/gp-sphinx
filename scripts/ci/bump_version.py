@@ -23,7 +23,7 @@ import typing as t
 if sys.version_info >= (3, 11):
     import tomllib
 else:
-    import tomli as tomllib  # type: ignore[import-not-found]
+    import tomli as tomllib  # type: ignore[import-not-found, unused-ignore]
 
 try:
     from packaging.version import InvalidVersion, Version
