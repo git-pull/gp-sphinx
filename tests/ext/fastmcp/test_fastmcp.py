@@ -13,6 +13,7 @@ from docutils import nodes
 from sphinx_autodoc_fastmcp._badges import build_axis_badge, build_tool_badge_group
 from sphinx_autodoc_fastmcp._collector import _resolve_server_instance
 from sphinx_autodoc_fastmcp._css import _CSS
+from sphinx_autodoc_fastmcp._directives import _register_alias_if_free
 from sphinx_autodoc_fastmcp._parsing import (
     extract_params,
     first_paragraph,
@@ -383,3 +384,61 @@ def test_every_component_kind_is_reserved_as_an_axis_name() -> None:
     for kind in COMPONENT_KINDS:
         canonical, _aliases = _component_ids(kind, "x")
         assert canonical == f"fastmcp-{kind}-x"
+
+
+def _alias_env(docname: str, labels: dict[str, tuple[str, ...]]) -> t.Any:
+    """Return a minimal env whose standard domain holds *labels*."""
+    std = types.SimpleNamespace(labels=labels, anonlabels={})
+    return types.SimpleNamespace(
+        docname=docname,
+        domains=types.SimpleNamespace(standard_domain=std),
+    )
+
+
+def test_sphinx_seeded_label_collision_is_not_reported(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A tool named after a Sphinx built-in label collides silently.
+
+    Sphinx seeds ``genindex``, ``modindex`` and ``search`` before any
+    document is read, so such a tool can never claim its bare alias -- and
+    does not need to, because roles resolve the canonical id first. The
+    condition is unfixable and harmless, so it must not be a warning: it
+    would fire on every build of every project with such a tool.
+    """
+    env = _alias_env("mcp/tools", {"search": ("search", "", "Search Page")})
+
+    with caplog.at_level(logging.WARNING):
+        registered = _register_alias_if_free(
+            env,
+            alias="search",
+            target_id="fastmcp-tool-search",
+            display_name="search",
+            kind="tool",
+        )
+
+    assert registered is False
+    assert not [r for r in caplog.records if "already claimed" in r.getMessage()]
+
+
+def test_foreign_label_collision_is_still_reported(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A collision with another document's label stays a warning.
+
+    Unlike the seeded built-ins, this one is actionable: the author can
+    rename the heading or the tool.
+    """
+    env = _alias_env("api", {"delete-buffer": ("guide", "delete-buffer", "Delete")})
+
+    with caplog.at_level(logging.WARNING):
+        registered = _register_alias_if_free(
+            env,
+            alias="delete-buffer",
+            target_id="fastmcp-tool-delete-buffer",
+            display_name="delete_buffer",
+            kind="tool",
+        )
+
+    assert registered is False
+    assert [r for r in caplog.records if "already claimed" in r.getMessage()]

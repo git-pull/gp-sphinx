@@ -109,6 +109,17 @@ def _component_ids(kind: str, name: str) -> tuple[str, list[str]]:
     return canonical, aliases
 
 
+#: Labels Sphinx's ``StandardDomain`` seeds before any document is read, from
+#: its ``initial_data`` (``sphinx/domains/std/__init__.py``). A tool whose bare
+#: slug is one of these can never claim the alias, on any project, on every
+#: build -- so reporting it as a collision is noise with no available fix.
+_SPHINX_SEEDED_LABELS: dict[str, tuple[str, str]] = {
+    "genindex": ("genindex", ""),
+    "modindex": ("py-modindex", ""),
+    "search": ("search", ""),
+}
+
+
 def _register_alias_if_free(
     env: BuildEnvironment,
     *,
@@ -161,6 +172,12 @@ def _register_alias_if_free(
         existing_doc = existing[0]
         existing_id = existing[1]
         if (existing_doc, existing_id) != (env.docname, target_id):
+            if _SPHINX_SEEDED_LABELS.get(alias) == (existing_doc, existing_id):
+                # Expected, and already handled: roles resolve the canonical
+                # ``fastmcp-<kind>-<slug>`` id first, so the card still
+                # resolves. Nothing is degraded and nobody can act on it --
+                # the alias is unclaimable by construction.
+                return False
             logger.warning(
                 "sphinx_autodoc_fastmcp: bare alias %r for %s already claimed "
                 "by %s#%s; using canonical id only",
