@@ -2,12 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from sphinx_gp_theme import get_theme_path, setup
-
-if TYPE_CHECKING:
-    import pathlib
 
 
 def test_theme_path_exists() -> None:
@@ -74,14 +69,14 @@ def test_theme_setup_registers_theme() -> None:
 
     class FakeApp:
         def __init__(self) -> None:
-            self.calls: list[tuple[str, pathlib.Path]] = []
+            self.calls: list[tuple[str, str]] = []
 
-        def add_html_theme(self, name: str, theme_path: pathlib.Path) -> None:
+        def add_html_theme(self, name: str, theme_path: str) -> None:
             self.calls.append((name, theme_path))
 
     app = FakeApp()
     metadata = setup(app)  # type: ignore[arg-type]
-    assert app.calls == [("sphinx-gp-theme", get_theme_path())]
+    assert app.calls == [("sphinx-gp-theme", str(get_theme_path()))]
     assert metadata["parallel_read_safe"] is True
     assert metadata["parallel_write_safe"] is True
 
