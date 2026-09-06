@@ -330,6 +330,22 @@ def _origin_tool(tool: t.Any, depth: int = 0) -> t.Any:
     return tool
 
 
+def _return_from_schema(schema: t.Any) -> str:
+    """Describe a tool's result from the output schema it publishes.
+
+    A transform's forwarding callable is ``(**kwargs)`` with no return
+    annotation, but the tool still publishes what it returns. FastMCP wraps a
+    non-object result in a single ``result`` property.
+    """
+    if not isinstance(schema, dict):
+        return ""
+    props = schema.get("properties")
+    if isinstance(props, dict) and set(props) == {"result"}:
+        inner = props["result"]
+        return _schema_type_text(inner) if isinstance(inner, dict) else ""
+    return _schema_type_text(schema)
+
+
 def _tool_from_component(
     tool: t.Any,
     *,
@@ -390,9 +406,12 @@ def _tool_from_component(
         ),
         params=_params_from_schema(getattr(tool, "parameters", {}) or {}, func),
         return_annotation=(
-            normalize_annotation_text(inspect.signature(func).return_annotation)
-            if func is not None
-            else ""
+            (
+                normalize_annotation_text(inspect.signature(func).return_annotation)
+                if func is not None
+                else ""
+            )
+            or _return_from_schema(getattr(tool, "output_schema", None))
         ),
     )
 
@@ -667,6 +686,13 @@ async def _apply(kind: str, holder: t.Any, components: list[t.Any]) -> list[t.An
     return components
 
 
+#: Seconds one provider may take to list its components. A slow remote is
+#: treated like a failing one -- logged and skipped -- so it cannot hold up
+#: the build. Bounding each provider rather than the whole listing keeps the
+#: cancellation inside the failure policy.
+_PROVIDER_TIMEOUT = 30.0
+
+
 async def _gather(
     kind: str,
     holder: t.Any,
@@ -684,7 +710,12 @@ async def _gather(
     out: list[t.Any] = []
     for provider in providers:
         try:
-            out.extend(await _provider_components(kind, provider, depth, path))
+            out.extend(
+                await asyncio.wait_for(
+                    _provider_components(kind, provider, depth, path),
+                    timeout=_PROVIDER_TIMEOUT,
+                )
+            )
         except Exception:
             if raise_on_error:
                 raise
@@ -748,7 +779,9 @@ class _Loop:
     _lock = threading.Lock()
 
     @classmethod
-    def call(cls, coro: t.Coroutine[t.Any, t.Any, t.Any], timeout: float = 30) -> t.Any:
+    def call(
+        cls, coro: t.Coroutine[t.Any, t.Any, t.Any], timeout: float | None = 30
+    ) -> t.Any:
         with cls._lock:
             if cls._loop is None:
                 ready = threading.Event()
@@ -785,7 +818,8 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
             out.extend(await _server_components(kind, server, 0, frozenset()))
         return out
 
-    return tuple(_Loop.call(listing()))
+    # Each provider is bounded individually; this only backstops the join.
+    return tuple(_Loop.call(listing(), timeout=None))
 
 
 #: FastMCP appends its schema hint as a trailing blank-line-separated
@@ -797,7 +831,8 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
 #: is what separates the generated note from a written sentence that happens to
 #: ask the reader for a JSON schema.
 _SCHEMA_NOTE_RE = re.compile(
-    r"^Provide\b.*\bJSON\b.*\bschema\b[^{]*:\s*\{", re.IGNORECASE | re.DOTALL
+    r"^Provide\b.*\bmatching the following\b.*\bschema\b[^{]*:\s*\{",
+    re.IGNORECASE | re.DOTALL,
 )
 
 

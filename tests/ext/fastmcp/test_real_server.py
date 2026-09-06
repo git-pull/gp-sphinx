@@ -27,6 +27,7 @@ from sphinx_autodoc_fastmcp._collector import (
     _prompt_from_component,
     _resource_from_component,
     _schema_type_text,
+    _strip_schema_note,
     _tool_from_component,
     _tools_from_server,
     collect_tools,
@@ -1067,3 +1068,85 @@ def test_a_published_description_outranks_the_docstring() -> None:
     documented = {info.name: info.docstring for info in collected}
     assert documented["both"] == "Published description."
     assert documented["only_doc"] == "Only a docstring."
+
+
+def test_a_slow_provider_is_skipped_like_a_failing_one(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A provider that hangs does not hold the build hostage.
+
+    Bounding the whole listing raises in the Sphinx thread, outside the
+    per-provider failure policy, so a slow remote aborted collection even
+    under ``provider_error_strategy="warn"``.
+    """
+    from fastmcp.server.providers.base import Provider
+
+    from sphinx_autodoc_fastmcp import _collector
+
+    class Slow(Provider):
+        async def _list_tools(self) -> list[t.Any]:
+            await asyncio.sleep(30)
+            return []
+
+    monkeypatch.setattr(_collector, "_PROVIDER_TIMEOUT", 0.5)
+    server: FastMCP = FastMCP("server")
+
+    @server.tool
+    def local(a: int) -> str:
+        """Local."""
+        return "ok"
+
+    server.add_provider(Slow())
+
+    with caplog.at_level(logging.WARNING):
+        collected = [
+            tool.name for tool in _iter_components(server) if isinstance(tool, _Tool)
+        ]
+
+    assert collected == ["local"]
+    assert any("Slow" in rec.message for rec in caplog.records)
+
+
+def test_an_authored_schema_request_is_not_stripped() -> None:
+    """Only FastMCP's generated instruction is removed.
+
+    Both spellings say "matching the following"; an author asking for a
+    schema does not, and their guidance is the whole description.
+    """
+    authored = 'Provide a JSON schema: {"type": "object"}.'
+
+    assert _strip_schema_note(authored) == authored
+    assert _strip_schema_note(f"Summary.\n\n{authored}") == f"Summary.\n\n{authored}"
+    assert (
+        _strip_schema_note(
+            "Summary.\n\nProvide a value matching the following JSON schema: "
+            '{"type":"number"}. Encode non-string values as JSON.'
+        )
+        == "Summary."
+    )
+
+
+def test_a_renamed_tool_keeps_its_return_information() -> None:
+    """A rename leaves the return contract intact, so the docs should too.
+
+    The forwarding callable carries no annotation; the published output
+    schema still describes the result.
+    """
+    from fastmcp.server.transforms import ToolTransform
+    from fastmcp.tools.tool_transform import ToolTransformConfig
+
+    server: FastMCP = FastMCP("server")
+
+    @server.tool
+    def counts(a: int) -> int:
+        """Counts."""
+        return 1
+
+    server.local_provider.add_transform(
+        ToolTransform({"counts": ToolTransformConfig(name="renamed")})
+    )
+
+    collected = _tools_from_server(server, area_map={}, axes=())
+    assert collected is not None
+    assert collected[0].name == "renamed"
+    assert collected[0].return_annotation == "integer"
