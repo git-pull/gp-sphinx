@@ -193,6 +193,7 @@ start:
         --re-ignore '/\.pytest_cache(/|$)' \
         --re-ignore '/dist(/|$)' \
         --re-ignore '/_build(/|$)' \
+        --re-ignore '/packages/gp-furo-theme/web(/_tmp_[^/]+)?$' \
         --re-ignore '/packages/[^/]+/src/[^/]+/theme/[^/]+/static(/|$)'
 
 # Design mode: watch static files and disable incremental builds
@@ -206,4 +207,5 @@ design:
         --re-ignore '/\.pytest_cache(/|$)' \
         --re-ignore '/dist(/|$)' \
         --re-ignore '/_build(/|$)' \
+        --re-ignore '/packages/gp-furo-theme/web(/_tmp_[^/]+)?$' \
         --re-ignore '/packages/[^/]+/src/[^/]+/theme/[^/]+/static(/|$)'
