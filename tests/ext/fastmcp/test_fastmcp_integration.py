@@ -361,21 +361,28 @@ _COLLISION_ANCHOR_FIXTURES: list[CollisionAnchorFixture] = [
     ),
     # The toolref link wraps the tool name in <code>; the bare {ref}
     # link wraps the label title in <span class="std std-ref"> — the
-    # trailing tag disambiguates the two resolution paths.
+    # trailing tag disambiguates the two resolution paths. Two matches:
+    # the inline toolref, and the summary row, which resolves through the
+    # same path and lands on the same in-page anchor because the card is
+    # on this page.
     CollisionAnchorFixture(
         test_id="toolref-targets-canonical-anchor",
         needle='class="reference internal" href="#fastmcp-tool-delete-buffer"><code',
-        expected_count=1,
+        expected_count=2,
     ),
     CollisionAnchorFixture(
         test_id="bare-ref-targets-canonical-anchor",
         needle='class="reference internal" href="#fastmcp-tool-delete-buffer"><span',
         expected_count=1,
     ),
+    # ``fastmcp_area_map`` names "api", but no such document exists in this
+    # scenario and the card is on this page. The summary must never emit the
+    # configured area verbatim: that is the link that 404s from any page not
+    # at the site root.
     CollisionAnchorFixture(
-        test_id="summary-targets-canonical-anchor",
+        test_id="summary-does-not-emit-the-raw-area-path",
         needle='href="api/#fastmcp-tool-delete-buffer"',
-        expected_count=1,
+        expected_count=0,
     ),
 ]
 
@@ -748,3 +755,73 @@ def test_reserved_slug_tool_ref_targets_canonical(
     """A tool whose slug collides with a reserved label links to its card."""
     html = read_output(fastmcp_reserved_slug_result, "index.html")
     assert html.count(needle) == expected_count
+
+
+# Rendering the summary one directory below the tool card is what separates a
+# document-relative link from a raw ``fastmcp_area_map`` value. The raw value
+# ("api") resolves against the current directory, landing on ``sub/api``.
+_NESTED_INDEX_RST = textwrap.dedent(
+    """\
+    Index
+    =====
+
+    .. toctree::
+
+       api
+       sub/summary
+    """
+)
+
+_NESTED_API_RST = textwrap.dedent(
+    """\
+    API
+    ===
+
+    .. fastmcp-tool:: buffer_tools.delete_buffer
+    """
+)
+
+_NESTED_SUMMARY_RST = textwrap.dedent(
+    """\
+    Summary
+    =======
+
+    .. fastmcp-tool-summary::
+    """
+)
+
+
+@pytest.fixture(scope="module")
+def fastmcp_nested_summary_result(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> SharedSphinxResult:
+    """Build a summary directive one directory below the tool card."""
+    cache_root = tmp_path_factory.mktemp("fastmcp-nested-summary")
+    scenario = SphinxScenario(
+        files=(
+            ScenarioFile("buffer_tools.py", _COLLISION_MODULE_SOURCE),
+            ScenarioFile(
+                "conf.py",
+                _COLLISION_CONF_PY.replace(
+                    "__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN
+                ),
+                substitute_srcdir=True,
+            ),
+            ScenarioFile("index.rst", _NESTED_INDEX_RST),
+            ScenarioFile("api.rst", _NESTED_API_RST),
+            ScenarioFile("sub/summary.rst", _NESTED_SUMMARY_RST),
+        ),
+    )
+    return build_shared_sphinx_result(
+        cache_root,
+        scenario,
+        purge_modules=("buffer_tools",),
+    )
+
+
+def test_tool_summary_link_is_relative_to_the_rendering_page(
+    fastmcp_nested_summary_result: SharedSphinxResult,
+) -> None:
+    """The summary link resolves from the page it is rendered on."""
+    html = read_output(fastmcp_nested_summary_result, "sub/summary.html")
+    assert 'href="../api.html#fastmcp-tool-delete-buffer"' in html

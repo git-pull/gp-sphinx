@@ -33,6 +33,7 @@ from sphinx_autodoc_fastmcp._parsing import (
     make_table,
     parse_rst_inline,
 )
+from sphinx_autodoc_fastmcp._roles import _tool_ref_placeholder
 from sphinx_autodoc_typehints_gp import (
     build_annotation_display_paragraph,
     build_annotation_paragraph,
@@ -451,9 +452,17 @@ class FastMCPToolSummaryDirective(SphinxDirective):
             rows: list[list[str | nodes.Node]] = []
             for tool in sorted(group_tools, key=lambda x: x.name):
                 first_line = first_paragraph(tool.docstring)
-                ref = nodes.reference("", "", internal=True)
-                ref["refuri"] = f"{tool.area}/#{_component_ids('tool', tool.name)[0]}"
-                ref += nodes.literal("", tool.name)
+                # Defer to ``resolve_tool_refs``: it resolves through the
+                # registered label, so the link points at the card's real
+                # document and is made relative to the page being written.
+                # Building ``refuri`` here would have neither -- ``tool.area``
+                # is a configured guess, and at parse time there is no
+                # ``fromdocname`` to be relative to.
+                ref = _tool_ref_placeholder(
+                    "",
+                    reftarget=tool.name.replace("_", "-"),
+                    show_badge=False,
+                )
                 rows.append(
                     [
                         make_para(ref),
