@@ -965,3 +965,105 @@ def test_a_transformed_argument_documents_its_served_type() -> None:
     collected = _tools_from_server(server, area_map={}, axes=())
     assert collected is not None
     assert [(p.name, p.type_str) for p in collected[0].params] == [("x", "string")]
+
+
+def test_one_failing_provider_does_not_abort_the_build(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """An unreachable provider is logged and skipped, not raised.
+
+    FastMCP's aggregate defaults to ``provider_error_strategy="warn"`` and
+    still serves its healthy providers; letting the failure escape aborts
+    ``builder-inited`` and produces no documentation at all.
+    """
+    from fastmcp.server.providers.base import Provider
+
+    class Broken(Provider):
+        async def _list_tools(self) -> list[t.Any]:
+            msg = "remote unavailable"
+            raise OSError(msg)
+
+    server: FastMCP = FastMCP("server")
+
+    @server.tool
+    def local(a: int) -> str:
+        """Local."""
+        return "ok"
+
+    server.add_provider(Broken())
+
+    with caplog.at_level(logging.WARNING):
+        collected = [
+            tool.name for tool in _iter_components(server) if isinstance(tool, _Tool)
+        ]
+
+    assert collected == ["local"]
+    assert any("Broken" in rec.message for rec in caplog.records)
+
+
+def test_a_configured_raise_strategy_is_honoured() -> None:
+    """``provider_error_strategy="raise"`` still fails the collection."""
+    from fastmcp.server.providers.base import Provider
+
+    class Broken(Provider):
+        async def _list_tools(self) -> list[t.Any]:
+            msg = "remote unavailable"
+            raise OSError(msg)
+
+    server: FastMCP = FastMCP("server")
+    server.add_provider(Broken())
+    server.provider_error_strategy = "raise"
+
+    with pytest.raises(OSError, match="remote unavailable"):
+        _iter_components(server)
+
+
+def test_an_aggregate_provider_is_traversed_not_asked() -> None:
+    """A mount wrapped in an aggregate keeps its disabled components.
+
+    An aggregate holds providers of its own; asking it to list re-enters
+    each child's filtered listing.
+    """
+    from fastmcp.server.providers.aggregate import AggregateProvider
+    from fastmcp.server.providers.fastmcp_provider import FastMCPProvider
+
+    child: FastMCP = FastMCP("child")
+
+    @child.tool
+    def visible(a: int) -> str:
+        """Visible."""
+        return "ok"
+
+    @child.tool
+    def hidden(a: int) -> str:
+        """Hidden."""
+        return "ok"
+
+    child.disable(keys={"tool:hidden@"})
+    server: FastMCP = FastMCP("server")
+    server.add_provider(AggregateProvider([FastMCPProvider(child)]))
+
+    assert sorted(
+        tool.name for tool in _iter_components(server) if isinstance(tool, _Tool)
+    ) == ["hidden", "visible"]
+
+
+def test_a_published_description_outranks_the_docstring() -> None:
+    """``description=`` is what the server tells a caller."""
+    server: FastMCP = FastMCP("server")
+
+    @server.tool(description="Published description.")
+    def both(a: int) -> str:
+        """Docstring text."""
+        return "ok"
+
+    @server.tool
+    def only_doc(a: int) -> str:
+        """Only a docstring."""
+        return "ok"
+
+    collected = _tools_from_server(server, area_map={}, axes=())
+    assert collected is not None
+    documented = {info.name: info.docstring for info in collected}
+    assert documented["both"] == "Published description."
+    assert documented["only_doc"] == "Only a docstring."

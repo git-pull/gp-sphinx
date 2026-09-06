@@ -381,9 +381,12 @@ def _tool_from_component(
         annotations=ann_dict,
         meta=meta,
         func=func,
+        # What the server publishes is what a caller reads, so an explicit
+        # description -- or one a transform rewrote -- wins over the
+        # function's own docstring.
         docstring=(
-            ((func.__doc__ or "") if func is not None else "")
-            or str(getattr(tool, "description", "") or "")
+            str(getattr(tool, "description", "") or "")
+            or ((func.__doc__ or "") if func is not None else "")
         ),
         params=_params_from_schema(getattr(tool, "parameters", {}) or {}, func),
         return_annotation=(
@@ -664,6 +667,37 @@ async def _apply(kind: str, holder: t.Any, components: list[t.Any]) -> list[t.An
     return components
 
 
+async def _gather(
+    kind: str,
+    holder: t.Any,
+    providers: t.Iterable[t.Any],
+    depth: int,
+    path: frozenset[int],
+) -> list[t.Any]:
+    """List several providers, honouring the holder's failure strategy.
+
+    FastMCP's aggregate defaults to ``provider_error_strategy="warn"``: an
+    unreachable remote is logged and skipped, and its siblings still serve.
+    Letting one failure escape here would abort the whole build instead.
+    """
+    raise_on_error = getattr(holder, "provider_error_strategy", "warn") == "raise"
+    out: list[t.Any] = []
+    for provider in providers:
+        try:
+            out.extend(await _provider_components(kind, provider, depth, path))
+        except Exception:
+            if raise_on_error:
+                raise
+            logger.warning(
+                "sphinx_autodoc_fastmcp: provider %s failed to list its %s; "
+                "its components are not documented",
+                type(provider).__name__,
+                kind.replace("_", " "),
+                exc_info=True,
+            )
+    return out
+
+
 async def _provider_components(
     kind: str, provider: t.Any, depth: int, path: frozenset[int]
 ) -> list[t.Any]:
@@ -680,6 +714,10 @@ async def _provider_components(
         base = await _server_components(kind, child, depth + 1, path)
     elif getattr(provider, "_inner", None) is not None:
         base = await _provider_components(kind, provider._inner, depth, path)  # noqa: SLF001
+    elif getattr(provider, "providers", None) is not None:
+        # An aggregate holds providers of its own; asking it to list would
+        # re-enter the filtered path for every one of them.
+        base = await _gather(kind, provider, provider.providers, depth, path)
     else:
         method = getattr(provider, f"_list_{kind}", None)
         base = list(await method()) if method is not None else []
@@ -693,9 +731,8 @@ async def _server_components(
     if depth > 8 or id(server) in path:
         return []
     path = path | {id(server)}
-    out: list[t.Any] = []
-    for provider in getattr(server, "providers", None) or ():
-        out.extend(await _provider_components(kind, provider, depth, path))
+    providers = getattr(server, "providers", None) or ()
+    out = await _gather(kind, server, providers, depth, path)
     return await _apply(kind, server, out)
 
 
