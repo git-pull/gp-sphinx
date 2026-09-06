@@ -259,6 +259,9 @@ def _params_from_schema(
 
     rows: list[ParamInfo] = []
     for name, prop in props.items():
+        if not isinstance(prop, dict):
+            # ``true`` / ``false`` are valid subschemas with no fields.
+            prop = {}
         sig_param = sig_params.get(name)
         annotation = (
             _strip_annotated(sig_param.annotation)
@@ -331,9 +334,8 @@ def _tool_from_component(
         meta=meta,
         func=func,
         docstring=(
-            (func.__doc__ or "")
-            if func is not None
-            else str(getattr(tool, "description", "") or "")
+            ((func.__doc__ or "") if func is not None else "")
+            or str(getattr(tool, "description", "") or "")
         ),
         params=_params_from_schema(getattr(tool, "parameters", {}) or {}, func),
         return_annotation=(
@@ -631,31 +633,29 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
     def _served(component: t.Any, transforms: tuple[t.Any, ...]) -> t.Any:
         if not transforms or not hasattr(component, "model_copy"):
             return component
-        update: dict[str, t.Any] = {}
-        for field in ("uri", "uri_template"):
-            value = getattr(component, field, None)
-            if value is None:
-                continue
-            text = str(value)
-            for transform in transforms:
-                if hasattr(transform, "_transform_uri"):
-                    text = transform._transform_uri(text)  # noqa: SLF001
-            update[field] = text
-        if not update:
-            name = str(getattr(component, "name", ""))
-            is_tool = hasattr(component, "parameters")
-            for transform in transforms:
-                if hasattr(transform, "_transform_name"):
-                    name = transform._transform_name(name)  # noqa: SLF001
-                elif is_tool:
-                    # ToolTransform: a per-tool rename map keyed by the
-                    # original name, applied only to tools.
-                    config = getattr(transform, "_transforms", {}).get(name)
-                    renamed = getattr(config, "name", None)
-                    if renamed:
-                        name = str(renamed)
-            update["name"] = name
-        return component.model_copy(update=update)
+        is_tool = hasattr(component, "parameters")
+        for transform in transforms:
+            if hasattr(transform, "_transform_uri"):
+                update: dict[str, t.Any] = {}
+                for field in ("uri", "uri_template"):
+                    value = getattr(component, field, None)
+                    if value is not None:
+                        update[field] = transform._transform_uri(str(value))  # noqa: SLF001
+                if not update:
+                    update["name"] = transform._transform_name(  # noqa: SLF001
+                        str(getattr(component, "name", ""))
+                    )
+                component = component.model_copy(update=update)
+            elif is_tool:
+                # ToolTransform: apply the whole configuration -- name,
+                # title, description, tags and argument renames -- exactly
+                # as the server does, rather than copying the name alone.
+                config = getattr(transform, "_transforms", {}).get(
+                    str(getattr(component, "name", ""))
+                )
+                if config is not None and hasattr(config, "apply"):
+                    component = config.apply(component)
+        return component
 
     def walk(
         node: t.Any,
@@ -703,6 +703,14 @@ def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
                 continue
             wrapped = getattr(provider, "_inner", None)
             if wrapped is None:
+                # An OpenAPI or other dynamic provider publishes its tools
+                # only through an async listing; there is no registry to
+                # read. Say so rather than document an empty index.
+                logger.warning(
+                    "sphinx_autodoc_fastmcp: provider %s exposes no component "
+                    "registry; its components are not documented",
+                    type(provider).__name__,
+                )
                 continue
             # A mount may wrap its provider more than once -- a rename map
             # inside a namespace, say. Peel every layer, collecting each
@@ -898,7 +906,7 @@ def _template_params_from_schema(
     rows: list[PromptArgInfo] = []
     for name, subschema in props.items():
         if not isinstance(subschema, dict):
-            continue
+            subschema = {}
         type_str = _schema_type_text(subschema)
         rows.append(
             PromptArgInfo(

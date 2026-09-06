@@ -23,6 +23,7 @@ from sphinx_autodoc_fastmcp._collector import (
     _annotation_hints,
     _index_by_unique_name,
     _iter_components,
+    _params_from_schema,
     _prompt_from_component,
     _resource_from_component,
     _schema_type_text,
@@ -673,3 +674,91 @@ def test_an_absent_schema_default_is_not_documented_as_none() -> None:
     assert collected is not None
     defaults = {param.name: param.default for param in collected[0].params}
     assert defaults == {"filters": "", "explicit": "None"}
+
+
+def test_a_boolean_subschema_does_not_abort_collection() -> None:
+    """``{"properties": {"payload": true}}`` is valid JSON Schema.
+
+    A boolean carries no fields to read; documenting the name with no type
+    beats failing the build.
+    """
+    rows = _params_from_schema({"properties": {"payload": True}}, lambda payload: None)
+
+    assert [(row.name, row.type_str) for row in rows] == [("payload", "")]
+
+
+def test_a_provider_without_a_registry_is_named_in_a_warning(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A dynamic provider that lists only asynchronously is reported.
+
+    Skipping it in silence documents an empty index for a server that
+    serves tools.
+    """
+
+    class Dynamic:
+        transforms: tuple[t.Any, ...] = ()
+
+        async def _list_tools(self) -> list[t.Any]:
+            return []
+
+    server: FastMCP = FastMCP("server")
+    server.add_provider(t.cast(t.Any, Dynamic()))
+
+    with caplog.at_level(logging.WARNING):
+        _iter_components(server)
+
+    assert any("Dynamic" in rec.message for rec in caplog.records)
+
+
+def test_a_tool_transform_is_applied_in_full() -> None:
+    """A rename map changes title and arguments, not only the tool name."""
+    from fastmcp.server.transforms import ToolTransform
+    from fastmcp.tools.tool_transform import ArgTransformConfig, ToolTransformConfig
+
+    child: FastMCP = FastMCP("child")
+
+    @child.tool
+    def search(raw_query: str) -> str:
+        """Search."""
+        return "ok"
+
+    child.local_provider.add_transform(
+        ToolTransform(
+            {
+                "search": ToolTransformConfig(
+                    name="lookup",
+                    title="Look Up",
+                    arguments={"raw_query": ArgTransformConfig(name="query")},
+                )
+            }
+        )
+    )
+    parent: FastMCP = FastMCP("parent")
+    parent.mount(child, namespace="ns")
+
+    collected = _tools_from_server(parent, area_map={}, axes=())
+    assert collected is not None
+    served = asyncio.run(parent.list_tools(run_middleware=False))
+
+    assert [
+        (info.name, info.title, [param.name for param in info.params])
+        for info in collected
+    ] == [
+        (tool.name, tool.title, sorted(tool.parameters.get("properties", {})))
+        for tool in served
+    ]
+
+
+def test_a_description_kwarg_survives_an_undocumented_function() -> None:
+    """``@tool(description=...)`` is the tool's explanation when the
+    function has no docstring."""
+    app: FastMCP = FastMCP("described")
+
+    @app.tool(description="Fetch the selected user record.")
+    def fetch(user_id: int) -> str:
+        return "ok"
+
+    collected = _tools_from_server(app, area_map={}, axes=())
+    assert collected is not None
+    assert collected[0].docstring == "Fetch the selected user record."
