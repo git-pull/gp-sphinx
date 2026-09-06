@@ -14,9 +14,20 @@ $ pip install --user --upgrade --pre gp-sphinx
 $ uv add gp-sphinx --prerelease allow
 ```
 
-## gp-sphinx 0.1.0a39 (unreleased)
+## gp-sphinx 0.1.0a40 (unreleased)
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
+
+## gp-sphinx 0.1.0a39 (2026-09-06)
+
+gp-sphinx 0.1.0a39 documents the MCP server a project is actually
+running. `sphinx-autodoc-fastmcp` targets FastMCP 4, and pointing
+{confval}`fastmcp_server_module` at a live instance renders tools,
+prompts, resources and resource templates under the names, parameters
+and metadata clients receive -- through mounts, namespaces and
+transforms, with disabled tools still documented. Extension warnings now
+follow Sphinx's own `-W`, `-w` and `suppress_warnings` controls, so a
+strict build no longer passes while printing them.
 
 ### What's new
 
