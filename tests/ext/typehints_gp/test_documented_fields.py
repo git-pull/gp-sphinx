@@ -2188,7 +2188,12 @@ _INHERITED_DESC_SOURCE = textwrap.dedent(
     from __future__ import annotations
 
     import dataclasses
-    import typing as t
+    import sys
+
+    if sys.version_info >= (3, 12):
+        from typing import TypedDict
+    else:
+        from typing_extensions import TypedDict
 
 
     @dataclasses.dataclass
@@ -2209,7 +2214,7 @@ _INHERITED_DESC_SOURCE = textwrap.dedent(
         """Container for every option."""
 
 
-    class KeyBase(t.TypedDict):
+    class KeyBase(TypedDict):
         """Keys a subclass builds on."""
 
         directory: str
@@ -2268,7 +2273,7 @@ def test_a_field_described_by_a_base_class_carries_that_description(
 def test_a_key_described_by_a_base_typed_dict_carries_that_description(
     inherited_description_html_result: SharedSphinxResult,
 ) -> None:
-    """A TypedDict base is reachable only through ``__orig_bases__``."""
+    """The typing backport preserves base metadata before Python 3.12."""
     html = read_output(inherited_description_html_result, "index.html")
 
     assert "Path for the worktree." in html

@@ -90,6 +90,10 @@ Write the description on the class that *declares* the name. A subclass
 that inherits the field inherits the description with it, so a base class
 documenting forty fields does not oblige each subclass to repeat them.
 
+On Python 3.10 and 3.11, use `typing_extensions.TypedDict` to inherit
+key descriptions. The standard-library `TypedDict` does not retain the
+base-class metadata needed to locate those descriptions until Python 3.12.
+
 ### What happens to a name you describe nowhere
 
 A field nobody describes reaches the page as a bare name with a type and
