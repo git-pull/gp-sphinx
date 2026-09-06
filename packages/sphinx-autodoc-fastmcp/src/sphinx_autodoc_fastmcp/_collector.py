@@ -307,6 +307,8 @@ def _params_from_schema(
         annotation = (
             _strip_annotated(sig_param.annotation)
             if sig_param is not None
+            and sig_param.kind
+            not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
             and sig_param.annotation is not inspect.Parameter.empty
             else ""
         )

@@ -968,7 +968,8 @@ def test_a_namespaced_tool_resolves_past_a_decoy_sibling() -> None:
     assert documented["ns_ns_hello"].docstring == "Decoy."
 
 
-def test_a_transformed_argument_documents_its_served_type() -> None:
+@pytest.mark.parametrize("name", ["x", "kwargs", "args"])
+def test_a_transformed_argument_documents_its_served_type(name: str) -> None:
     """A transform that retypes an argument owns the displayed type.
 
     The tool it was made from still says ``int``; the server publishes
@@ -983,14 +984,14 @@ def test_a_transformed_argument_documents_its_served_type() -> None:
     transformed = _Tool.from_tool(
         _Tool.from_function(square),
         name="square_str",
-        transform_args={"x": ArgTransform(type=str)},
+        transform_args={"x": ArgTransform(name=name, type=str)},
     )
     server: FastMCP = FastMCP("server")
     server.add_tool(transformed)
 
     collected = _tools_from_server(server, area_map={}, axes=())
     assert collected is not None
-    assert [(p.name, p.type_str) for p in collected[0].params] == [("x", "string")]
+    assert [(p.name, p.type_str) for p in collected[0].params] == [(name, "string")]
 
 
 def test_one_failing_provider_does_not_abort_the_build(
