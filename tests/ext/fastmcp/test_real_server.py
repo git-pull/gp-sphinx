@@ -615,7 +615,9 @@ def test_a_served_tool_quietly_takes_precedence_over_a_module_tool(
         env=types.SimpleNamespace(),
         _fastmcp_server_cache=("x", app),
     )
-    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp._collector"):
+    with caplog.at_level(
+        logging.WARNING, logger="sphinx.sphinx_autodoc_fastmcp._collector"
+    ):
         collect_tools(t.cast(t.Any, fake))
 
     documented = fake.env.fastmcp_tools
@@ -660,7 +662,9 @@ def test_duplicate_module_tool_names_still_warn(
         ),
         env=types.SimpleNamespace(),
     )
-    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp._collector"):
+    with caplog.at_level(
+        logging.WARNING, logger="sphinx.sphinx_autodoc_fastmcp._collector"
+    ):
         collect_tools(t.cast(t.Any, app))
 
     assert list(app.env.fastmcp_tools) == ["same"]

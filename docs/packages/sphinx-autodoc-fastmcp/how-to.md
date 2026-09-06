@@ -174,3 +174,9 @@ ensure components registered lazily appear in the docs; FastMCP's default
 FastMCP keys tools and prompts by name while permitting two registrations to
 share one, so both are served. The docs index holds one entry per name: it keeps
 the first and warns, naming the collision.
+
+Server/module overlap follows the documented precedence without warning.
+Collector warnings use Sphinx's warning stream, so `-W` fails the build and
+`-w` records them. Name collisions use the `fastmcp.duplicate` category;
+other collection warnings use `fastmcp`. Set
+`suppress_warnings = ["fastmcp.duplicate"]` to suppress only name collisions.

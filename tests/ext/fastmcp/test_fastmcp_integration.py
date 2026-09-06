@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import logging
 import pathlib
+import subprocess
+import sys
 import textwrap
 import typing as t
 
@@ -15,6 +17,7 @@ from tests._sphinx_scenarios import (
     SharedSphinxResult,
     SphinxScenario,
     build_shared_sphinx_result,
+    copy_scenario_tree,
     read_output,
 )
 
@@ -84,6 +87,72 @@ _INDEX_RST = textwrap.dedent(
     .. fastmcp-tool-input:: demo_tools.list_sessions
     """
 )
+
+
+@pytest.fixture(scope="module")
+def duplicate_warning_builds(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> dict[bool, tuple[int, str]]:
+    """Build a duplicate registration with strict and suppressed diagnostics."""
+    root = tmp_path_factory.mktemp("fastmcp-duplicate-warnings")
+    results: dict[bool, tuple[int, str]] = {}
+    for suppressed in (False, True):
+        build_root = root / str(suppressed)
+        conf = _CONF_PY + '\nfastmcp_tool_modules = ["demo_tools", "demo_tools"]\n'
+        if suppressed:
+            conf += 'suppress_warnings = ["fastmcp.duplicate"]\n'
+        source = copy_scenario_tree(
+            root / "cache",
+            SphinxScenario(
+                files=(
+                    ScenarioFile("demo_tools.py", _MODULE_SOURCE),
+                    ScenarioFile(
+                        "conf.py",
+                        conf.replace("__SCENARIO_SRCDIR__", SCENARIO_SRCDIR_TOKEN),
+                        substitute_srcdir=True,
+                    ),
+                    ScenarioFile("index.rst", _INDEX_RST),
+                ),
+            ),
+            build_root,
+        )
+        warning_file = build_root / "warnings.txt"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "sphinx",
+                "-W",
+                "--keep-going",
+                "-b",
+                "dummy",
+                "-w",
+                str(warning_file),
+                str(source),
+                str(build_root / "output"),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert warning_file.exists(), result.stderr
+        results[suppressed] = (result.returncode, warning_file.read_text())
+    return results
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("suppressed", [False, True])
+def test_collector_warnings_obey_sphinx_warning_policy(
+    duplicate_warning_builds: dict[bool, tuple[int, str]], suppressed: bool
+) -> None:
+    """A duplicate fails -W and reaches -w unless its category is suppressed."""
+    returncode, warnings = duplicate_warning_builds[suppressed]
+    assert returncode == (0 if suppressed else 1)
+    if suppressed:
+        assert warnings == ""
+    else:
+        assert "duplicate tool name 'list_sessions'" in warnings
+        assert "[fastmcp.duplicate]" in warnings
 
 
 @pytest.fixture(scope="module")

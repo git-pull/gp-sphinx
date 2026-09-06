@@ -159,13 +159,15 @@ def test_resolve_server_warns_when_attr_is_not_fastmcp(
     fake_module.mcp = bare_obj  # type: ignore[attr-defined]
     monkeypatch.setitem(sys.modules, "fake_fastmcp_bare2", fake_module)
 
-    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp"):
+    with caplog.at_level(
+        logging.WARNING, logger="sphinx.sphinx_autodoc_fastmcp._collector"
+    ):
         _resolve_server_instance("fake_fastmcp_bare2:mcp")
 
     matched = [
         r
         for r in caplog.records
-        if r.name == "sphinx_autodoc_fastmcp._collector"
+        if r.name == "sphinx.sphinx_autodoc_fastmcp._collector"
         and "local_provider" in r.getMessage()
     ]
     assert len(matched) == 1

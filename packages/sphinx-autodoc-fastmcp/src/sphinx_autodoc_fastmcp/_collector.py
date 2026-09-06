@@ -7,12 +7,12 @@ import contextlib
 import importlib
 import inspect
 import json
-import logging
 import re
 import threading
 import typing as t
 
 from sphinx.application import Sphinx
+from sphinx.util import logging as sphinx_logging
 
 from sphinx_autodoc_fastmcp._models import (
     DEFAULT_AXES,
@@ -36,7 +36,7 @@ from sphinx_autodoc_typehints_gp import (
     normalize_annotation_text,
 )
 
-logger = logging.getLogger(__name__)
+logger = sphinx_logging.getLogger(__name__)
 
 
 class ToolCollector:
@@ -208,6 +208,8 @@ def _index_by_unique_name(
             "and skipping the rest",
             kind,
             name,
+            type="fastmcp",
+            subtype="duplicate",
         )
         return
     index[name] = info
@@ -475,7 +477,9 @@ def _tools_from_server(
         from fastmcp.tools import Tool as _Tool
     except ImportError:  # pragma: no cover - defensive
         logger.warning(
-            "sphinx_autodoc_fastmcp: could not import fastmcp Tool", exc_info=True
+            "sphinx_autodoc_fastmcp: could not import fastmcp Tool",
+            exc_info=True,
+            type="fastmcp",
         )
         return None
     return [
@@ -513,6 +517,7 @@ def collect_tools(app: Sphinx) -> None:
         logger.warning(
             "sphinx_autodoc_fastmcp: unknown fastmcp_collector_mode %r; using 'register'",
             mode,
+            type="fastmcp",
         )
         mode = "register"
 
@@ -535,6 +540,7 @@ def collect_tools(app: Sphinx) -> None:
     if not served_by_name and not modules:
         logger.warning(
             "sphinx_autodoc_fastmcp: fastmcp_tool_modules is empty; no tools collected",
+            type="fastmcp",
         )
         app.env.fastmcp_tools = {}  # type: ignore[attr-defined]
         return
@@ -555,6 +561,7 @@ def collect_tools(app: Sphinx) -> None:
                     "sphinx_autodoc_fastmcp: failed to load tool module %s",
                     dotted,
                     exc_info=True,
+                    type="fastmcp",
                 )
         collector_tools = collector.tools
     else:
@@ -567,6 +574,7 @@ def collect_tools(app: Sphinx) -> None:
                     "sphinx_autodoc_fastmcp: failed to import %s",
                     dotted,
                     exc_info=True,
+                    type="fastmcp",
                 )
                 continue
             for _name, obj in inspect.getmembers(mod):
@@ -615,6 +623,7 @@ def _resolve_server_instance(dotted: str) -> t.Any | None:
             logger.warning(
                 "sphinx_autodoc_fastmcp: fastmcp_server_module %r has no attribute",
                 dotted,
+                type="fastmcp",
             )
             return None
     try:
@@ -624,6 +633,7 @@ def _resolve_server_instance(dotted: str) -> t.Any | None:
             "sphinx_autodoc_fastmcp: could not import server module %s",
             module_path,
             exc_info=True,
+            type="fastmcp",
         )
         return None
     obj = getattr(mod, attr, None)
@@ -637,6 +647,7 @@ def _resolve_server_instance(dotted: str) -> t.Any | None:
                 "sphinx_autodoc_fastmcp: calling %s() failed",
                 dotted,
                 exc_info=True,
+                type="fastmcp",
             )
             return None
     if getattr(obj, "local_provider", None) is None:
@@ -648,6 +659,7 @@ def _resolve_server_instance(dotted: str) -> t.Any | None:
             "sphinx_autodoc_fastmcp: %s did not resolve to a FastMCP instance "
             "(no local_provider attribute); prompts/resources will be empty",
             dotted,
+            type="fastmcp",
         )
         return None
     # Always invoke the server's register-all hook when one is exported.
@@ -688,6 +700,7 @@ def _resolve_server_instance(dotted: str) -> t.Any | None:
                     "skipping server",
                     dotted,
                     exc_info=True,
+                    type="fastmcp",
                 )
                 return None
     return obj
@@ -767,6 +780,7 @@ async def _gather(
                 type(provider).__name__,
                 kind.replace("_", " "),
                 exc_info=True,
+                type="fastmcp",
             )
     return out
 
@@ -1112,6 +1126,7 @@ def collect_prompts_and_resources(app: Sphinx) -> None:
                 "sphinx_autodoc_fastmcp: fastmcp_server_module %r did not resolve "
                 "to a FastMCP instance; prompts/resources will be empty",
                 server_dotted,
+                type="fastmcp",
             )
         else:
             try:
@@ -1126,6 +1141,7 @@ def collect_prompts_and_resources(app: Sphinx) -> None:
                 logger.warning(
                     "sphinx_autodoc_fastmcp: could not import fastmcp types",
                     exc_info=True,
+                    type="fastmcp",
                 )
             else:
                 for component in _iter_components(server):
@@ -1172,6 +1188,8 @@ def _index_by_name(name_index: dict[str, str], name: str, key: str, kind: str) -
             existing,
             key,
             existing,
+            type="fastmcp",
+            subtype="duplicate",
         )
         return
     name_index[name] = key
