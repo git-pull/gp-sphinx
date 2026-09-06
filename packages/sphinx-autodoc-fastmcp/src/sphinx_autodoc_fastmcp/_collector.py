@@ -276,8 +276,13 @@ def _params_from_schema(
     aliases: dict[str, str] = {}
     for param_name, param in sig_params.items():
         annotation = resolved.get(param_name, param.annotation)
-        for meta in t.get_args(annotation)[1:]:
-            alias = getattr(meta, "alias", None)
+        # A Field can be attached either as Annotated metadata or as the
+        # parameter's default, and either spelling publishes the alias.
+        carriers = (*t.get_args(annotation)[1:], param.default)
+        for meta in carriers:
+            alias = getattr(meta, "alias", None) or getattr(
+                meta, "validation_alias", None
+            )
             if isinstance(alias, str) and alias:
                 aliases[alias] = param_name
                 break
@@ -708,7 +713,10 @@ async def _apply(kind: str, holder: t.Any, components: list[t.Any]) -> list[t.An
     for transform in getattr(holder, "transforms", None) or ():
         method = getattr(transform, f"list_{kind}", None)
         if method is not None:
-            components = list(await method(components))
+            # A transform is as able to stall as the listing it wraps.
+            components = list(
+                await asyncio.wait_for(method(components), timeout=_PROVIDER_TIMEOUT)
+            )
     return components
 
 

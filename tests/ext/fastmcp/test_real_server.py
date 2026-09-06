@@ -43,10 +43,15 @@ from fastmcp.resources import (
 )
 from fastmcp.tools import Tool as _Tool  # noqa: E402
 from pydantic import Field  # noqa: E402
+from typing_extensions import TypedDict  # noqa: E402
 
 
-class _Boxed(t.TypedDict):
-    """An object whose only field is named like a generated wrapper's."""
+class _Boxed(TypedDict):
+    """An object whose only field is named like a generated wrapper's.
+
+    ``typing_extensions`` rather than ``typing``: pydantic rejects
+    ``typing.TypedDict`` below Python 3.12.
+    """
 
     result: int
 
@@ -1393,3 +1398,63 @@ def test_only_a_marked_wrapper_is_unwrapped() -> None:
     assert plain_collected is not None
     assert boxed_collected[0].return_annotation == "object"
     assert plain_collected[0].return_annotation == "integer"
+
+
+def test_an_alias_declared_in_a_default_is_resolved() -> None:
+    """A ``Field`` may be the default rather than ``Annotated`` metadata.
+
+    Both spellings publish the alias, and reading only one of them borrows
+    the other parameter's annotation.
+    """
+    server: FastMCP = FastMCP("server")
+
+    @server.tool
+    def query(
+        foo: int = Field(1, alias="bar"),
+        bar: str = Field("x", alias="baz"),
+    ) -> str:
+        """Query."""
+        return "ok"
+
+    collected = _tools_from_server(server, area_map={}, axes=())
+    assert collected is not None
+    assert [(p.name, p.type_str) for p in collected[0].params] == [
+        ("bar", "int"),
+        ("baz", "str"),
+    ]
+
+
+def test_a_stalled_transform_does_not_block_the_build(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A transform is as able to stall as the listing it wraps.
+
+    ``_PROVIDER_TIMEOUT`` bounded only the underlying ``_list_*`` call, so a
+    transform that never returns held the build open indefinitely.
+    """
+    from fastmcp.server.transforms import Transform
+
+    from sphinx_autodoc_fastmcp import _collector
+
+    class Stalled(Transform):
+        async def list_tools(self, tools: t.Any) -> t.Any:
+            await asyncio.sleep(30)
+            return tools
+
+    monkeypatch.setattr(_collector, "_PROVIDER_TIMEOUT", 0.5)
+    server: FastMCP = FastMCP("server")
+
+    @server.tool
+    def local(a: int) -> str:
+        """Local."""
+        return "ok"
+
+    server.local_provider.add_transform(Stalled())
+
+    with caplog.at_level(logging.WARNING):
+        collected = [
+            tool.name for tool in _iter_components(server) if isinstance(tool, _Tool)
+        ]
+
+    assert collected == []
+    assert any("failed to list" in rec.message for rec in caplog.records)
