@@ -37,7 +37,10 @@ pytest.importorskip("fastmcp")
 
 from fastmcp import Context, FastMCP  # noqa: E402
 from fastmcp.prompts import Prompt as _Prompt  # noqa: E402
-from fastmcp.resources import Resource as _Resource  # noqa: E402
+from fastmcp.resources import (
+    Resource as _Resource,  # noqa: E402
+    ResourceTemplate as _ResourceTemplate,  # noqa: E402
+)
 from fastmcp.tools import Tool as _Tool  # noqa: E402
 from mcp.types import Annotations, ToolAnnotations  # noqa: E402
 
@@ -1150,3 +1153,134 @@ def test_a_renamed_tool_keeps_its_return_information() -> None:
     assert collected is not None
     assert collected[0].name == "renamed"
     assert collected[0].return_annotation == "integer"
+
+
+def _identity(component: t.Any) -> str:
+    """The name or URI a component is served under."""
+    return str(
+        getattr(component, "uri", None)
+        or getattr(component, "uri_template", None)
+        or component.name
+    )
+
+
+def _matrix_leaf() -> FastMCP:
+    """A server carrying one component of every kind."""
+    server: FastMCP = FastMCP("leaf")
+
+    @server.tool
+    def alpha(a: int) -> str:
+        """Alpha."""
+        return "ok"
+
+    @server.resource("data://thing")
+    def thing() -> str:
+        """Thing."""
+        return "{}"
+
+    @server.resource("data://item/{x}")
+    def item(x: str) -> str:
+        """Item."""
+        return "{}"
+
+    @server.prompt
+    def draft(topic: str) -> str:
+        """Draft."""
+        return "drafted"
+
+    return server
+
+
+def _attach(shape: str, parent: FastMCP, child: FastMCP, index: int) -> None:
+    """Attach ``child`` to ``parent`` the way ``shape`` names."""
+    from fastmcp.server.providers.aggregate import AggregateProvider
+    from fastmcp.server.providers.fastmcp_provider import FastMCPProvider
+    from fastmcp.server.transforms import Namespace
+
+    namespace = f"n{index}"
+    if shape == "mount":
+        parent.mount(child)
+    elif shape == "mount+ns":
+        parent.mount(child, namespace=namespace)
+    elif shape == "add_provider":
+        parent.add_provider(FastMCPProvider(child))
+    elif shape == "add_provider+ns":
+        parent.add_provider(FastMCPProvider(child), namespace=namespace)
+    elif shape == "aggregate":
+        parent.add_provider(AggregateProvider([FastMCPProvider(child)]))
+    elif shape == "aggregate+ns":
+        parent.add_provider(
+            AggregateProvider([FastMCPProvider(child)]), namespace=namespace
+        )
+    elif shape == "child-transform":
+        child.add_transform(Namespace(f"x{index}"))
+        parent.mount(child)
+    else:  # pragma: no cover - guards a typo in the parametrization
+        msg = f"unknown attachment shape {shape!r}"
+        raise AssertionError(msg)
+
+
+#: Every way a server can carry another server's components. Each round of
+#: review has found a defect on a shape the previous matrix did not vary, so
+#: the axis is the attachment itself, not one example of it.
+_ATTACHMENTS = (
+    "mount",
+    "mount+ns",
+    "add_provider",
+    "add_provider+ns",
+    "aggregate",
+    "aggregate+ns",
+    "child-transform",
+)
+
+_KINDS = {
+    "tools": "list_tools",
+    "resources": "list_resources",
+    "resource_templates": "list_resource_templates",
+    "prompts": "list_prompts",
+}
+
+
+@pytest.mark.parametrize("shape", _ATTACHMENTS)
+@pytest.mark.parametrize("depth", [1, 2])
+def test_collected_identity_equals_served_identity(shape: str, depth: int) -> None:
+    """Every component is documented under the identity the server serves.
+
+    The matrix varies how a child is attached and how deeply, because a
+    rename applies differently at each boundary and the collector has to
+    arrive at the same answer the server does.
+    """
+    server = _matrix_leaf()
+    for index in range(depth):
+        parent: FastMCP = FastMCP(f"level{index}")
+        _attach(shape, parent, server, index)
+        server = parent
+
+    walked = _iter_components(server)
+    for kind, method in _KINDS.items():
+        served = asyncio.run(getattr(server, method)(run_middleware=False))
+        cls = {
+            "tools": _Tool,
+            "resources": _Resource,
+            "resource_templates": _ResourceTemplate,
+            "prompts": _Prompt,
+        }[kind]
+        assert sorted(_identity(c) for c in walked if isinstance(c, cls)) == sorted(
+            _identity(c) for c in served
+        ), kind
+
+
+@pytest.mark.parametrize("shape", _ATTACHMENTS)
+def test_a_disabled_tool_survives_every_attachment(shape: str) -> None:
+    """Documentation describes what a server can serve, at every boundary.
+
+    Each attachment reaches its child differently, and one of them listed
+    through the child's own filtered listing.
+    """
+    child = _matrix_leaf()
+    child.disable(keys={"tool:alpha@"})
+    parent: FastMCP = FastMCP("parent")
+    _attach(shape, parent, child, 0)
+
+    names = [tool.name for tool in _iter_components(parent) if isinstance(tool, _Tool)]
+    assert any(name.endswith("alpha") for name in names), names
