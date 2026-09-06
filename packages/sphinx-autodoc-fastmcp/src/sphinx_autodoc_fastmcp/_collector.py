@@ -581,11 +581,11 @@ def collect_tools(app: Sphinx) -> None:
                 if info is not None:
                     collector_tools.append(info)
 
-    # Server-collected tools win on a shared name; a module entry naming the
-    # same tool is reported like any other collision rather than overwritten
-    # in silence. Module entries fill the gaps.
+    # Server tools take precedence; only collisions among module-only tools warn.
     collected: dict[str, ToolInfo] = dict(served_by_name)
     for collected_tool in collector_tools:
+        if collected_tool.name in served_by_name:
+            continue
         _index_by_unique_name(collected, collected_tool.name, collected_tool, "tool")
     app.env.fastmcp_tools = collected  # type: ignore[attr-defined]
 

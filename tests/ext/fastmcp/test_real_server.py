@@ -14,6 +14,7 @@ import asyncio
 import logging
 import pathlib
 import re
+import sys
 import types
 import typing as t
 import warnings
@@ -21,6 +22,7 @@ import warnings
 import pytest
 
 from sphinx_autodoc_fastmcp._collector import (
+    ToolCollector,
     _annotation_hints,
     _index_by_unique_name,
     _iter_components,
@@ -566,66 +568,104 @@ def test_a_transform_on_a_provider_renames_what_it_holds() -> None:
     )
 
 
-def test_a_module_tool_colliding_with_a_served_tool_is_reported(
+@pytest.mark.parametrize("mode", ["register", "introspect"])
+def test_a_served_tool_quietly_takes_precedence_over_a_module_tool(
+    mode: str,
+    monkeypatch: pytest.MonkeyPatch,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    """The server wins a shared name, and the module entry is warned about.
+    """Server metadata wins; module tools fill gaps without overlap warnings."""
+    module_server = FastMCP("module")
 
-    Merging with a bare dict update discarded the module entry in silence,
-    bypassing the collision report every other same-kind duplicate gets.
-    """
-    import sys
-
+    @module_server.tool
     def list_sessions(server: str) -> list[str]:
         """Module copy."""
         return []
 
-    t.cast(t.Any, list_sessions).__fastmcp__ = types.SimpleNamespace(
-        name="list_sessions", title="List", tags=set(), annotations=None
-    )
+    @module_server.tool
+    def module_only() -> str:
+        """Module-only tool."""
+        return "module"
+
+    def register(collector: ToolCollector) -> None:
+        collector.tool()(list_sessions)
+        collector.tool()(module_only)
+
     module = types.ModuleType("collision_mod")
     module.list_sessions = list_sessions  # type: ignore[attr-defined]
-    sys.modules["collision_mod"] = module
+    module.module_only = module_only  # type: ignore[attr-defined]
+    module.register = register  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "collision_mod", module)
 
     app: FastMCP = FastMCP("served")
-
-    @app.tool
-    def list_sessions_served(server: str) -> list[str]:
-        """Served copy."""
-        return []
-
-    app.local_provider.remove_tool("list_sessions_served")
 
     @app.tool(name="list_sessions")
     def served(server: str) -> list[str]:
         """Served copy."""
         return []
 
-    class _Env:
-        pass
+    fake = types.SimpleNamespace(
+        config=types.SimpleNamespace(
+            fastmcp_server_module="x",
+            fastmcp_tool_modules=["collision_mod"],
+            fastmcp_area_map={},
+            fastmcp_axes=(),
+            fastmcp_collector_mode=mode,
+        ),
+        env=types.SimpleNamespace(),
+        _fastmcp_server_cache=("x", app),
+    )
+    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp._collector"):
+        collect_tools(t.cast(t.Any, fake))
 
-    class _Config:
-        fastmcp_server_module = "x"
-        fastmcp_tool_modules = ["collision_mod"]
-        fastmcp_area_map: dict[str, str] = {}
-        fastmcp_axes: tuple[t.Any, ...] = ()
-        fastmcp_collector_mode = "introspect"
-
-    class _App:
-        config = _Config()
-        env = _Env()
-
-    fake = _App()
-    fake._fastmcp_server_cache = ("x", app)  # type: ignore[attr-defined]
-    try:
-        with caplog.at_level(logging.WARNING):
-            collect_tools(t.cast(t.Any, fake))
-    finally:
-        del sys.modules["collision_mod"]
-
-    documented = t.cast(t.Any, fake.env).fastmcp_tools
+    documented = fake.env.fastmcp_tools
+    assert set(documented) == {"list_sessions", "module_only"}
+    assert documented["list_sessions"].func is served
     assert documented["list_sessions"].docstring == "Served copy."
-    assert any("duplicate tool name" in rec.message for rec in caplog.records)
+    assert documented["module_only"].func is module_only
+    assert not any("duplicate tool name" in rec.getMessage() for rec in caplog.records)
+
+
+@pytest.mark.parametrize("mode", ["register", "introspect"])
+def test_duplicate_module_tool_names_still_warn(
+    mode: str,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Module collisions retain the first entry and report the lost tool."""
+    for module_name in ("first_module", "second_module"):
+        server = FastMCP(module_name)
+
+        @server.tool
+        def same() -> str:
+            return "value"
+
+        def register(
+            collector: ToolCollector, tool: t.Callable[[], str] = same
+        ) -> None:
+            collector.tool()(tool)
+
+        module = types.ModuleType(module_name)
+        module.same = same  # type: ignore[attr-defined]
+        module.register = register  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, module_name, module)
+
+    app = types.SimpleNamespace(
+        config=types.SimpleNamespace(
+            fastmcp_server_module="",
+            fastmcp_tool_modules=["first_module", "second_module"],
+            fastmcp_area_map={},
+            fastmcp_axes=(),
+            fastmcp_collector_mode=mode,
+        ),
+        env=types.SimpleNamespace(),
+    )
+    with caplog.at_level(logging.WARNING, logger="sphinx_autodoc_fastmcp._collector"):
+        collect_tools(t.cast(t.Any, app))
+
+    assert list(app.env.fastmcp_tools) == ["same"]
+    assert app.env.fastmcp_tools["same"].module_name == "first_module"
+    assert any("duplicate tool name 'same'" in r.getMessage() for r in caplog.records)
 
 
 def test_a_child_transform_applies_before_its_mount_namespace() -> None:
