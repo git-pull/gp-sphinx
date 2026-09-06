@@ -2542,7 +2542,7 @@ class Safety(enum.Enum):
     READONLY = "readonly"
 
 
-class Tier(enum.StrEnum):
+class Tier(StrEnum):
     \"\"\"A shape under test.{tier}
     \"\"\"
 
@@ -2588,7 +2588,7 @@ class Payload(t.TypedDict):
     \"\"\"
 
     label: str
-    nickname: t.NotRequired[str]
+    nickname: NotRequired[str]
 
 
 class Registry:
@@ -2670,7 +2670,17 @@ _PARITY_PREAMBLE = textwrap.dedent(
 
     import dataclasses
     import enum
+    import sys
     import typing as t
+
+    if sys.version_info >= (3, 11):
+        from enum import StrEnum
+        from typing import NotRequired
+    else:
+        from typing_extensions import NotRequired
+
+        class StrEnum(str, enum.Enum):
+            pass
 
 
     """
