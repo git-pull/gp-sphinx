@@ -156,12 +156,17 @@ def _is_reserved_axis_name(name: str) -> bool:
 
     Examples
     --------
+    The anchors are built with ``make_id``, which lower-cases, so a
+    capitalised axis collides exactly as the lower-case one does:
+
     >>> _is_reserved_axis_name("capability")
     False
     >>> _is_reserved_axis_name("tool")
     True
+    >>> _is_reserved_axis_name("Tool")
+    True
     """
-    if name not in COMPONENT_KINDS:
+    if name.casefold() not in COMPONENT_KINDS:
         return False
     logger.warning(
         "sphinx_autodoc_fastmcp: fastmcp_axes declares an axis named %r, which "
