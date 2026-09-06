@@ -687,30 +687,6 @@ def test_a_boolean_subschema_does_not_abort_collection() -> None:
     assert [(row.name, row.type_str) for row in rows] == [("payload", "")]
 
 
-def test_a_provider_without_a_registry_is_named_in_a_warning(
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    """A dynamic provider that lists only asynchronously is reported.
-
-    Skipping it in silence documents an empty index for a server that
-    serves tools.
-    """
-
-    class Dynamic:
-        transforms: tuple[t.Any, ...] = ()
-
-        async def _list_tools(self) -> list[t.Any]:
-            return []
-
-    server: FastMCP = FastMCP("server")
-    server.add_provider(t.cast(t.Any, Dynamic()))
-
-    with caplog.at_level(logging.WARNING):
-        _iter_components(server)
-
-    assert any("Dynamic" in rec.message for rec in caplog.records)
-
-
 def test_a_tool_transform_is_applied_in_full() -> None:
     """A rename map changes title and arguments, not only the tool name."""
     from fastmcp.server.transforms import ToolTransform
@@ -820,13 +796,11 @@ def test_a_renamed_tool_keeps_its_source_module() -> None:
 
 
 @pytest.mark.parametrize("level", ["server", "provider"])
-def test_an_unreadable_transform_fails_closed_with_a_warning(
-    level: str, caplog: pytest.LogCaptureFixture
-) -> None:
-    """A transform whose rule is not data is refused, not read past.
+def test_a_custom_transform_is_documented_as_served(level: str) -> None:
+    """A transform whose rule is not data still documents the served name.
 
-    Publishing the pre-transform name documents an identity the server no
-    longer serves; the mount path already refused, these levels did not.
+    Listing through FastMCP's own ``Provider.list_*`` applies every
+    transform the way the server does, so nothing has to be reproduced.
     """
     from fastmcp.server.transforms import Transform
 
@@ -849,27 +823,59 @@ def test_an_unreadable_transform_fails_closed_with_a_warning(
     else:
         server.local_provider.add_transform(Prefix())
 
-    with caplog.at_level(logging.WARNING):
-        walked = _iter_components(server)
+    assert sorted(
+        tool.name for tool in _iter_components(server) if isinstance(tool, _Tool)
+    ) == sorted(
+        tool.name for tool in asyncio.run(server.list_tools(run_middleware=False))
+    )
 
-    assert walked == ()
-    assert any("cannot reproduce" in rec.message for rec in caplog.records)
 
-
-def test_a_registry_less_provider_under_a_namespace_is_named(
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    """Namespacing a dynamic provider does not silence the diagnostic."""
+@pytest.mark.parametrize("namespace", [None, "api"])
+def test_a_dynamic_provider_is_documented(namespace: str | None) -> None:
+    """A provider that lists only asynchronously is still collected."""
     from fastmcp.server.providers.base import Provider
 
     class Dynamic(Provider):
         async def _list_tools(self) -> list[t.Any]:
-            return []
+            return [_Tool.from_function(lambda a: "ok", name="dyn_tool")]
 
     server: FastMCP = FastMCP("server")
-    server.add_provider(Dynamic(), namespace="api")
+    if namespace is None:
+        server.add_provider(Dynamic())
+    else:
+        server.add_provider(Dynamic(), namespace=namespace)
 
-    with caplog.at_level(logging.WARNING):
-        assert _iter_components(server) == ()
+    assert sorted(
+        tool.name for tool in _iter_components(server) if isinstance(tool, _Tool)
+    ) == sorted(
+        tool.name for tool in asyncio.run(server.list_tools(run_middleware=False))
+    )
 
-    assert any("Dynamic" in rec.message for rec in caplog.records)
+
+def test_a_disabled_tool_stays_in_its_documentation() -> None:
+    """A tool switched off at runtime is documented anyway.
+
+    ``FastMCP.list_tools`` drops it even with middleware off; the
+    provider-level listing does not, and the docs describe what the server
+    can serve.
+    """
+    server: FastMCP = FastMCP("server")
+
+    @server.tool
+    def visible(a: int) -> str:
+        """Visible."""
+        return "ok"
+
+    @server.tool
+    def hidden(a: int) -> str:
+        """Hidden."""
+        return "ok"
+
+    server.disable(keys={"tool:hidden@"})
+
+    assert "hidden" not in {
+        tool.name for tool in asyncio.run(server.list_tools(run_middleware=False))
+    }
+    assert sorted(
+        tool.name for tool in _iter_components(server) if isinstance(tool, _Tool)
+    ) == ["hidden", "visible"]

@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import asyncio
 import contextlib
 import importlib
 import inspect
 import json
 import logging
 import re
+import threading
 import typing as t
 
 from sphinx.application import Sphinx
@@ -293,6 +295,46 @@ def _params_from_schema(
     return rows
 
 
+def _origin_tool(tool: t.Any, depth: int = 0) -> t.Any:
+    """Follow a served tool back to the one that owns a Python callable.
+
+    A transform records the tool it was made from as ``parent_tool``. A
+    mount lists its child's tools as ``FastMCPProviderTool`` proxies, which
+    carry no callable but hold the child server; the original is that
+    server's tool of the same name, itself possibly another proxy.
+    """
+    if depth > 8:
+        return tool
+    parent = getattr(tool, "parent_tool", None)
+    if parent is not None:
+        return _origin_tool(parent, depth + 1)
+    if getattr(tool, "fn", None) is not None:
+        return tool
+    inner = getattr(tool, "_server", None)
+    if inner is None:
+        return tool
+    try:
+        from fastmcp.server.providers.base import Provider
+    except ImportError:  # pragma: no cover - defensive
+        return tool
+    # The proxy carries the name as served one level up, which may already
+    # include a namespace the child does not know about. Namespace prefixes
+    # as ``namespace_name``, so the child's tool is the longest inner name
+    # that ends the served one at an underscore boundary.
+    wanted = str(getattr(tool, "name", ""))
+    best: t.Any = None
+    for candidate in _Loop.call(Provider.list_tools(inner)):
+        name = str(getattr(candidate, "name", ""))
+        if name == wanted:
+            best = candidate
+            break
+        if wanted.endswith("_" + name) and (
+            best is None or len(name) > len(str(best.name))
+        ):
+            best = candidate
+    return _origin_tool(best, depth + 1) if best is not None else tool
+
+
 def _tool_from_component(
     tool: t.Any,
     *,
@@ -319,10 +361,13 @@ def _tool_from_component(
     # A transformed tool's callable is FastMCP's forwarding function, which
     # lives in FastMCP's own module. Attribution -- and so the area map --
     # follows the tool it was made from.
-    origin: t.Any = tool
-    while getattr(origin, "parent_tool", None) is not None:
-        origin = origin.parent_tool
+    origin = _origin_tool(tool)
     source = getattr(origin, "fn", None) or func
+    if source is not None:
+        # A mounted or transformed tool lists with a proxy or forwarding
+        # callable; everything read from a signature -- types, docstring --
+        # comes from the tool it was made from.
+        func = source
     if source is not None and hasattr(source, "__wrapped__"):
         source = source.__wrapped__
     module_name = str(getattr(source, "__module__", "") or "").rpartition(".")[2]
@@ -616,185 +661,65 @@ def _ignore_duplicate_policy(provider: t.Any) -> t.Iterator[None]:
             provider._on_duplicate = original
 
 
+class _Loop:
+    """An event loop owned by a background thread, started on first use.
+
+    Sphinx runs handlers synchronously and may already be inside a loop under
+    sphinx-autobuild, where ``asyncio.run`` raises. Mirrors
+    ``sphinx_vite_builder._internal.bus``.
+    """
+
+    _loop: asyncio.AbstractEventLoop | None = None
+    _lock = threading.Lock()
+
+    @classmethod
+    def call(cls, coro: t.Coroutine[t.Any, t.Any, t.Any], timeout: float = 30) -> t.Any:
+        with cls._lock:
+            if cls._loop is None:
+                ready = threading.Event()
+
+                def run() -> None:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    cls._loop = loop
+                    ready.set()
+                    loop.run_forever()
+
+                threading.Thread(
+                    target=run, name="sphinx-autodoc-fastmcp", daemon=True
+                ).start()
+                ready.wait()
+        assert cls._loop is not None
+        return asyncio.run_coroutine_threadsafe(coro, cls._loop).result(timeout=timeout)
+
+
 def _iter_components(server: t.Any) -> t.Iterable[t.Any]:
     """Yield every component the server serves, under its served identity.
 
-    Walks ``server.providers`` rather than ``local_provider`` alone, so a
-    mounted child server's components are included. Reads the provider
-    registries directly instead of the async ``_list_*`` helpers, which need an
-    event loop and additionally filter by enabled state and auth — a tool
-    switched off at runtime must not vanish from its own documentation.
-
-    A namespaced mount renames what it carries, so each transform is applied
-    through its own methods: a URI-keyed component takes the namespace in its
-    URI, a name-keyed one in its name. A transform this cannot reproduce is
-    refused with a warning, because a name the server does not serve is worse
-    than a missing page.
+    Lists through FastMCP's own ``Provider.list_*`` rather than reading
+    registries: those methods apply every mount, namespace, rename and custom
+    transform exactly as the server does, and keep disabled components --
+    filtering by enabled state and auth happens one level up, in
+    ``FastMCP.list_*``, which is deliberately not used so a tool switched off
+    at runtime stays in its own documentation. Bypasses middleware.
     """
-    found: list[t.Any] = []
-
     try:
-        from fastmcp.tools import Tool as _ToolType
+        from fastmcp.server.providers.base import Provider
     except ImportError:  # pragma: no cover - defensive
-        _ToolType = None  # type: ignore[assignment,misc]
+        return ()
 
-    def _is_tool(component: t.Any) -> bool:
-        if _ToolType is not None:
-            return isinstance(component, _ToolType)
-        return hasattr(component, "parameters") and not hasattr(
-            component, "uri_template"
-        )
+    async def listing() -> list[t.Any]:
+        out: list[t.Any] = []
+        for method in (
+            Provider.list_tools,
+            Provider.list_resources,
+            Provider.list_resource_templates,
+            Provider.list_prompts,
+        ):
+            out.extend(await method(server))
+        return out
 
-    def _reproducible(transform: t.Any) -> bool:
-        return (
-            hasattr(transform, "_transform_name")
-            and hasattr(transform, "_transform_uri")
-        ) or isinstance(getattr(transform, "_transforms", None), dict)
-
-    def _served(component: t.Any, transforms: tuple[t.Any, ...]) -> t.Any:
-        if not transforms or not hasattr(component, "model_copy"):
-            return component
-        is_tool = _is_tool(component)
-        for transform in transforms:
-            if hasattr(transform, "_transform_uri"):
-                update: dict[str, t.Any] = {}
-                for field in ("uri", "uri_template"):
-                    value = getattr(component, field, None)
-                    if value is not None:
-                        update[field] = transform._transform_uri(str(value))  # noqa: SLF001
-                if not update:
-                    update["name"] = transform._transform_name(  # noqa: SLF001
-                        str(getattr(component, "name", ""))
-                    )
-                component = component.model_copy(update=update)
-            elif is_tool:
-                # ToolTransform: apply the whole configuration -- name,
-                # title, description, tags and argument renames -- exactly
-                # as the server does, rather than copying the name alone.
-                config = getattr(transform, "_transforms", {}).get(
-                    str(getattr(component, "name", ""))
-                )
-                if config is not None and hasattr(config, "apply"):
-                    component = config.apply(component)
-        return component
-
-    def walk(
-        node: t.Any,
-        depth: int,
-        transforms: tuple[t.Any, ...],
-        path: frozenset[int],
-    ) -> None:
-        # Guard the active path only. The same child mounted under two
-        # namespaces is served twice under two names, and is not a cycle.
-        if node is None or id(node) in path:
-            return
-        if depth > 8:
-            logger.warning(
-                "sphinx_autodoc_fastmcp: mount tree deeper than 8 levels; "
-                "components below %r are not documented",
-                getattr(node, "name", node),
-            )
-            return
-        path = path | {id(node)}
-        own_all = tuple(getattr(node, "transforms", None) or ())
-        if not all(_reproducible(transform) for transform in own_all):
-            logger.warning(
-                "sphinx_autodoc_fastmcp: server %r renames its components in a "
-                "way this collector cannot reproduce; its components are not "
-                "documented",
-                getattr(node, "name", node),
-            )
-            return
-        own = own_all
-        # A server's own transforms apply before the namespace it was mounted
-        # under: the server serves outer_inner_hello, not inner_outer_hello.
-        transforms = own + transforms
-        for provider in getattr(node, "providers", None) or ():
-            # A transform added to a provider directly renames what it holds.
-            local = tuple(getattr(provider, "transforms", None) or ())
-            if not all(_reproducible(transform) for transform in local):
-                logger.warning(
-                    "sphinx_autodoc_fastmcp: provider %s renames its components "
-                    "in a way this collector cannot reproduce; its components "
-                    "are not documented",
-                    type(provider).__name__,
-                )
-                continue
-            components = getattr(provider, "_components", None)
-            if components is not None:
-                found.extend(
-                    _served(component, local + transforms)
-                    for component in components.values()
-                )
-                continue
-            inner = getattr(provider, "server", None)
-            if inner is not None:
-                walk(inner, depth + 1, local + transforms, path)
-                continue
-            wrapped = getattr(provider, "_inner", None)
-            if wrapped is None:
-                # An OpenAPI or other dynamic provider publishes its tools
-                # only through an async listing; there is no registry to
-                # read. Say so rather than document an empty index.
-                logger.warning(
-                    "sphinx_autodoc_fastmcp: provider %s exposes no component "
-                    "registry; its components are not documented",
-                    type(provider).__name__,
-                )
-                continue
-            # A mount may wrap its provider more than once -- a rename map
-            # inside a namespace, say. Peel every layer, collecting each
-            # layer's transforms so the innermost applies first.
-            layers: list[t.Any] = [provider]
-            while getattr(wrapped, "_inner", None) is not None:
-                layers.append(wrapped)
-                wrapped = wrapped._inner  # noqa: SLF001
-            # The innermost provider's own transforms apply before any
-            # wrapper's, so they lead the chain.
-            added: list[t.Any] = []
-            reproducible = True
-            for transform in getattr(wrapped, "transforms", None) or ():
-                if _reproducible(transform):
-                    added.append(transform)
-                else:
-                    reproducible = False
-            for layer in reversed(layers):
-                for transform in getattr(layer, "transforms", None) or ():
-                    if _reproducible(transform):
-                        added.append(transform)
-                    else:
-                        reproducible = False
-            if not reproducible:
-                logger.warning(
-                    "sphinx_autodoc_fastmcp: a mounted provider renames its "
-                    "components in a way this collector cannot reproduce; "
-                    "its components are not documented",
-                )
-                continue
-            # Inner namespaces apply first: the server serves
-            # outer_inner_hello, not inner_outer_hello.
-            chain = tuple(added) + transforms
-            inner_server = getattr(wrapped, "server", None)
-            if inner_server is not None:
-                walk(inner_server, depth + 1, chain, path)
-                continue
-            inner_components = getattr(wrapped, "_components", None)
-            if inner_components is not None:
-                found.extend(
-                    _served(component, chain) for component in inner_components.values()
-                )
-                continue
-            logger.warning(
-                "sphinx_autodoc_fastmcp: provider %s exposes no component "
-                "registry; its components are not documented",
-                type(wrapped).__name__,
-            )
-
-    walk(server, 0, (), frozenset())
-    # No fallback to the local registry: a walk that found nothing either saw
-    # an empty server or refused a rename it could not reproduce, and reading
-    # past that refusal would publish the identities it just declined.
-    return tuple(found)
+    return tuple(_Loop.call(listing()))
 
 
 #: FastMCP appends its schema hint as a trailing blank-line-separated
