@@ -42,6 +42,15 @@ from fastmcp.resources import (
     ResourceTemplate as _ResourceTemplate,  # noqa: E402
 )
 from fastmcp.tools import Tool as _Tool  # noqa: E402
+from pydantic import Field  # noqa: E402
+
+
+class _Boxed(t.TypedDict):
+    """An object whose only field is named like a generated wrapper's."""
+
+    result: int
+
+
 from mcp.types import Annotations, ToolAnnotations  # noqa: E402
 
 _LAST_MODIFIED = "2026-01-01T00:00:00Z"
@@ -1284,3 +1293,103 @@ def test_a_disabled_tool_survives_every_attachment(shape: str) -> None:
 
     names = [tool.name for tool in _iter_components(parent) if isinstance(tool, _Tool)]
     assert any(name.endswith("alpha") for name in names), names
+
+
+def test_a_slow_provider_does_not_erase_its_healthy_siblings(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """The bound sits on the leaf that lists, not on a subtree.
+
+    Bounding a mounted child as a whole discards the components already
+    gathered beneath it, so one slow descendant emptied the mount.
+    """
+    from fastmcp.server.providers.base import Provider
+
+    from sphinx_autodoc_fastmcp import _collector
+
+    class Slow(Provider):
+        async def _list_tools(self) -> list[t.Any]:
+            await asyncio.sleep(30)
+            return []
+
+    monkeypatch.setattr(_collector, "_PROVIDER_TIMEOUT", 0.5)
+    child: FastMCP = FastMCP("child")
+
+    @child.tool
+    def local(a: int) -> str:
+        """Local."""
+        return "ok"
+
+    child.add_provider(Slow())
+    parent: FastMCP = FastMCP("parent")
+    parent.mount(child, namespace="ns")
+
+    with caplog.at_level(logging.WARNING):
+        collected = [
+            tool.name for tool in _iter_components(parent) if isinstance(tool, _Tool)
+        ]
+
+    assert collected == ["ns_local"]
+
+
+def test_an_alias_is_resolved_to_the_parameter_that_declares_it() -> None:
+    """A published alias may be another parameter's own name.
+
+    Looking the published name up in the signature then borrows the wrong
+    annotation, and the table contradicts what the server accepts.
+    """
+    server: FastMCP = FastMCP("server")
+
+    @server.tool
+    def query(
+        foo: t.Annotated[int, Field(alias="bar")] = 1,
+        bar: t.Annotated[str, Field(alias="baz")] = "x",
+    ) -> str:
+        """Query."""
+        return "ok"
+
+    collected = _tools_from_server(server, area_map={}, axes=())
+    assert collected is not None
+    assert [(p.name, p.type_str) for p in collected[0].params] == [
+        ("bar", "int"),
+        ("baz", "str"),
+    ]
+
+
+def test_only_a_marked_wrapper_is_unwrapped() -> None:
+    """A TypedDict whose only field is ``result`` is not a wrapper.
+
+    It publishes the same shape as one FastMCP generated, so the marker is
+    what distinguishes them.
+    """
+    from fastmcp.server.transforms import ToolTransform
+    from fastmcp.tools.tool_transform import ToolTransformConfig
+
+    boxed_server: FastMCP = FastMCP("boxed")
+
+    @boxed_server.tool
+    def boxed(a: int) -> _Boxed:
+        """Boxed."""
+        return {"result": 1}
+
+    boxed_server.local_provider.add_transform(
+        ToolTransform({"boxed": ToolTransformConfig(name="renamed")})
+    )
+
+    plain_server: FastMCP = FastMCP("plain")
+
+    @plain_server.tool
+    def counts(a: int) -> int:
+        """Counts."""
+        return 1
+
+    plain_server.local_provider.add_transform(
+        ToolTransform({"counts": ToolTransformConfig(name="also_renamed")})
+    )
+
+    boxed_collected = _tools_from_server(boxed_server, area_map={}, axes=())
+    plain_collected = _tools_from_server(plain_server, area_map={}, axes=())
+    assert boxed_collected is not None
+    assert plain_collected is not None
+    assert boxed_collected[0].return_annotation == "object"
+    assert plain_collected[0].return_annotation == "integer"

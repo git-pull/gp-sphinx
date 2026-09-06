@@ -259,12 +259,35 @@ def _params_from_schema(
     except (TypeError, ValueError):  # pragma: no cover - defensive
         sig_params = {}
 
+    # A Field(alias=...) publishes under the alias, which may be another
+    # parameter's own name. Map published name -> declaring parameter so the
+    # signature is consulted for the parameter that actually owns it.
+    # Under PEP 563 an annotation is source text, so the metadata carrying
+    # the alias only exists once resolved. Resolution can fail on a
+    # TYPE_CHECKING-only name; an unmapped alias then behaves as before.
+    resolved: dict[str, t.Any] = {}
+    if func is not None:
+        try:
+            resolved = t.get_type_hints(func, include_extras=True)
+        except (NameError, AttributeError, TypeError, RecursionError):
+            # The set sphinx.util.typing catches, plus the recursion case
+            # sphinx-autodoc-typehints adds.
+            resolved = {}
+    aliases: dict[str, str] = {}
+    for param_name, param in sig_params.items():
+        annotation = resolved.get(param_name, param.annotation)
+        for meta in t.get_args(annotation)[1:]:
+            alias = getattr(meta, "alias", None)
+            if isinstance(alias, str) and alias:
+                aliases[alias] = param_name
+                break
+
     rows: list[ParamInfo] = []
     for name, prop in props.items():
         if not isinstance(prop, dict):
             # ``true`` / ``false`` are valid subschemas with no fields.
             prop = {}
-        sig_param = sig_params.get(name)
+        sig_param = sig_params.get(aliases.get(name, name))
         annotation = (
             _strip_annotated(sig_param.annotation)
             if sig_param is not None
@@ -335,12 +358,15 @@ def _return_from_schema(schema: t.Any) -> str:
 
     A transform's forwarding callable is ``(**kwargs)`` with no return
     annotation, but the tool still publishes what it returns. FastMCP wraps a
-    non-object result in a single ``result`` property.
+    non-object result in a single ``result`` property and marks the schema
+    with ``x-fastmcp-wrap-result``.
     """
     if not isinstance(schema, dict):
         return ""
     props = schema.get("properties")
-    if isinstance(props, dict) and set(props) == {"result"}:
+    # A TypedDict whose only field is ``result`` publishes the same shape as
+    # a generated wrapper. FastMCP marks the ones it made.
+    if schema.get("x-fastmcp-wrap-result") and isinstance(props, dict):
         inner = props["result"]
         return _schema_type_text(inner) if isinstance(inner, dict) else ""
     return _schema_type_text(schema)
@@ -688,8 +714,8 @@ async def _apply(kind: str, holder: t.Any, components: list[t.Any]) -> list[t.An
 
 #: Seconds one provider may take to list its components. A slow remote is
 #: treated like a failing one -- logged and skipped -- so it cannot hold up
-#: the build. Bounding each provider rather than the whole listing keeps the
-#: cancellation inside the failure policy.
+#: the build. The bound sits on the leaf that lists, not on a subtree, so a
+#: slow descendant cannot erase its healthy siblings.
 _PROVIDER_TIMEOUT = 30.0
 
 
@@ -710,12 +736,7 @@ async def _gather(
     out: list[t.Any] = []
     for provider in providers:
         try:
-            out.extend(
-                await asyncio.wait_for(
-                    _provider_components(kind, provider, depth, path),
-                    timeout=_PROVIDER_TIMEOUT,
-                )
-            )
+            out.extend(await _provider_components(kind, provider, depth, path))
         except Exception:
             if raise_on_error:
                 raise
@@ -751,7 +772,13 @@ async def _provider_components(
         base = await _gather(kind, provider, provider.providers, depth, path)
     else:
         method = getattr(provider, f"_list_{kind}", None)
-        base = list(await method()) if method is not None else []
+        # Bound the leaf that actually does the work. Bounding a subtree
+        # discards the healthy components already gathered beneath it.
+        base = (
+            list(await asyncio.wait_for(method(), timeout=_PROVIDER_TIMEOUT))
+            if method is not None
+            else []
+        )
     return await _apply(kind, provider, base)
 
 
