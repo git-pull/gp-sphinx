@@ -18,6 +18,14 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Fixes
+
+#### `sphinx-vite-builder`: Load the Hatchling hook with newer Hatchling
+
+The `vite` build hook loads with Hatchling 1.32.3, which changes the
+build-hook interface's type parameters. Existing Hatchling versions
+continue to work.
+
 ## gp-sphinx 0.1.0a39 (2026-09-06)
 
 gp-sphinx 0.1.0a39 documents the MCP server a project is actually

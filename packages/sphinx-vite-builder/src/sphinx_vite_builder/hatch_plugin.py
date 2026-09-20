@@ -37,7 +37,8 @@ from hatchling.plugin import hookimpl
 from ._internal.vite import run_vite_build
 
 
-class ViteBuildHook(BuildHookInterface[t.Any]):
+# Hatchling changes its generic arity across supported versions.
+class ViteBuildHook(BuildHookInterface):  # type: ignore[type-arg]
     """Run ``pnpm exec vite build`` before each hatchling build target.
 
     Activated via ``[tool.hatch.build.hooks.vite]`` in a consumer's
@@ -69,7 +70,7 @@ class ViteBuildHook(BuildHookInterface[t.Any]):
 
 
 @hookimpl
-def hatch_register_build_hook() -> list[type[BuildHookInterface[t.Any]]]:
+def hatch_register_build_hook() -> list[type[ViteBuildHook]]:
     """Hatchling plugin entry point.
 
     Discovered via the ``[project.entry-points.hatch] vite = ...``
