@@ -68,14 +68,14 @@ dev = [
   # which no shim reproduces faithfully — an SDK field rename is invisible
   # to a hand-written stub. Dev-only: the extension keeps working without
   # FastMCP installed, and its real-object tests skip when it is absent.
-  "fastmcp>=4.0.2",
+  "fastmcp>=4.0.2; python_version >= '3.11'",
   "pytest",
   "pytest-asyncio",
   "pytest-rerunfailures",
   "pytest-mock",
   "pytest-watcher",
   "pytest-playwright",
-  "pillow",
+  "pillow>=13; python_version >= '3.11'",
   # Coverage
   "codecov",
   "coverage",
@@ -137,6 +137,20 @@ ignore_errors = true
 # full static analysis of everything else in sphinx-autodoc-fastmcp.
 module = ["fastmcp", "fastmcp.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# pillow and fastmcp (with its pydantic and mcp dependencies) are installed
+# on Python 3.11+ only, so on 3.10 these modules type-check against Any.
+module = ["PIL", "PIL.*", "pydantic", "pydantic.*", "mcp", "mcp.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+  "tests.ext.fastmcp.test_real_server",
+  "tests.visual.test_visual_regression",
+  "fastmcp_demo_server",
+]
+disable_error_code = ["misc", "no-any-return", "untyped-decorator"]
 
 [tool.ruff]
 target-version = "py310"
