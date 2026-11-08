@@ -11,13 +11,9 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import tomllib
 import typing as t
 from dataclasses import dataclass
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib  # type: ignore[import-not-found, unused-ignore]
 
 
 @dataclass(frozen=True)

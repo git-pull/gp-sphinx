@@ -47,8 +47,8 @@ def _autodoc_annotations(env: BuildEnvironment) -> dict[str, dict[str, str]]:
     """Return autodoc's per-document annotation store.
 
     Sphinx 8.2 moved the store from ``env.temp_data["annotations"]`` to
-    ``env.current_document.autodoc_annotations``; Sphinx 8.1, the newest
-    release installable on Python 3.10, has ``temp_data`` only.
+    ``env.current_document.autodoc_annotations``; Sphinx 8.1 has
+    ``temp_data`` only.
 
     Parameters
     ----------

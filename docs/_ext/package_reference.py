@@ -77,10 +77,7 @@ from sphinx_autodoc_docutils import SetupRecorder, replay_setup
 if t.TYPE_CHECKING:
     from docutils import nodes
 
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib  # type: ignore[import-not-found, unused-ignore]
+import tomllib
 
 logger = logging.getLogger(__name__)
 

@@ -12,7 +12,7 @@ cross-referenced API documentation.
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.11+
 - Sphinx 8.1+
 
 ## Install

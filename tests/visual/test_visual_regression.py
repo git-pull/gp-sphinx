@@ -22,12 +22,8 @@ import pathlib
 import typing as t
 
 import pytest
-from playwright.sync_api import Page
-
-# Pillow is scoped to Python 3.11+ in the dev group; skip the module without it.
-pytest.importorskip("PIL")
-
 from PIL import Image, ImageChops
+from playwright.sync_api import Page
 
 _BASELINE_DIR = (
     pathlib.Path(__file__).resolve().parent / "__snapshots__" / "baseline-scss"

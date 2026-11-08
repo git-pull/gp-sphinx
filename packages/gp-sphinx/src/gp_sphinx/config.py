@@ -170,7 +170,7 @@ def make_linkcode_resolve(
         for part in fullname.split("."):
             try:
                 obj = getattr(obj, part)
-            except Exception:  # noqa: PERF203
+            except Exception:
                 return None
 
         try:
@@ -277,7 +277,7 @@ def make_workspace_linkcode_resolve(
         for part in fullname.split("."):
             try:
                 obj = getattr(obj, part)
-            except Exception:  # noqa: PERF203
+            except Exception:
                 return None
 
         try:
