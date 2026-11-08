@@ -282,7 +282,7 @@ def _write_sitemap(app: Sphinx, exception: BaseException | None) -> None:
             timestamp, _show_sourcelink = entry
             if timestamp:
                 last_updated = dt.datetime.fromtimestamp(
-                    int(timestamp), dt.timezone.utc
+                    int(timestamp), dt.UTC
                 ).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         links.append((sitemap_link, last_updated))

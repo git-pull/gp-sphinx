@@ -18,10 +18,10 @@ import sys
 import typing as t
 
 
-class Mode(str, enum.Enum):
+class Mode(enum.StrEnum):
     """Resolved orchestration mode.
 
-    `str` mixin so the value compares equal to the literal string the
+    `StrEnum` so the value compares equal to the literal string the
     user wrote in ``conf.py``.
 
     Attributes

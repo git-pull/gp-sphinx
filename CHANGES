@@ -18,6 +18,17 @@ $ uv add gp-sphinx --prerelease allow
 
 <!-- To maintainers and contributors: Please add notes for the forthcoming version below -->
 
+### Breaking changes
+
+#### Python 3.11 is now required
+
+Python 3.10 reached end-of-life in October 2026. Every package in the
+workspace now requires Python 3.11 or newer. (#84)
+
+```toml
+requires-python = ">=3.11"
+```
+
 ### Fixes
 
 #### `sphinx-vite-builder`: Load the Hatchling hook with newer Hatchling

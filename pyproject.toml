@@ -2,7 +2,7 @@
 name = "gp-sphinx-workspace"
 version = "0.1.0a39"
 description = "Workspace root for gp-sphinx packages"
-requires-python = ">=3.10,<4.0"
+requires-python = ">=3.11,<4.0"
 authors = [
   {name = "Tony Narlock", email = "tony@git-pull.com"}
 ]
@@ -68,14 +68,14 @@ dev = [
   # which no shim reproduces faithfully — an SDK field rename is invisible
   # to a hand-written stub. Dev-only: the extension keeps working without
   # FastMCP installed, and its real-object tests skip when it is absent.
-  "fastmcp>=4.0.2; python_version >= '3.11'",
+  "fastmcp>=4.0.2",
   "pytest",
   "pytest-asyncio",
   "pytest-rerunfailures",
   "pytest-mock",
   "pytest-watcher",
   "pytest-playwright",
-  "pillow>=13; python_version >= '3.11'",
+  "pillow>=13",
   # Coverage
   "codecov",
   "coverage",
@@ -83,7 +83,6 @@ dev = [
   # Lint
   "ruff>=0.17.3",
   "mypy",
-  "tomli; python_version < '3.11'",
   "typing-extensions",
   "types-docutils",
   "types-Pygments",
@@ -110,7 +109,7 @@ exclude = [
 
 [tool.mypy]
 strict = true
-python_version = "3.10"
+python_version = "3.11"
 mypy_path = "scripts/ci:docs/_ext:stubs"
 files = [
   "packages/",
@@ -138,22 +137,8 @@ ignore_errors = true
 module = ["fastmcp", "fastmcp.*"]
 ignore_missing_imports = true
 
-[[tool.mypy.overrides]]
-# pillow and fastmcp (with its pydantic and mcp dependencies) are installed
-# on Python 3.11+ only, so on 3.10 these modules type-check against Any.
-module = ["PIL", "PIL.*", "pydantic", "pydantic.*", "mcp", "mcp.*"]
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = [
-  "tests.ext.fastmcp.test_real_server",
-  "tests.visual.test_visual_regression",
-  "fastmcp_demo_server",
-]
-disable_error_code = ["misc", "no-any-return", "untyped-decorator"]
-
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 extend-exclude = [
   "build_extensions.py",
   "copy_packages.py",

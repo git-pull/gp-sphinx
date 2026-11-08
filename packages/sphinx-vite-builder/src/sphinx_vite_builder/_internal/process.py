@@ -211,7 +211,7 @@ class AsyncProcess:
                 self._process.terminate()
         try:
             await asyncio.wait_for(self._process.wait(), timeout=timeout)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             self._logger.warning(
                 "[%s] did not exit within %.1fs of SIGTERM; sending SIGKILL",
                 self._label,
