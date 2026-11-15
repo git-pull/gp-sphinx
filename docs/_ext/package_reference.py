@@ -981,11 +981,9 @@ def _grid_card_lines_for_record(record: PackageDocsRecord) -> list[str]:
         f":::{{grid-item-card}} {record.name}",
         f":link: {_grid_link_for_legacy_record(record.name)}",
         ":link-type: doc",
+        f":footer: {maturity_badge(record.maturity)}",
         "",
         record.description,
-        "",
-        "+++",
-        maturity_badge(record.maturity),
         ":::",
         "",
     ]
@@ -1019,11 +1017,9 @@ def _flat_workspace_grid_markdown() -> str:
                 f":::{{grid-item-card}} {package['name']}",
                 f":link: {_grid_link_for_legacy_record(package['name'])}",
                 ":link-type: doc",
+                f":footer: {maturity_badge(package['maturity'])}",
                 "",
                 str(package["description"]),
-                "",
-                "+++",
-                maturity_badge(package["maturity"]),
                 ":::",
                 "",
             ],
@@ -1088,7 +1084,7 @@ def workspace_package_grid_markdown(*, groups: str | None = None) -> str:
     --------
     >>> "grid-item-card" in workspace_package_grid_markdown()
     True
-    >>> "+++" in workspace_package_grid_markdown()
+    >>> ":footer:" in workspace_package_grid_markdown()
     True
     >>> "## Autodoc extensions" in workspace_package_grid_markdown(
     ...     groups="by-cluster"

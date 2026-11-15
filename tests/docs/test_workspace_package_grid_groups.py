@@ -101,7 +101,7 @@ def test_by_cluster_grid_renders_shipped_py_with_doc_link() -> None:
     assert ":::{grid-item-card} sphinx-fonts" in text
     assert ":link: sphinx-fonts" in text
     assert ":link-type: doc" in text
-    assert "+++" in text  # maturity badge separator
+    assert ":footer:" in text  # maturity badge footer option
 
 
 def test_workspace_package_grid_markdown_rejects_unknown_groups_argument() -> None:

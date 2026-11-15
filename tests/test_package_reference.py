@@ -309,8 +309,8 @@ GRID_MARKDOWN_FIXTURES: list[GridMarkdownFixture] = [
         present=True,
     ),
     GridMarkdownFixture(
-        test_id="has_card_footer_separator",
-        substring="+++",
+        test_id="has_card_footer_option",
+        substring=":footer:",
         present=True,
     ),
     GridMarkdownFixture(
