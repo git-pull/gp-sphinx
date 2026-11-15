@@ -705,9 +705,10 @@ def test_a_child_transform_applies_before_its_mount_namespace() -> None:
 
 def test_a_transformed_provider_added_under_a_namespace_keeps_both() -> None:
     """``add_provider`` around a provider with its own transform nests both."""
+    from fastmcp.server.providers import LocalProvider
     from fastmcp.server.transforms import Namespace
 
-    provider = type(FastMCP("x").local_provider)()
+    provider = LocalProvider()
 
     @provider.tool
     def ping() -> str:
