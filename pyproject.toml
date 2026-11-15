@@ -86,7 +86,11 @@ dev = [
   "typing-extensions",
   "types-docutils",
   "types-Pygments",
-  "syrupy>=5.1.0",
+  # Held below 7: syrupy 7 reports the 73 baselines owned by skipped tests
+  # (tests/visual PNGs, tests/docs/objects-inv-baseline.txt) as unused and
+  # exits 1; --snapshot-update would delete them. Lift when syrupy stops
+  # flagging them or the baselines move out of __snapshots__ dirs.
+  "syrupy>=5.1.0,<7",
   # Build-backend tooling: sphinx-vite-builder.build delegates to
   # hatchling.build, so hatchling must be importable for static analysis
   # and for the backend's own tests; consumer packages declare it

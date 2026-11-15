@@ -1051,7 +1051,7 @@ dev = [
     { name = "sphinx-ux-autodoc-layout", editable = "packages/sphinx-ux-autodoc-layout" },
     { name = "sphinx-ux-badges", editable = "packages/sphinx-ux-badges" },
     { name = "sphinx-vite-builder", editable = "packages/sphinx-vite-builder" },
-    { name = "syrupy", specifier = ">=5.1.0" },
+    { name = "syrupy", specifier = ">=5.1.0,<7" },
     { name = "types-docutils" },
     { name = "types-pygments" },
     { name = "typing-extensions" },
